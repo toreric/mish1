@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+clear
+port=3000
+# Kill the process (if any) already listening to this port
+prid=`lsof -t -i:$port`
+if [ $prid ]; then
+  echo "Port $port occupied by pid $prid"
+  sudo kill $prid
+fi
+
+# Make the script usable from any directory
+# (not only within this project directory)
+cd /home/tore/Arbeten/NodeEmberTest
+
+#IMDB_HOME=/mnt/sda2
+#IMDB_ROOT=MISH
+#IMDB_ROOT=album-1
+IMDB_ROOT='""'
+IMDB_ROOT=Framkallning_2019
+IMDB_HOME=/home/tore
+if [[ $1 ]]; then
+  IMDB_ROOT=$1
+  if [[ $2 ]]; then
+    IMDB_HOME=$2
+  fi
+fi
+echo IMDB_HOME = $IMDB_HOME
+echo IMDB_ROOT = $IMDB_ROOT
+echo -n "##### Starting the Node server "`date`
+# Note that Node may be installed as either 'node', 'nodejs', or often both:)
+node server.js $IMDB_ROOT $IMDB_HOME # Passed as/to environment variables (see server.js)

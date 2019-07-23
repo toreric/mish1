@@ -1,0 +1,35 @@
+﻿
+To do in priority order (zero is highest)         >: progress
+=========================================         *: completed
+
+>0 Bulk inclusion of images without choking congestion    some PROGRESS
+>0 Bulk Dropzone upload without choking congestion      some PROGRESS
+>0 Mastering 'the sync hell' in all situations, including 'excessive clicking'  some PROGRESS
+
+*1 User 'Album root directory' selection    DONE
+ 1 Create new album catalogs; delete empty ones (still manually)
+>1 Manage equal img/file names in different albums; link-copy-extension interactions   PROGRESS
+ 1 Finish unique image filename control within album, extension/type-independent (still manually)
+ 2 'Howto' for local installation
+>2 Allowance table for permission management   (manually Sqlite)
+>2 Auto-collect text db system for free search in image texts, file names, ...    mostly DONE
+>2 Customize for Android: Mostly successful and almost  enough DONE ?
+ 2 Customize for iPad: Replace content menu, text editing ...   difficult
+>2 Dropzone should generate thumbnails for TIFFs    MS Edge shows TIFF thumbnails
+>2 Full resolution DjVu? Always allowed, user dependent?    DjVu lost (NO PLUGINS) now PNG ...
+ 2 'Howto' for server installation
+ 2 Implement i18n, as simple as possible ...
+ 2 Port to Windows/Mac: adapt shell commands, and much more to do ...
+>2 User registration  (SQLite3, still manually)   some PROGRESS
+*2 User validation    DONE
+
+ 3 Dropzone redesign with Imagemagick thumbnail generation?
+ 3 'Howto' for cloud installation
+*3 Improve image text editor   DONE (completely changed)
+
+ 5 Convert an album to a PDF file
+ 5 Option for choosing image editor for originals, like Gimp, Photoshop, ...
+ 5 Original images should be lockable, perhaps edit&|text protected?
+>5 All other small improvements that become important on the way ... considerable PROGRESS!
+
+and much more to do.
