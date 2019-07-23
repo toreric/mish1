@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 // server.js
 
-if (!process.argv [2]) {
-  console.log ('Usage: ' + process.argv [1] + 'home [root [port]]')
+if (process.argv [2] !== '' && !process.argv [2]) {
+  console.log ('Usage: ' + process.argv [1] + ' home [root [port]]')
   console.log ("  home = albums' home directory (default /home/<user>)")
   console.log ('  root = chosen album root (within the home dirctory; default = not chosen)')
-  console.log ('  port = server port (default 3000)'
+  console.log ('  port = server port (default 3000)')
   console.log ("Note: Parameter position is significant; use '' for default")
   return
 }

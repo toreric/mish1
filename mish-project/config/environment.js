@@ -5,7 +5,7 @@ module.exports = function(environment) {
     modulePrefix: 'mish-project',
     environment,
     rootURL: '/',
-    locationType: 'auto',
+    locationType: 'hash', // 'auto',
     EmberENV: {
       FEATURES: {
         // Here you can enable experimental features on an ember canary build
@@ -16,6 +16,15 @@ module.exports = function(environment) {
         Date: false
       }
     },
+    contentSecurityPolicy: {
+  	  'style-src': "'self' 'unsafe-inline' http://localhost:4200/",
+      'default-src': "http://localhost:4200/",
+      'default-src': "'none'",
+      'script-src': "'self' 'unsafe-inline' 'unsafe-eval' ",
+      'img-src': "'self' ",
+      'frame-src': " "
+
+  	},
 
     APP: {
       // Here you can pass flags/options to your application instance
@@ -25,10 +34,10 @@ module.exports = function(environment) {
 
   if (environment === 'development') {
     // ENV.APP.LOG_RESOLVER = true;
-    // ENV.APP.LOG_ACTIVE_GENERATION = true;
-    // ENV.APP.LOG_TRANSITIONS = true;
-    // ENV.APP.LOG_TRANSITIONS_INTERNAL = true;
-    // ENV.APP.LOG_VIEW_LOOKUPS = true;
+    ENV.APP.LOG_ACTIVE_GENERATION = true;
+    ENV.APP.LOG_TRANSITIONS = true;
+    ENV.APP.LOG_TRANSITIONS_INTERNAL = true;
+    ENV.APP.LOG_VIEW_LOOKUPS = true;
   }
 
   if (environment === 'test') {

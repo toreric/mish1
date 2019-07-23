@@ -1,12 +1,28 @@
+/* eslint-env node */
 'use strict';
 
+// DET HÄR VAR FÖRUT (2015) Brocfile.js
 const EmberApp = require('ember-cli/lib/broccoli/ember-app');
 
 module.exports = function(defaults) {
   let app = new EmberApp(defaults, {
     // Add options here
+    emberCliDropzonejs: {
+      includeDropzoneCss: false
+    },
+    minifyJS: {
+      enabled: false
+    },
+    minifyCSS: {
+      enabled: false
+    }/*,
+    // Disable jQuery bundled with Ember.js
+    vendorFiles: { 'jquery.js': null },
+    // Include jQuery slim instead of default build
+    jquery: {
+      slim: true
+    }*/
   });
-
   // Use `app.import` to add additional libraries to the generated
   // output files.
   //
@@ -19,6 +35,12 @@ module.exports = function(defaults) {
   // modules that you would like to import into your application
   // please specify an object with the list of modules as keys
   // along with the exports of each module as its value.
+
+  //app.import('bower_components/jquery-ui/jquery-ui.js');
+  //app.import('bower_components/jquery-ui/themes/base/all.css');
+  //app.import('bower_components/jquery-ui/themes/smoothness/jquery-ui.css');
+  //app.import('bower_components/jquery-ui/themes/smoothness/theme.css');
+  //app.import('bower_components/jquery-ui/themes/smoothness/images/'); Put in public/assets/images/
 
   return app.toTree();
 };

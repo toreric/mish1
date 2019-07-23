@@ -1,0 +1,16 @@
+#! /bin/bash
+
+# Build production catalog
+clear
+prodcat="../public/"
+ember b -prod --output-path=$prodcat
+
+# Insert a message line into index.html
+echo "Inserting build timestamp ..."
+mestxt='BUILD '`date +%y%m%d-%H%M`
+echo $mestxt
+hint=' · NOTE: Avoid MS IE!'
+cat ${prodcat}index.html | sed "s&\ *<body>\$&<body><div id=\"timeStamp\">$mestxt$hint</div>&" > /tmp/index.html
+cp -v /tmp/index.html ${prodcat}index.html
+echo -n "Done. "
+date
