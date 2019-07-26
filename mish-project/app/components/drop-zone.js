@@ -1,10 +1,15 @@
 /* global Dropzone*/
-import Ember from 'ember';
+//import Ember from 'ember';
+import Component from '@ember/component'
+import $ from 'jquery';
+import { later } from '@ember/runloop';
+//import { on } from '@ember/object/evented';
+import { Promise } from 'rsvp';
 
-export default Ember.Component.extend({
+export default Component.extend({
   classNames: ['dropzone'],
 
-  myDropzone: document.body || undefined,
+  myDropzone: () => {return document.body || undefined},
 
   dropzoneOptions: null,
 
@@ -18,7 +23,7 @@ export default Ember.Component.extend({
   filesizeBase: null,
   paramName: null,
   uploadMultiple: null,
-  headers: {},
+  headers: () => {return {}},
   addRemoveLinks: true,
   previewsContainer: null,
   clickable: null,
@@ -204,8 +209,8 @@ export default Ember.Component.extend({
       dictMaxFilesExceeded: this.dictMaxFilesExceeded,
 
       // Fix flickering dragging over child elements: https://github.com/enyo/dropzone/issues/438
-      dragenter: Ember.$.noop,
-      dragleave: Ember.$.noop,
+      dragenter: $ .noop,
+      dragleave: $ .noop,
       init: function () {
         onDragEnterLeaveHandler(this);
         document.getElementById("uploadWarning").style.display = "none";
@@ -214,12 +219,12 @@ export default Ember.Component.extend({
           //setImdbDir ().then (res => {console.log("setImdbDir",res);}); // Set the server imdbDir
           document.getElementById("uploadPics").style.display = "inline";
           document.getElementById("removeAll").style.display = "inline";
-          //Ember.$ ("#uploadFinished").text ("");
+          //$ ("#uploadFinished").text ("");
           if (acceptedFileName (file.name)) {
             var namepic = file.name.replace (/.[^.]*$/, "");
             // escapeDots <=> .replace (/\./g, "\\.") NEEDED since jQuery uses CSS:
-            if (Ember.$ ("#i" + namepic.replace (/\./g, "\\.")).length > 0) { // If already present in the DOM, upload would replace that file, named equally
-              Ember.$ ("#uploadWarning").html ("&nbsp;VARNING FÖR ÖVERSKRIVNING: Lika filnamn finns redan!&nbsp;");
+            if ($ ("#i" + namepic.replace (/\./g, "\\.")).length > 0) { // If already present in the DOM, upload would replace that file, named equally
+              $ ("#uploadWarning").html ("&nbsp;VARNING FÖR ÖVERSKRIVNING: Lika filnamn finns redan!&nbsp;");
               document.getElementById("uploadWarning").style.display = "inline";
               console.log (namepic, file.type, file.size, "ALREADY PRESENT");
               //console.log(file.previewElement.classList);
@@ -232,15 +237,15 @@ export default Ember.Component.extend({
           } else {
             console.log ("Illegal file name: " + file.name);
             // userLog unreachable
-            Ember.$ ("#uploadFinished").html ('<span style="color:deeppink">OTILLÅTET FILNAMN<br>' + file.name + "</span>");
-            Ember.run.later ( () => {
+            $ ("#uploadFinished").html ('<span style="color:deeppink">OTILLÅTET FILNAMN<br>' + file.name + "</span>");
+            later ( () => {
               file.previewElement.querySelector ("a.dz-remove").click ();
             }, 1000);
           }
         });
 
         this.on("removedfile", function() {
-          if (Ember.$ ("div.dz-preview.picPresent a.dz-remove").length < 1) {
+          if ($ ("div.dz-preview.picPresent a.dz-remove").length < 1) {
             document.getElementById("uploadWarning").style.display = "none";
             document.getElementById("removeDup").style.display = "none";
           }
@@ -251,23 +256,23 @@ export default Ember.Component.extend({
           document.getElementById("removeAll").style.display = "none";
           document.getElementById("uploadWarning").style.display = "none";
           document.getElementById("removeDup").style.display = "none";
-          Ember.$ ("#uploadFinished").text ("");
+          $ ("#uploadFinished").text ("");
         });
 
         this.on("queuecomplete", function() {
           document.getElementById("uploadPics").style.display = "none";
           document.getElementById("uploadWarning").style.display = "none";
-          Ember.$ ("#uploadFinished").text ("UPPLADDNINGEN FÄRDIG");
+          $ ("#uploadFinished").text ("UPPLADDNINGEN FÄRDIG");
           this.options.autoProcessQueue = false;
-          //err Ember.$ ("#re F resh-1").click (); // Update the page, via DOM..
-          Ember.run.later ( () => {
+          //err $ ("#re F resh-1").click (); // Update the page, via DOM..
+          later ( () => {
             console.log (secNow (), "drop-zone queuecomplete"); // Upload end
           }, 200);
           // Refresh after file upload
           var ms = 1000; // The interval may be a setting?
           (function (j, t) {
             setTimeout (function () {
-              Ember.$ ("#refresh-1").click ();
+              $ ("#refresh-1").click ();
             }, (j*t)); // Waiting time
           })(qlen, ms); //Pass into closure of self-exec anon-func
         });
@@ -287,12 +292,13 @@ export default Ember.Component.extend({
     this.set('dropzoneOptions', dropzoneOptions);
   },
 
-  createDropzone(element) {
+  createDropzone (element) {
     let region = this.get('maxDropRegion') ? document.body : element;
     this.set('myDropzone', new Dropzone(region, this.dropzoneOptions));
   },
 
-  insertDropzone: Ember.on('didInsertElement', function() {
+  //insertDropzone: Ember.on('didInsertElement', function() {
+  didInsertElement () {
     let _this = this;
     this.getDropzoneOptions();
     Dropzone.autoDiscover = false;
@@ -331,7 +337,7 @@ export default Ember.Component.extend({
     }
 
     return this.myDropzone;
-  }),
+  },
 
   actions: {
     closeThis() {
@@ -347,7 +353,7 @@ export default Ember.Component.extend({
 
     removeDupFiles() {
       //this.myDropzone.removeAllFiles();
-      var dupEl = Ember.$ ("div.dz-preview.picPresent a.dz-remove");
+      var dupEl = $ ("div.dz-preview.picPresent a.dz-remove");
       for (var i=0; i<dupEl.length; i++) {
         dupEl [i].click ();
       }
@@ -357,11 +363,11 @@ export default Ember.Component.extend({
     },
 
     processQueue() {
-      return new Ember.RSVP.Promise ( () => {
+      return new Promise ( () => {
         this.myDropzone.options.autoProcessQueue = false;
         qlen = this.myDropzone.getQueuedFiles().length;
         if (qlen > 0) {
-          Ember.$ (".spinner").show ();
+          $ (".spinner").show ();
           document.getElementById("reLd").disabled = true;
           document.getElementById("saveOrder").disabled = true;
           document.getElementById("showDropbox").disabled = true;
@@ -393,9 +399,9 @@ function acceptedFileName (name) {
 }
 
 function setImdbDir () { // Set the server imdbDir
-  return new Ember.RSVP.Promise ( (resolve, reject) => {
-    Ember.run.later ( () => { // Wait in case imdbDir is changing
-      var IMDB_DIR =  Ember.$ ('#imdbDir').text ();
+  return new Promise ( (resolve, reject) => {
+    later ( () => { // Wait in case imdbDir is changing
+      var IMDB_DIR =  $ ('#imdbDir').text ();
       if (IMDB_DIR.slice (-1) !== "/") {IMDB_DIR = IMDB_DIR + "/";}
       IMDB_DIR = IMDB_DIR.replace (/\//g, "@"); // For sub-directories
       var xhr = new XMLHttpRequest ();

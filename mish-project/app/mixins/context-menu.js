@@ -1,12 +1,9 @@
-import Ember from 'ember';
-
-//export default Ember.Mixin.create({
-//});
-
+//import Ember from 'ember';
+import Component from '@ember/component';
 import contextMenuMixin from 'ember-context-menu';
 
-export default Ember.Component.extend (contextMenuMixin, {
-  contextItems: [
+export default Component.extend (contextMenuMixin, {
+  contextItems: () => {return [
     {
       label: 'do something',
       action (selection, details, event) {
@@ -14,7 +11,7 @@ export default Ember.Component.extend (contextMenuMixin, {
         alert ('do something'+selection+details+event);
       }
     }
-  ],
+  ]},
   _contextMenu (e) {
     // do anything before triggering the context-menu
     console.log (e);
