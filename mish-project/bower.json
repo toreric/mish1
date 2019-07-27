@@ -1,0 +1,17 @@
+{
+  "name": "mish-project",
+  "description": "Photo galleries",
+  "main": "",
+  "authors": [
+    "toeric <tore.ericsson@tores.se>"
+  ],
+  "license": "MIT",
+  "homepage": "",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

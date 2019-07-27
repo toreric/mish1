@@ -3,7 +3,8 @@ import EmberObject from '@ember/object';
 import { Promise } from 'rsvp';
 import $ from 'jquery';
 import { later } from '@ember/runloop';
-import { htmlSafe } from '@ember/template';
+import Ember from 'ember';
+//import { htmlSafe } from '@ember/template';
 import { task } from 'ember-concurrency';
 import contextMenuMixin from 'ember-context-menu';
 export default Component.extend (contextMenuMixin, {
@@ -254,7 +255,7 @@ export default Component.extend (contextMenuMixin, {
             tmp [i].querySelector ("div[alt='MARKER']").setAttribute ("class", "markTrue") ;
           }
         }
-        $ ('.showCount .numMarked').text ($ (".markTrue").length + ' ');
+        $ ('.showCount .numMarked').text ($ (".markTrue").length + " ");
       }
     },
     { label: 'Invertera markeringar',
@@ -269,7 +270,7 @@ export default Component.extend (contextMenuMixin, {
         $ (".markTrue").removeClass ("set_true");
         $ (".markFalse").removeClass ("set_false");
         var marked = $ (".markTrue").length;
-        $ (".numMarked").text (' ' + marked);
+        $ (".numMarked").text (" " + marked);
         var cn = document.getElementById ("markShow").className;
         $ ("#markShow").removeClass ();
         if (cn === "markFalseShow") {
@@ -726,7 +727,7 @@ export default Component.extend (contextMenuMixin, {
 //    document.removeEventListener ('mouseup', (e) => {triggerClick (evnt);}, false);
     later ( ( () => {
       // At text edit (ediText) || running slide show
-      if ( ($ ("div[aria-describedby='textareas']").css ('display') !== "none") ||
+      if ( ($ ("div[aria-describedby='textareas']").css ("display") !== "none") ||
           ($ ("#navAuto").text () === "true") ) {
         $ ("ul.context-menu").hide ();
         return;
@@ -898,6 +899,7 @@ export default Component.extend (contextMenuMixin, {
           $ ("#sortOrder").text (sortnames); // Save in the DOM
         }
         test = 'A2';
+//console.log(sortnames);
         // Use sortOrder (as far as possible) to reorder namedata ERROR
         // First pick out namedata (allNames) against sortnames (SN), then any remaining
         this.requestNames ().then (namedata => {
@@ -907,18 +909,19 @@ export default Component.extend (contextMenuMixin, {
           if ($ ("#sortOrder").text ().trim ().length > 0) {
             SN = $ ("#sortOrder").text ().trim ().split ('\n');
           }
+          console.log("NOTE: SN is the latest saved list of images, not nesseceraly reflecting the actual directory content (must have been saved to do that):",SN);
           sortnames = '';
           for (i=0; i<SN.length; i++) {
-            var tmp = SN [i].split (',');
+            var tmp = SN [i].split (",");
             if (tmp [0].slice (0, 1) !== ".") {
               if (tmp.length < 2) {
-                tmp.push (' ');
-                SN [i] = SN [i] + ',';
+                tmp.push (" ");
+                SN [i] = SN [i] + ",";
               }
               if (tmp [1].trim ().length === 0) {SN [i] = SN [i] + '0';}
               if (tmp.length < 3) {
-                tmp.push (' ');
-                SN [i] = SN [i] + ',';
+                tmp.push (" ");
+                SN [i] = SN [i] + ",";
               }
               if (tmp [2].trim ().length === 0) {SN [i] = SN [i] + '0';}
               sortnames = sortnames +'\n'+ SN [i];
@@ -936,7 +939,7 @@ export default Component.extend (contextMenuMixin, {
           // snamsvec is sortnames vectorized
           for (i=0; i<snamsvec.length; i++) {
             // snams is kind of 'sortnames.name'
-            snams.push (snamsvec [i].split (',') [0]);
+            snams.push (snamsvec [i].split (",") [0]);
           }
           //console.log(test,"[sortnames]",sortnames,snamsvec.length);
           // --- END prepare sortnames
@@ -974,10 +977,12 @@ export default Component.extend (contextMenuMixin, {
           }
           newsort = newsort.trim (); // Important
           test ='E0';
-          this.set ('allNames', newdata); // The minipics reload is triggered here (RELOAD)
+          this.set ("allNames", newdata); // The minipics reload is triggered here (RELOAD)
           $ ('#sortOrder').text (newsort); // Save in the DOM
+          console.log("NOTE: newsort is the true list of images in the actual directory:",newsort.split("\n"));
+          console.log("NOTE: newdata will trigger the thumbnails reload:",this.get ("allNames"));
           preloadShowImg = []; // Preload show images:
-          let n = newdata.length;
+          var n = newdata.length;
           let nWarn = 100;
           for (i=0; i<n; i++) {
             preloadShowImg [i] = new Image();
@@ -987,16 +992,16 @@ export default Component.extend (contextMenuMixin, {
             infoDia (null, null, "M Ä N G D V A R N I N G", "<b>Ett album bör av alla möjliga <br>praktiska och tekniska skäl inte ha <br>särskilt många fler än etthundra bilder. <br>Försök att dela på det här albumet ...</b>", "... uppfattat!", true);
           }
           if (n > 0) {
-            $ (".numMarked").text (' ' + $ (".markTrue").length);
+            $ (".numMarked").text (" " + $ (".markTrue").length);
             if ($ ("#hideFlag") === "1") {
-              $ (".numHidden").text (' ' + $ (".img_mini [backgroundColor=$('#hideColor')]").length);
+              $ (".numHidden").text (" " + $ (".img_mini [backgroundColor=$('#hideColor')]").length);
               // DOES THIS WORK OR MAY IT BE REMOVED??
-              $ (".numShown").text (' ' + $ (".img_mini [backgroundColor!=$('#hideColor')]").length);
+              $ (".numShown").text (" " + $ (".img_mini [backgroundColor!=$('#hideColor')]").length);
             } else {
               $ (".numHidden").text ("0");
               $ (".numShown").text ($ (".img_mini").length);
             }
-            userLog ('RELOAD');
+            userLog ("RELOAD");
           }
           test = 'E1';
           later ( ( () => {
@@ -1043,10 +1048,10 @@ export default Component.extend (contextMenuMixin, {
       if ($ (tgt).hasClass ("mark")) {
         if ((allow.imgHidden || allow.adminAll) && evnt.button === 2) {
           // Right click on the marker area of a thumbnail...
-          let classes = $ (tgt).parent ("div").parent ('div').attr("class");
+          let classes = $ (tgt).parent ("div").parent ("div").attr("class");
           let albumDir, file, tmp;
           if (classes && -1 < classes.split (" ").indexOf ("symlink")) { // ...of a symlink...
-            tmp = $ (tgt).parent ("div").parent ("div").find ('img').attr("title");
+            tmp = $ (tgt).parent ("div").parent ("div").find ("img").attr("title");
             // ...then go to the linked picture:
             getFilestat (tmp).then (result => {
               //console.log ("Länk:", tmp);
@@ -1093,8 +1098,8 @@ export default Component.extend (contextMenuMixin, {
         return;
       }
     }
-    document.addEventListener ('click', triggerClick, false); // Click (at least left click)
-    document.addEventListener ('contextmenu', triggerClick, false); // Right click
+    document.addEventListener ("click", triggerClick, false); // Click (at least left click)
+    document.addEventListener ("contextmenu", triggerClick, false); // Right click
 
     // Then the keyboard, actions.showNext etc.:
     var that = this;
@@ -1119,7 +1124,7 @@ export default Component.extend (contextMenuMixin, {
         if ($ ("#dialog").is (":visible")) {
           $ ("#dialog").dialog ("close");
         } else
-        if ($ ("div[aria-describedby='textareas']").css ('display') !== "none") { // At text edit, visible
+        if ($ ("div[aria-describedby='textareas']").css ("display") !== "none") { // At text edit, visible
           ediTextClosed ();
           if (Z) {console.log ('*a');}
         } else // Carefylly here: !== "none" is false if the context menu is absent!
@@ -1147,18 +1152,18 @@ export default Component.extend (contextMenuMixin, {
         }
         if (Z) {console.log ('*f');}
       } else
-      if (event.keyCode === 37 && $ ('#navKeys').text () === "true" &&
-      $ ("div[aria-describedby='searcharea']").css ('display') === "none" &&
-      $ ("div[aria-describedby='textareas']").css ('display') === "none" &&
+      if (event.keyCode === 37 && $ ("#navKeys").text () === "true" &&
+      $ ("div[aria-describedby='searcharea']").css ("display") === "none" &&
+      $ ("div[aria-describedby='textareas']").css ("display") === "none" &&
       !$ ("#title input.cred.user").is (":focus") &&
       !$ ("#title input.cred.password").is (":focus")) { // Left key <
         event.preventDefault(); // Important!
         that.actions.showNext (false);
         if (Z) {console.log ('*g');}
       } else
-      if (event.keyCode === 39 && $ ('#navKeys').text () === "true" &&
-      $ ("div[aria-describedby='searcharea']").css ('display') === "none" &&
-      $ ("div[aria-describedby='textareas']").css ('display') === "none" &&
+      if (event.keyCode === 39 && $ ("#navKeys").text () === "true" &&
+      $ ("div[aria-describedby='searcharea']").css ("display") === "none" &&
+      $ ("div[aria-describedby='textareas']").css ("display") === "none" &&
       !$ ("#title input.cred.user").is (":focus") &&
       !$ ("#title input.cred.password").is (":focus")) { // Right key >
         event.preventDefault(); // Important!
@@ -1166,8 +1171,8 @@ export default Component.extend (contextMenuMixin, {
         if (Z) {console.log ('*h');}
       } else
       if (that.savekey !== 17 && event.keyCode === 65 && $ ("#navAuto").text () !== "true" &&
-      $ ("div[aria-describedby='searcharea']").css ('display') === "none" &&
-      $ ("div[aria-describedby='textareas']").css ('display') === "none" &&
+      $ ("div[aria-describedby='searcharea']").css ("display") === "none" &&
+      $ ("div[aria-describedby='textareas']").css ("display") === "none" &&
       !$ ("#title input.cred.user").is (":focus") &&
       !$ ("#title input.cred.password").is (":focus")) { // A key
         if (!($ ("#imdbDir").text () === "")) {
@@ -1326,8 +1331,8 @@ export default Component.extend (contextMenuMixin, {
               show: result [j + 1],
               mini: result [j + 2],
               name: result [j + 3],
-              txt1: htmlSafe (result [j + 4]),
-              txt2: htmlSafe (result [j + 5]),
+              txt1: Ember.String.htmlSafe (result [j + 4]),
+              txt2: Ember.String.htmlSafe (result [j + 5]),
               symlink: result [j + 6],
             });
             if (f.txt1.toString () === "-") {f.txt1 = "";}
@@ -1794,10 +1799,10 @@ console.log("idx",idx);
       var n = 0, h = 0;
       for (var i=0; i<rows.length; i++) {
         var str = rows [i].trim ();
-        var k = str.indexOf (',');
+        var k = str.indexOf (",");
         var name = str.substring (0, k);
         str = str.slice (k+1);
-        k = str.indexOf (',');
+        k = str.indexOf (",");
         var hideFlag = 1*str.substring (0, k); // Used as 1 = hidden, 0 = shown
         str = str.slice (k+1);
         //var albumIndex = 1*str;
@@ -1820,18 +1825,18 @@ console.log("idx",idx);
         }
       }
       if (yes) {
-        $ ('.showCount .numShown').text (' ' + (n - h));
-        $ ('.showCount .numHidden').text (' ' + h);
+        $ ('.showCount .numShown').text (" " + (n - h));
+        $ ('.showCount .numHidden').text (" " + h);
         //$ ('#toggleHide').css ('color', 'lightskyblue');
         $ ('#toggleHide').css ('background-image', 'url(/images/eyes-blue.png)');
       } else {
-        $ ('.showCount .numShown').text (' ' + n);
+        $ ('.showCount .numShown').text (" " + n);
         $ ('.showCount .numHidden').text (' 0');
         //$ ('#toggleHide').css ('color', 'white');
         $ ('#toggleHide').css ('background-image', 'url(/images/eyes-white.png)');
         $ (".img_mini").show (); // Show all pics
       }
-      $ ('.showCount .numMarked').text ($ (".markTrue").length + ' ');
+      $ ('.showCount .numMarked').text ($ (".markTrue").length + " ");
 
       var lineCount = parseInt ($ (window).width ()/170); // w150 +> w170 each pic
       $ ('.showCount').hide ();
@@ -1951,7 +1956,7 @@ console.log("idx",idx);
 
 
       if ($ ("#navAuto").text () !== "true") {
-      //if ($ ("div[aria-describedby='textareas']").css ('display') === "none") {
+      //if ($ ("div[aria-describedby='textareas']").css ("display") === "none") {
         $ ("#dialog").dialog ("close");
       }
       $ ("#link_show a").css ('opacity', 0 );
@@ -1965,7 +1970,7 @@ console.log("idx",idx);
           namepic = null;
           if (!document.getElementById ("i" + namehere) || !document.getElementById ("i" + namehere).parentElement.nextElementSibling) { // last
             namepic = tmp [0].getAttribute ("id").slice (1);
-            userLog ('FIRST');
+            userLog ("FIRST");
           } else {
             namepic = document.getElementById ("i" + namehere).parentElement.nextElementSibling.firstElementChild.id.slice (1);
           }
@@ -1979,7 +1984,7 @@ console.log("idx",idx);
           if (!document.getElementById ("i" + namehere) || !document.getElementById ("i" + namehere).parentElement.previousElementSibling) { // first
             //var tmp = document.getElementsByClassName ("img_mini");
             namepic = tmp [tmp.length - 1].getAttribute ("id").slice (1);
-            userLog ('LAST');
+            userLog ("LAST");
           } else {
             namepic = document.getElementById ("i" + namehere).parentElement.previousElementSibling.firstElementChild.id.slice (1);
           }
@@ -2057,7 +2062,7 @@ console.log("idx",idx);
         var i =0, k = 0, SName = [], names, SN;
         SN = $ ('#sortOrder').text ().trim ().split ('\n'); // Take it from the DOM storage
         for (i=0; i<SN.length; i++) {
-          SName.push (SN[i].split (',') [0]);
+          SName.push (SN[i].split (",") [0]);
         }
         var UName = $ ('#uploadNames').text ().trim (); // Newly uploaded
         $ ('#uploadNames').text (''); // Reset
@@ -2150,7 +2155,7 @@ console.log("idx",idx);
         return;
       }
       let diaSrch = "div[aria-describedby='searcharea']"
-      if ($ (diaSrch).css ('display') !== "none") {
+      if ($ (diaSrch).css ("display") !== "none") {
         $ ("#searcharea").dialog ("close");
       } else {
         if ($ ("#imdbRoot").text () === "") {
@@ -2183,7 +2188,7 @@ console.log("idx",idx);
     //============================================================================================
     ediText (namepic) { // ##### Edit picture texts
 
-      var displ = $ ("div[aria-describedby='textareas']").css ('display');
+      var displ = $ ("div[aria-describedby='textareas']").css ("display");
       var name0 = $ ("div[aria-describedby='textareas'] span.ui-dialog-title span").html ();
       if (allow.textEdit || allow.adminAll) {
         $ ("button.saveTexts").attr ("disabled", false);
@@ -2199,7 +2204,7 @@ console.log("idx",idx);
       var origpic;
       if (namepic) {
         later ( ( () => {
-          displ = $ ("div[aria-describedby='textareas']").css ('display');
+          displ = $ ("div[aria-describedby='textareas']").css ("display");
           if (displ !== "none" && name0 === namepic) {
             ediTextClosed ();
             return;
@@ -2212,7 +2217,7 @@ console.log("idx",idx);
         namepic = $ (".img_show .img_name").text ();
         // NOTE: An ID string for JQuery must have its dots escaped! CSS use!
         $ ("#backPos").text ($ ('#i' + escapeDots (namepic)).offset ().top);
-        if ($ ("div[aria-describedby='textareas']").css ('display') !== "none") {
+        if ($ ("div[aria-describedby='textareas']").css ("display") !== "none") {
           ediTextClosed ();
           return;
         }
@@ -2229,7 +2234,7 @@ console.log("idx",idx);
         }
       });
       $ ("#picName").text (namepic);
-      displ = $ ("div[aria-describedby='textareas']").css ('display');
+      displ = $ ("div[aria-describedby='textareas']").css ("display");
 
       // OPEN THE TEXT EDIT DIALOG and adjust some more details...
       later ( ( () => {
@@ -2356,7 +2361,7 @@ console.log("idx",idx);
               document.getElementById ("download").click (); // Works
             }), 250);
             spinnerWait (false);
-            userLog ('DOWNLOAD');
+            userLog ("DOWNLOAD");
             resolve (true);
           } else {
             reject ({
@@ -2394,7 +2399,7 @@ console.log("idx",idx);
         $ (ident).addClass ('markTrue');
         $ ("#markShow").addClass ('markTrueShow');
       }
-      $ ('.showCount .numMarked').text ($ (".markTrue").length + ' ');
+      $ ('.showCount .numMarked').text ($ (".markTrue").length + " ");
     },
     //============================================================================================
     logIn () { // ##### User login/confirm/logout button pressed
@@ -3005,10 +3010,10 @@ function hideFunc (picNames, nels, act) { // ===== Execute a hide request
   for (var i=0; i<nels; i++) {
     var picName = picNames [i];
     var sortOrder = $ ("#sortOrder").text ();
-    var k = sortOrder.indexOf (picName + ',');
+    var k = sortOrder.indexOf (picName + ",");
     var part1 = sortOrder.substring (0, picName.length + k + 1);
     var part2 = sortOrder.slice (picName.length + k + 1);
-    k = part2.indexOf (',');
+    k = part2.indexOf (",");
     var hideFlag = ('z' + act).slice (1); // Set 1 or 0 and convert to string
     sortOrder = part1 + hideFlag + part2.slice (k); // Insert the new flag
     $ ("#i" + escapeDots (picName)).css ('background-color', '#222');
@@ -3119,10 +3124,10 @@ function saveOrderFunction (namelist) { // ===== XMLHttpRequest saving the thumb
     xhr.open ('POST', 'saveorder/' + IMDB_DIR); // URL matches server-side routes.js
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {
-        userLog ('SAVE');
+        userLog ("SAVE");
         resolve (true); // Can we forget 'resolve'?
       } else {
-        userLog ('SAVE error');
+        userLog ("SAVE error");
         reject ({
           status: this.status,
           statusText: xhr.statusText
@@ -3838,9 +3843,9 @@ $ ( () => {
     var ednp = escapeDots (namepic);
     var fileName = $ ("#i" + ednp + " img").attr ('title');
     $ ("#i" + ednp + " .img_txt1" ).html (text1);
-    $ ("#i" + ednp + " .img_txt1" ).attr ('title', text1.replace(/<[^>]+>/g, ' '));
+    $ ("#i" + ednp + " .img_txt1" ).attr ('title', text1.replace(/<[^>]+>/g, " "));
     $ ("#i" + ednp + " .img_txt2" ).html (text2);
-    $ ("#i" + ednp + " .img_txt2" ).attr ('title', text2.replace(/<[^>]+>/g, ' '));
+    $ ("#i" + ednp + " .img_txt2" ).attr ('title', text2.replace(/<[^>]+>/g, " "));
     if ($ (".img_show .img_name").text () === namepic) {
       $ ("#wrap_show .img_txt1").html (text1);
       $ ("#wrap_show .img_txt2").html (text2);
