@@ -2,9 +2,9 @@
 To do in priority order (zero is highest)         >: progress
 =========================================         *: completed
 
->0 Bulk inclusion of images without choking congestion    some PROGRESS
+>0 Bulk inclusion of images without choking congestion    substantial PROGRESS
 >0 Bulk Dropzone upload without choking congestion      some PROGRESS
->0 Mastering 'the sync hell' in all situations, including 'excessive clicking'  some PROGRESS
+>0 Mastering 'the sync hell' in all situations, including 'excessive clicking'  good PROGRESS
 
 *1 User 'Album root directory' selection    DONE
  1 Create new album catalogs; delete empty ones (still manually)

@@ -1,10 +1,11 @@
+/* eslint-disable no-console */
 import Component from '@ember/component'
 import EmberObject from '@ember/object';
 import { Promise } from 'rsvp';
 import $ from 'jquery';
 import { later } from '@ember/runloop';
-import Ember from 'ember';
-//import { htmlSafe } from '@ember/template';
+//import Ember from 'ember';
+import { htmlSafe } from '@ember/string';
 import { task } from 'ember-concurrency';
 import contextMenuMixin from 'ember-context-menu';
 export default Component.extend (contextMenuMixin, {
@@ -769,7 +770,7 @@ export default Component.extend (contextMenuMixin, {
         $ ("#picName").text ('');
         $ ("#picOrig").text ('');
       }
-    }), 5); // was 20
+    }), 20); // was 20
   },
 
   // STORAGE FOR THE HTML page population, and other storages
@@ -1032,9 +1033,11 @@ export default Component.extend (contextMenuMixin, {
 
     var triggerClick = (evnt) => {
       var that = this;
+console.log("evnt",evnt);
       var tgt = evnt.target;
       let tgtClass = "";
       if (tgt) {
+console.log("tgt.classList",tgt.classList);
         tgtClass = tgt.classList [0] || "";
       }
       if (-1 < tgtClass.indexOf ("context-menu") || tgtClass === "spinner") {
@@ -1100,6 +1103,7 @@ export default Component.extend (contextMenuMixin, {
     }
     document.addEventListener ("click", triggerClick, false); // Click (at least left click)
     document.addEventListener ("contextmenu", triggerClick, false); // Right click
+    //document.oncontextmenu = (e) => {triggerClick (e); return;}
 
     // Then the keyboard, actions.showNext etc.:
     var that = this;
@@ -1331,8 +1335,8 @@ export default Component.extend (contextMenuMixin, {
               show: result [j + 1],
               mini: result [j + 2],
               name: result [j + 3],
-              txt1: Ember.String.htmlSafe (result [j + 4]),
-              txt2: Ember.String.htmlSafe (result [j + 5]),
+              txt1: htmlSafe (result [j + 4]),
+              txt2: htmlSafe (result [j + 5]),
               symlink: result [j + 6],
             });
             if (f.txt1.toString () === "-") {f.txt1 = "";}

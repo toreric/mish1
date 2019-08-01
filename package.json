@@ -2,6 +2,7 @@
   "name": "mish",
   "version": "0.0.0",
   "description": "Photo galleries",
+  "repository": "https://github.com/toreric/mish",
   "main": "server.js",
   "author": "toeric <tore.ericsson@tores.se>",
   "license": "MIT",

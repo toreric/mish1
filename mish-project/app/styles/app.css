@@ -192,6 +192,10 @@ button.updText {
   font-size: 90%;
   color: #df1837 !important; /* deeppink replaced */
 }
+.ui-widget textarea {
+  font-family: inherit;
+  color: black;
+}
 .ui-widget, .ui-widget button, .ui-widget button * {
   font-family: inherit;
   color: black;
@@ -212,20 +216,23 @@ button.updText {
 .ui-widget button:hover *, .ui-widget button:focus * {
   background: inherit;
 }
-.ui-dialog .ui-dialog-titlebar-close {
-  font-size: 1.2em;
-  line-height: 0;
-  width: 1.3em;
-  height: 1.2em;
-  position: absolute;
-  top: 5px;
-  right: 5px;
+/* override jquery-ui.css */
+button.ui-dialog-titlebar-close {
+  font-size: 1.2em!important;
+  line-height: 0!important;
+  width: 1.3em!important;
+  height: 1.2em!important;
+  position: absolute!important;
+  top: 5px!important;
+  right: 5px!important;
+  margin: 0!important;
+  text-indent: 0!important;
 }
-.ui-dialog .ui-dialog-titlebar-close:hover {
+button.ui-dialog-titlebar-close:hover {
   color: black;
   background: deeppink;
 }
-.ui-dialog .ui-dialog-titlebar-close span {
+button.ui-dialog-titlebar-close span {
   width: 0;
 }
 #notes textarea {

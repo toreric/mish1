@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* global Dropzone*/
 //import Ember from 'ember';
 import Component from '@ember/component'

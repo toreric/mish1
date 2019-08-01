@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 //import Ember from 'ember';
 import Component from '@ember/component';
 import contextMenuMixin from 'ember-context-menu';

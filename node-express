@@ -2,7 +2,7 @@
 
 clear
 
-port=3000
+port=3030
 # Kill the process (if any) already listening to this port
 prid=`lsof -t -i:$port`
 if [ $prid ]; then

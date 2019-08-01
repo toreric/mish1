@@ -10,7 +10,8 @@ module.exports = function(defaults) {
     emberCliDropzonejs: {
       includeDropzoneCss: false
     },
-    minifyJS: {
+    //minifyJS: {
+    'ember-cli-uglify': {
       enabled: false
     },
     minifyCSS: {
@@ -35,6 +36,8 @@ module.exports = function(defaults) {
   // modules that you would like to import into your application
   // please specify an object with the list of modules as keys
   // along with the exports of each module as its value.
+
+  app.import('app/styles/app.css'); // Needed from 2029july, why?
 
   //app.import('bower_components/jquery-ui/jquery-ui.js');
   //app.import('bower_components/jquery-ui/themes/base/all.css');
