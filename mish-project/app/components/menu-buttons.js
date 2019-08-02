@@ -1,4 +1,6 @@
 /* eslint-disable no-console */
+/* eslint ember/avoid-leaking-state-in-ember-objects: "off" */
+// (cannot use ember-context-menu with the 'leaking-state' rule)
 import Component from '@ember/component'
 import EmberObject from '@ember/object';
 import { Promise } from 'rsvp';
@@ -105,8 +107,8 @@ export default Component.extend (contextMenuMixin, {
 
   // CONTEXT MENU Context menu
   /////////////////////////////////////////////////////////////////////////////////////////
-  contextItems: () => {return [
-    { label: '×', disabled: true }, // Spacer
+  contextItems: [
+    { label: "×", disabled: true }, // Spacer
     { label: 'Information',
       disabled: false,
       action () {
@@ -221,7 +223,7 @@ export default Component.extend (contextMenuMixin, {
         }
       }
     },
-    { label: '', disabled: true }, // Spacer
+    { label: "|", disabled: true }, // Spacer
     { label: 'Markera/avmarkera alla',
       disabled: false,
       action () {
@@ -329,7 +331,7 @@ export default Component.extend (contextMenuMixin, {
         }), 50);
       }
     },
-    { label: '', disabled: true }, // Spacer
+    { label: "|", disabled: true }, // Spacer
     { label: 'Ladda ned...',
       disabled: () => {
         return !(["admin", "editall", "edit"].indexOf (loginStatus) > -1 && (allow.imgOriginal || allow.adminAll));
@@ -342,7 +344,7 @@ export default Component.extend (contextMenuMixin, {
         $ ("#downLoad").click (); // Call via DOM since "this" is ...where?
       }
     },
-    //{ label: '', disabled: true }, // Spacer
+    //{ label: ' ', disabled: true }, // Spacer
     { label: 'Länka till...', // i18n
       disabled: () => {
         return !(allow.delcreLink || allow.adminAll);
@@ -719,8 +721,8 @@ export default Component.extend (contextMenuMixin, {
         }
       }
     },
-    { label: '', disabled: true }, // Spacer
-  ]},
+    { label: "×", disabled: true }, // Spacer
+  ],
   //contextSelection: [{ paramDum: false }],  // The context menu "selection" parameter (not used)
   contextSelection: () => {return {}},
   _contextMenu (e) {
@@ -770,7 +772,7 @@ export default Component.extend (contextMenuMixin, {
         $ ("#picName").text ('');
         $ ("#picOrig").text ('');
       }
-    }), 20); // was 20
+    }), 7); // was 20
   },
 
   // STORAGE FOR THE HTML page population, and other storages
@@ -900,7 +902,6 @@ export default Component.extend (contextMenuMixin, {
           $ ("#sortOrder").text (sortnames); // Save in the DOM
         }
         test = 'A2';
-//console.log(sortnames);
         // Use sortOrder (as far as possible) to reorder namedata ERROR
         // First pick out namedata (allNames) against sortnames (SN), then any remaining
         this.requestNames ().then (namedata => {
@@ -910,7 +911,7 @@ export default Component.extend (contextMenuMixin, {
           if ($ ("#sortOrder").text ().trim ().length > 0) {
             SN = $ ("#sortOrder").text ().trim ().split ('\n');
           }
-          console.log("NOTE: SN is the latest saved list of images, not nesseceraly reflecting the actual directory content (must have been saved to do that):",SN);
+          //console.log("NOTE: SN is the latest saved list of images, not nesseceraly reflecting the actual directory content (must have been saved to do that):",SN);
           sortnames = '';
           for (i=0; i<SN.length; i++) {
             var tmp = SN [i].split (",");
@@ -980,8 +981,8 @@ export default Component.extend (contextMenuMixin, {
           test ='E0';
           this.set ("allNames", newdata); // The minipics reload is triggered here (RELOAD)
           $ ('#sortOrder').text (newsort); // Save in the DOM
-          console.log("NOTE: newsort is the true list of images in the actual directory:",newsort.split("\n"));
-          console.log("NOTE: newdata will trigger the thumbnails reload:",this.get ("allNames"));
+          //console.log("NOTE: newsort is the true list of images in the actual directory:",newsort.split("\n"));
+          //console.log("NOTE: newdata will trigger the thumbnails reload:",this.get ("allNames"));
           preloadShowImg = []; // Preload show images:
           var n = newdata.length;
           let nWarn = 100;
@@ -1033,11 +1034,11 @@ export default Component.extend (contextMenuMixin, {
 
     var triggerClick = (evnt) => {
       var that = this;
-console.log("evnt",evnt);
+//console.log("evnt",evnt);
       var tgt = evnt.target;
       let tgtClass = "";
       if (tgt) {
-console.log("tgt.classList",tgt.classList);
+//console.log("tgt.classList",tgt.classList);
         tgtClass = tgt.classList [0] || "";
       }
       if (-1 < tgtClass.indexOf ("context-menu") || tgtClass === "spinner") {

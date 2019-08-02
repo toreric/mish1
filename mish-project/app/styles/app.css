@@ -66,10 +66,10 @@ li.context-menu__item span:hover, li.context-menu--left span:hover {
 li.context-menu__item--disabled, ul.context-menu--left li.context-menu__item--disabled {
   line-height: 140%;
 }
-ul.context-menu li:first-child {
+ul.context-menu li:first-child, ul.context-menu li:last-child {
   text-align: right;
 }
-ul.context-menu li:first-child span {
+ul.context-menu li:first-child span, ul.context-menu li:last-child span {
   font-size: 125%;
   font-weight: bold;
   color: deeppink;
