@@ -223,7 +223,7 @@ export default Component.extend (contextMenuMixin, {
         }
       }
     },
-    { label: "|", disabled: true }, // Spacer
+    { label: "⋅", disabled: true }, // Spacer
     { label: 'Markera/avmarkera alla',
       disabled: false,
       action () {
@@ -331,7 +331,7 @@ export default Component.extend (contextMenuMixin, {
         }), 50);
       }
     },
-    { label: "|", disabled: true }, // Spacer
+    { label: "⋅", disabled: true }, // Spacer
     { label: 'Ladda ned...',
       disabled: () => {
         return !(["admin", "editall", "edit"].indexOf (loginStatus) > -1 && (allow.imgOriginal || allow.adminAll));
@@ -3534,7 +3534,6 @@ function ediTextSelWidth () { // Selects a useful edit dialog width within avail
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Prepare dialogs
 var prepDialog = () => {
-  later ( ( () => {
     $ ("#helpText").dialog ({autoOpen: false, resizable: true, title: "Användarhandledning"}); // Initiate a dialog...
     $ (".ui-dialog .ui-dialog-titlebar-close").text ("×");
     //later ( ( () => {
@@ -3548,7 +3547,6 @@ var prepDialog = () => {
     $ ("body").on ("click", ".ui-widget-overlay", function () {
       $ ("#dialog").dialog ( "close" );
     });
-  }), 7);
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Prepare the dialog for text search

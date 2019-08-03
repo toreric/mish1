@@ -6,12 +6,15 @@
     "toeric <tore.ericsson@tores.se>"
   ],
   "license": "MIT",
-  "homepage": "",
+  "homepage": "https://github.com/toreric/mish",
   "ignore": [
     "**/.*",
     "node_modules",
     "bower_components",
     "test",
     "tests"
-  ]
+  ],
+  "dependencies": {
+    "jquery-ui": "^1.12.1"
+  }
 }

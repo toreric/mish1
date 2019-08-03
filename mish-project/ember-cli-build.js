@@ -39,7 +39,10 @@ module.exports = function(defaults) {
 
   app.import('app/styles/app.css'); // Needed from 2029july, why?
 
-  //app.import('bower_components/jquery-ui/jquery-ui.js');
+  app.import('bower_components/jquery-ui/jquery-ui.js');
+  //app.import('bower_components/jquery-ui/ui/core.js');
+  //app.import('bower_components/jquery-ui/ui/widget.js');
+  //app.import('bower_components/jquery-ui/ui/widgets/dialog.js');
   //app.import('bower_components/jquery-ui/themes/base/all.css');
   //app.import('bower_components/jquery-ui/themes/smoothness/jquery-ui.css');
   //app.import('bower_components/jquery-ui/themes/smoothness/theme.css');
