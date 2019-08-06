@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
 clear
-
-port=3030
+port=3000
 # Kill the process (if any) already listening to this port
 prid=`lsof -t -i:$port`
 if [ $prid ]; then
@@ -11,7 +10,6 @@ if [ $prid ]; then
 fi
 
 # Make the script usable from any directory
-# (not only within this project directory)
 cd /home/tore/Arbeten/mish
 
 #IMDB_HOME=/mnt/sda2
@@ -21,13 +19,13 @@ IMDB_HOME=/home/tore
 IMDB_ROOT='""'
 IMDB_ROOT=Framkallning_2019
 if [[ $1 ]]; then
-  IMDB_ROOT=$1
+  IMDB_HOME=$1
   if [[ $2 ]]; then
-    IMDB_HOME=$2
+    IMDB_ROOT=$2
   fi
 fi
 echo IMDB_HOME = $IMDB_HOME
 echo IMDB_ROOT = $IMDB_ROOT
 echo -n "##### Starting the Node server "`date`
-# Note that Node may be installed as either 'node', 'nodejs', or often both:)
+# Note that Node may be installed as either 'node', 'nodejs', or often both:
 node server.js $IMDB_HOME $IMDB_ROOT $port

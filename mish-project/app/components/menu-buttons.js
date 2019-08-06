@@ -2283,7 +2283,7 @@ console.log("idx",idx);
         ui.css ("height", "auto");
         uy.css ("max-height", hs + "px");
         ui.css ("max-height", hs - up + "px");
-        uy.css ("top", hs - uy.height ())
+        uy.css ("top", hs - uy.height () - 13 + "px")
       }
       $ (".jstreeAlbumSelect").hide ();
       markBorders (namepic);

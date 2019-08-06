@@ -4,7 +4,7 @@
   "description": "Photo galleries",
   "repository": "https://github.com/toreric/mish",
   "main": "server.js",
-  "author": "toeric <tore.ericsson@tores.se>",
+  "author": "toreric <tore.ericsson@tores.se>",
   "license": "MIT",
   "dependencies": {
     "@ronomon/utimes": "^2.3.1",
