@@ -1385,17 +1385,15 @@ export default Component.extend (contextMenuMixin, {
       subName = subName.replace (/&nbsp;/g, "_"); // Restore correct album name!
       let names = $ ("#imdbDirs").text ().split ("\n");
       let name = $ ("#imdbDir").text ().slice (4); // Remove 'imdb'
-      //let name = this.get ("imdbDir").slice (4);
 //console.log("name",name,name.length);
-      //let names = this.get ("imdbDirs");
       let here, idx;
-      if (subName === "|«") {
+      if (subName === "|«") { // top in tree
         idx = 0;
-      } else if (subName === "«") {
+      } else if (subName === "«") { // up in tree
         name = name.replace (/((\/[^/])*)(\/[^/]*$)/, "$1");
         idx = names.indexOf (name);
 //console.log("A",idx,name,names);
-      } else if (subName === "‹›") {
+      } else if (subName === "‹›") { // most recent
         idx = savedAlbumIndex;
       } else {
         here = names.indexOf (name);
@@ -1414,16 +1412,11 @@ export default Component.extend (contextMenuMixin, {
         $ (".jstreeAlbumSelect").hide ();
         return;
       } else {
-        //$ (".jstreeAlbumSelect").show ();
-        //$ (".ember-view.jstree").jstree ("load_all");
-        //$ (".ember-view.jstree").jstree ("close_all");
-        //$ (".ember-view.jstree").jstree ("close_node", $ ("#j1_" + (1 + idx)));
-        //$ (".ember-view.jstree").jstree ("_open_to", $ ("#j1_" + (1 + idx)));
-        $ (".ember-view.jstree").jstree ("open_all");
-        $ (".ember-view.jstree").jstree ("deselect_all");
+        $ (".ember-view.jstree").jstree ("_open_to", "#j1_" + (1 + idx));
+        $ (".ember-view.jstree").jstree ("deselect_all"); ///
+        $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_" + (1 + idx)));
         later ( ( () => {
-          $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_" + (1 + idx)));
-        }), 100);
+        }), 200);
       }
     },
     //============================================================================================

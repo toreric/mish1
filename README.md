@@ -1,6 +1,6 @@
 # Mish
 
-One-page gallery app run in a standard web browser, locally installed or on a web server (example: <http://mish.hopto.org/>, Swedish)
+One-page gallery app (not to be mixed up with the Mish Mash gallery in Nottingham) run in a standard web browser, locally installed or on a web server (example: <http://mish.hopto.org/>, Swedish)
 
 The main project is the 'mish-project' containing the application core. It may be run primitively only with the Ember development server but is wrapped within the 'mish' project and locally run by an Express Node JS server. Currently it is run on the web by an Apache server.
 
