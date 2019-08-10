@@ -93,6 +93,7 @@ export default Component.extend (contextMenuMixin, {
           //$ (".ember-view.jstree").jstree ("open_all");
           $ (".ember-view.jstree").jstree ("_open_to", "#j1_" + tempStore);
           $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_" + tempStore));
+          $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
           tempStore = "";
         }), 400);
       } else {
@@ -1070,10 +1071,12 @@ export default Component.extend (contextMenuMixin, {
                 return;
               }
 //console.log ("Album:", albumDir, idx);
+              $ (".ember-view.jstree").jstree ("close_all");
+              $ (".ember-view.jstree").jstree ("_open_to", "#j1_" + (1 + idx));
               $ (".ember-view.jstree").jstree ("deselect_all");
-              $ (".ember-view.jstree").jstree ("open_all");
               $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_" + (1 + idx)));
-              $ (".jstreeAlbumSelect").show ();
+              $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
+              //$ (".jstreeAlbumSelect").show ();
               let namepic = file.replace (/^(.*\/)*(.+)\.[^.]*$/, "$2");
               later ( ( () => {
                 gotoMinipic (namepic);
@@ -1412,11 +1415,11 @@ export default Component.extend (contextMenuMixin, {
         $ (".jstreeAlbumSelect").hide ();
         return;
       } else {
+        $ (".ember-view.jstree").jstree ("close_all");
         $ (".ember-view.jstree").jstree ("_open_to", "#j1_" + (1 + idx));
-        $ (".ember-view.jstree").jstree ("deselect_all"); ///
+        $ (".ember-view.jstree").jstree ("deselect_all");
         $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_" + (1 + idx)));
-        later ( ( () => {
-        }), 200);
+        $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
       }
     },
     //============================================================================================
@@ -1541,7 +1544,7 @@ export default Component.extend (contextMenuMixin, {
       }
     },
     //============================================================================================
-    selectRoot (that, value) { // ##### Select initial album root dir (imdb) from dropdown
+    selectRoot (that, value) { // ##### Select album root dir (imdb) from dropdown
 
 // NOTE: Is always value = "" !!!???
       //let that = this;
@@ -1555,19 +1558,20 @@ export default Component.extend (contextMenuMixin, {
       if (value === "") {
         $ ("div.settings div.check").hide ();
       }
-      $ (".ember-view.jstree").jstree ("load_all");
       later ( ( () => {
         //that.set ("imdbDir", "");
         $ ("#imdbDir").text ("");
         albumWait = true;
         $ ("#requestDirs").click (); // perform ...
         later ( ( () => {
+          $ (".ember-view.jstree").jstree ("load_all");
           $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
           $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_1"));
           var imdbroot = $ ("#imdbRoot").text ();
-          if (imdbroot !== "" && initFlag) {
+          //if (imdbroot !== "" && initFlag) {
+          if (imdbroot !== "") {
             userLog ("#START " + imdbroot);
-            initFlag = false;
+            //initFlag = false;
             $ ("#toggleTree").click ();
             // Clear out the search result album
             let lpath = "imdb/" + $ ("#picFound").text ();
@@ -2496,13 +2500,12 @@ console.log("idx",idx);
               }
               $ (".cred.name").attr ("title","användarnamn [användarkategori]"); // i18n
               $ ("#toggleTree").click ();
-                $ (".ember-view.jstree").jstree ("open_all");
-                $ (".ember-view.jstree").jstree ("deselect_all");
-                $ (".ember-view.jstree").jstree ("_open_to", $ ("#j1_1"));
-                $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
-                later ( ( () => {
-                  $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_1"));
-                }), 1800);
+              $ (".ember-view.jstree").jstree ("close_all");
+              $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
+              $ (".ember-view.jstree").jstree ("deselect_all");
+              later ( ( () => {
+                $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_1"));
+              }), 1800);
             }), 800);
           }
           $ ("#title input.cred.password").val ("");
@@ -2629,7 +2632,7 @@ console.log("idx",idx);
 });
 // G L O B A L S, that is, 'outside' (global) variables and functions (globals)
 /////////////////////////////////////////////////////////////////////////////////////////
-let initFlag = true;
+//let initFlag = true;
 let albumWait = false;
 let logAdv = "Logga in för att se inställningar, anonymt utan namn eller lösenord, eller med namnet 'gäst' utan lösenord för att också få vissa redigeringsrättigheter"; // i18n
 let nosObs = "Skriv gärna på prov, men du saknar tillåtelse att spara text"; // i18n
@@ -3689,11 +3692,14 @@ let prepSearchDialog = () => {
 function selectPicFound () {
   $ ("div[aria-describedby='searcharea']").hide ();
   let index = 1 + $ ("#imdbDirs").text ().split ("\n").indexOf ("/" + $ ("#picFound").text ());
-  //console.log($ ("#picFound").text (), index);
-  $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
+  $ (".ember-view.jstree").jstree ("close_all");
+  $ (".ember-view.jstree").jstree ("_open_to", "#j1_" + index);
+console.log($ ("#picFound").text (), index);
   $ (".ember-view.jstree").jstree ("deselect_all");
   $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_" + index));
-  $ (".jstreeAlbumSelect").show ();
+  $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
+
+  //$ (".jstreeAlbumSelect").show ();
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Search image text in the current imdbRoot
