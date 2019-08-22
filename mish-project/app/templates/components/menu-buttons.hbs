@@ -18,7 +18,7 @@
   <div class="settings" draggable="false" ondragstart="return false" style="display:none">
     <div class="root">
       <p style="margin:0 2em -0.5em 0"> Välj albumplats </p><br>
-      <select id="rootSel" title="Albumkatalog" onchange={{action 'toggleAlbumTree' value='target.value'}}>
+      <select id="rootSel" title="Albumkatalog" onchange={{action 'selectRoot' value='target.value'}}>
         {{#each imdbRoots as |rootChoice|}}
           <option onclick="this.parentElement.blur()" value={{rootChoice}} selected={{eq imdbRoot rootChoice}}>{{rootChoice}}</option><!-- imdbRoot (== #imdbRoot) is set as chosen -->
         {{/each}}
@@ -89,8 +89,8 @@
     <!-- ///// RIGHT A-LINK BUTTONS (NOTE: without href attributes) /////  -->
     <div class="nav_links" draggable="false" ondragstart="return false">
       <!-- NEXT-ARROW-BUTTONS -->
-      <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' true }} title="Nästa bild">&rarr;</a> &nbsp;<br>
-      <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' false}} title="Föregående bild">&larr;</a> &nbsp;<br>
+      <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' true }} title="Nästa bild">&#11166;</a> &nbsp;<br>
+      <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' false}} title="Föregående bild">&#11164;</a> &nbsp;<br>
       <!-- AUTO-SLIDE-SHOW SELECT -->
       <a class="nav_ toggleAuto" draggable="false" ondragstart="return false" {{action 'toggleAuto'}} style="font-size:1.2em;font-family:monospace" title="Automatiskt bildbyte">AUTO</a><br>
       <!-- AUTO-SLIDE-SHOW SPEED SELECT -->
@@ -102,7 +102,7 @@
       <!-- HELP -->
       <a class="nav_ qnav_" draggable="false" {{action 'toggleNav'}}>?</a> &nbsp;<br>
       <!-- FULL SIZE -->
-      <a class="nav_ " id="full_size" draggable="false" {{action 'fullSize'}} title="Full storlek">&harr;</a> &nbsp;
+      <a class="nav_ " id="full_size" draggable="false" {{action 'fullSize'}} title="Full storlek">&#65291;</a> &nbsp;
     </div>
 
     <div id="wrap_show" draggable="false"><!-- IMAGE AND TEXT CONTAINER -->
@@ -149,7 +149,7 @@
   <a class="nav_" draggable="false" ondragstart="return false" title="Gå upp, visa login" style="position:fixed;left:-2px;bottom:0;margin:0;text-align:center:" {{action 'goTop'}}>&uarr;</a>
 </div>
 
-<img src="/images/snurra.gif" class="spinner" draggable="false" ondragstart="return false" {{action 'hideSpinner'}} style="display:none">
+<img src="/images/snurra.svg" width="75%" class="spinner" draggable="false" ondragstart="return false" {{action 'hideSpinner'}} style="display:none">
 
 <!-- ///// HELP TEXT ///// -->
 <div id="helpText" class="helpText">

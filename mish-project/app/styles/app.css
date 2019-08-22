@@ -374,8 +374,8 @@ select option {
   position: fixed;
   right: 3em;
   top: 1em;
-  height: 8em;
-  width: 8em;
+  height: 6em;
+  width: 6em;
   border-radius: 50%;
   background-color: transparent;
   z-index: 1500;
@@ -759,23 +759,26 @@ div.img_mini.symlink div.markTrue, div.img_mini.symlink div.markFalse {
   display: inline-block;
   background-color: #333;
   border-radius: 6px;
-  padding: 0.3em 0.3em 0.5em 0.5em;
+  padding: 0.2em 0.5em 0 0.5em;
   margin: 0 0 1em 0;
 }
 .nav_links .qnav_ {
-  padding: 0.35em 0.6em 0.35em 0.6em;
+  padding: 0.4em 0.7em 0.3em 0.7em;
 }
 .nav_links a {
   font-size: 130%;
   font-weight: bold;
   color: deeppink;
-  padding: 0 0.25em 0 0.25em;
   cursor: pointer;
+}
+.nav_links .nav_.toggleAuto {
+  padding: 0.4em 0.2em 0.3em 0.2em;
 }
 .nav_links span#showSpeed {
   font-size: 130%;
   color: deeppink;
   padding: 0;
+  margin: 0 0.05em 1em 0;
 }
 .nav_links span a.speedBase {
   display: inline-block;
@@ -792,6 +795,9 @@ div.img_mini.symlink div.markTrue, div.img_mini.symlink div.markFalse {
 .nav_links span a.speedBase:hover {
   color: deepskyblue;
   text-decoration: none;
+}
+.nav_links #full_size {
+  padding: 0.2em 0.5em 0.2em 0.5em;
 }
 input.showTime[type="number"] {
   width: 1.3em;

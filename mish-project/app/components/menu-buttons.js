@@ -907,7 +907,7 @@ export default Component.extend (contextMenuMixin, {
         // First pick out namedata (allNames) against sortnames (SN), then any remaining
         this.requestNames ().then (namedata => {
           var i = 0, k = 0;
-          // --- START prepare sortnames checking CSV columns
+          // --- Start prepare sortnames checking CSV columns
           var SN = [];
           if ($ ("#sortOrder").text ().trim ().length > 0) {
             SN = $ ("#sortOrder").text ().trim ().split ('\n');
@@ -1214,7 +1214,7 @@ export default Component.extend (contextMenuMixin, {
     if (yes) {
       ediTextClosed ();
       $ ("#showSpeed").show ();
-      userLog ('START show');
+      userLog ('BEGIN show');
       //$ ("#showSpeed input").focus (); Fatal for phones!
       var that = this;
       (function sequence () {
@@ -1544,10 +1544,9 @@ export default Component.extend (contextMenuMixin, {
       }
     },
     //============================================================================================
-    selectRoot (that, value) { // ##### Select album root dir (imdb) from dropdown
+    selectRoot (value) { // ##### Select album root dir (imdb) from dropdown
 
-// NOTE: Is always value = "" !!!???
-      //let that = this;
+      spinnerWait (true);
       $ ("#toggleTree").attr ("title", "Välj album");
       // Close all dialogs/windows
       ediTextClosed ();
@@ -1555,31 +1554,31 @@ export default Component.extend (contextMenuMixin, {
       $ (".img_show").hide ();
       document.getElementById ("imageList").className = "hide-all";
       document.getElementById ("divDropbox").className = "hide-all";
+
       if (value === "") {
         $ ("div.settings div.check").hide ();
+      } else {
+        $ ("#imdbRoot").text (value);
+        this.set ("imdbRoot", value);
+        this.set ("albumData", []); // Triggers jstree rebuild with aData (
+        $ ("#imdbDir").text ("imdb");
       }
+
+      $ ("#requestDirs").click (); // perform ...
       later ( ( () => {
-        //that.set ("imdbDir", "");
-        $ ("#imdbDir").text ("");
-        albumWait = true;
-        $ ("#requestDirs").click (); // perform ...
-        later ( ( () => {
-          $ (".ember-view.jstree").jstree ("load_all");
-          $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
-          $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_1"));
-          var imdbroot = $ ("#imdbRoot").text ();
-          //if (imdbroot !== "" && initFlag) {
-          if (imdbroot !== "") {
-            userLog ("#START " + imdbroot);
-            //initFlag = false;
-            $ ("#toggleTree").click ();
-            // Clear out the search result album
-            let lpath = "imdb/" + $ ("#picFound").text ();
-            // The following commands must come in sequence (the picFound album is regenerated)
-            execute ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb").then ();
-          }
-        }), 222);
-      }), 222);
+        var imdbroot = $ ("#imdbRoot").text ();
+        $ (".ember-view.jstree").jstree ("deselect_all");
+        $ (".ember-view.jstree").jstree ("close_all");
+        $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
+        $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_1"));
+        userLog ("START " + imdbroot);
+        //initFlag = false;
+        $ ("#toggleTree").click ();
+        // The picFound album is regenerated
+        // The following commands must come in sequence
+        let lpath = "imdb/" + $ ("#picFound").text ();
+        execute ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb").then ();
+      }), 2000);
     },
     //============================================================================================
     selectAlbum () {
@@ -1694,7 +1693,6 @@ export default Component.extend (contextMenuMixin, {
 
       if ($ ("#imdbRoot").text () !== imdbroot) {
         this.actions.imageList (false); // Hide since source will change
-        userLog ("START " + imdbroot);
         $ ("#imdbRoot").text (imdbroot);
         this.set ("imdbRoot", imdbroot);
         this.set ("albumData", []);
@@ -1706,14 +1704,9 @@ export default Component.extend (contextMenuMixin, {
       //var that = this;
       $ ("div.settings, div.settings div.root, div.settings div.check").hide ();
       if (!$ (".jstreeAlbumSelect").is (":visible")) {
-        // Cannot be shown without imdbRoot set
-        if (!imdbroot || imdbroot === "") {
-          this.actions.selectRoot (this, "");
-          return;
-        }
         $ (".jstreeAlbumSelect").show ();
         $ ("#requestDirs").click ();
-        // Then wait for requestDirs:
+        /*// Then wait for requestDirs:
         let albumDir = "", albumDirs = [""], idx = 0;
         later ( ( () => {
           albumDir = $ ("#imdbDir").text ().replace (/^[^/]+/, "");
@@ -1724,15 +1717,17 @@ export default Component.extend (contextMenuMixin, {
 //console.log("albumDirs",albumDirs);
           idx = albumDirs.indexOf (albumDir);
 //console.log("idx",idx);
-          //$ (".ember-view.jstree").jstree ("deselect_all");
-          $ (".ember-view.jstree").jstree ("load_all");
+          //$ (".ember-view.jstree").jstree ("load_all");
           //$ (".ember-view.jstree").jstree ("close_all");
-          $ (".ember-view.jstree").jstree ("_open_to", $ ("#j1_" + (1 + idx)));
           //$ (".ember-view.jstree").jstree ("open_node", $ ("#j1_" + (1 + idx)));
-          if (idx === 0) {
-            $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
+          $ (".ember-view.jstree").jstree ("deselect_all");
+          $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
+          if (idx < 0) {idx = 0;}
+          if (idx > 0) {
+            $ (".ember-view.jstree").jstree ("_open_to", "#j1_" + (1 + idx));
           }
-        }), 777);
+          //$ (".ember-view.jstree").jstree ("select_node", $ ("#j1_" + (1 + idx)));
+        }), 777);*/
         /*if (albumDir === "") {
           //$ (".ember-view.jstree").jstree ("open_all");
           later ( ( () => {
@@ -2406,6 +2401,7 @@ console.log("idx",idx);
     //============================================================================================
     logIn () { // ##### User login/confirm/logout button pressed
 
+      albumWait = true;
       //$ ("div[aria-describedby='textareas']").css ("display", "none");
       $ ("#dialog").dialog ('close');
       $ ("#searcharea").dialog ('close');
@@ -2427,6 +2423,8 @@ console.log("idx",idx);
         return;
       }
       if (btnTxt === " Logga ut ") { // Log out
+        this.actions.imageList (false);
+        spinnerWait (true);
         $ ("#hideFlag").text ("1");// Two lines from 'toggleHideFlagged'
         that.actions.hideFlagged (true).then (null); // Hide flagged pics if shown
         $ ("#title button.cred").text (" Logga in ");
@@ -2449,23 +2447,31 @@ console.log("idx",idx);
           execute ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb").then ();
         }
         // Assure that the album tree is properly shown after LOGOUT
-        $ (".ember-view.jstree").jstree ("close_all");
+        //that.set ("allNames", []);
+        //$ (".js-draggableObject").remove ();
         that.set ("albumData", []);
         $ ("#requestDirs").click ();
+        spinnerWait (true);
         setTimeout(function () { // NOTE: Normally, later replaces setTimeout
+          $ (".ember-view.jstree").jstree ("deselect_all");
+          $ (".ember-view.jstree").jstree ("close_all");
+          $ (".ember-view.jstree").jstree ("open_node", "#j1_1");
           later ( ( () => {
-            $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
-          }), 400);
-        }, 200);                 // NOTE: Preserved here just as an example
-
+            $ (".ember-view.jstree").jstree ("select_node", "#j1_1");
+          }), 2000);
+        }, 3000);                 // NOTE: Preserved here just as an example
+        albumWait = false;
         return;
       }
       if (btnTxt === " Bekräfta ") { // Confirm
+        spinnerWait (true);
+        this.actions.imageList (false);
         var usr = $ ("#title input.cred.user").val ();
         var pwd = $ ("#title input.cred.password").val ().trim (); // Important
         $ ("#title input.cred").hide ();
         loginError ().then (isLoginError => {
           if (isLoginError) {
+            spinnerWait (false);
             $ ("#title button.cred").text (" Logga in ");
             $ ("#title button.cred").attr ("title", logAdv);
             this.set ("loggedIn", false);
@@ -2475,6 +2481,7 @@ console.log("idx",idx);
             zeroSet (); // #allowValue = '000... etc.
             that.actions.setAllow ();
           } else {
+            spinnerWait (true);
             $ ("#title button.cred").text (" Logga ut ");
             $ ("#title button.cred").attr ("title", "Du är inloggad!");
             $ ("#title button.viewSettings").attr ("title", "Se inställningar - klicka här!");
@@ -2491,25 +2498,30 @@ console.log("idx",idx);
               // The following commands must come in sequence (the picFound album is regenerated)
               execute ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb").then ();
             }
+            userLog ("START " + $ ("#imdbRoot").text ());
+            // Hide album root selector if unqualified
+            if (allow.albumEdit || allow.adminAll) {
+              $ ("div.settings, div.settings div.root").show ();
+            } else {
+              $ ("div.settings, div.settings div.root").hide ();
+            }
+            $ (".cred.name").attr ("title","användarnamn [användarkategori]"); // i18n
+            //$ ("#toggleTree").click (); //??
+            that.set ("albumData", []);
+            $ ("#requestDirs").click ();
+            spinnerWait (true);
             later ( ( () => {
-              // Hide album root selector if unqualified
-              if (allow.albumEdit || allow.adminAll) {
-                $ ("div.settings, div.settings div.root").show ();
-              } else {
-                $ ("div.settings, div.settings div.root").hide ();
-              }
-              $ (".cred.name").attr ("title","användarnamn [användarkategori]"); // i18n
-              $ ("#toggleTree").click ();
-              $ (".ember-view.jstree").jstree ("close_all");
-              $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
               $ (".ember-view.jstree").jstree ("deselect_all");
+              $ (".ember-view.jstree").jstree ("close_all");
+              $ (".ember-view.jstree").jstree ("open_node", "#j1_1");
               later ( ( () => {
-                $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_1"));
-              }), 1800);
-            }), 800);
+                $ (".ember-view.jstree").jstree ("select_node", "#j1_1");
+              }), 2000);
+            }), 3000);
           }
           $ ("#title input.cred.password").val ("");
         });
+        albumWait = false;
       }
 
       // When password doesn't match user, return true; else set 'allowvalue' and return 'false'
@@ -2532,15 +2544,19 @@ console.log("idx",idx);
               $ ("#title span.cred.name").text (usr +" ["+ status +"]");
 
               // Assure that the album tree is properly shown after LOGIN
-              $ (".ember-view.jstree").jstree ("close_all");
               that.set ("albumData", []);
               $ ("#requestDirs").click ();
+              spinnerWait (true);
               setTimeout(function () { // NOTE: Normally, later replaces setTimeout
+                $ (".ember-view.jstree").jstree ("deselect_all");
+                $ (".ember-view.jstree").jstree ("close_all");
                 later ( ( () => {
                   $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
-                }), 200);
+                  $ (".ember-view.jstree").jstree ("deselect_all");
+                  $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_1"));
+                }), 6000);
                 resolve (false);
-              }, 200);                 // NOTE: Preserved here just as an example
+              }, 2000);                 // NOTE: Preserved here just as an example
 
               // Hide upload button if just viewer or guest:
               if (status === "viewer" || status === "guest") {
@@ -2584,7 +2600,7 @@ console.log("idx",idx);
         $ ("div.settings, div.settings div.root, div.settings div.check").hide ();
         return;
       }
-      let that =this;
+      //let that =this;
       //document.getElementById ("imageList").className = "hide-all";
       $ ("#dialog").dialog ('close');
       $ ("#searcharea").dialog ('close');
@@ -2597,10 +2613,12 @@ console.log("idx",idx);
       } else {
         $ ("div.settings div.root").show (); //important!
         $ (".jstreeAlbumSelect").hide ();
+//kan slopas?
         if ($ ("#imdbRoot").text () === "") {
-          this.actions.selectRoot (that, "");
+          this.actions.selectRoot ("");
           return;
         }
+//
       }
       this.actions.setAllow (); // Resets unconfirmed changes
       document.querySelector ('div.settings button.confirm').disabled = true;
@@ -2741,6 +2759,7 @@ function spinnerWait (runWait) {
     $ (".jstreeAlbumSelect").hide ();
     document.getElementById ("divDropbox").className = "hide-all";
   } else { // End waiting
+    if (albumWait) {return;}
     $ (".spinner").hide ();
     later ( ( () => {
       document.getElementById("reLd").disabled = false;
@@ -3191,12 +3210,13 @@ function reqRoot () { // Propose root directory (requestDirs)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function reqDirs (imdbroot) { // Read the dirs in imdb (requestDirs)
   if (imdbroot === undefined) {return;}
+  spinnerWait (true);
   return new Promise ( (resolve, reject) => {
     var xhr = new XMLHttpRequest ();
     spinnerWait (true); // Mostly superfluous
     xhr.open ('GET', 'imdbdirs/' + imdbroot, true, null, null);
     xhr.onload = function () {
-      spinnerWait (false);
+      //spinnerWait (false);
       if (this.status >= 200 && this.status < 300) {
         var dirList = xhr.responseText;
         dirList = dirList.split ("\n");
@@ -3694,7 +3714,7 @@ function selectPicFound () {
   let index = 1 + $ ("#imdbDirs").text ().split ("\n").indexOf ("/" + $ ("#picFound").text ());
   $ (".ember-view.jstree").jstree ("close_all");
   $ (".ember-view.jstree").jstree ("_open_to", "#j1_" + index);
-console.log($ ("#picFound").text (), index);
+  console.log($ ("#picFound").text () + " (index = " + index + ")");
   $ (".ember-view.jstree").jstree ("deselect_all");
   $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_" + index));
   $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
@@ -3726,7 +3746,6 @@ function searchText (searchString, and, searchWhere) {
 //console.log(str)
   if (!$ ("#imdbDir").text ()) {
     $ ("#imdbDir").text ("imdb/" + $ ("#picFound").text ());
-///******
   }
   let srchData = new FormData();
   srchData.append ("like", str);
