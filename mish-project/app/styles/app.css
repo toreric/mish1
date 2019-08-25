@@ -5,9 +5,8 @@
   color: white;
   /*box-sizing: border-box;*/
 }
-body {
-  width: 98%;
-  height: 95%;
+body, html {
+ width: 99%!important;
 }
 .lastRow, .copyright {
   font: 0.9em monospace;
@@ -430,7 +429,7 @@ div[aria-describedby='textareas'] {
   left: 5px;
   width: 20px;
   background: transparent;
-  z-index: 12;
+  z-index: 8;
 }
 #smallButtons a {
   display: inline-block;
@@ -539,6 +538,10 @@ button[disabled] {
 }
 .showCount, .imDir, .numShown, .numHidden, .numMarked {
   background-color: #222;
+}
+.img_show .imDir .albumName {
+  padding-right: 50px;
+  background: #000;
 }
 .imDir strong {
   background: transparent;
@@ -723,6 +726,7 @@ div.img_mini.symlink div.markTrue, div.img_mini.symlink div.markFalse {
 }
 .search_link {
   position: fixed;
+  background: transparent;
   top: 0;
   right: 0;
   margin: 0;
@@ -741,9 +745,10 @@ div.img_mini.symlink div.markTrue, div.img_mini.symlink div.markFalse {
   position: relative;
   text-align: center;
   background-color: black;
-  margin: auto 0 auto 0;
-  padding-top: 4em;     /* click-back area above .img_mini */
+  margin: 1em -4px auto -4px;
+  padding-top: 3em;     /* click-back area above .img_show */
   padding-bottom: 20em; /* and below .img_txt2             */
+  z-index: 10;
 }
 .nav_links {
   display: none;
@@ -909,7 +914,7 @@ div.settings span {
   display: inline-table;
   width: 20%;
   background: #888;
-  margin: 0 1.75em;
+  margin: 0 50px 0 -4px;
 }
 #wrap_show.symlink {
   border-bottom: 1.5px solid #0b0;

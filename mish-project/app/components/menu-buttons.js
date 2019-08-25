@@ -12,7 +12,7 @@ import { task } from 'ember-concurrency';
 import contextMenuMixin from 'ember-context-menu';
 export default Component.extend (contextMenuMixin, {
 
-  // PERFORM TASKS, reachable from the HTML template page
+  // TEMPLATE PERFORM tasks, reachable from the HTML template page
   /////////////////////////////////////////////////////////////////////////////////////////
 
   rstBrdrs: task (function* () {
@@ -87,13 +87,13 @@ export default Component.extend (contextMenuMixin, {
       }
       albDat = albDat.replace (/€/g, '"');
       this.set ("albumData", eval (albDat));
-      if (tempStore) {
+      if (tempStore) { // This is not in use (?) ... too sophisticated ...
         //alert ('75 tempStore true');
+        $ (".ember-view.jstree").jstree ("close_all");
+        $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
+        $ (".ember-view.jstree").jstree ("_open_to", "#j1_" + tempStore);
         later ( ( () => {
-          //$ (".ember-view.jstree").jstree ("open_all");
-          $ (".ember-view.jstree").jstree ("_open_to", "#j1_" + tempStore);
           $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_" + tempStore));
-          $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
           tempStore = "";
         }), 400);
       } else {
@@ -1295,7 +1295,7 @@ export default Component.extend (contextMenuMixin, {
   //----------------------------------------------------------------------------------------------
   requestNames () { // ===== Request the file information list
     // NEPF = number of entries (lines) per file in the plain text-line-result list ('namedata')
-    // from the server. The main information ('namedata') is retreived from each image file, e.g.
+    // from the server. The main information is retreived from each image file, e.g.
     // metadata. It is reordered into 'newdata' in 'sortnames' order, as far as possible;
     // 'sortnames' is cleaned from non-existent (removed) files and extended with new (added)
     // files, in order as is. So far, the sort order is 'sortnames' with hideFlag (and albumIndex?)
@@ -1379,7 +1379,7 @@ export default Component.extend (contextMenuMixin, {
     });
   },
   //----------------------------------------------------------------------------------------------
-  // TEMPLATE ACTIONS, that is, functions reachable from the HTML page
+  // TEMPLATE ACTIONS, functions reachable from the HTML page
   /////////////////////////////////////////////////////////////////////////////////////////
   actions: {
     //============================================================================================
@@ -1706,56 +1706,6 @@ export default Component.extend (contextMenuMixin, {
       if (!$ (".jstreeAlbumSelect").is (":visible")) {
         $ (".jstreeAlbumSelect").show ();
         $ ("#requestDirs").click ();
-        /*// Then wait for requestDirs:
-        let albumDir = "", albumDirs = [""], idx = 0;
-        later ( ( () => {
-          albumDir = $ ("#imdbDir").text ().replace (/^[^/]+/, "");
-//console.log("albumDir",albumDir);
-          //albumDirs = $ ("#imdbDirs").text ().split ("\n");
-//console.log("albumDirs",albumDirs);
-          albumDirs = this.get ("imdbDirs");
-//console.log("albumDirs",albumDirs);
-          idx = albumDirs.indexOf (albumDir);
-//console.log("idx",idx);
-          //$ (".ember-view.jstree").jstree ("load_all");
-          //$ (".ember-view.jstree").jstree ("close_all");
-          //$ (".ember-view.jstree").jstree ("open_node", $ ("#j1_" + (1 + idx)));
-          $ (".ember-view.jstree").jstree ("deselect_all");
-          $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
-          if (idx < 0) {idx = 0;}
-          if (idx > 0) {
-            $ (".ember-view.jstree").jstree ("_open_to", "#j1_" + (1 + idx));
-          }
-          //$ (".ember-view.jstree").jstree ("select_node", $ ("#j1_" + (1 + idx)));
-        }), 777);*/
-        /*if (albumDir === "") {
-          //$ (".ember-view.jstree").jstree ("open_all");
-          later ( ( () => {
-            $ (".ember-view.jstree").jstree ("open_all");
-            $ (".ember-view.jstree").jstree ("deselect_all");
-//$ (".ember-view.jstree").jstree ("select_node", $ ("#j1_1"));
-            $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
-          }), 200);
-        }*/
-        // no of pics   let nix = $ ("#imdbCoco").text ().split ("\n") [idx].replace (/^ \(([0-9]+)\).*/, "$1");
-
-
-        /*if (albumDir !== "") {
-          let idx = albumDirs.indexOf (albumDir);
-console.log("idx",idx);
-          //console.log(idx,nix,"idx nix");
-          $ (".ember-view.jstree").jstree ("close_all");
-          $ (".ember-view.jstree").jstree ("_open_to", "#j1_" + (1 + idx));
-          if (idx === 0) {
-            $ (".ember-view.jstree").jstree ("open_all");
-            $ (".ember-view.jstree").jstree ("deselect_all");
-            $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_" + (1 + idx)));
-            later ( ( () => {
-              $ (".jstreeAlbumSelect").show ();
-            }), 200);
-          }
-        }
-        return;*/
       } else {
         $ (".jstreeAlbumSelect").hide ();
       }
@@ -2420,6 +2370,7 @@ console.log("idx",idx);
           $ ("#title input.cred").blur ();
           $ ("#title button.cred").focus (); // Prevents FF showing link to saved passwords
         }),100);
+        albumWait = false;
         return;
       }
       if (btnTxt === " Logga ut ") { // Log out
@@ -2468,6 +2419,7 @@ console.log("idx",idx);
         this.actions.imageList (false);
         var usr = $ ("#title input.cred.user").val ();
         var pwd = $ ("#title input.cred.password").val ().trim (); // Important
+        $ ("#title input.cred.password").val ("");
         $ ("#title input.cred").hide ();
         loginError ().then (isLoginError => {
           if (isLoginError) {
@@ -2487,9 +2439,7 @@ console.log("idx",idx);
             $ ("#title button.viewSettings").attr ("title", "Se inställningar - klicka här!");
             $ ("#title button.viewSettings").show ();
             this.set ("loggedIn", true);
-//$ ("#title button.cred").focus ();
             userLog ("LOGIN");
-//$ ("#title button.cred").focus ();
             that.actions.setAllow ();
 
             if ($ ("#imdbRoot").text ()) { // If imdb is initiated
@@ -2506,20 +2456,8 @@ console.log("idx",idx);
               $ ("div.settings, div.settings div.root").hide ();
             }
             $ (".cred.name").attr ("title","användarnamn [användarkategori]"); // i18n
-            //$ ("#toggleTree").click (); //??
-            that.set ("albumData", []);
-            $ ("#requestDirs").click ();
-            spinnerWait (true);
-            later ( ( () => {
-              $ (".ember-view.jstree").jstree ("deselect_all");
-              $ (".ember-view.jstree").jstree ("close_all");
-              $ (".ember-view.jstree").jstree ("open_node", "#j1_1");
-              later ( ( () => {
-                $ (".ember-view.jstree").jstree ("select_node", "#j1_1");
-              }), 2000);
-            }), 3000);
+            // The remaining is already prepared since loginError() retured false
           }
-          $ ("#title input.cred.password").val ("");
         });
         albumWait = false;
       }
@@ -2550,9 +2488,8 @@ console.log("idx",idx);
               setTimeout(function () { // NOTE: Normally, later replaces setTimeout
                 $ (".ember-view.jstree").jstree ("deselect_all");
                 $ (".ember-view.jstree").jstree ("close_all");
+                $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
                 later ( ( () => {
-                  $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
-                  $ (".ember-view.jstree").jstree ("deselect_all");
                   $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_1"));
                 }), 6000);
                 resolve (false);

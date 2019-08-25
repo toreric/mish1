@@ -604,10 +604,6 @@ console.log (dirlist)
     let pngname = path.parse (fileName).name + '.png'
     let IMDB_DIR = path.parse (fileName).dir + '/'
     let IMDB_PATH = PWD_PATH + '/' + IMDB_DIR
-    /*cmdasync ('rm ' + PWD_PATH + '/' + fileName)
-    .then ( () => {cmdasync ('rm ' + IMDB_PATH +'_mini_'+ pngname)})
-    .then ( () => {cmdasync ('rm ' + IMDB_PATH +'_show_'+ pngname)})
-    .then ()*/
     fs.unlinkAsync (PWD_PATH + '/' + fileName) // File not found isn't caught!
     .then (fs.unlinkAsync (IMDB_PATH +'_mini_'+ pngname)) // File not found isn't caught!
     .then (fs.unlinkAsync (IMDB_PATH +'_show_'+ pngname)) // File not found isn't caught!
@@ -896,8 +892,10 @@ console.log (dirlist)
       if (tmp.length === 0) tmp = "-" // Insert fill character
       txt12 = txt12 +'\n'+ tmp
     }
-    setTimeout(function () {}, 2000)
-    return (origfile +'\n'+ showfile +'\n'+ minifile +'\n'+ namefile +'\n'+ txt12.trim () +'\n'+ symlink).trim () // NOTE: returns 7 rows
+    let qrn = '?' + Math.random().toString(36).substr(2,4)
+    if (symlink === 'symlink') {qrn = ''}
+    // Trigger browswer autorefresh but no meaning to refresh symlinks
+    return (origfile +'\n'+ showfile + qrn +'\n'+ minifile + qrn +'\n'+ namefile +'\n'+ txt12.trim () +'\n'+ symlink).trim () // NOTE: returns 7 rows
   }
 
   // ===== Make a shell command asyncronous
