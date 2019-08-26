@@ -811,14 +811,13 @@ export default Component.extend (contextMenuMixin, {
         this.actions.setAllow ();
         this.actions.setAllow (true);
         $ ("#title form button.viewSettings").hide ();
-        // To top of screen:
-        later ( ( () => {
+        later ( ( () => { // To top of screen:
           scrollTo (0, 0);
           $ ("#title button.cred").focus ();
-          later ( ( () => {
+          later ( ( () => { // Default user:
             $ (".cred.user").attr ("value", "gäst"); // i18n
             $ (".cred.login").click ();
-            later ( ( () => {
+            later ( ( () => { // Confirm logIn:
               $ (".cred.login").click ();
               $ (".cred.user").click (); // Prevents FF showing link to saved passwords
               $ (".cred.login").focus ();
@@ -1561,6 +1560,10 @@ export default Component.extend (contextMenuMixin, {
         $ ("#imdbRoot").text (value);
         this.set ("imdbRoot", value);
         this.set ("albumData", []); // Triggers jstree rebuild with aData (
+        this.set ("albumName", "");
+        this.set ("albumText", "");
+        $ ("#imdbDirs").text ("");
+        //$ ("#imdbDir").text ("");
         $ ("#imdbDir").text ("imdb");
       }
 
@@ -1689,23 +1692,27 @@ export default Component.extend (contextMenuMixin, {
       });
     },
     //============================================================================================
-    toggleAlbumTree (imdbroot) {
+    toggleAlbumTree () {
 
-      if ($ ("#imdbRoot").text () !== imdbroot) {
+      /*if ($ ("#imdbRoot").text () !== imdbroot) {
         this.actions.imageList (false); // Hide since source will change
         $ ("#imdbRoot").text (imdbroot);
         this.set ("imdbRoot", imdbroot);
         this.set ("albumData", []);
         this.set ("albumName", "");
         this.set ("albumText", "");
+        $ ("#imdbDirs").text ("");
+        $ ("#imdbDir").text ("");
+        this.set ("albumName", "");
+        this.set ("albumText", "");
         $ ("#toggleTree").attr ("title", "Välj album");
-      }
+      }*/
       document.getElementById ("divDropbox").className = "hide-all";
       //var that = this;
       $ ("div.settings, div.settings div.root, div.settings div.check").hide ();
       if (!$ (".jstreeAlbumSelect").is (":visible")) {
         $ (".jstreeAlbumSelect").show ();
-        $ ("#requestDirs").click ();
+        //$ ("#requestDirs").click ();
       } else {
         $ (".jstreeAlbumSelect").hide ();
       }
@@ -2360,11 +2367,11 @@ export default Component.extend (contextMenuMixin, {
       var that = this;
       $ (".img_show").hide ();
       var btnTxt = $ ("#title button.cred").text ();
-      if (btnTxt === " Logga in ") { // Log in (should be buttonText[0] ... i18n)
+      if (btnTxt === "Logga in") { // Log in (should be buttonText[0] ... i18n)
         $ ("#title input.cred").show ();
         //$ ("#title input.cred.user").focus ();
         //$ ("#title input.cred.user").select ();
-        $ ("#title button.cred").text (" Bekräfta ");
+        $ ("#title button.cred").text ("Bekräfta");
         $ ("#title button.cred").attr ("title", "Bekräfta inloggning");
         later ( ( () => {
           $ ("#title input.cred").blur ();
@@ -2373,12 +2380,12 @@ export default Component.extend (contextMenuMixin, {
         albumWait = false;
         return;
       }
-      if (btnTxt === " Logga ut ") { // Log out
+      if (btnTxt === "Logga ut") { // Log out
         this.actions.imageList (false);
         spinnerWait (true);
         $ ("#hideFlag").text ("1");// Two lines from 'toggleHideFlagged'
         that.actions.hideFlagged (true).then (null); // Hide flagged pics if shown
-        $ ("#title button.cred").text (" Logga in ");
+        $ ("#title button.cred").text ("Logga in");
         $ ("#title button.cred").attr ("title", logAdv);
         $ ("#title span.cred.name").text ("");
         this.set ("loggedIn", false);
@@ -2387,8 +2394,16 @@ export default Component.extend (contextMenuMixin, {
         $ ("#title button.cred").focus ();
         userLog ("LOGOUT");
         $ ("#title button.cred").focus ();
+        that.set ("albumData", []);
+        that.set ("albumName", "");
+        that.set ("albumText", "");
+        $ ("#imdbDirs").text ("");
+        $ ("#imdbDir").text ("");
         zeroSet (); // #allowValue = '000... etc.
         that.actions.setAllow ();
+later ( ( () => {
+  console.log ("Out, allowValue", $ ("#allowValue").text ());
+}), 200);
         $ ("#showDropbox").hide ();  // Hide upload button
 
         if ($ ("#imdbRoot").text ()) { // If imdb is initiated
@@ -2401,6 +2416,10 @@ export default Component.extend (contextMenuMixin, {
         //that.set ("allNames", []);
         //$ (".js-draggableObject").remove ();
         that.set ("albumData", []);
+        that.set ("albumName", "");
+        that.set ("albumText", "");
+        $ ("#imdbDirs").text ("");
+        $ ("#imdbDir").text ("");
         $ ("#requestDirs").click ();
         spinnerWait (true);
         setTimeout(function () { // NOTE: Normally, later replaces setTimeout
@@ -2414,34 +2433,44 @@ export default Component.extend (contextMenuMixin, {
         albumWait = false;
         return;
       }
-      if (btnTxt === " Bekräfta ") { // Confirm
+      if (btnTxt === "Bekräfta") { // Confirm
         spinnerWait (true);
         this.actions.imageList (false);
         var usr = $ ("#title input.cred.user").val ();
         var pwd = $ ("#title input.cred.password").val ().trim (); // Important
         $ ("#title input.cred.password").val ("");
         $ ("#title input.cred").hide ();
+        that.set ("albumData", []);
+        that.set ("albumName", "");
+        that.set ("albumText", "");
+        $ ("#imdbDirs").text ("");
+        $ ("#imdbDir").text ("");
+        zeroSet (); // #allowValue = '000... etc.
         loginError ().then (isLoginError => {
           if (isLoginError) {
             spinnerWait (false);
-            $ ("#title button.cred").text (" Logga in ");
+            $ ("#title button.cred").text ("Logga in");
             $ ("#title button.cred").attr ("title", logAdv);
             this.set ("loggedIn", false);
             $ ("div.settings, div.settings div.root, div.settings div.check").hide ();
             userLog ("LOGIN error");
             $ ("#title button.cred").focus ();
-            zeroSet (); // #allowValue = '000... etc.
             that.actions.setAllow ();
+later ( ( () => {
+  console.log ("Err, allowValue", $ ("#allowValue").text ());
+}), 200);
           } else {
             spinnerWait (true);
-            $ ("#title button.cred").text (" Logga ut ");
+            $ ("#title button.cred").text ("Logga ut");
             $ ("#title button.cred").attr ("title", "Du är inloggad!");
             $ ("#title button.viewSettings").attr ("title", "Se inställningar - klicka här!");
             $ ("#title button.viewSettings").show ();
             this.set ("loggedIn", true);
             userLog ("LOGIN");
             that.actions.setAllow ();
-
+later ( ( () => {
+  console.log (" In, allowValue", $ ("#allowValue").text ());
+}), 200);
             if ($ ("#imdbRoot").text ()) { // If imdb is initiated
               // Clear out the search result album
               let lpath = "imdb/" + $ ("#picFound").text ();
@@ -2478,22 +2507,28 @@ export default Component.extend (contextMenuMixin, {
             if (status === "viewer") {usr = "anonym";}  // i18n
             var allow = cred [2];
             if (pwd === password) {
+              spinnerWait (true);
               $ ("#allowValue").text (allow);
               $ ("#title span.cred.name").text (usr +" ["+ status +"]");
-
               // Assure that the album tree is properly shown after LOGIN
               that.set ("albumData", []);
-              $ ("#requestDirs").click ();
-              spinnerWait (true);
-              setTimeout(function () { // NOTE: Normally, later replaces setTimeout
-                $ (".ember-view.jstree").jstree ("deselect_all");
-                $ (".ember-view.jstree").jstree ("close_all");
-                $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
-                later ( ( () => {
-                  $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_1"));
-                }), 6000);
-                resolve (false);
-              }, 2000);                 // NOTE: Preserved here just as an example
+              that.set ("albumName", "");
+              that.set ("albumText", "");
+              $ ("#imdbDirs").text ("");
+              $ ("#imdbDir").text ("");
+              that.actions.setAllow ();
+              later ( ( () => {
+                $ ("#requestDirs").click ();
+                setTimeout(function () { // NOTE: Normally, later replaces setTimeout
+                  $ (".ember-view.jstree").jstree ("deselect_all");
+                  $ (".ember-view.jstree").jstree ("close_all");
+                  $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
+                  later ( ( () => {
+                    $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_1"));
+                  }), 6000);
+                  resolve (false);
+                }, 2000);                 // NOTE: Preserved here just as an example
+              }), 1000);
 
               // Hide upload button if just viewer or guest:
               if (status === "viewer" || status === "guest") {
