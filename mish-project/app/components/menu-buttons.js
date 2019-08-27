@@ -28,7 +28,7 @@ export default Component.extend (contextMenuMixin, {
   requestDirs: task (function* () {
 
     let imdbroot = this.get ("imdbRoot");
-    document.title = "Mish — " + imdbroot;
+    document.title = "Mish";
     if (imdbroot === "") {
       let rootList = yield reqRoot (); // Request possible directories ((1))
 
@@ -54,7 +54,7 @@ export default Component.extend (contextMenuMixin, {
         return;
       }
     }
-    document.title = "Mish — " + imdbroot;
+    document.title = "Mish: " + removeUnderscore (imdbroot, true);
 
     if (this.get ("albumData").length === 0) {
       yield reqDirs (imdbroot); // Request all subdirectories recursively ((2))
@@ -1257,7 +1257,11 @@ export default Component.extend (contextMenuMixin, {
           }
           var tmpName = that.get ("albumName");
           tmpName = extractContent (tmpName); // Don't accumulate HTML
-          document.title = document.title + " " + removeUnderscore (tmpName, true) + " —";
+          if (tmpName === that.get ("imdbRoot")) {
+            document.title = 'Mish: ' + removeUnderscore (that.get ("imdbRoot"), true);
+          } else {
+            document.title = 'Mish: ' + removeUnderscore (that.get ("imdbRoot") + " — " + tmpName, true);
+          }
           tmpName = removeUnderscore (tmpName); // Improve readability
           if (data === "Error!") {
             tmpName += " &mdash; <em style=\"color:red;background:transparent\">just nu oåtkomligt</em>" // i18n
@@ -1560,8 +1564,8 @@ export default Component.extend (contextMenuMixin, {
         $ ("#imdbRoot").text (value);
         this.set ("imdbRoot", value);
         this.set ("albumData", []); // Triggers jstree rebuild with aData (
-        this.set ("albumName", "");
-        this.set ("albumText", "");
+        //this.set ("albumName", "");
+        //this.set ("albumText", "");
         $ ("#imdbDirs").text ("");
         //$ ("#imdbDir").text ("");
         $ ("#imdbDir").text ("imdb");
@@ -2395,10 +2399,10 @@ export default Component.extend (contextMenuMixin, {
         userLog ("LOGOUT");
         $ ("#title button.cred").focus ();
         that.set ("albumData", []);
-        that.set ("albumName", "");
-        that.set ("albumText", "");
-        $ ("#imdbDirs").text ("");
-        $ ("#imdbDir").text ("");
+        //that.set ("albumName", "");
+        //that.set ("albumText", "");
+        //$ ("#imdbDirs").text ("");
+        //$ ("#imdbDir").text ("");
         zeroSet (); // #allowValue = '000... etc.
         that.actions.setAllow ();
 later ( ( () => {
@@ -2416,10 +2420,10 @@ later ( ( () => {
         //that.set ("allNames", []);
         //$ (".js-draggableObject").remove ();
         that.set ("albumData", []);
-        that.set ("albumName", "");
-        that.set ("albumText", "");
-        $ ("#imdbDirs").text ("");
-        $ ("#imdbDir").text ("");
+        //that.set ("albumName", "");
+        //that.set ("albumText", "");
+        //$ ("#imdbDirs").text ("");
+        //$ ("#imdbDir").text ("");
         $ ("#requestDirs").click ();
         spinnerWait (true);
         setTimeout(function () { // NOTE: Normally, later replaces setTimeout
@@ -2441,10 +2445,10 @@ later ( ( () => {
         $ ("#title input.cred.password").val ("");
         $ ("#title input.cred").hide ();
         that.set ("albumData", []);
-        that.set ("albumName", "");
-        that.set ("albumText", "");
-        $ ("#imdbDirs").text ("");
-        $ ("#imdbDir").text ("");
+        //that.set ("albumName", "");
+        //that.set ("albumText", "");
+        //$ ("#imdbDirs").text ("");
+        //$ ("#imdbDir").text ("");
         zeroSet (); // #allowValue = '000... etc.
         loginError ().then (isLoginError => {
           if (isLoginError) {
@@ -2491,7 +2495,8 @@ later ( ( () => {
         albumWait = false;
       }
 
-      // When password doesn't match user, return true; else set 'allowvalue' and return 'false'
+      // When password doesn't match user, return true; [else set 'allowvalue' and return false]
+      // Update aug 2017: else set anonymous viewer with no credentials, still return true
       function loginError () {
         return new Promise (resolve => {
           /*if (usr === "") {
@@ -2503,41 +2508,42 @@ later ( ( () => {
             var cred = credentials.split ("\n");
             var password = cred [0];
             var status = cred [1];
+            var allow = cred [2];
+            if (pwd !== password) {
+              zeroSet (); // Important!
+              allow = $ ("#allowValue").text ();
+              status = "viewer";
+            }
             loginStatus = status; // global
             if (status === "viewer") {usr = "anonym";}  // i18n
-            var allow = cred [2];
-            if (pwd === password) {
-              spinnerWait (true);
-              $ ("#allowValue").text (allow);
-              $ ("#title span.cred.name").text (usr +" ["+ status +"]");
-              // Assure that the album tree is properly shown after LOGIN
-              that.set ("albumData", []);
-              that.set ("albumName", "");
-              that.set ("albumText", "");
-              $ ("#imdbDirs").text ("");
-              $ ("#imdbDir").text ("");
-              that.actions.setAllow ();
-              later ( ( () => {
-                $ ("#requestDirs").click ();
-                setTimeout(function () { // NOTE: Normally, later replaces setTimeout
-                  $ (".ember-view.jstree").jstree ("deselect_all");
-                  $ (".ember-view.jstree").jstree ("close_all");
-                  $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
-                  later ( ( () => {
-                    $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_1"));
-                  }), 6000);
-                  resolve (false);
-                }, 2000);                 // NOTE: Preserved here just as an example
-              }), 1000);
+            spinnerWait (true);
+            $ ("#allowValue").text (allow);
+            $ ("#title span.cred.name").text (usr +" ["+ status +"]");
+            // Assure that the album tree is properly shown after LOGIN
+            that.set ("albumData", []);
+            //that.set ("albumName", "");
+            //that.set ("albumText", "");
+            //$ ("#imdbDirs").text ("");
+            //$ ("#imdbDir").text ("");
+            that.actions.setAllow ();
+            later ( ( () => {
+              $ ("#requestDirs").click ();
+              setTimeout(function () { // NOTE: Normally, later replaces setTimeout
+                $ (".ember-view.jstree").jstree ("deselect_all");
+                $ (".ember-view.jstree").jstree ("close_all");
+                $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
+                later ( ( () => {
+                  $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_1"));
+                }), 6000);
+                resolve (false);
+              }, 2000);                 // NOTE: Preserved here just as an example
+            }), 1000);
 
-              // Hide upload button if just viewer or guest:
-              if (status === "viewer" || status === "guest") {
-                $ ("#showDropbox").hide ();
-              } else {
-                $ ("#showDropbox").show ();
-              }
+            // Hide upload button if just viewer or guest:
+            if (status === "viewer" || status === "guest") {
+              $ ("#showDropbox").hide ();
             } else {
-              resolve (true);
+              $ ("#showDropbox").show ();
             }
           }).catch (error => {
             console.error (error.message);
