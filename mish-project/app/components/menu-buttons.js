@@ -1236,7 +1236,7 @@ export default Component.extend (contextMenuMixin, {
     } else {
       clearTimeout (this.timer);
       $ ("#showSpeed").hide ();
-      userLog ('STOP show');
+      userLog ('END show');
     }
   },
   //----------------------------------------------------------------------------------------------
@@ -1500,7 +1500,7 @@ export default Component.extend (contextMenuMixin, {
       code += '\n<option value="erase">&nbsp;Radera albumet (töm det först)&nbsp;</option>'
       code += '\n</select><br>' + imdbDir + '<br>&nbsp;';
       text = code;
-
+console.log(code);
       infoDia (null, null, album, text, 'Ok', true, true);
       later ( ( () => {
         $ ("select.selectOption").focus ();
@@ -2405,9 +2405,9 @@ export default Component.extend (contextMenuMixin, {
         //$ ("#imdbDir").text ("");
         zeroSet (); // #allowValue = '000... etc.
         that.actions.setAllow ();
-later ( ( () => {
-  console.log ("Out, allowValue", $ ("#allowValue").text ());
-}), 200);
+        //later ( ( () => {
+          //console.log ("Out, allowValue", $ ("#allowValue").text ());
+        //}), 200);
         $ ("#showDropbox").hide ();  // Hide upload button
 
         if ($ ("#imdbRoot").text ()) { // If imdb is initiated
@@ -2426,14 +2426,14 @@ later ( ( () => {
         //$ ("#imdbDir").text ("");
         $ ("#requestDirs").click ();
         spinnerWait (true);
-        setTimeout(function () { // NOTE: Normally, later replaces setTimeout
+        setTimeout (function () { // NOTE: Normally, later replaces setTimeout
           $ (".ember-view.jstree").jstree ("deselect_all");
           $ (".ember-view.jstree").jstree ("close_all");
           $ (".ember-view.jstree").jstree ("open_node", "#j1_1");
           later ( ( () => {
             $ (".ember-view.jstree").jstree ("select_node", "#j1_1");
           }), 2000);
-        }, 3000);                 // NOTE: Preserved here just as an example
+        }, 2000);                 // NOTE: Preserved here just as an example
         albumWait = false;
         return;
       }
@@ -2452,6 +2452,7 @@ later ( ( () => {
         zeroSet (); // #allowValue = '000... etc.
         loginError ().then (isLoginError => {
           if (isLoginError) {
+            // Update aug 2017: will not happen
             spinnerWait (false);
             $ ("#title button.cred").text ("Logga in");
             $ ("#title button.cred").attr ("title", logAdv);
@@ -2460,9 +2461,9 @@ later ( ( () => {
             userLog ("LOGIN error");
             $ ("#title button.cred").focus ();
             that.actions.setAllow ();
-later ( ( () => {
-  console.log ("Err, allowValue", $ ("#allowValue").text ());
-}), 200);
+            //later ( ( () => {
+              //console.log ("Err, allowValue", $ ("#allowValue").text ());
+            //}), 200);
           } else {
             spinnerWait (true);
             $ ("#title button.cred").text ("Logga ut");
@@ -2472,9 +2473,9 @@ later ( ( () => {
             this.set ("loggedIn", true);
             userLog ("LOGIN");
             that.actions.setAllow ();
-later ( ( () => {
-  console.log (" In, allowValue", $ ("#allowValue").text ());
-}), 200);
+            //later ( ( () => {
+              //console.log (" In, allowValue", $ ("#allowValue").text ());
+            //}), 200);
             if ($ ("#imdbRoot").text ()) { // If imdb is initiated
               // Clear out the search result album
               let lpath = "imdb/" + $ ("#picFound").text ();
@@ -2528,16 +2529,16 @@ later ( ( () => {
             that.actions.setAllow ();
             later ( ( () => {
               $ ("#requestDirs").click ();
-              setTimeout(function () { // NOTE: Normally, later replaces setTimeout
+              setTimeout (function () { // NOTE: Normally, later replaces setTimeout
                 $ (".ember-view.jstree").jstree ("deselect_all");
                 $ (".ember-view.jstree").jstree ("close_all");
                 $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
                 later ( ( () => {
                   $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_1"));
-                }), 6000);
+                }), 2000);
                 resolve (false);
               }, 2000);                 // NOTE: Preserved here just as an example
-            }), 1000);
+            }), 200);
 
             // Hide upload button if just viewer or guest:
             if (status === "viewer" || status === "guest") {
