@@ -1590,7 +1590,7 @@ export default Component.extend (contextMenuMixin, {
                   }), 100);
                 } else {
                   console.log ("Album created: " + nameNew);
-                  userLog ("CREATED " + nameNew + ", RESTARTING", true);
+                  userLog ("CREATED " + nameNew + ", RESTARTING");
                   later ( ( () => {
                     location.reload ();
                   }), 2000);
@@ -1598,7 +1598,33 @@ export default Component.extend (contextMenuMixin, {
               });
 
             } else if (opt === "erase") {
-              console.log ("To be deleted: " + nameText);
+              // Ignore hidden (dotted) files
+              cmd = "ls -1 " + $ ("#imdbDir").text ()
+              execute (cmd).then (res => {
+                res = res.split ("\n");
+                var n = 0;
+                for (let i=0; i<res.length; i++) {
+                  var a = res [i].trim ()
+                  if (!(a == '' || a.indexOf ("_imdb_") === 0 || a.indexOf ("_mini_") === 0 || a.indexOf ("_show_") === 0 )) {n++;}
+                }
+                // If n==0, any hidden (dotted) files are deleted along with _imdb_ files etc.
+                if (n) {
+                  $ (this).dialog ("close");
+                  var album = $ (that.get ("albumName")).text ();
+                  later ( ( () => {
+                    infoDia (null, null, album, " <br><b>Albumet måste tömmas</b><br>för att kunna raderas", "Ok", true);
+                  }), 100);
+                } else {
+                  cmd = "rm -rf " + $ ("#imdbDir").text ();
+                  console.log (cmd);
+                  execute (cmd).then ( () => {
+                    userLog ("DELETED " + nameText + ", RESTARTING");
+                    later ( ( () => {
+                      location.reload ();
+                    }), 2000);
+                  });
+                }
+              });
             }
             $ (this).dialog ("close");
           }
@@ -3280,7 +3306,6 @@ function userLog (message, flashOnly) { // ===== Message to the log file and fla
     messes = messes.join (" • ");
     $ ("#title span.usrlg").text (messes);
   }
-console.log(message);
   $ (".shortMessage").text (message);
   $ (".shortMessage").show ();
   later ( ( () => {
