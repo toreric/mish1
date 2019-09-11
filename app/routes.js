@@ -397,9 +397,9 @@ console.log (dirlist)
       cmd = cmd.trim () // since \r may appear, why??
       execSync (cmd)
     }).then (function (results) {
-      // all results here
-      res.send ("")
+      res.send ('')
     }, function (err) {
+      res.send (err.message)
       console.error (err.message)
     })
   })
@@ -834,10 +834,8 @@ console.log (dirlist)
   // The server environment should have $IMDB_HOME, else use $HOME
   function imdbHome () {
     var homeDir = execSync ("echo $IMDB_HOME").toString ().trim ()
-    console.log("1 homeDir",homeDir)
     if (!homeDir || homeDir === "") {
       homeDir = execSync ("echo $HOME").toString ().trim ()
-      console.log("2 homeDir",homeDir)
     }
     return homeDir
   }

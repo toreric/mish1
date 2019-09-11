@@ -74,13 +74,13 @@
 </div>
 
 <!-- ///// SPECIAL PLACEHOLDERS/LINKS (hidden) ///// -->
-<input style="display:none;" id="fileDialog" type="file" nwdirectory directory>
+<button style="display:none;" id="abumEditOption" {{action 'abumEditOption'}}></button>
+<!-- input style="display:none;" id="fileDialog" type="file" nwdirectory directory -->
 
 <input style="display:none" id="requestDirs" onclick={{perform requestDirs}}>
-<!-- input style="display:none" id="saveUpload" onclick={#{perform saveUpload}}> -->
-
 <div class="shortMessage blackBorder" style="display:none">RT-log-message</div>
-<a href="null" id="download" style="display:none" download>DOWNLOAD-AREA</a>
+
+<!-- a href="null" id="download" style="display:none" download>DOWNLOAD-AREA</a -->
 
 <!-- ///// DISPLAY THE (SLIDE) SHOW IMAGE ///// -->
 <div class="img_show" style="display:none" draggable="false">
@@ -288,8 +288,6 @@
 <button id="refresh-1"
   style="font-weight:bold;cursor:pointer;padding:0.5em 0;"
   type="submit" class="btn-std" {{action 'refresh' false}}>Uppdatera (spinner)</button>
-<!--button style="font-weight:bold;cursor:pointer;padding:0.5em 0;"
-  type="submit" class="btn-std" {#{action 'saveOrder'}}>Spara ordningen</button-->
 <button style="font-weight:bold;cursor:pointer;padding:0.5em 0;"
   type="submit" class="btn-std" {{action 'showOrder'}}>Visa ordningen</button>
 <button id="imageBtn-1"

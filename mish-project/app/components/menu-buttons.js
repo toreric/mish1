@@ -123,7 +123,7 @@ export default Component.extend (contextMenuMixin, {
             var txt = '<i>Namn</i>: <span style="color:deeppink">' + picName + '</span><br>';
             txt += $ ("#temporary").text ();
             var tmp = $ ("#download").attr ("href");
-            if (tmp.toString () != "null") {
+            if (tmp && tmp.toString () != "null") {
               txt += '<br><span class="lastDownload"><i>Senast startad nedladdning</i>:<br>' + tmp + "</span>";
             }
             infoDia (null, picName, title, txt, yes, false);
@@ -669,13 +669,15 @@ export default Component.extend (contextMenuMixin, {
         } else {nextStep (nels);}
 
         function nextStep (nels) {
-          var eraseText = "Radera i " + $ ("#imdbDir").text ().replace (/^(.+[/])+/, "") + ":"; // i18n
+          var nameText = $ ("#imdbDir").text ().replace (/^(.+[/])+/, "");
+          if (nameText === "imdb") {nameText = $ ("#imdbRoot").text ();}
+          var eraseText = "Radera i " + nameText + ":"; // i18n
           resetBorders (); // Reset all borders, can be first step!
           markBorders (picName); // Mark this one
           if (nels === 1) {
             linked = $ ("#i" + escapeDots (picName)).hasClass ("symlink");
           }
-          nelstxt = "<b>Vänligen bekräfta:</b><br>" + delNames + "<br>i <b>" + $ ("#imdbDir").text ().replace (/^(.+[/])+/, "") + "<br>ska alltså raderas?</b><br>(<i>kan inte ångras</i>)"; // i18n
+          nelstxt = "<b>Vänligen bekräfta:</b><br>" + delNames + "<br>i <b>" + nameText + "<br>ska alltså raderas?</b><br>(<i>kan inte ångras</i>)"; // i18n
           if (linked) {
             nelstxt += "<br><span style='color:green;font-size:85%'>Då <span style='color:green;text-decoration:underline'>länk</span> raderas berörs inte originalet</span>"; // i18n
           }
@@ -821,7 +823,7 @@ export default Component.extend (contextMenuMixin, {
               $ (".cred.login").click ();
               $ (".cred.user").click (); // Prevents FF showing link to saved passwords
               $ (".cred.login").focus ();
-            }), 100);
+            }), 1000);
           }), 100);
         }), 177);
       }), 10);
@@ -838,8 +840,6 @@ export default Component.extend (contextMenuMixin, {
     } else {
       $ ("button.findText").hide ()
     }
-    // Update the slide show speed factor when it is changed
-    //document.querySelector ('input.showTime[type="number"]').addEventListener ('change', function () {$ ("#showFactor").text (parseInt (this.value));});
     later ( ( () => {
       prepDialog ();
       prepTextEditDialog ();
@@ -1162,8 +1162,8 @@ export default Component.extend (contextMenuMixin, {
       if (event.keyCode === 37 && $ ("#navKeys").text () === "true" &&
       $ ("div[aria-describedby='searcharea']").css ("display") === "none" &&
       $ ("div[aria-describedby='textareas']").css ("display") === "none" &&
-      !$ ("#title input.cred.user").is (":focus") &&
-      !$ ("#title input.cred.password").is (":focus")) { // Left key <
+      !$ ("input.cred.user").is (":focus") &&
+      !$ ("input.cred.password").is (":focus")) { // Left key <
         event.preventDefault(); // Important!
         that.actions.showNext (false);
         if (Z) {console.log ('*g');}
@@ -1171,8 +1171,8 @@ export default Component.extend (contextMenuMixin, {
       if (event.keyCode === 39 && $ ("#navKeys").text () === "true" &&
       $ ("div[aria-describedby='searcharea']").css ("display") === "none" &&
       $ ("div[aria-describedby='textareas']").css ("display") === "none" &&
-      !$ ("#title input.cred.user").is (":focus") &&
-      !$ ("#title input.cred.password").is (":focus")) { // Right key >
+      !$ ("input.cred.user").is (":focus") &&
+      !$ ("input.cred.password").is (":focus")) { // Right key >
         event.preventDefault(); // Important!
         that.actions.showNext (true);
         if (Z) {console.log ('*h');}
@@ -1180,8 +1180,8 @@ export default Component.extend (contextMenuMixin, {
       if (that.savekey !== 17 && event.keyCode === 65 && $ ("#navAuto").text () !== "true" &&
       $ ("div[aria-describedby='searcharea']").css ("display") === "none" &&
       $ ("div[aria-describedby='textareas']").css ("display") === "none" &&
-      !$ ("#title input.cred.user").is (":focus") &&
-      !$ ("#title input.cred.password").is (":focus")) { // A key
+      !$ ("input.cred.user").is (":focus") &&
+      !$ ("input.cred.password").is (":focus")) { // A key
         if (!($ ("#imdbDir").text () === "")) {
           $ ("#dialog").dialog ("close");
           $ ("#navAuto").text ("true");
@@ -1489,22 +1489,147 @@ export default Component.extend (contextMenuMixin, {
       }
 
       $ ("#temporary").text ("");
-      var text = "<br><b>" + album + "</b> ska raderas<br>Nej, ingen fara: UNDER UTVECKLING!";
-
-      // NOTE: Här kollas att albumet är tomt men inte om det har underalbum! OBS!
-      var codeAlbum = "'var action=this.value;if (this.selectedIndex === 0) {$ (\"#temporary\").text (\"\");return false;}if (action === \"erase\" && Number ($ (\".showCount:first .numShown\").text ()) === 0 && Number ($ (\".showCount:first .numHidden\").text ()) === 0) {" + "$ (\"#temporary\").text (\"infoDia (null, null,\\\""+ album +"\\\",\\\""+ text +"\\\",\\\"Ok\\\",true)\")" + ";} else {" + "$ (\"#temporary\").text (\"infoDia (null, null,\\\""+ album +"\\\",\\\"<br>UNDER UTVECKLING\\\",\\\"Ok\\\",true)\")" + ";}'";
-
-      var code = '<br><select class="selectOption" onchange=' + codeAlbum + '>'
-      code += '\n<option value="">&nbsp;Välj åtgärd för&nbsp;</option>'
-      code += '\n<option value="new">&nbsp;Gör ett nytt underalbum till&nbsp;</option>'
-      code += '\n<option value="erase">&nbsp;Radera albumet (töm det först)&nbsp;</option>'
-      code += '\n</select><br>' + imdbDir + '<br>&nbsp;';
-      text = code;
-console.log(code);
-      infoDia (null, null, album, text, 'Ok', true, true);
+      $ ("#temporary_1").text ("");
+      // The code in this dialog will indirectly call abumEditOption () onchange:
+      var code = '<span>' + imdbDir + '</span><br>';
+      code += '<select class="selectOption" onchange=';
+      code += "'$ (\"#temporary\").text (this.value);$ (\"#abumEditOption\").click ();return false'>";
+      code += '\n<option value="">&nbsp;Välj åtgärd för albumet&nbsp;</option>';
+      code += '\n<option value="new">&nbsp;Gör ett nytt underalbum  &nbsp;</option>';
+      if (imdbDir !== imdbRoot) {
+        code += '\n<option value="erase">&nbsp;Radera albumet&nbsp;</option>';
+      }
+      code += '\n</select>';
+      infoDia (null, null, album, code, 'Avbryt', true);
       later ( ( () => {
         $ ("select.selectOption").focus ();
       }), 50);
+    },
+    //============================================================================================
+    abumEditOption () { // Executes albumEdit()'s selected option
+      var opt = $ ("#temporary").text ();
+      var chkName = $ ("#temporary_1").text ();
+      var nameText = $ ("#imdbDir").text ().replace (/^(.+[/])+/, "");
+      if (nameText === "imdb") {nameText = $ ("#imdbRoot").text ();}
+      var header, optionText, okay, cancel;
+      if (opt) {
+        if (opt === "new" || opt === "checked") {
+          header = nameText;
+          optionText = "Lägg till ett nytt underalbum i <b>" + nameText + "</b><br>";
+          optionText += "Välj det nya albumnamnet:<br>";
+          optionText += '<input type="text" class="cred user nameNew" size="36" title="" placeholder="skriv albumnamn" value="' + chkName + '" style="margin-top: 1em">'
+          if (chkName && !acceptedDirName (chkName)) {optionText += "<br>(ej godkänt albumnamn)";}
+          okay = "Fortsätt";
+          if (opt === "checked") {okay = "Slutför";}
+          cancel = "Avbryt";
+        }
+        if (opt === "erase") {
+          header = "Radera " + nameText; // i18n
+          optionText = "<b>Vänligen bekräfta:</b><br>Albumet <b>" + nameText + "<br>ska alltså raderas?</b><br>(<i>kan inte ångras</i>)"; // i18n
+          okay = "Ja";
+          cancel = "Nej";
+        }
+        $ ("#dialog").html (optionText);
+        $ ("#dialog").dialog ( { // Initiate a new, confirmation dialog
+          title: header,
+          closeText: "×",
+          autoOpen: false,
+          draggable: true,
+          modal: true,
+          closeOnEscape: true
+        });
+        var pathNew = $ ("#imdbDir").text () + "/"
+        var that = this;
+        $ ("#dialog").dialog ('option', 'buttons', [ // Define button array
+        {
+          text: okay, // Yes
+          "id": "yesBut",
+          click: function () {
+
+            if (opt === "new") {
+              // Check the proposed album name:
+              var nameNew = document.querySelector ("input.nameNew").value;
+              nameNew = nameNew.replace (/"/g, "?");
+              nameNew = nameNew.replace (/ /g, "_");
+              while (nameNew.indexOf ("__") > -1) {
+                nameNew = nameNew.replace (/__/g, "_");
+              }
+              if (nameNew === "_") {nameNew = "";}
+              if (nameNew.length > 0 && acceptedDirName (nameNew)) {
+                $ ("#temporary").text ("checked");
+                $ ("#temporary_1").text (nameNew);
+                $ (this).dialog ("close");
+                later ( ( () => {
+                  $ ("#abumEditOption").click ();
+                  later ( ( () => {
+                    document.querySelector ("input.nameNew").disabled = true;
+                    var tmp = document.querySelector ("input.nameNew").getAttribute ("style");
+                    document.querySelector ("input.nameNew").setAttribute ("style", tmp + ";background:#dfd");
+                    //$ ("input.nameNew").attr ("background-color", "#efe");
+                  }), 100);
+                }), 100);
+                //console.log ("Nytt album: " + $ ("#imdbDir").text () + "/" + nameNew);
+              } else {
+                console.log ("Improper name: " + nameNew);
+                $ ("#temporary_1").text (nameNew);
+                $ (this).dialog ("close");
+                later ( ( () => {
+                  $ ("#abumEditOption").click ();
+                }), 100);
+              }
+
+            } else if (opt === "checked") {
+              nameNew = $ ("#temporary_1").text ();
+              var cmd = "mkdir " + pathNew + nameNew + " && touch " + pathNew + nameNew + "/.imdb";
+              console.log (cmd);
+              mexecute (cmd).then (result => {
+                if (result) {
+                  var album = $ (that.get ("albumName")).text ();
+                  later ( ( () => {
+                    infoDia (null, null, album, "<b>Misslyckades: </b>" + pathNew + "<b>" + nameNew + "</b> finns redan<br>" + result, "Ok", true);
+                  }), 100);
+                } else {
+                  console.log ("Album created: " + nameNew);
+                  userLog ("CREATED " + nameNew + ", RESTARTING", true);
+                  later ( ( () => {
+                    location.reload ();
+                  }), 2000);
+                }
+              });
+
+            } else if (opt === "erase") {
+              console.log ("To be deleted: " + nameText);
+            }
+            $ (this).dialog ("close");
+          }
+        },
+        {
+          text: cancel, // No
+          "id": "noBut",
+          click: function () {
+            if (opt === "new") {
+              // do nothing
+            } else if (opt === "checked") {
+              $ ("#temporary").text ("new");
+              $ (this).dialog ("close");
+              later ( ( () => {
+                $ ("#abumEditOption").click ();
+                later ( ( () => {
+                  document.querySelector ("input.nameNew").value = $ ("#temporary_1").text ();
+                }), 100);
+              }), 100);
+
+            } else if (opt === "erase") {
+              console.log ("Untouched: " + nameText);
+            }
+            $ (this).dialog ("close");
+          }
+        }]);
+        niceDialogOpen ();
+        $ ("#noBut").focus ();
+        $ ("input.nameNew").focus (); // if exists
+        if (opt === "checked") {$ ("#yesBut").focus ();}
+      }
     },
     //============================================================================================
     // ##### Check file base names against a server directory & modify command(s), NOTE:
@@ -2185,7 +2310,7 @@ console.log(code);
       fileWR (origpic).then (acc => {
         //console.log("> acc:",acc);
         if (acc !== "WR") {
-          infoDia (null, null,"Bildtexterna kan inte redigeras", "<br><span class='pink'>" + namepic + "</span> är ändringsskyddad<br><br>Om det är oväntat:<br>Kontrollera filägare!", "Stäng", true);
+          infoDia (null, null,"Bildtexterna kan inte redigeras", "<br><span class='pink'>" + namepic + "</span> ändringsskyddad, försök igen<br><br>Om det kvarstår:<br>Kontrollera filägare", "Stäng", true);
           //$ ("#textareas").dialog ("open");
           $ ("div[aria-describedby='textareas']").hide ();
           return;
@@ -2364,8 +2489,8 @@ console.log(code);
 
       albumWait = true;
       //$ ("div[aria-describedby='textareas']").css ("display", "none");
-      $ ("#dialog").dialog ('close');
-      $ ("#searcharea").dialog ('close');
+      $ ("#dialog").dialog ("close");
+      $ ("#searcharea").dialog ("close");
       document.getElementById ("divDropbox").className = "hide-all";
       ediTextClosed ();
       var that = this;
@@ -2581,8 +2706,8 @@ console.log(code);
       }
       //let that =this;
       //document.getElementById ("imageList").className = "hide-all";
-      $ ("#dialog").dialog ('close');
-      $ ("#searcharea").dialog ('close');
+      $ ("#dialog").dialog ("close");
+      $ ("#searcharea").dialog ("close");
       ediTextClosed ();
       document.getElementById ("divDropbox").className = "hide-all";
       $ (".img_show").hide (); // settings + img_show don't go together
@@ -2640,6 +2765,12 @@ let loginStatus = "";
 let tempStore = "";
 let savedAlbumIndex = 0;
 let returnTitles = ["TOPP", "UPP", "SENASTE"];
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// Check if an album/directory name can be accepted (a copy from the server)
+function acceptedDirName (name) { // Note that &ndash; is accepted:
+  let acceptedName = 0 === name.replace (/[/\-–@_.a-öA-Ö0-9]+/g, "").length && name !== "imdb"
+  return acceptedName && name.slice (0,1) !== "." && !name.includes ('/.')
+}
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Get the age of _imdb_images databases
 function age_imdb_images () {
@@ -2855,7 +2986,7 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) { // ===== I
           $ ("#reLd").click ();
         }), 800);
       }
-      $ (this).dialog ('close');
+      $ (this).dialog ("close");
       if (flag && !picName) { // Special case: evaluate #temporary
         console.log ($ ("#temporary").text ());
         eval ($ ("#temporary").text ());
@@ -2897,7 +3028,7 @@ function notesDia (picName, filePath, title, text, save, saveClose, close) { // 
       //console.log("acc:", acc);
       if (acc !== "WR") {
         userLog ("NOT written");
-        infoDia (null, null,"Texten sparades inte!", "<br>Texten kan inte uppdateras på grund av något<br>åtkomsthinder &ndash; är filen registrerad på rätt ägare?", "Ok", true);
+        infoDia (null, null,"Texten kan inte sparas", "<br>Ändringsskyddad fil, försök igen<br><br>Om felet kvarstår:<br>Kontrollera filägare", "Stäng", true);
       } else {
         // Remove <br> in the text shown; use <br> as is for metadata
         $ ('textarea[name="notes"]').val (text.replace (/<br>/g, "\n"));
@@ -2954,7 +3085,7 @@ function notesDia (picName, filePath, title, text, save, saveClose, close) { // 
   }), 40);
   // Why doesn't the 'close-outside' work? Had to add this to get it function:
   $ ('.ui-widget-overlay').bind ('click', function () {
-    $ ('#notes').dialog ('close');
+    $ ('#notes').dialog ("close");
   });
   $ ("#notes").css ("padding", "0");
   //document.querySelector('textarea[name="notes"]').scrollTop = 0; // * Doesn't work
@@ -3149,6 +3280,7 @@ function userLog (message, flashOnly) { // ===== Message to the log file and fla
     messes = messes.join (" • ");
     $ ("#title span.usrlg").text (messes);
   }
+console.log(message);
   $ (".shortMessage").text (message);
   $ (".shortMessage").show ();
   later ( ( () => {
@@ -3486,6 +3618,7 @@ function mexecute (commands) { // Execute on the server, return a promise
       resolve (xhr.responseText); // usually empty
     };
     xhr.onerror = function () {
+      resolve (xhr.statusText);
       reject ({
         status: this.status,
         statusText: xhr.statusText
@@ -3657,7 +3790,7 @@ let prepSearchDialog = () => {
       {
         text: " Stäng ",
         click: () => {
-          $ ("#searcharea").dialog ('close');
+          $ ("#searcharea").dialog ("close");
         }
       },
       {

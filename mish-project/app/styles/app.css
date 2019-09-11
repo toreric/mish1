@@ -98,6 +98,7 @@ button {
   height: auto;
   overflow: auto;
   padding: 0.5em;
+  line-height: 150%;
 }
 .ui-widget-content, .ui-widget-content * {
   background: #ddd;
@@ -294,16 +295,25 @@ select option {
 }
 .selectOption {
   font-family: Georgia, 'Times New Roman', Times, serif !important;
+  color: red;
   padding: 0px;
   margin: 0px;
-  background-color: #ddd;
-  border: none;
+  line-height: 2em;
+  background-color: #fff;
+  border: 0px solid gray;
   border-radius: 4px;
   cursor: pointer;
   /*for firefox*/
   -moz-appearance: none;
   /*for chrome*/
   -webkit-appearance:none;
+}
+.selectOption:hover {
+  color: #000;
+}
+.selectOption + span {
+  line-height: 2.5em;
+  font-weight: bold;
 }
 .selectOption::-ms-expand {
   /*for IE10*/
@@ -367,6 +377,9 @@ select option {
 #title span.usrlg {
   font: bold 0.75em monospace!important;
   color: yellowgreen;
+}
+.nameNew {
+  background: #f0f0b0;
 }
 .spinner {
   display: none;
