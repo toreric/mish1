@@ -552,16 +552,33 @@ button[disabled] {
 .showCount, .imDir, .numShown, .numHidden, .numMarked {
   background-color: #222;
 }
+.imDir .albumName {
+  background: transparent;
+}
 .img_show .imDir .albumName {
   padding-right: 50px;
   background: #000;
 }
-.imDir strong {
-  background: transparent;
-}
-a.imDir {
+a.imDir span{
   border: 1.5px solid #666;
   border-radius: 4px;
+  padding: 0 0.35em;
+  font-size: 80%;
+  background: transparent;
+  font-weight: bold;
+}
+a.imDir img {
+  height: 64px;
+  margin-top: 0.1em;
+}
+a.imDir * {
+  color: #aef;
+}
+a.imDir *:hover {
+  color: #0ae;
+}
+.miniImgs {
+  background: #222;
 }
 #imageList {
   width: 95%;
@@ -603,7 +620,7 @@ a.imDir {
   font-size: 84%;
   height: 1.2em;
   font-weight: normal;
-  text-align: center;
+  text-align: left;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -626,7 +643,7 @@ a.imDir {
 }
 .img_txt1, .img_txt2 {
   cursor: pointer;
-  text-align: center;
+  text-align: left;
   margin: 0;
 }
 .img_txt1 {
@@ -777,7 +794,7 @@ div.img_mini.symlink div.markTrue, div.img_mini.symlink div.markFalse {
   display: inline-block;
   background-color: #333;
   border-radius: 6px;
-  padding: 0.2em 0.5em 0 0.5em;
+  padding: 0.4em 0.7em 0.4em 0.7em;
   margin: 0 0 1em 0;
 }
 .nav_links .qnav_ {

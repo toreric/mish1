@@ -50,7 +50,6 @@ export default Component.extend (contextMenuMixin, {
       if (imdbroot === "") {
         // Prepare to select imdbRoot
         $ ("div.settings div.check").hide ();
-        //$ ("#rootSel").prop ('selectedIndex', selix);
         return;
       }
     }
@@ -788,12 +787,14 @@ export default Component.extend (contextMenuMixin, {
   imdbRoot: "", // The imdb directory (initial default = env.variable $IMDB_ROOT)
   imdbRoots: () => {return []}, // For imdbRoot selection
   //imdbDir: "",  // Current picture directory, selected from imdbDirs
-  imdbDirs: () => {return ['Album?']}, // Reset in requestDirs
+  imdbDirs: () => {return ['Albums?']}, // Reset in requestDirs
+  imdbPics: () => {return ['Alpics?']}, // Reset in requestDirs
   albumName: "",
   albumText: "",
   albumData: () => {return []}, // Directory structure for the selected imdbRoot
   loggedIn: false,
-  subaList: () => {return []},
+  subaList: [],
+  subaPic: [],
   // HOOKS, that is, Ember "hooks" in the execution cycle
   /////////////////////////////////////////////////////////////////////////////////////////
   //----------------------------------------------------------------------------------------------
@@ -1388,7 +1389,7 @@ export default Component.extend (contextMenuMixin, {
     //============================================================================================
     subaSelect (subName) { // ##### Sub-album link selected
 //console.log("subName",subName,subName.length);
-      subName = subName.replace (/&nbsp;/g, "_"); // Restore correct album name!
+      subName = subName.replace (/&nbsp;/g, "_"); // Restore readable album name!
       let names = $ ("#imdbDirs").text ().split ("\n");
       let name = $ ("#imdbDir").text ().slice (4); // Remove 'imdb'
 //console.log("name",name,name.length);
@@ -1741,7 +1742,7 @@ export default Component.extend (contextMenuMixin, {
     //============================================================================================
     selectAlbum () {
 
-//console.log(this.get ("imdbDirs"));
+console.log(this.get ("imdbDirs"));
       let that = this;
       let value = $ ("[aria-selected='true'] a.jstree-clicked");
       if (value && value.length > 0) {
@@ -1773,8 +1774,13 @@ export default Component.extend (contextMenuMixin, {
         $ ("#imdbDir").text (value);
         let selDir = value.slice (4);
         let selDirs = $ ("#imdbDirs").text ().split ("\n");
-        let tmp = [""]; // at root
-        if (selDir) {tmp = ["|«", "«", "‹›"];}
+        let selPics = $ ("#imdbLabels").text ().split ("\n");
+        let tmp = [""]; // root
+        let tmp1 = [""];
+        if (selDir) { // not root
+          tmp = ["|«", "«", "‹›"];
+          tmp1 = ["", "", ""];
+        }
         let i0 = selDirs.indexOf (selDir);
 //console.log("selDir",selDir,"selDirs",selDirs,"i0",i0);
         for (let i=i0; i<selDirs.length; i++) {
@@ -1783,7 +1789,9 @@ export default Component.extend (contextMenuMixin, {
             if (cand.indexOf ("/") === 0 && cand.replace (/^(\/[^/]+).*$/, "$1") === cand) {
 //console.log("cand",cand);
               if (cand.slice (1) !== $ ("#picFound").text ()) {
-                tmp.push (cand.slice (1).replace (/_/g, "&nbsp;"));
+                //tmp.push (cand.slice (1).replace (/_/g, " "));
+                tmp.push (cand.slice (1));
+                tmp1.push (selPics [i]);
 //console.log("tmp",tmp);
               }
             }
@@ -1794,9 +1802,24 @@ export default Component.extend (contextMenuMixin, {
             tmp [0] = "‹›";
           } else {
             tmp = tmp.slice (1); // at root
+            tmp1 = tmp1.slice (1); // at root
           }
         }
-        that.set ("subaList", tmp); // NOTE: For the album menu rows in *.hbs (a.imDir)
+
+        var Aobj = EmberObject.extend ({
+          album: '',
+          label: ''
+        }); // NOTE: For the album menu rows in *.hbs (a.imDir)
+        let a = [];
+        for (let i=0; i<tmp.length; i++) {
+          a [i] = Aobj.create ({
+            album: tmp [i],
+            label: tmp1 [i]
+          });
+        }
+        this.set ("subaList", a);
+//console.log("album",tmp);
+//console.log("label",tmp1);
         later ( ( () => {
           let n = $ ("a.imDir").length/2;
           if (tmp [0] === "|«") {
@@ -1819,13 +1842,12 @@ export default Component.extend (contextMenuMixin, {
             });
           }
         }), 50);
-//console.log("subaList",tmp);
-        let tmp1 = [""];
-        if (value) {tmp1 = value.split ("/");}
-        if (tmp1 [tmp1.length - 1] === "") {tmp1 = tmp1.slice (0, -1)} // removes trailing /
-        tmp1 = tmp1.slice (1); // remove symbolic link name
-        if (tmp1.length > 0) {
-          that.set ("albumName", tmp1 [tmp1.length - 1]);
+        let tmp2 = [""];
+        if (value) {tmp2 = value.split ("/");}
+        if (tmp2 [tmp2.length - 1] === "") {tmp2 = tmp2.slice (0, -1)} // removes trailing /
+        tmp2 = tmp2.slice (1); // remove symbolic link name
+        if (tmp2.length > 0) {
+          that.set ("albumName", tmp2 [tmp2.length - 1]);
         } else {
           that.set ("albumName", that.get ("imdbRoot"));
         }
@@ -2466,7 +2488,7 @@ export default Component.extend (contextMenuMixin, {
             var host = this.responseURL.replace (/download.+$/, "");
             $ ("#download").attr ("href", host + this.responseText); // Is just 'origpic'(!)
             later ( ( () => {
-              //$ ("#download").click (); DOES NOT WORK
+              //$ ("#download").click (); //DOES NOT WORK
               document.getElementById ("download").click (); // Works
             }), 250);
             spinnerWait (false);
@@ -3356,7 +3378,9 @@ function reqDirs (imdbroot) { // Read the dirs in imdb (requestDirs)
       if (this.status >= 200 && this.status < 300) {
         var dirList = xhr.responseText;
         dirList = dirList.split ("\n");
-        var dirCoco = dirList.splice (dirList.length/2 + 1);
+        var dim = (dirList.length - 2)/3;
+        var dirLabel = dirList.splice (2 + 2*dim, dim);
+        var dirCoco = dirList.splice (2 + dim, dim);
         $ ("#userDir").text (dirList [0].slice (0, dirList [0].indexOf ("@")));
         $ ("#imdbRoot").text (dirList [0].slice (dirList [0].indexOf ("@") + 1));
         $ ("#imdbLink").text (dirList [1]);
@@ -3373,15 +3397,17 @@ function reqDirs (imdbroot) { // Read the dirs in imdb (requestDirs)
         }
         // Remove "ignore" albums from the list if not allowed, starred in dirCoco
         if (!(allow.textEdit || allow.adminAll)) {
-          let newList = [], newCoco = [];
+          let newList = [], newCoco = [], newLabel = [];
           for (let j=0; j<dirList.length; j++) {
             if (dirCoco [j].indexOf ("*") < 0) {
               newList.push (dirList [j])
               newCoco.push (dirCoco [j])
+              newLabel.push (dirLabel [j])
             }
           }
           dirList = newList;
           dirCoco = newCoco;
+          dirLabel = newLabel;
         } else { // Modify the star appearance
           for (let j=0; j<dirCoco.length; j++) {
             dirCoco [j] = dirCoco [j].replace (/\*/, "—*");
@@ -3407,6 +3433,8 @@ function reqDirs (imdbroot) { // Read the dirs in imdb (requestDirs)
         $ ("#imdbDirs").text (dirList);
         dirCoco = dirCoco.join ("\n").trim ();
         $ ("#imdbCoco").text (dirCoco);
+        dirLabel = dirLabel.join ("\n").trim ();
+        $ ("#imdbLabels").text (dirLabel);
         resolve (dirList);
       } else {
         reject ({

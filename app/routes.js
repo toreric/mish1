@@ -126,13 +126,26 @@ module.exports = function (app) {
         //dirlist.splice (0, 0, imdbLink + "/")
         let dirtext = dirlist.join ("€")
         let dircoco = [] // directory content counter
+        let dirlabel = [] // Album label thumbnail paths
         for (let i=0; i<dirlist.length; i++) {
-          // Counting the number of thumbnails
-          let pics = " (" + execSync ("echo -n `ls " + dirlist [i] + "|grep -c ^_mini_`") + ")"
-          // Counting the number of subdirectories
+          // Get all thumbnails and select randomly one to be used as "subdirectory label"
+          cmd = "echo -n `ls " + dirlist [i] + "/_mini_* 2>/dev/null`"
+//console.log(cmd)
+          let pics = execSync (cmd)
+          pics = pics.toString ().trim ().split (" ")
+          let npics = pics.length
+          if (npics > 0) {
+            var albumLabel = pics [(Math.random ()*npics).toString () [0]]
+          } else {albumLabel = ""}
+//console.log("albumLabel",albumLabel);
+          // Count the number of thumbnails, i.e. pictures
+          //let pics = " (" + execSync ("echo -n `ls " + dirlist [i] + "|grep -c ^_mini_`") + ")"
+          // Count the number of subdirectories
           let subs = occurrences (dirtext, dirlist [i]) - 1
-          if (i>0 && subs) {pics += subs}
-          dircoco.push (pics)
+          npics = " (" + npics + ")"
+          if (i > 0 && subs) {npics += subs}
+          dircoco.push (npics)
+          dirlabel.push (albumLabel)
         }
         let ignorePath = homeDir +"/"+ IMDB_ROOT + "/_imdb_ignore.txt";
         let ignore = execSync ("cat " + ignorePath).toString ().trim ().split ("\n")
@@ -143,11 +156,12 @@ module.exports = function (app) {
         }
         dirtext = dirtext.replace (/€/g, "\n")
         dircoco = dircoco.join ("\n")
+        dirlabel = dirlabel.join ("\n")
         // NOTE: rootDir = homeDir + "/" + IMDB_ROOT, but here "@" separates them (important!):
         dirtext = homeDir +"@"+ IMDB_ROOT + "\n" + dirtext + "\nNodeJS " + process.version.trim ()
         //console.log ("C\n", dirtext)
         res.location ('/')
-        res.send (dirtext + "\n" + dircoco)
+        res.send (dirtext + "\n" + dircoco + "\n" + dirlabel)
         res.end ()
         console.log ('Directory information sent from server')
       })
@@ -168,7 +182,7 @@ module.exports = function (app) {
       var tmp = execSync ("echo $IMDB_ROOT").toString ().trim ()
       if (dirlist.indexOf (tmp) < 0) {tmp = ""}
       dirlist = tmp + '\n' + dirlist
-console.log (dirlist)
+//console.log (dirlist)
       res.location ('/')
       res.send (dirlist)
       res.end ()

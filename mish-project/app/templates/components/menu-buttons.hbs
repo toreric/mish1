@@ -46,6 +46,7 @@
 <div id="imdbCoco" title="albums content counts" style="display:none"></div>
 <div id="imdbDir" title="path to album" style="display:none"></div>
 <div id="imdbDirs" title="paths to albums" style="display:none"></div>
+<div id="imdbLabels" title="paths to album labels" style="display:none"></div>
 <div id="imdbLink" title="link to find albums" style="display:none"></div>
 <div id="imdbRoot" title="find albums here" style="display:none"></div>
 <div id="imdbRoots" title="where to find albums" style="display:none"></div>
@@ -76,11 +77,9 @@
 <!-- ///// SPECIAL PLACEHOLDERS/LINKS (hidden) ///// -->
 <button style="display:none;" id="abumEditOption" {{action 'abumEditOption'}}></button>
 <!-- input style="display:none;" id="fileDialog" type="file" nwdirectory directory -->
-
 <input style="display:none" id="requestDirs" onclick={{perform requestDirs}}>
 <div class="shortMessage blackBorder" style="display:none">RT-log-message</div>
-
-<!-- a href="null" id="download" style="display:none" download>DOWNLOAD-AREA</a -->
+<a href="null" id="download" style="display:none" download>DOWNLOAD-AREA</a>
 
 <!-- ///// DISPLAY THE (SLIDE) SHOW IMAGE ///// -->
 <div class="img_show" style="display:none" draggable="false">
@@ -89,8 +88,8 @@
     <!-- ///// RIGHT A-LINK BUTTONS (NOTE: without href attributes) /////  -->
     <div class="nav_links" draggable="false" ondragstart="return false">
       <!-- NEXT-ARROW-BUTTONS -->
-      <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' true }} title="Nästa bild">&#11166;</a> &nbsp;<br>
-      <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' false}} title="Föregående bild">&#11164;</a> &nbsp;<br>
+      <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' true }} title="Nästa bild">»</a> &nbsp;<br>
+      <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' false}} title="Föregående bild">«</a> &nbsp;<br>
       <!-- AUTO-SLIDE-SHOW SELECT -->
       <a class="nav_ toggleAuto" draggable="false" ondragstart="return false" {{action 'toggleAuto'}} style="font-size:1.2em;font-family:monospace" title="Automatiskt bildbyte">AUTO</a><br>
       <!-- AUTO-SLIDE-SHOW SPEED SELECT -->
@@ -219,7 +218,7 @@
 </div>
 
 <!-- ///// SHOW MINI IMAGES (thumbnails) ///// -->
-<!-- Uses allNames from menu-buttons.js -->
+<!-- Uses subaList and allNames from menu-buttons.js -->
 <p class='showCount' draggable="false" ondragstart="return false">
   <span class='imDir'>{{{albumName}}}</span>
   <span class="imDir ifZero">
@@ -228,14 +227,22 @@
     <span class='numHidden' title="invisible">0</span>&nbsp;dolda
     (<span class='numMarked' title="marked">0</span>&nbsp;markerade)
   </span>
-  <br>
-  {{#each subaList as |suba|}}
-    <a class="imDir" style="padding:0 0.35em;font-size:90%;font-weight:bold" {{action 'subaSelect' suba}}>{{{suba}}}</a>
-  {{else}}
-  {{/each}}
-</p>
+  <br><!-- Links to SubAlbums -->
+  <div class="miniImgs" style="background:#222">
+    {{#each subaList as |suba|}}
+      <div style="background:transparent;display:inline-block;vertical-align:middle">
+        <a class="imDir" {{action 'subaSelect' suba.album}}>
+          <span>{{suba.album}}</span>
+          {{#if suba.label}}
+            <br><img src={{suba.label}}>
+          {{/if}}
+        </a>
+      </div>
+    {{else}}
+    {{/each}}
+  </div>
+</p><!-- MiniImages = links to slides -->
 <div class="miniImgs">
-<!--div class="miniImgs"-->
   {{#sortable-objects sortableObjectList=allNames sortEndAction='sortEndAction' enableSort=true useSwap=false}}
     {{#each allNames as |file|}}
       {{#draggable-object content=file isSortable=true overrideClass='show-inline'}}
@@ -274,7 +281,9 @@
   (<span class='numMarked' title="marked">0</span>&nbsp;markerade)
   <br>
   {{#each subaList as |suba|}}
-    <a class="imDir" style="padding:0 0.35em;font-size:90%;font-weight:bold" {{action 'subaSelect' suba}}>{{{suba}}}</a>
+  <a class="imDir" {{action 'subaSelect' suba.album}}>
+    <span>{{suba.album}}</span>
+  </a>
   {{else}}
   {{/each}}
 </p>
