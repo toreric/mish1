@@ -119,7 +119,7 @@ module.exports = function (app) {
     //Replacing: findDirectories (imdbLink).then (dirlist => {
     allDirs (imdbLink).then (dirlist => {
       //console.log ("\n\na\n", dirlist)
-      areAlbums (dirlist).then (dirlist => {
+      areAlbums (dirlist).then (async dirlist => {
         dirlist = dirlist.sort ()
         // imdbLink is the www-imdb root, add here:
         // for findDirectories, allDirs doesn't need this
@@ -131,8 +131,10 @@ module.exports = function (app) {
           // Get all thumbnails and select randomly one to be used as "subdirectory label"
           cmd = "echo -n `ls " + dirlist [i] + "/_mini_* 2>/dev/null`"
 //console.log(cmd)
-          let pics = execSync (cmd)
+          //let pics = execSync (cmd)
+          let pics = await execP (cmd)
           pics = pics.toString ().trim ().split (" ")
+          if (!pics [0]) {pics = [];} // Remove a "" element
           let npics = pics.length
           if (npics > 0) {
             var albumLabel = pics [(Math.random ()*npics).toString () [0]]
@@ -148,7 +150,7 @@ module.exports = function (app) {
           dirlabel.push (albumLabel)
         }
         let ignorePath = homeDir +"/"+ IMDB_ROOT + "/_imdb_ignore.txt";
-        let ignore = execSync ("cat " + ignorePath).toString ().trim ().split ("\n")
+        let ignore = (await execP ("cat " + ignorePath)).toString ().trim ().split ("\n")
         for (let j=0; j<ignore.length; j++) {
           for (let i=0; i<dirlist.length; i++) {
             if (ignore [j] && dirlist [i].startsWith (ignore [j])) {dircoco [i] += "*"}

@@ -794,7 +794,6 @@ export default Component.extend (contextMenuMixin, {
   albumData: () => {return []}, // Directory structure for the selected imdbRoot
   loggedIn: false,
   subaList: [],
-  subaPic: [],
   // HOOKS, that is, Ember "hooks" in the execution cycle
   /////////////////////////////////////////////////////////////////////////////////////////
   //----------------------------------------------------------------------------------------------
@@ -1086,7 +1085,7 @@ export default Component.extend (contextMenuMixin, {
         }
         return;
       }
-      if (evnt.button === 2) {return;}
+      if (evnt.button === 2) {return;} // contextmenu may take it
       var namepic = tgt.parentElement.parentElement.id.slice (1);
 
       // Check if the intention is to "mark" (Shift + click):
@@ -1097,6 +1096,7 @@ export default Component.extend (contextMenuMixin, {
           return;
         }), 20);
       } else {
+        if (tgt.parentElement.className) {return;} // A mini-picture is classless
         var origpic = tgt.title;
         var minipic = tgt.src;
         var showpic = minipic.replace ("/_mini_", "/_show_");
@@ -1107,7 +1107,6 @@ export default Component.extend (contextMenuMixin, {
     }
     document.addEventListener ("click", triggerClick, false); // Click (at least left click)
     document.addEventListener ("contextmenu", triggerClick, false); // Right click
-    //document.oncontextmenu = (e) => {triggerClick (e); return;}
 
     // Then the keyboard, actions.showNext etc.:
     var that = this;
@@ -1742,7 +1741,7 @@ export default Component.extend (contextMenuMixin, {
     //============================================================================================
     selectAlbum () {
 
-console.log(this.get ("imdbDirs"));
+//console.log(this.get ("imdbDirs"));
       let that = this;
       let value = $ ("[aria-selected='true'] a.jstree-clicked");
       if (value && value.length > 0) {
@@ -1805,42 +1804,65 @@ console.log(this.get ("imdbDirs"));
             tmp1 = tmp1.slice (1); // at root
           }
         }
-
         var Aobj = EmberObject.extend ({
           album: '',
-          label: ''
+          image: '',
+          name: ''
         }); // NOTE: For the album menu rows in *.hbs (a.imDir)
         let a = [];
         for (let i=0; i<tmp.length; i++) {
           a [i] = Aobj.create ({
             album: tmp [i],
-            label: tmp1 [i]
+            image: tmp1 [i],
+            name: tmp [i].replace (/_/g, " ")
           });
         }
-        this.set ("subaList", a);
 //console.log("album",tmp);
-//console.log("label",tmp1);
+//console.log("image",tmp1);
+        this.set ("subaList", a);
         later ( ( () => {
-          let n = $ ("a.imDir").length/2;
+          $ ("a.imDir").attr ("title", "ALBUM");
+          let n = $ ("a.imDir").length/2; // there is also a bottom link line...
+          let nsub = n;
+          let z, iz;
           if (tmp [0] === "|«") {
             $ ("a.imDir").each (function (index, element) {
-              if (index < 3) {
-                $ (element).attr ("title", returnTitles [index]);
-              } else if (index - n > -1 && index - n < 3) {
-                $ (element).attr ("title", returnTitles [index - n]);
-              } else if (index > n) {
-                return false;
+              if (index < n) {z = 0;} else {z = n;}
+              iz = index - z;
+              if (iz < 3) {
+                $ (element).attr ("title", returnTitles [iz]);
+                if (!z) {
+                  nsub--;
+                  let obj = $ (element).closest ("div.subAlbum");
+                  obj.addClass ("BUT_1");
+                  if (iz === 2 && nsub > 0) {
+                    obj.after ("<div class=\"BUT_2\"> " + nsub + " underalbum</div><br>"); // i18n
+                  }
+                }
               }
             });
           } else if (tmp [0] === "‹›") {
             $ ("a.imDir").each (function (index, element) {
-              if (index === 0 || index === n) {
+              if (index < n) {z = 0;} else {z = n;}
+              iz = index - z;
+              if (iz === 0) {
                 $ (element).attr ("title", returnTitles [index + 2]);
-              } else if (index > n) {
-                return false;
+                if (!z) {
+                  nsub--;
+                  let obj = $ (element).closest ("div.subAlbum");
+                  obj.addClass ("BUT_1");
+                  obj.after ("<br>");
+                  //$ (element).closest ("div.subAlbum").after ("<br>");
+                }
               }
             });
+          } else {
+            let obj = $ ("div.subAlbum").first ();
+            if (nsub > 0) {
+              obj.before ("<div class=\"BUT_2\"> " + nsub + " underalbum</div><br>"); // i18n
+            }
           }
+console.log("nsub",nsub);
         }), 50);
         let tmp2 = [""];
         if (value) {tmp2 = value.split ("/");}
@@ -2008,7 +2030,8 @@ console.log(this.get ("imdbDirs"));
         document.getElementById ("divDropbox").className = "hide-all";
         document.getElementById("reLd").disabled = false;
         document.getElementById("saveOrder").disabled = false;
-        scrollTo (null, $ (".showCount:first").offset ().top);
+        scrollTo (null, $ ("#highUp").offset ().top);
+        //scrollTo (null, $ (".showCount:first").offset ().top);
       }
     },
     //============================================================================================
@@ -3381,6 +3404,9 @@ function reqDirs (imdbroot) { // Read the dirs in imdb (requestDirs)
         var dim = (dirList.length - 2)/3;
         var dirLabel = dirList.splice (2 + 2*dim, dim);
         var dirCoco = dirList.splice (2 + dim, dim);
+//console.log(dirList);
+//console.log(dirLabel);
+//console.log(dirCoco);
         $ ("#userDir").text (dirList [0].slice (0, dirList [0].indexOf ("@")));
         $ ("#imdbRoot").text (dirList [0].slice (dirList [0].indexOf ("@") + 1));
         $ ("#imdbLink").text (dirList [1]);
@@ -3431,9 +3457,9 @@ function reqDirs (imdbroot) { // Read the dirs in imdb (requestDirs)
         dirList = dirList.join ("\n");
 //console.log("########\n",dirList);
         $ ("#imdbDirs").text (dirList);
-        dirCoco = dirCoco.join ("\n").trim ();
+        dirCoco = dirCoco.join ("\n");
         $ ("#imdbCoco").text (dirCoco);
-        dirLabel = dirLabel.join ("\n").trim ();
+        dirLabel = dirLabel.join ("\n"); // Don't trim!
         $ ("#imdbLabels").text (dirLabel);
         resolve (dirList);
       } else {

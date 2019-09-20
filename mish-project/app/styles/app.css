@@ -548,9 +548,25 @@ button[disabled] {
 }
 .showCount {
   display: none;
+  margin-left: 1em;
 }
 .showCount, .imDir, .numShown, .numHidden, .numMarked {
   background-color: #222;
+  text-align: center;
+}
+.albumsHdr {
+  background-color: #222;
+  text-align: left;
+  margin-left: 1em;
+}
+.subAlbum {
+  background:transparent;
+  display:inline-block;
+  vertical-align:middle;
+  width: 100px;
+  margin: 0.5em 0 0 0;
+  font-size: 80%;
+  font-weight: bold;
 }
 .imDir .albumName {
   background: transparent;
@@ -559,17 +575,27 @@ button[disabled] {
   padding-right: 50px;
   background: #000;
 }
-a.imDir span{
+.BUT_1 {
+  width: 1em;
   border: 1.5px solid #666;
   border-radius: 4px;
-  padding: 0 0.35em;
-  font-size: 80%;
+  padding: 0 0.1em 0.2em 0.4em;
+  margin: 0 0 0 0;
+  cursor: pointer;
+  font-size: 1.1em;
+}
+.BUT_2 {
+  background:transparent;
+  display:inline-block;
+  padding: 0.2em 0.1em 0.2em 0.4em;
+}
+a.imDir span{
   background: transparent;
-  font-weight: bold;
 }
 a.imDir img {
-  height: 64px;
-  margin-top: 0.1em;
+  height: 80px;
+  width: 80px;
+  border-radius: 2px;
 }
 a.imDir * {
   color: #aef;

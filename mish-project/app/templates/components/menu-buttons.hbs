@@ -34,7 +34,7 @@
   </div>
   <br><span class="usrlg"></span><!-- User information log -->
 </div>
-<!-- ///// JQUERY DIALOG ///// -->
+<!-- ///// JQUERY DIALOGS ///// -->
 <div id="dialog" style="display:none">DIALOG</div>
 <div id="helpText" style="display:none">HELP</div>
 <!-- ///// PARAMETER STORE ///// -->
@@ -219,6 +219,29 @@
 
 <!-- ///// SHOW MINI IMAGES (thumbnails) ///// -->
 <!-- Uses subaList and allNames from menu-buttons.js -->
+<p class='albumsHdr' draggable="false" ondragstart="return false">
+  <span class='imDir'>{{{albumName}}}</span>
+  <!-- span class="imDir ifZero">
+    <span class='imDir'> &mdash; </span>
+    <span class='numShown' title="shown">0</span>&nbsp;visas,
+    <span class='numHidden' title="invisible">0</span>&nbsp;dolda
+    (<span class='numMarked' title="marked">0</span>&nbsp;markerade)
+  </span -->
+  <br><!-- Links to SubAlbums -->
+  <div class="miniImgs" style="background:#222">
+    {{#each subaList as |suba|}}
+      <div class="subAlbum" {{action 'subaSelect' suba.album}}>
+        <a class="imDir">
+          {{#if suba.image}}
+            <img src={{suba.image}}><br>
+          {{/if}}
+          <span>{{{suba.name}}}</span>
+        </a>
+      </div>
+    {{else}}
+    {{/each}}
+  </div>
+</p>
 <p class='showCount' draggable="false" ondragstart="return false">
   <span class='imDir'>{{{albumName}}}</span>
   <span class="imDir ifZero">
@@ -227,20 +250,6 @@
     <span class='numHidden' title="invisible">0</span>&nbsp;dolda
     (<span class='numMarked' title="marked">0</span>&nbsp;markerade)
   </span>
-  <br><!-- Links to SubAlbums -->
-  <div class="miniImgs" style="background:#222">
-    {{#each subaList as |suba|}}
-      <div style="background:transparent;display:inline-block;vertical-align:middle">
-        <a class="imDir" {{action 'subaSelect' suba.album}}>
-          <span>{{suba.album}}</span>
-          {{#if suba.label}}
-            <br><img src={{suba.label}}>
-          {{/if}}
-        </a>
-      </div>
-    {{else}}
-    {{/each}}
-  </div>
 </p><!-- MiniImages = links to slides -->
 <div class="miniImgs">
   {{#sortable-objects sortableObjectList=allNames sortEndAction='sortEndAction' enableSort=true useSwap=false}}
@@ -282,7 +291,7 @@
   <br>
   {{#each subaList as |suba|}}
   <a class="imDir" {{action 'subaSelect' suba.album}}>
-    <span>{{suba.album}}</span>
+    <span> {{{suba.name}}} &nbsp;</span>
   </a>
   {{else}}
   {{/each}}
