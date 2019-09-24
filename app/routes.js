@@ -137,8 +137,15 @@ module.exports = function (app) {
           if (!pics [0]) {pics = [];} // Remove a "" element
           let npics = pics.length
           if (npics > 0) {
-            var albumLabel = pics [(Math.random ()*npics).toString () [0]]
-          } else {albumLabel = ""}
+            let f = () => {let d = new Date; return Number (d.getTime ().toString ().slice (-1))}
+            let n = f () + 1;
+            let k = 0;
+            // Instead of seeding, loop 1 to 10 times to get some variation:
+            for (let i=0; i<n; i++) {
+              k = (Math.random ()*npics);
+            }
+            var albumLabel = pics [Number (k.toString ().replace (/\..*/, ""))]
+          } else {albumLabel = "€" + dirlist [i]}
 //console.log("albumLabel",albumLabel);
           // Count the number of thumbnails, i.e. pictures
           //let pics = " (" + execSync ("echo -n `ls " + dirlist [i] + "|grep -c ^_mini_`") + ")"
@@ -148,6 +155,18 @@ module.exports = function (app) {
           if (i > 0 && subs) {npics += subs}
           dircoco.push (npics)
           dirlabel.push (albumLabel)
+        }
+        for (let i=0; i<dirlist.length; i++) {
+          if (dirlabel [i].slice (0, 1) === "€") {
+            var albumLabel = dirlabel [i].slice (1);
+            dirlabel [i] = "";
+            for (let j=i+1; j<dirlist.length; j++) {
+              if (albumLabel === dirlabel [j].slice (0, albumLabel.length)) {
+                dirlabel [i] = dirlabel [j];
+                break;
+              }
+            }
+          }
         }
         let ignorePath = homeDir +"/"+ IMDB_ROOT + "/_imdb_ignore.txt";
         let ignore = (await execP ("cat " + ignorePath)).toString ().trim ().split ("\n")
@@ -906,9 +925,9 @@ module.exports = function (app) {
       if (tmp.length === 0) tmp = "-" // Insert fill character
       txt12 = txt12 +'\n'+ tmp
     }
+    // Triggers browswer autorefresh but no meaning to refresh symlinks:
     let qrn = '?' + Math.random().toString(36).substr(2,4)
     if (symlink === 'symlink') {qrn = ''}
-    // Trigger browswer autorefresh but no meaning to refresh symlinks
     return (origfile +'\n'+ showfile + qrn +'\n'+ minifile + qrn +'\n'+ namefile +'\n'+ txt12.trim () +'\n'+ symlink).trim () // NOTE: returns 7 rows
   }
 

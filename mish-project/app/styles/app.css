@@ -562,7 +562,7 @@ button[disabled] {
 .subAlbum {
   background:transparent;
   display:inline-block;
-  vertical-align:middle;
+  vertical-align:top;
   width: 100px;
   margin: 0.5em 0 0 0;
   font-size: 80%;
@@ -593,7 +593,7 @@ a.imDir span{
   background: transparent;
 }
 a.imDir img {
-  height: 80px;
+  height: 60px;
   width: 80px;
   border-radius: 2px;
 }

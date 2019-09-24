@@ -1831,6 +1831,7 @@ export default Component.extend (contextMenuMixin, {
               iz = index - z;
               if (iz < 3) {
                 $ (element).attr ("title", returnTitles [iz]);
+                $ (element).closest ("div.subAlbum").attr ("title", returnTitles [iz]);
                 if (!z) {
                   nsub--;
                   let obj = $ (element).closest ("div.subAlbum");
@@ -1847,6 +1848,7 @@ export default Component.extend (contextMenuMixin, {
               iz = index - z;
               if (iz === 0) {
                 $ (element).attr ("title", returnTitles [index + 2]);
+                $ (element).closest ("div.subAlbum").attr ("title", returnTitles [index + 2]);
                 if (!z) {
                   nsub--;
                   let obj = $ (element).closest ("div.subAlbum");
