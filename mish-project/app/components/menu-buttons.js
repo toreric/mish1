@@ -49,6 +49,7 @@ export default Component.extend (contextMenuMixin, {
 
       if (imdbroot === "") {
         // Prepare to select imdbRoot
+        $ ("div.settings div.root").show ();
         $ ("div.settings div.check").hide ();
         return;
       }
@@ -2685,7 +2686,7 @@ console.log("nsub",nsub);
             if (allow.albumEdit || allow.adminAll) {
               $ ("div.settings, div.settings div.root").show ();
             } else {
-              $ ("div.settings, div.settings div.root").hide ();
+              $ ("div.settings, div.settings div.root").show ();
             }
             $ (".cred.name").attr ("title","användarnamn [användarkategori]"); // i18n
             // The remaining is already prepared since loginError() retured false
@@ -2777,6 +2778,7 @@ console.log("nsub",nsub);
         $ ("div.settings, div.settings div.root, div.settings div.check").hide ();
         return;
       }
+      spinnerWait (false);
       //let that =this;
       //document.getElementById ("imageList").className = "hide-all";
       $ ("#dialog").dialog ("close");
@@ -2790,12 +2792,6 @@ console.log("nsub",nsub);
       } else {
         $ ("div.settings div.root").show (); //important!
         $ (".jstreeAlbumSelect").hide ();
-//kan slopas?
-        if ($ ("#imdbRoot").text () === "") {
-          this.actions.selectRoot ("");
-          return;
-        }
-//
       }
       this.actions.setAllow (); // Resets unconfirmed changes
       document.querySelector ('div.settings button.confirm').disabled = true;

@@ -3,35 +3,37 @@
 <div id="title" draggable="false" ondragstart="return false" display="inline">
   <span class="proid" title=""> Mish</span>
   <form action="">
-    <button type="submit" class="cred login" title="" {{action "logIn"}}>Logga in</button>
-    <input type="text" class="cred user" size="10" title="Användare" placeholder="User name" value="">
-    <input type="password" class="cred password" size="10" title="Lösenord" placeholder="Password">
-    <span class="cred name"></span>
-    <button type="submit" class="viewSettings" title="" {{action "toggleSettings"}}> Inställningar </button>
+    <div style="display: inline-block;vertical-align: top;">
+      <button type="submit" class="cred login" title="" {{action "logIn"}}>Logga in</button>
+      <input type="text" class="cred user" size="10" title="Användare" placeholder="User name" value="">
+      <input type="password" class="cred password" size="10" title="Lösenord" placeholder="Password">
+      <span class="cred name"></span>
+      <button type="submit" class="viewSettings" title="" {{action "toggleSettings"}}> Inställningar </button>
+    </div>
+    <!-- ///// Root directory and checkbox SETTINGS ///// -->
+    <div class="settings" draggable="false" ondragstart="return false" style="display:none">
+      <div class="root">
+        <p style="margin:0 2em -0.5em 0"> Välj albumplats </p><br>
+        <select id="rootSel" title="Albumkatalog" onchange={{action 'selectRoot' value='target.value'}}>
+          {{#each imdbRoots as |rootChoice|}}
+            <option onclick="this.parentElement.blur()" value={{rootChoice}} selected={{eq imdbRoot rootChoice}}>{{rootChoice}}</option><!-- imdbRoot (== #imdbRoot) is set as chosen -->
+          {{/each}}
+        </select>
+      </div>
+      <div class="check">
+        <button class="confirm" {{action 'setAllow' true}}>Bekräfta</button>
+        <button {{action 'toggleSettings'}}> Stäng </button>
+        <div id="setAllow">
+          Insert checkboxes here
+        </div>
+      </div>
+    </div>
   </form>
   <!-- SEARCH BUTTON without href attribute -->
   <p class="search_link" draggable="false" ondragstart="return false">
     <a draggable="false" ondragstart="return false" {{action 'findText' }} title="Sök i bildtexter...">&nbsp;SÖK TEXT</a>
   </p>
   <button class="testerButton" title="Dummy button" {{action "testSomething"}} style="top:0;right:0;position:absolute" style="display:none"> · </button>
-  <!-- ///// Root directory and checkbox SETTINGS ///// -->
-  <div class="settings" draggable="false" ondragstart="return false" style="display:none">
-    <div class="root">
-      <p style="margin:0 2em -0.5em 0"> Välj albumplats </p><br>
-      <select id="rootSel" title="Albumkatalog" onchange={{action 'selectRoot' value='target.value'}}>
-        {{#each imdbRoots as |rootChoice|}}
-          <option onclick="this.parentElement.blur()" value={{rootChoice}} selected={{eq imdbRoot rootChoice}}>{{rootChoice}}</option><!-- imdbRoot (== #imdbRoot) is set as chosen -->
-        {{/each}}
-      </select>
-    </div>
-    <div class="check">
-      <button class="confirm" {{action 'setAllow' true}}>Bekräfta</button>
-      <button {{action 'toggleSettings'}}> Stäng </button>
-      <div id="setAllow">
-        Insert checkboxes here
-      </div>
-    </div>
-  </div>
   <br><span class="usrlg"></span><!-- User information log -->
 </div>
 <!-- ///// JQUERY DIALOGS ///// -->

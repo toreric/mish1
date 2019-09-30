@@ -15,9 +15,9 @@ cd /home/tore/Arbeten/mish
 #IMDB_HOME=/mnt/sda2
 IMDB_HOME=/home/tore
 #IMDB_ROOT=MISH
-IMDB_ROOT='""'
 IMDB_ROOT=Framkallning_2019
 IMDB_ROOT=album-1
+IMDB_ROOT='""'
 if [[ $1 ]]; then
   IMDB_HOME=$1
   if [[ $2 ]]; then

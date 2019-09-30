@@ -37,9 +37,21 @@ module.exports = function (app) {
   app.all ('*', function (req, res, next) {
     if (show_imagedir) {
       console.log (" IMDB_DIR:", IMDB_DIR)
+      console.log (req.params)
+      console.log (req.hostname)
+      console.log (req.originalUrl)
     }
     //console.log (process.memoryUsage ())
     next () // pass control to the next matching handler
+  })
+
+  // ##### #0 00 Find information 'from outside'
+  app.get ('/:p([^/]+(/[^/]+)*)', function (req, res, next) {
+//console.log (req.params.p)
+    if (req.params.p.toString ().slice (0, 5) === "find/") {
+      res.send ('Try to find something in ' + IMDB_ROOT)
+    }
+    next ()
   })
 
   // ##### #0.0 Get file access information
@@ -130,7 +142,6 @@ module.exports = function (app) {
         for (let i=0; i<dirlist.length; i++) {
           // Get all thumbnails and select randomly one to be used as "subdirectory label"
           cmd = "echo -n `ls " + dirlist [i] + "/_mini_* 2>/dev/null`"
-//console.log(cmd)
           //let pics = execSync (cmd)
           let pics = await execP (cmd)
           pics = pics.toString ().trim ().split (" ")
@@ -146,7 +157,6 @@ module.exports = function (app) {
             }
             var albumLabel = pics [Number (k.toString ().replace (/\..*/, ""))]
           } else {albumLabel = "€" + dirlist [i]}
-//console.log("albumLabel",albumLabel);
           // Count the number of thumbnails, i.e. pictures
           //let pics = " (" + execSync ("echo -n `ls " + dirlist [i] + "|grep -c ^_mini_`") + ")"
           // Count the number of subdirectories
@@ -585,6 +595,8 @@ module.exports = function (app) {
       if (cols [i]) {columns += "||" + taco [i]}
     }
     columns = columns.slice (2)
+
+//---------
     try {
       let db = new sqlite.Database ('imdb/_imdb_images.sqlite', function (err) {
         if (err) {
@@ -616,6 +628,7 @@ module.exports = function (app) {
     } catch (err) {
       console.error ("€RR", err.message)
     }
+//---------
   })
 
   // ===== UNHANDLED REJECTIONS Express unhandledRejection
@@ -652,7 +665,7 @@ module.exports = function (app) {
         tmp = 'NO PERMISSION to' + PWD_PATH + '/' + fileName
         tmp = '\033[31m' + tmp + '\033[0m'
         return tmp
-// =============================== HÄR BORDE EN STOR VARNING KOMMA FRAM FÖR TEXT TILL FEL USER
+// ==================== HÄR BORDE EN STOR VARNING KOMMA FRAM FÖR TEXT TILL FEL USER
       }
     })
     tmp = 'DELETED ' + fileName
@@ -965,7 +978,7 @@ module.exports = function (app) {
     // Establish the symlink to the chosen album root directory
     execSync ("ln -sfn " + homeDir + "/" + IMDB_ROOT + " " + imdbLink)
     let rootDir = execSync ("readlink " + imdbLink).toString ().trim ()
-    console.log ("Path in '" + imdbLink + "': " + rootDir)
+    console.log ("Path to '" + imdbLink + "': " + rootDir)
   }
 }
 // End module.exports
