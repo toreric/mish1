@@ -85,7 +85,7 @@
 
 <!-- ///// DISPLAY THE (SLIDE) SHOW IMAGE ///// -->
 <div class="img_show" style="display:none" draggable="false">
-  <span class='imDir'>{{{albumName}}}</span>
+  <span class='imDir path'>{{{albumName}}}</span>
   <div id="wrap_pad" draggable="false">
     <!-- ///// RIGHT A-LINK BUTTONS (NOTE: without href attributes) /////  -->
     <div class="nav_links" draggable="false" ondragstart="return false">
@@ -115,9 +115,9 @@
 
               <a style="top:50%; left:-3em; width:1%; border:0;" draggable="false" ondragstart="return false" {{action 'hideShow'}}><p>återgå<br><span style="font:normal 1em monospace!important">Esc</span></p></a>
 
-              <a style="top: 0%; left: 0%; width: 50%; height: 100%;" draggable="false" ondragstart="return false" {{action 'showNext' false}}>föregående<br>&larr;<br>&nbsp;<br>&nbsp;</a>
+              <a style="top: 0%; left: 0%; width: 50%; height: 100%;" draggable="false" ondragstart="return false" {{action 'showNext' false}}>föregående<br>«<br>&nbsp;<br>&nbsp;</a>
 
-              <a style="top: 0%; left: 50%; width: 50%; height: 100%; border-left:0;" draggable="false" ondragstart="return false" {{action 'showNext' true}}>nästa<br>&rarr;<br>&nbsp;<br>&nbsp;</a>
+              <a style="top: 0%; left: 50%; width: 50%; height: 100%; border-left:0;" draggable="false" ondragstart="return false" {{action 'showNext' true}}>nästa<br>»<br>&nbsp;<br>&nbsp;</a>
 
               <a style="top:50%; right:-3em; width:1%; border:0;" draggable="false" ondragstart="return false" {{action 'hideShow'}}><p>återgå<br><span style="font:normal 1em monospace!important">Esc</span></p></a>
 
@@ -222,7 +222,7 @@
 <!-- ///// SHOW MINI IMAGES (thumbnails) ///// -->
 <!-- Uses subaList and allNames from menu-buttons.js -->
 <p class='albumsHdr' draggable="false" ondragstart="return false">
-  <span class='imDir'>{{{albumName}}}</span>
+  <span class='imDir path'>{{{albumName}}}</span>
   <!-- span class="imDir ifZero">
     <span class='imDir'> &mdash; </span>
     <span class='numShown' title="shown">0</span>&nbsp;visas,
@@ -245,7 +245,7 @@
   </div>
 </p>
 <p class='showCount' draggable="false" ondragstart="return false">
-  <span class='imDir'>{{{albumName}}}</span>
+  <span class='imDir path'>{{{albumName}}}</span>
   <span class="imDir ifZero">
     <span class='imDir'> &mdash; </span>
     <span class='numShown' title="shown">0</span>&nbsp;visas,
@@ -285,7 +285,7 @@
 <div id="lowDown"></div>
 
 <p class='showCount' draggable="false" ondragstart="return false">
-  <span class="imDir">{{{albumName}}}</span>
+  <span class="imDir path">{{{albumName}}}</span>
   <span class='imDir'> &mdash; </span>
   <span class='numShown' title="shown">0</span>&nbsp;visas,
   <span class='numHidden' title="invisible">0</span>&nbsp;dolda

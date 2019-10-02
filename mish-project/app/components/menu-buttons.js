@@ -51,6 +51,8 @@ export default Component.extend (contextMenuMixin, {
         // Prepare to select imdbRoot
         $ ("div.settings div.root").show ();
         $ ("div.settings div.check").hide ();
+        spinnerWait (false);
+        //spinnerWait (true);
         return;
       }
     }
@@ -1042,7 +1044,8 @@ export default Component.extend (contextMenuMixin, {
 //console.log("tgt.classList",tgt.classList);
         tgtClass = tgt.classList [0] || "";
       }
-      if (-1 < tgtClass.indexOf ("context-menu") || tgtClass === "spinner") {
+      //if (-1 < tgtClass.indexOf ("context-menu") || tgtClass === "spinner") {
+      if (tgtClass === "context-menu" || tgtClass === "spinner") {
         return;
       }
       if (tgt.id === "wrap_pad") {
@@ -1272,6 +1275,7 @@ export default Component.extend (contextMenuMixin, {
           } else {
             that.set ("albumText", "&nbsp; Valt album: &nbsp;");
             that.set ("albumName", '<strong class="albumName">' + tmpName + '</strong>');
+            //that.set ("albumName", tmpName);
             $ (".jstreeAlbumSelect p:first a").attr ("title", " Ta bort | gör nytt album ");
           }
           resolve (data); // Return file-name text lines
@@ -1701,7 +1705,7 @@ export default Component.extend (contextMenuMixin, {
     //============================================================================================
     selectRoot (value) { // ##### Select album root dir (imdb) from dropdown
 
-      spinnerWait (true);
+      //spinnerWait (true);
       $ ("#toggleTree").attr ("title", "Välj album");
       // Close all dialogs/windows
       ediTextClosed ();
@@ -1864,8 +1868,8 @@ export default Component.extend (contextMenuMixin, {
             if (nsub > 0) {
               obj.before ("<div class=\"BUT_2\"> " + nsub + " underalbum</div><br>"); // i18n
             }
+            console.log ("Selected: " + imdbDir + ", nsub = " + nsub);
           }
-console.log("nsub",nsub);
         }), 50);
         let tmp2 = [""];
         if (value) {tmp2 = value.split ("/");}
@@ -1877,10 +1881,15 @@ console.log("nsub",nsub);
           that.set ("albumName", that.get ("imdbRoot"));
         }
         $ ("#refresh-1").click ();
-        console.log ("Selected: " + imdbDir);
-        if (value) {
+        /*if (value) {
           $ ("#toggleTree").attr ("title", "Valt album:  " + that.get ("albumName") + "  (" + imdbDir.replace (/imdb/, that.get ("imdbRoot")) + ")"); // /imdb/ == imdbLink
+        }*/
+
+        if (value) {
+          $ ("#toggleTree").attr ("title", "Valt album:  " + that.get ("albumName") + "  (" + albumPath () + ")");
+          $ (".imDir.path").attr ("title-1", albumPath ());
         }
+
         resolve (true);
         later ( ( () => {
           // Don't hide login (at top) if we have 0/top position!
@@ -2664,7 +2673,7 @@ console.log("nsub",nsub);
               //console.log ("Err, allowValue", $ ("#allowValue").text ());
             //}), 200);
           } else {
-            spinnerWait (true);
+            spinnerWait (false);
             $ ("#title button.cred").text ("Logga ut");
             $ ("#title button.cred").attr ("title", "Du är inloggad!");
             $ ("#title button.viewSettings").attr ("title", "Se inställningar - klicka här!");
@@ -2716,7 +2725,7 @@ console.log("nsub",nsub);
             }
             loginStatus = status; // global
             if (status === "viewer") {usr = "anonym";}  // i18n
-            spinnerWait (true);
+            //spinnerWait (true);
             $ ("#allowValue").text (allow);
             $ ("#title span.cred.name").text (usr +" ["+ status +"]");
             // Assure that the album tree is properly shown after LOGIN
@@ -2779,8 +2788,6 @@ console.log("nsub",nsub);
         return;
       }
       spinnerWait (false);
-      //let that =this;
-      //document.getElementById ("imageList").className = "hide-all";
       $ ("#dialog").dialog ("close");
       $ ("#searcharea").dialog ("close");
       ediTextClosed ();
@@ -2834,6 +2841,11 @@ let loginStatus = "";
 let tempStore = "";
 let savedAlbumIndex = 0;
 let returnTitles = ["TOPP", "UPP", "SENASTE"];
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// Get the 'true' album path ('imdb' is the symbolic link to the actual root of albums)
+function albumPath () {
+  return $ ("#imdbDir").text ().replace (/imdb/, $ ("#imdbRoot").text ());
+}
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Check if an album/directory name can be accepted (a copy from the server)
 function acceptedDirName (name) { // Note that &ndash; is accepted:
@@ -3389,10 +3401,10 @@ function reqRoot () { // Propose root directory (requestDirs)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function reqDirs (imdbroot) { // Read the dirs in imdb (requestDirs)
   if (imdbroot === undefined) {return;}
-  spinnerWait (true);
+  //spinnerWait (true);
   return new Promise ( (resolve, reject) => {
     var xhr = new XMLHttpRequest ();
-    spinnerWait (true); // Mostly superfluous
+    //spinnerWait (true); // Mostly superfluous
     xhr.open ('GET', 'imdbdirs/' + imdbroot, true, null, null);
     xhr.onload = function () {
       //spinnerWait (false);
@@ -3800,7 +3812,7 @@ let prepSearchDialog = () => {
               return;
             }
 //console.log(sWhr);
-            spinnerWait (true);
+            //spinnerWait (true);
             searchText (sTxt, and, sWhr).then (result => {
               $ ("#temporary_1").text ("");
               let cmd = [];
