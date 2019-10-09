@@ -664,7 +664,6 @@ a.imDir img:hover {
   margin-bottom: 0px;
 }
 .img_mini .img_name, .img_mini .img_txt1, .img_mini .img_txt2 {
-  display: block;
   font-size: 84%;
   height: 1.2em;
   font-weight: normal;
@@ -695,15 +694,29 @@ a.imDir img:hover {
   margin: 0;
 }
 .img_txt1 {
-  font-size: 115%;
   font-style: normal;
-  font-weight: normal;
-  padding: 6px 3px 3px 3px;
 }
-.img_txt2 {
-  font-size: 100%;
+.img_txt1:hover::before {
+  content: attr(title);
+  position: fixed;
+  left: 4em;
+  top: 1.6em;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: normal;
+  white-space: normal;
+  width: 145px;
+  height: auto;
+  border: 0.5px #aaaaaa solid;
+  border-radius: 2px;
+  background-color: #beebff;
+  padding: 0.2em 0.2em 0.25em 0.4em;
+  color: #000;
+  font-size: 0.8em;
+  font-weight: bold;
+}
+div.img_txt2 {
   font-style: italic;
-  padding: 6px 3px 6px 3px;
 }
 .img_show .img_name {
   display: none;

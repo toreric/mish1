@@ -1858,8 +1858,9 @@ export default Component.extend (contextMenuMixin, {
                   nsub--;
                   let obj = $ (element).closest ("div.subAlbum");
                   obj.addClass ("BUT_1");
-                  obj.after ("<br>");
-                  //$ (element).closest ("div.subAlbum").after ("<br>");
+                  if (nsub > 0) {
+                    obj.after ("<div class=\"BUT_2\"> " + nsub + " underalbum</div><br>"); // i18n
+                  }
                 }
               }
             });
@@ -2689,8 +2690,8 @@ export default Component.extend (contextMenuMixin, {
               let lpath = "imdb/" + $ ("#picFound").text ();
               // The following commands must come in sequence (the picFound album is regenerated)
               execute ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb").then ();
+              userLog ("START " + $ ("#imdbRoot").text ());
             }
-            userLog ("START " + $ ("#imdbRoot").text ());
             // Hide album root selector if unqualified
             if (allow.albumEdit || allow.adminAll) {
               $ ("div.settings, div.settings div.root").show ();
