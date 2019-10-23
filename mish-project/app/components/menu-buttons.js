@@ -810,6 +810,7 @@ export default Component.extend (contextMenuMixin, {
         // Login advice:
         $ ("#title span.proid").attr ("title", "Most is safe here!");
         $ ("#title button.cred").attr ("title", logAdv);
+        $ ("#title button.cred").attr ("totip", logAdv);
         // Initialize settings:
         $ ("#picFound").text ("Funna_bilder"); // i18n
         zeroSet ();
@@ -830,6 +831,34 @@ export default Component.extend (contextMenuMixin, {
           }), 100);
         }), 177);
       }), 10);
+    });
+    // Trigger the jQuery tooltip on 'totip="..."' (custom attribute)
+    $ (function () {
+      $ (document).tooltip ({
+        items: "[totip]",
+        content: function () {
+          var elem = $ (this);
+          if (elem.is ("[totip]")) {
+            return elem.attr ("totip");
+          }
+        },
+        show: {
+          //effect: "slideDown",
+          effect: "blind",
+          delay: 0
+          //effect: "fade"
+        },
+        position: {
+          my: "left top+2",
+          at: "left bottom"
+        },
+        close: function () {
+          // Clean upp tooltip garbage and hide new tooltip text down below:
+          $ ("div.ui-helper-hidden-accessible").html ("");
+          $ ("div.ui-helper-hidden-accessible").attr ("style", "position:fixed;top:4096px");
+        }
+      });
+      $ (document).tooltip ("disable");
     });
   },
   //----------------------------------------------------------------------------------------------
@@ -1273,7 +1302,7 @@ export default Component.extend (contextMenuMixin, {
             //that.set ("imdbDir", "");
             $ ("#imdbDir").text ("");
           } else {
-            that.set ("albumText", "&nbsp; Valt album: &nbsp;");
+            that.set ("albumText", "&nbsp;&nbsp; Valt album: &nbsp;");
             that.set ("albumName", '<strong class="albumName">' + tmpName + '</strong>');
             //that.set ("albumName", tmpName);
             $ (".jstreeAlbumSelect p:first a").attr ("title", " Ta bort | gör nytt album ");
@@ -1480,13 +1509,15 @@ export default Component.extend (contextMenuMixin, {
 
       var imdbDir = $ ("#imdbDir").text ();
       if (imdbDir === "—" || imdbDir === "") {return;}
-      if (!(allow.albumEdit || allow.adminAll)) {
+      // Extract the album name and replace &nbsp; with space:
+      var album = $ (this.get ("albumName")).text ().replace (/\s/g, " ");
+      var album1 = $ ("#picFound").text ().replace (/_/g, " ");
+      if ((!(allow.albumEdit || allow.adminAll)) || album === album1) {
         userLog ("ALBUM protected");
         return;
       }
       $ (".img_show").hide ();
       var imdbRoot = $ ("#imdbRoot").text ();
-      var album = $ (this.get ("albumName")).text ();
       if (imdbDir.indexOf ("/") < 0) {
         imdbDir = imdbRoot;
       } else {
@@ -1826,7 +1857,7 @@ export default Component.extend (contextMenuMixin, {
 //console.log("image",tmp1);
         this.set ("subaList", a);
         later ( ( () => {
-          $ ("a.imDir").attr ("title", "ALBUM");
+          $ ("a.imDir").attr ("title", "Album");
           let n = $ ("a.imDir").length/2; // there is also a bottom link line...
           let nsub = n;
           let z, iz;
@@ -1888,6 +1919,7 @@ export default Component.extend (contextMenuMixin, {
 
         if (value) {
           $ ("#toggleTree").attr ("title", "Valt album:  " + that.get ("albumName") + "  (" + albumPath () + ")");
+          //$ (".imDir.path").attr ("title", albumPath ());
           $ (".imDir.path").attr ("title-1", albumPath ());
         }
 
@@ -2394,7 +2426,7 @@ export default Component.extend (contextMenuMixin, {
       fileWR (origpic).then (acc => {
         //console.log("> acc:",acc);
         if (acc !== "WR") {
-          infoDia (null, null,"Bildtexterna kan inte redigeras", "<br><span class='pink'>" + namepic + "</span> ändringsskyddad, försök igen<br><br>Om det kvarstår:<br>Kontrollera filägare", "Stäng", true);
+          infoDia (null, null,"Bildtexterna kan inte redigeras", "<br><span class='pink'>" + namepic + "</span> ändringsskyddad, försök igen<br><br>Om felet kvarstår:<br>Kontrollera filen!", "Stäng", true);
           //$ ("#textareas").dialog ("open");
           $ ("div[aria-describedby='textareas']").hide ();
           return;
@@ -2600,6 +2632,7 @@ export default Component.extend (contextMenuMixin, {
         that.actions.hideFlagged (true).then (null); // Hide flagged pics if shown
         $ ("#title button.cred").text ("Logga in");
         $ ("#title button.cred").attr ("title", logAdv);
+        $ ("#title button.cred").attr ("totip", logAdv);
         $ ("#title span.cred.name").text ("");
         this.set ("loggedIn", false);
         $ ("div.settings, div.settings div.root, div.settings div.check").hide ();
@@ -2662,9 +2695,9 @@ export default Component.extend (contextMenuMixin, {
         loginError ().then (isLoginError => {
           if (isLoginError) {
             // Update aug 2017: will not happen
-            spinnerWait (false);
             $ ("#title button.cred").text ("Logga in");
             $ ("#title button.cred").attr ("title", logAdv);
+            $ ("#title button.cred").attr ("totip", logAdv);
             this.set ("loggedIn", false);
             $ ("div.settings, div.settings div.root, div.settings div.check").hide ();
             userLog ("LOGIN error");
@@ -2674,10 +2707,11 @@ export default Component.extend (contextMenuMixin, {
               //console.log ("Err, allowValue", $ ("#allowValue").text ());
             //}), 200);
           } else {
-            spinnerWait (false);
             $ ("#title button.cred").text ("Logga ut");
-            $ ("#title button.cred").attr ("title", "Du är inloggad!");
-            $ ("#title button.viewSettings").attr ("title", "Se inställningar - klicka här!");
+            //$ ("#title button.cred").attr ("title", "Du är inloggad ..."); // more below
+            let sett = "Se inställningar - klicka här!"; //i18n
+            $ ("#title button.viewSettings").attr ("title", sett);
+            //$ ("#title button.viewSettings").attr ("totip", sett);
             $ ("#title button.viewSettings").show ();
             this.set ("loggedIn", true);
             userLog ("LOGIN");
@@ -2698,9 +2732,10 @@ export default Component.extend (contextMenuMixin, {
             } else {
               $ ("div.settings, div.settings div.root").show ();
             }
-            $ (".cred.name").attr ("title","användarnamn [användarkategori]"); // i18n
-            // The remaining is already prepared since loginError() retured false
+            // The remaining is already prepared since loginError() returned false
           }
+          spinnerWait (false);
+          $ (document).tooltip ("enable");
         });
         albumWait = false;
       }
@@ -2728,7 +2763,13 @@ export default Component.extend (contextMenuMixin, {
             if (status === "viewer") {usr = "anonym";}  // i18n
             //spinnerWait (true);
             $ ("#allowValue").text (allow);
-            $ ("#title span.cred.name").text (usr +" ["+ status +"]");
+            $ ("#title span.cred.name").html ("<b>"+ usr +"</b> ["+ status +"]");
+            let tmp = "Du är inloggad som ’" + usr + "’ med [" + status + "]-rättigheter"; // i18n
+            let tmp1 = " (logga ut om du vill byta inloggning)";
+            $ ("#title button.cred").attr ("title", tmp + tmp1);
+            $ (".cred.name").attr ("title", tmp);
+            $ ("#title button.cred").attr ("totip", tmp + tmp1);
+            $ (".cred.name").attr ("totip", tmp);
             // Assure that the album tree is properly shown after LOGIN
             that.set ("albumData", []);
             //that.set ("albumName", "");
@@ -2833,7 +2874,7 @@ export default Component.extend (contextMenuMixin, {
 /////////////////////////////////////////////////////////////////////////////////////////
 //let initFlag = true;
 let albumWait = false;
-let logAdv = "Logga in för att se inställningar, anonymt utan namn eller lösenord, eller med namnet 'gäst' utan lösenord för att också få vissa redigeringsrättigheter"; // i18n
+let logAdv = "Logga in för att kunna se inställningar, anonymt utan namn eller lösenord, eller med namnet 'gäst' utan lösenord för att också få vissa redigeringsrättigheter"; // i18n
 let nosObs = "Skriv gärna på prov, men du saknar tillåtelse att spara text"; // i18n
 let nopsGif = "GIF-fil kan bara ha tillfällig text"; // i18n
 //let nopsLink = "Text kan inte ändras/sparas permanent via länk"; // i18n Obsolete
@@ -2842,6 +2883,7 @@ let loginStatus = "";
 let tempStore = "";
 let savedAlbumIndex = 0;
 let returnTitles = ["TOPP", "UPP", "SENASTE"];
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Get the 'true' album path ('imdb' is the symbolic link to the actual root of albums)
 function albumPath () {
@@ -3099,7 +3141,7 @@ function notesDia (picName, filePath, title, text, save, saveClose, close) { // 
     closeOnEscape: true,
     resizable: false
   });
-  // Improve 'title':
+  // Improve 'dialog title':
   $ ("div[aria-describedby='notes'] span.ui-dialog-title").html ("<span class='pink'>" + picName + "</span> &nbsp; " + title);
 
   function notesSave () { // NOTE: This way to save metadata is probably the most efficient, and
@@ -3110,7 +3152,7 @@ function notesDia (picName, filePath, title, text, save, saveClose, close) { // 
       //console.log("acc:", acc);
       if (acc !== "WR") {
         userLog ("NOT written");
-        infoDia (null, null,"Texten kan inte sparas", "<br>Ändringsskyddad fil, försök igen<br><br>Om felet kvarstår:<br>Kontrollera filägare", "Stäng", true);
+        infoDia (null, null,"Texten kan inte sparas", "<br><span class='pink'>" + picName + "</span> ändringsskyddad, försök igen<br><br>Om felet kvarstår:<br>Kontrollera filen!", "Stäng", true);
       } else {
         // Remove <br> in the text shown; use <br> as is for metadata
         $ ('textarea[name="notes"]').val (text.replace (/<br>/g, "\n"));
@@ -4103,7 +4145,7 @@ $ ( () => {
           userLog ("NOT written");
           $ ("#i" + ednp + " .img_txt1" ).html ("");
           $ ("#i" + ednp + " .img_txt2" ).html ("");
-          infoDia (null, null,"Texten sparades inte!", '<br>Bildtexten kan inte uppdateras på grund av<br>något åtkomsthinder &ndash; är filen registrerad på rätt ägare?<br><br>Eventuell tillfälligt förlorad text återfås med ”Återställ osparade ändringar”', "Ok", true);
+          infoDia (null, null,"Texten sparades inte!", '<br>Bildtexten kan inte uppdateras på grund av<br>något åtkomsthinder &ndash; är filen ändringsskyddad?<br><br>Eventuell tillfälligt förlorad text återfås med ”Återställ osparade ändringar”', "Ok", true);
         } else {
           userLog ("TEXT written");
           //console.log ('Xmp.dc metadata saved in ' + fileName);

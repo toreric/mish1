@@ -13,8 +13,8 @@
     <!-- ///// Root directory and checkbox SETTINGS ///// -->
     <div class="settings" draggable="false" ondragstart="return false" style="display:none">
       <div class="root">
-        <p style="margin:0 2em -0.5em 0"> Välj albumplats </p><br>
-        <select id="rootSel" title="Albumkatalog" onchange={{action 'selectRoot' value='target.value'}}>
+        <span style="margin:-0.25em 2em 0.5em 0"> Välj albumkatalog </span><br>
+        <select id="rootSel" title="Välj albumkatalog" totip="Välj albumkatalog" onchange={{action 'selectRoot' value='target.value'}}>
           {{#each imdbRoots as |rootChoice|}}
             <option onclick="this.parentElement.blur()" value={{rootChoice}} selected={{eq imdbRoot rootChoice}}>{{rootChoice}}</option><!-- imdbRoot (== #imdbRoot) is set as chosen -->
           {{/each}}
@@ -266,10 +266,10 @@
         <div class="img_name">
           {{file.name}}
         </div>
-        <div class="img_txt1" title="{{file.txt1}}" {{action 'ediText' file.name}}>
+        <div class="img_txt1" title="{{file.txt1}}" totip="{{file.txt1}}" {{action 'ediText' file.name}}>
           {{file.txt1}}
         </div>
-        <div class="img_txt2" title="{{file.txt2}}" {{action 'ediText' file.name}}>
+        <div class="img_txt2" title="{{file.txt2}}" totip="{{file.txt2}}" {{action 'ediText' file.name}}>
           {{file.txt2}}
         </div>
       </div>

@@ -352,7 +352,7 @@ select option {
 }
 #title input.cred, #title button {
   font-family: Verdana, Geneva, Tahoma, sans-serif!important;
-  font-size: 0.8em!important;
+  font-size: 0.8em;
   text-align: center;
   cursor: pointer;
   color: deepskyblue;
@@ -363,8 +363,13 @@ select option {
   border-radius: 2px;
 }
 #title span.cred.name {
-  font-family: Verdana, Geneva, Tahoma, sans-serif!important;
   font-size: 0.8em!important;
+  font-family: Verdana, Geneva, Tahoma, sans-serif!important;
+  color: deepskyblue;
+  padding: 0 0 1px 0;
+}
+#title span.cred.name b {
+  font-family: Verdana, Geneva, Tahoma, sans-serif!important;
   color: deepskyblue;
   padding: 0 0 1px 0;
 }
@@ -606,6 +611,8 @@ a.imDir *:hover {
 a.imDir img:hover {
   border: 0.7px solid #aef;
 }
+/* CSS tooltip title-1 for long one-liners.
+The jquery ui-tooltip is used elsewere (totip in *.js) */
 .imDir.path[title-1] {
   position: relative;
 }
@@ -696,27 +703,26 @@ a.imDir img:hover {
 .img_txt1 {
   font-style: normal;
 }
-.img_txt1:hover::before {
-  content: attr(title);
-  position: fixed;
-  left: 4em;
-  top: 1.6em;
-  text-align: left;
-  overflow: hidden;
-  text-overflow: normal;
-  white-space: normal;
-  width: 145px;
-  height: auto;
-  border: 0.5px #aaaaaa solid;
-  border-radius: 2px;
-  background-color: #beebff;
-  padding: 0.2em 0.2em 0.25em 0.4em;
-  color: #000;
-  font-size: 0.8em;
-  font-weight: bold;
-}
-div.img_txt2 {
+.img_txt2 {
   font-style: italic;
+}
+.ui-tooltip {
+  max-width: 150px;
+  border-radius: 2px;
+  z-index: 1000;
+}
+.ui-tooltip-content {
+  color: #000;
+  font-size: 0.86em;
+  text-align: left;
+  float: left;
+  word-break: break-word;
+  background-color: #beebff;
+  width: auto;
+  height: auto;
+  box-shadow: 0 0 2px white;
+  border-radius: 2px;
+  padding: 0.1em 0.1em 0.1em 0.2em;
 }
 .img_show .img_name {
   display: none;
@@ -836,7 +842,7 @@ div.img_mini.symlink div.markTrue, div.img_mini.symlink div.markFalse {
   position: relative;
   text-align: center;
   background-color: black;
-  margin: 1em -4px auto -4px;
+  margin: 0.95em -4px auto -4px;
   padding-top: 3em;     /* click-back area above .img_show */
   padding-bottom: 20em; /* and below .img_txt2             */
   z-index: 10;
@@ -980,11 +986,11 @@ div.settings {
 }
 div.settings select {
   font-family: Tahoma, Verdana, Geneva, sans-serif;
-  margin: 0;
+  margin: 0 0 0.5em 0;
   cursor: pointer;
   background: transparent;
 }
-#title div.settings button {
+div.settings button {
   font-size: 100%!important;
   color: #333;
   background: #e0ddda;

@@ -2,12 +2,12 @@
 To do in priority order (zero is highest)         >: progress
 =========================================         *: completed
 
->0 Bulk inclusion of images without choking congestion    substantial PROGRESS
->0 Bulk Dropzone upload without choking congestion      some PROGRESS
->0 Mastering 'the sync hell' in all situations, including 'excessive clicking'  good PROGRESS
+*0 Bulk inclusion of images without choking congestion    DONE
+>0 Bulk Dropzone upload without choking congestion     substantial PROGRESS
+>0 Mastering 'the sync hell' in all situations, including 'excessive clicking'  mostly DONE
 
 *1 User 'Album root directory' selection    DONE
- 1 Create new album catalogs; delete empty ones (still manually)
+*1 Create new album catalogs; delete empty ones    DONE
 >1 Manage equal img/file names in different albums; link-copy-extension interactions   PROGRESS
  1 Finish unique image filename control within album, extension/type-independent (still manually)
  2 'Howto' for local installation
@@ -25,7 +25,7 @@ To do in priority order (zero is highest)         >: progress
 
  3 Dropzone redesign with Imagemagick thumbnail generation?
  3 'Howto' for cloud installation
-*3 Improve image text editor   DONE (completely changed)
+*3 Improve image text editor   DONE
 
  5 Convert an album to a PDF file
  5 Option for choosing image editor for originals, like Gimp, Photoshop, ...

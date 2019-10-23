@@ -17,7 +17,7 @@ IMDB_HOME=/home/tore
 #IMDB_ROOT=MISH
 IMDB_ROOT=Framkallning_2019
 IMDB_ROOT=album-1
-IMDB_ROOT='""'
+IMDB_ROOT='""' # Empty argument that still appears right positioned in the 'node server.js' call
 if [[ $1 ]]; then
   IMDB_HOME=$1
   if [[ $2 ]]; then
