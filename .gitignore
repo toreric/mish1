@@ -19,8 +19,8 @@ testem.log
 
 *~
 /_learnstuff
-
-
+/.coop*
+/allow_*
 
 # image files
 012345*

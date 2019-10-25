@@ -803,6 +803,10 @@ export default Component.extend (contextMenuMixin, {
   init () { // ##### Component initiation
     this._super (...arguments);
     $ (document).ready ( () => {
+      // Set the hidden-picture text background color:
+      //$ ("#hideColor").text ("rgb(85, 85, 85)");
+      $ ("#hideColor").text ("rgb(153, 153, 153)"); // Light theme
+
       later ( ( () => {
         console.log ("jQuery v" + $ ().jquery);
         // The time stamp is produced with the Bash 'ember-b-script'
@@ -1420,6 +1424,13 @@ export default Component.extend (contextMenuMixin, {
   /////////////////////////////////////////////////////////////////////////////////////////
   actions: {
     //============================================================================================
+    infStatus () {
+      var title = "Information om användarrättigheter"; // i18n
+      var text = '<img src="allow.jpg" title="Användarrätigheter">'; // i18n
+      var yes = "Ok" // i18n
+      infoDia (null, null, title, text, yes, true);
+    },
+    //============================================================================================
     subaSelect (subName) { // ##### Sub-album link selected
 //console.log("subName",subName,subName.length);
       subName = subName.replace (/&nbsp;/g, "_"); // Restore readable album name!
@@ -2015,7 +2026,8 @@ export default Component.extend (contextMenuMixin, {
             }
             h = h + 1;
           } else {
-            nodelem.style.backgroundColor='#222';
+            //nodelem.style.backgroundColor='#222';
+            nodelem.style.backgroundColor='#777';
             if (yes) {
               nodelem.style.display='block-inline';
             }
@@ -2763,13 +2775,16 @@ export default Component.extend (contextMenuMixin, {
             if (status === "viewer") {usr = "anonym";}  // i18n
             //spinnerWait (true);
             $ ("#allowValue").text (allow);
-            $ ("#title span.cred.name").html ("<b>"+ usr +"</b> ["+ status +"]");
+            $ ("#title span.cred.name").html ("<b>"+ usr +"</b>");
+            $ ("#title span.cred.status").html ("["+ status +"]");
             let tmp = "Du är inloggad som ’" + usr + "’ med [" + status + "]-rättigheter"; // i18n
             let tmp1 = " (logga ut om du vill byta inloggning)";
             $ ("#title button.cred").attr ("title", tmp + tmp1);
             $ (".cred.name").attr ("title", tmp);
+            $ (".cred.status").attr ("title", tmp);
             $ ("#title button.cred").attr ("totip", tmp + tmp1);
             $ (".cred.name").attr ("totip", tmp);
+            $ (".cred.status").attr ("totip", tmp);
             // Assure that the album tree is properly shown after LOGIN
             that.set ("albumData", []);
             //that.set ("albumName", "");
@@ -3270,8 +3285,10 @@ function hideFunc (picNames, nels, act) { // ===== Execute a hide request
     k = part2.indexOf (",");
     var hideFlag = ('z' + act).slice (1); // Set 1 or 0 and convert to string
     sortOrder = part1 + hideFlag + part2.slice (k); // Insert the new flag
-    $ ("#i" + escapeDots (picName)).css ('background-color', '#222');
-    $ ("#wrap_show").css ('background-color', '#222'); // *Just in case the show image is visible     $ ("#i" + escapeDots (picName)).show ();
+    /*$ ("#i" + escapeDots (picName)).css ('background-color', '#222');
+    $ ("#wrap_show").css ('background-color', '#222'); // *Just in case the show image is visible     $ ("#i" + escapeDots (picName)).show ();*/
+    $ ("#i" + escapeDots (picName)).css ('background-color', '#777');
+    $ ("#wrap_show").css ('background-color', '#777'); // *Just in case the show image is visible     $ ("#i" + escapeDots (picName)).show ();
     if (hideFlag === "1") { // If it's going to be hidden: arrange its CSS ('local hideFlag')
       $ ("#i" + escapeDots (picName)).css ('background-color', $ ("#hideColor").text ());
       $ ("#wrap_show").css ('background-color', $ ("#hideColor").text ()); // *Just in case -
@@ -3402,7 +3419,7 @@ function userLog (message, flashOnly) { // ===== Message to the log file and fla
     if (!(messes.length > 0 && messes [messes.length - 1].trim () === message.trim ())) {messes.push (message);}
     if (messes.length > 5) {messes.splice (0, messes.length -5);}
     messes = messes.join (" • ");
-    $ ("#title span.usrlg").text (messes);
+    // discontinued: $ ("#title span.usrlg").text (messes);
   }
   $ (".shortMessage").text (message);
   $ (".shortMessage").show ();

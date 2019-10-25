@@ -8,6 +8,7 @@
       <input type="text" class="cred user" size="10" title="Användare" placeholder="User name" value="">
       <input type="password" class="cred password" size="10" title="Lösenord" placeholder="Password">
       <span class="cred name"></span>
+      <span class="cred status" {{action "infStatus"}}></span>
       <button type="submit" class="viewSettings" title="" {{action "toggleSettings"}}> Inställningar </button>
     </div>
     <!-- ///// Root directory and checkbox SETTINGS ///// -->
@@ -230,7 +231,7 @@
     (<span class='numMarked' title="marked">0</span>&nbsp;markerade)
   </span -->
   <br><!-- Links to SubAlbums -->
-  <div class="miniImgs" style="background:#222">
+  <div class="miniImgs">
     {{#each subaList as |suba|}}
       <div class="subAlbum" {{action 'subaSelect' suba.album}}>
         <a class="imDir">

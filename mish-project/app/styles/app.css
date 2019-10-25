@@ -2,6 +2,7 @@
   font-family: Georgia, 'Times New Roman', Times, serif;
   font-size: 1em;
   background-color: #000;
+  background-color: #bbb;
   color: white;
   /*box-sizing: border-box;*/
 }
@@ -256,10 +257,11 @@ select option {
 .ember-view {
   margin: 0;
   padding: 0;
-  background-color: #000;
+  background: transparent;
 }
 .sortable-objects.ember-view {
   background-color: #222;
+  background-color: #b0b0b0;
 }
 #imdbError {
   color: deeppink;
@@ -359,7 +361,7 @@ select option {
   padding: 0 3px 1px 2px;
   margin: 0 0.2em;
   display: inline-block;
-  border: 1.0px solid gray;
+  border: 1.0px solid #eee;
   border-radius: 2px;
 }
 #title span.cred.name {
@@ -373,6 +375,13 @@ select option {
   color: deepskyblue;
   padding: 0 0 1px 0;
 }
+#title span.cred.status {
+  font-size: 0.8em!important;
+  font-family: Verdana, Geneva, Tahoma, sans-serif!important;
+  color: deepskyblue;
+  padding: 0 0 1px 0;
+  cursor: pointer;
+}
 #title input.cred {
   cursor: text;
   display: none;
@@ -382,6 +391,9 @@ select option {
 #title span.usrlg {
   font: bold 0.75em monospace!important;
   color: yellowgreen;
+}
+#dialog img {
+  width: 26em;
 }
 .nameNew {
   background: #f0f0b0;
@@ -525,7 +537,7 @@ div[aria-describedby='textareas'] {
   /*position: fixed;
   top: 1em;
   z-index: 99;*/
-  margin-left: 15px;
+  margin-left: 0 6px;
   background-color: white;
   border-radius: 4px;
 }
@@ -557,10 +569,11 @@ button[disabled] {
 }
 .showCount, .imDir, .numShown, .numHidden, .numMarked {
   background-color: #222;
+  background-color: #b0b0b0;
   text-align: center;
 }
 .albumsHdr {
-  background-color: #222;
+  background-color: transparent;
   text-align: left;
   margin-left: 1em;
 }
@@ -573,16 +586,12 @@ button[disabled] {
   font-size: 80%;
   font-weight: bold;
 }
-.imDir .albumName {
-  background: transparent;
-}
 .img_show .imDir .albumName {
   padding-right: 50px;
-  background: #000;
 }
 .BUT_1 {
   width: 1em;
-  border: 1.5px solid #666;
+  border: 1.5px solid #ccc;
   border-radius: 4px;
   padding: 0 0.1em 0.2em 0.4em;
   margin: 0 0 0 0;
@@ -634,12 +643,14 @@ The jquery ui-tooltip is used elsewere (totip in *.js) */
 }
 .miniImgs {
   background: #222;
+  background: #b0b0b0;
 }
 #imageList {
   width: 95%;
   display: inline-block;
   text-align: center;
   background: #222;
+  background: #b0b0b0;
   margin: 0 10px 0 30px;
   padding: 0.5em 0;
   border-radius: 4px;
@@ -651,7 +662,7 @@ The jquery ui-tooltip is used elsewere (totip in *.js) */
   position: relative;
   justify-content: center;
   padding: 0.5em;
-  border: 1.0px solid #555;
+  border: 1.0px solid #bbb;
   border-radius: 4px;
   width: 151px;
   vertical-align: bottom;
@@ -730,12 +741,10 @@ The jquery ui-tooltip is used elsewere (totip in *.js) */
   text-align: right;
   font-size: 95%;
   font-style: normal;
-  margin: 3px 3px -3px 3px;
 }
 .img_show {
   text-align: center;
-  background: black;
-  margin: 0;
+  margin: 0 -8px 0 -8px;
   z-index: 10;
 }
 .img_show img:first-of-type {
@@ -841,8 +850,9 @@ div.img_mini.symlink div.markTrue, div.img_mini.symlink div.markFalse {
 #wrap_pad {
   position: relative;
   text-align: center;
-  background-color: black;
-  margin: 0.95em -4px auto -4px;
+  background-color: #000;
+  background-color: #b0b0b0;
+  margin: 0.95em 0 auto 0;
   padding-top: 3em;     /* click-back area above .img_show */
   padding-bottom: 20em; /* and below .img_txt2             */
   z-index: 10;
@@ -905,7 +915,6 @@ input.showTime[type="number"] {
   width: 1.3em;
   height: 1.1em;
   color: deeppink;
-  border: 0px dotted deeppink;
   border-radius: 3px;
   margin: 0 0 5px 0;
   padding: 0 0 3px 0;
@@ -1011,6 +1020,7 @@ div.settings span {
   display: inline-table;
   width: 20%;
   background: #888;
+  background: #777;
   margin: 0 50px 0 -4px;
 }
 #wrap_show.symlink {
@@ -1042,6 +1052,7 @@ div.settings span {
 }
 #wrap_show .img_name, #wrap_show .img_txt1, #wrap_show .img_txt2, #wrap_show .img_name *, #wrap_show .img_txt1 *, #wrap_show .img_txt2 * {
   background: transparent;
+  padding: 0 0.25em;
 }
 .modal-fog {
   background: rgba(30, 30, 30, 0.5);
