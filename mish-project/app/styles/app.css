@@ -1,13 +1,17 @@
 * {
   font-family: Georgia, 'Times New Roman', Times, serif;
   font-size: 1em;
-  background-color: #000;
-  background-color: #bbb;
-  color: white;
-  /*box-sizing: border-box;*/
 }
-body, html {
+/*.BACKG {
+  background-color: #000;
+  background-color: attr(data-backg)!important;
+  background-color: #000!important;
+  background-color: #b0b0b0!important;
+}*/
+body {
  width: 99%!important;
+ /*background-color: #b0b0b0;
+ background-color: #000;*/
 }
 .lastRow, .copyright {
   font: 0.9em monospace;
@@ -92,7 +96,7 @@ button {
   padding: 0.1em;
   height: auto;
   position: fixed;
-  border: ridge 2px white;
+  border: solid 1px white;
   border-radius: 3px;
 }
 .ui-dialog .ui-dialog-content {
@@ -244,25 +248,15 @@ button.ui-dialog-titlebar-close span {
 .lastDownload {
   font-size: 80%;
 }
-select {
-  border: solid 1.0px gray;
-  border-radius: 3px;
-}
-select option {
-  border:none;
-  color: #111;
-  background-color: lightgrey;
-  padding: 0.2em;
-}
 .ember-view {
   margin: 0;
   padding: 0;
   background: transparent;
 }
-.sortable-objects.ember-view {
-  background-color: #222;
+/*.sortable-objects.ember-view {
   background-color: #b0b0b0;
-}
+  background-color: #000;
+}*/
 #imdbError {
   color: deeppink;
   font-weight: bold;
@@ -363,6 +357,7 @@ select option {
   display: inline-block;
   border: 1.0px solid #eee;
   border-radius: 2px;
+  background: transparent;
 }
 #title span.cred.name {
   font-size: 0.8em!important;
@@ -567,11 +562,10 @@ button[disabled] {
   display: none;
   margin-left: 1em;
 }
-.showCount, .imDir, .numShown, .numHidden, .numMarked {
-  background-color: #222;
+/*.showCount, .imDir, .numShown, .numHidden, .numMarked {
   background-color: #b0b0b0;
-  text-align: center;
-}
+  background-color: #000;
+}*/
 .albumsHdr {
   background-color: transparent;
   text-align: left;
@@ -611,9 +605,9 @@ a.imDir img {
   width: 80px;
   border-radius: 2px;
 }
-a.imDir * {
+/*a.imDir * {
   color: #aef;
-}
+}*/
 a.imDir *:hover {
   color: #0ae;
 }
@@ -641,16 +635,16 @@ The jquery ui-tooltip is used elsewere (totip in *.js) */
   font-size: 0.8em;
   z-index: 1000;
 }
-.miniImgs {
-  background: #222;
+/*.miniImgs {
   background: #b0b0b0;
-}
+  background: #000;
+}*/
 #imageList {
   width: 95%;
   display: inline-block;
   text-align: center;
-  background: #222;
-  background: #b0b0b0;
+  /*background: #b0b0b0;
+  background: #000;*/
   margin: 0 10px 0 30px;
   padding: 0.5em 0;
   border-radius: 4px;
@@ -710,12 +704,15 @@ The jquery ui-tooltip is used elsewere (totip in *.js) */
   cursor: pointer;
   text-align: left;
   margin: 0;
+  color: #fff;
 }
 .img_txt1 {
   font-style: normal;
+  margin-top: 0.05em;
 }
 .img_txt2 {
   font-style: italic;
+  margin-bottom: 0.15em;
 }
 .ui-tooltip {
   max-width: 150px;
@@ -850,8 +847,8 @@ div.img_mini.symlink div.markTrue, div.img_mini.symlink div.markFalse {
 #wrap_pad {
   position: relative;
   text-align: center;
-  background-color: #000;
-  background-color: #b0b0b0;
+  /*background-color: #b0b0b0;
+  background-color: #000;*/
   margin: 0.95em 0 auto 0;
   padding-top: 3em;     /* click-back area above .img_show */
   padding-bottom: 20em; /* and below .img_txt2             */
@@ -885,6 +882,7 @@ div.img_mini.symlink div.markTrue, div.img_mini.symlink div.markFalse {
 }
 .nav_links .nav_.toggleAuto {
   padding: 0.4em 0.2em 0.3em 0.2em;
+  margin-right: 0.15em;
 }
 .nav_links span#showSpeed {
   font-size: 130%;
@@ -989,7 +987,7 @@ div.settings {
   margin: 0;
   padding: 0.5em 1em 0.5em 0.5em;
   text-align: right;
-  border: 1px solid dimgray;
+  border: 1px solid #eee;
   border-radius: 0.5em;
   z-index: 28;
 }
@@ -998,13 +996,21 @@ div.settings select {
   margin: 0 0 0.5em 0;
   cursor: pointer;
   background: transparent;
+  border: solid 1.0px #eee;
+  border-radius: 3px;
+}
+select option {
+  border:none;
+  color: #111;
+  background-color: lightgrey;
+  padding: 0.2em;
 }
 div.settings button {
   font-size: 100%!important;
   color: #333;
   background: #e0ddda;
   margin: 0.35em 0.1em 0.1em 0;
-  border: 1.0px solid gray;
+  border: 1.0px solid #eee;
   border-radius: 3px;
   cursor: pointer;
 }
@@ -1089,10 +1095,11 @@ div.settings span {
   left: 35px;
   margin: 0;
   padding: 2px;
-  border: 0.5px solid gray;
+  border: 3px solid gray;
   border-radius: 5px;
   vertical-align: middle;
   text-align: left;
+  background: #000;
   z-index: 12;
 }
 .jstreeAlbumSelect .albumName:hover {

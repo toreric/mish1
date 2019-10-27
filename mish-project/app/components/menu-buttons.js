@@ -805,7 +805,11 @@ export default Component.extend (contextMenuMixin, {
     $ (document).ready ( () => {
       // Set the hidden-picture text background color:
       //$ ("#hideColor").text ("rgb(85, 85, 85)");
-      $ ("#hideColor").text ("rgb(153, 153, 153)"); // Light theme
+      $ ("#hideColor").text ("rgb(153, 153, 153)");
+      // Set body class BACKG:
+      $ ("body").addClass ("BACKG TEXTC");
+      $ ("body").css ("background", BACKG);
+      $ ("body").css ("color", TEXTC);
 
       later ( ( () => {
         console.log ("jQuery v" + $ ().jquery);
@@ -891,6 +895,9 @@ export default Component.extend (contextMenuMixin, {
     $ (document).ready ( () => {
 
       devSpec ();
+      $ (".BACKG").css ("background", BACKG);
+      $ (".TEXTC").css ("color", TEXTC);
+      $ (".BLUET").css ("color", BLUET);
 
       if ($ ("#hideFlag").text () === "1") {
         this.actions.hideFlagged (true).then (null);
@@ -2359,7 +2366,29 @@ export default Component.extend (contextMenuMixin, {
 
     },
     //============================================================================================
+    toggleBackg () {
+      if (BACKG === "#000") {
+        BACKG = "#b0b0b0";
+      } else {
+        BACKG ="#000";
+      }
+      $ (".BACKG").css ("background", BACKG); // Repeat in didRender ()!
+    },
+    //============================================================================================
     findText () { // ##### Open dialog to search Xmp metadata text in the current imdbRoot
+
+      if (BACKG === "#000") {
+        BACKG = "#b0b0b0";
+        TEXTC = "#000";
+        BLUET = "#08d"
+      } else {
+        BACKG ="#000"; // background
+        TEXTC = "#fff"; // text color
+        BLUET = "#aef"; // blue text
+      }
+      $ (".BACKG").css ("background", BACKG); // Repeat in didRender ()!
+      $ (".TEXTC").css ("color", TEXTC); // Repeat in didRender ()!
+      $ (".BLUET").css ("color", BLUET); // Repeat in didRender ()!
 
       if (!(allow.imgHidden || allow.adminAll)) {
         userLog ("LOCKED", true);
@@ -2615,6 +2644,7 @@ export default Component.extend (contextMenuMixin, {
     //============================================================================================
     logIn () { // ##### User login/confirm/logout button pressed
 
+      var usr = "", status = "";
       albumWait = true;
       //$ ("div[aria-describedby='textareas']").css ("display", "none");
       $ ("#dialog").dialog ("close");
@@ -2624,6 +2654,7 @@ export default Component.extend (contextMenuMixin, {
       var that = this;
       $ (".img_show").hide ();
       var btnTxt = $ ("#title button.cred").text ();
+      $ ("#title span.cred.status").show ();
       if (btnTxt === "Logga in") { // Log in (should be buttonText[0] ... i18n)
         $ ("#title input.cred").show ();
         //$ ("#title input.cred.user").focus ();
@@ -2646,6 +2677,8 @@ export default Component.extend (contextMenuMixin, {
         $ ("#title button.cred").attr ("title", logAdv);
         $ ("#title button.cred").attr ("totip", logAdv);
         $ ("#title span.cred.name").text ("");
+        $ ("#title span.cred.status").text ("");
+        $ ("#title span.cred.status").hide ();
         this.set ("loggedIn", false);
         $ ("div.settings, div.settings div.root, div.settings div.check").hide ();
         $ ("#title button.viewSettings").hide ();
@@ -2694,7 +2727,7 @@ export default Component.extend (contextMenuMixin, {
       if (btnTxt === "Bekräfta") { // Confirm
         spinnerWait (true);
         this.actions.imageList (false);
-        var usr = $ ("#title input.cred.user").val ();
+        usr = $ ("#title input.cred.user").val ();
         var pwd = $ ("#title input.cred.password").val ().trim (); // Important
         $ ("#title input.cred.password").val ("");
         $ ("#title input.cred").hide ();
@@ -2764,7 +2797,7 @@ export default Component.extend (contextMenuMixin, {
           getCredentials (usr).then (credentials => {
             var cred = credentials.split ("\n");
             var password = cred [0];
-            var status = cred [1];
+            status = cred [1];
             var allow = cred [2];
             if (pwd !== password) {
               zeroSet (); // Important!
@@ -2887,7 +2920,9 @@ export default Component.extend (contextMenuMixin, {
 });
 // G L O B A L S, that is, 'outside' (global) variables and functions (globals)
 /////////////////////////////////////////////////////////////////////////////////////////
-//let initFlag = true;
+let BACKG = "#b0b0b0";
+let TEXTC = "#000";
+let BLUET = "#08d";
 let albumWait = false;
 let logAdv = "Logga in för att kunna se inställningar, anonymt utan namn eller lösenord, eller med namnet 'gäst' utan lösenord för att också få vissa redigeringsrättigheter"; // i18n
 let nosObs = "Skriv gärna på prov, men du saknar tillåtelse att spara text"; // i18n
