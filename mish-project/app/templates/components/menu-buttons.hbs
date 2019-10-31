@@ -1,6 +1,6 @@
 {{! template-lint-disable }}
 <!-- ///// HEADER AND ALSO THE LOGIN AND SETTINGS BUTTON ///// -->
-<div id="title" draggable="false" ondragstart="return false" display="inline">
+<div id="title" class="BLUET" draggable="false" ondragstart="return false" display="inline">
   <span class="proid" title=""> Mish</span>
   <form action="">
     <div style="display: inline-block;vertical-align: top;">
@@ -67,7 +67,7 @@
 <div id="uploadNames" title="last uploaded" style="display:none"></div>
 <div id="userDir" title="user's home or choice" style="display:none"></div>
 <!-- ///// SELECT IMAGE DB DIRECTORIY, jstree ///// -->
-<div class="jstreeAlbumSelect BACKG" style="background:#b0b0b0;" onclick="return false" draggable="false" ondragstart="return false" style="display:none">
+<div class="jstreeAlbumSelect BACKG" onclick="return false" draggable="false" ondragstart="return false" style="display:none">
   {{ember-jstree
     data=albumData
     eventDidSelectNode=(action "selectAlbum")
@@ -86,8 +86,8 @@
 
 <!-- ///// DISPLAY THE (SLIDE) SHOW IMAGE ///// -->
 <div class="img_show" style="display:none" draggable="false">
-  <span class="imDir path BACKG" style="background:#b0b0b0;">{{{albumName}}}</span>
-  <div id="wrap_pad" class="BACKG" style="background:#b0b0b0;" draggable="false">
+  <span class="imDir path BACKG">{{{albumName}}}</span>
+  <div id="wrap_pad" class="BACKG" draggable="false">
     <!-- ///// RIGHT A-LINK BUTTONS (NOTE: without href attributes) /////  -->
     <div class="nav_links" draggable="false" ondragstart="return false">
       <!-- NEXT-ARROW-BUTTONS -->
@@ -195,7 +195,6 @@
 <button id="refresh"
   style="font-weight:bold;cursor:pointer;padding:0.5em 0;"
   type="submit" class="btn-std" {{action 'refresh' true}}>Uppdatera</button>
-<!--button id="saveOrder" style="font-weight:bold;cursor:pointer;padding:0.5em 0;" type="submit" class="btn-std" {#{action 'saveOrder'}}>Spara ordningen</button-->
 <button id="showOrder"
   style="font-weight:bold;cursor:pointer;padding:0.5em 0;"
   type="submit" class="btn-std" {{action 'showOrder'}}>Visa ordningen</button>
@@ -223,18 +222,21 @@
 <!-- ///// SHOW MINI IMAGES (thumbnails) ///// -->
 <!-- Uses subaList and allNames from menu-buttons.js -->
 <p class='albumsHdr' draggable="false" ondragstart="return false">
-  <span class="imDir path BACKG" style="background:#b0b0b0;">{{{albumName}}}</span>
-  <!-- span class="imDir ifZero BACKG" style="background:#b0b0b0;">
-    <span class="imDir BACKG BLUET" style="background:#b0b0b0;"> &mdash; </span>
-    <span class="numShown BACKG" style="background:#b0b0b0;" title="shown">0</span>&nbsp;visas,
-    <span class="numHidden BACKG" style="background:#b0b0b0;" title="invisible">0</span>&nbsp;dolda
-    (<span class="numMarked BACKG" style="background:#b0b0b0;" title="marked">0</span>&nbsp;markerade)
+
+  <div class="BUT_0 BLUET" title="MENY" {{action 'toggleBackg' }}><b>≡</b></div>
+
+  <span class="imDir path BACKG">{{{albumName}}}</span>
+  <!-- span class="imDir ifZero BACKG">
+    <span class="imDir BACKG"> &mdash; </span>
+    <span class="numShown BACKG" title="shown">0</span>&nbsp;visas,
+    <span class="numHidden BACKG" title="invisible">0</span>&nbsp;dolda
+    (<span class="numMarked BACKG" title="marked">0</span>&nbsp;markerade)
   </span -->
   <br><!-- Links to SubAlbums -->
   <div class="miniImgs">
     {{#each subaList as |suba|}}
       <div class="subAlbum" {{action 'subaSelect' suba.album}}>
-        <a class="imDir BACKG BLUET" style="background:#b0b0b0;">
+        <a class="imDir BACKG BLUET">
           {{#if suba.image}}
             <img src={{suba.image}}><br>
           {{/if}}
@@ -245,13 +247,13 @@
     {{/each}}
   </div>
 </p>
-<p class="showCount BACKG" style="background:#b0b0b0;" draggable="false" ondragstart="return false">
-  <span class="imDir path BACKG" style="background:#b0b0b0;">{{{albumName}}}</span>
-  <span class="imDir ifZero BACKG" style="background:#b0b0b0;">
-    <span class="imDir BACKG BLUET" style="background:#b0b0b0;"> &mdash; </span>
-    <span class="numShown BACKG" style="background:#b0b0b0;" title="shown">0</span>&nbsp;visas,
-    <span class="numHidden BACKG" style="background:#b0b0b0;" title="invisible">0</span>&nbsp;dolda
-    (<span class="numMarked BACKG" style="background:#b0b0b0;" title="marked">0</span>&nbsp;markerade)
+<p class="showCount BACKG" draggable="false" ondragstart="return false">
+  <span class="imDir path BACKG">{{{albumName}}}</span>
+  <span class="imDir ifZero BACKG">
+    <span class="imDir BACKG"> &mdash; </span>
+    <span class="numShown BACKG" title="shown">0</span>&nbsp;visas,
+    <span class="numHidden BACKG" title="invisible">0</span>&nbsp;dolda
+    (<span class="numMarked BACKG" title="marked">0</span>&nbsp;markerade)
   </span>
 </p><!-- MiniImages = links to slides -->
 <div class="miniImgs">
@@ -285,15 +287,15 @@
 
 <div id="lowDown"></div>
 
-<p class="showCount BACKG" style="background:#b0b0b0;" draggable="false" ondragstart="return false">
-  <span class="imDir path BACKG" style="background:#b0b0b0;">{{{albumName}}}</span>
-  <span class="imDir BACKG BLUET" style="background:#b0b0b0;"> &mdash; </span>
-  <span class="numShown BACKG" style="background:#b0b0b0;" title="shown">0</span>&nbsp;visas,
-  <span class="numHidden BACKG" style="background:#b0b0b0;" title="invisible">0</span>&nbsp;dolda
-  (<span class="numMarked BACKG" style="background:#b0b0b0;" title="marked">0</span>&nbsp;markerade)
+<p class="showCount BACKG" draggable="false" ondragstart="return false">
+  <span class="imDir path BACKG">{{{albumName}}}</span>
+  <span class="imDir BACKG"> &mdash; </span>
+  <span class="numShown BACKG" title="shown">0</span>&nbsp;visas,
+  <span class="numHidden BACKG" title="invisible">0</span>&nbsp;dolda
+  (<span class="numMarked BACKG" title="marked">0</span>&nbsp;markerade)
   <br>
   {{#each subaList as |suba|}}
-  <a class="imDir BACKG BLUET" style="background:#b0b0b0;" {{action 'subaSelect' suba.album}}>
+  <a class="imDir BACKG BLUET" {{action 'subaSelect' suba.album}}>
     <span> {{{suba.name}}} &nbsp;</span>
   </a>
   {{else}}

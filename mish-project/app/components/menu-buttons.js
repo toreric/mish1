@@ -1501,9 +1501,13 @@ export default Component.extend (contextMenuMixin, {
       }
       var allowHtml = [];
       for (var j=0; j<n; j++) {
-        allowHtml [j] = "<span>allow." + allowance [j] + " " + (j + 1) + ' </span>' + code (Number (allowvalue [j]), j);
+        // Original
+        //allowHtml [j] = "<span>allow." + allowance [j] + " " + (j + 1) + ' </span>' + code (Number (allowvalue [j]), j);
+        // Swedish
+        allowHtml [j] = "<span>" + allowSV [j] + " " + (j + 1) + ' </span>' + code (Number (allowvalue [j]), j); // i18n
       }
-      $ ("#setAllow").html (allowHtml.join ("<br>"));
+
+      $ ("#setAllow").html ("<span style=\"margin-right:8em\">Dina rättigheter:</span><br>" + allowHtml.join ("<br>"));
       allowFunc ();
 
       if (newSetting) { // Allow only one confirmation per settings-view
@@ -2366,21 +2370,12 @@ export default Component.extend (contextMenuMixin, {
 
     },
     //============================================================================================
-    toggleBackg () {
-      if (BACKG === "#000") {
-        BACKG = "#b0b0b0";
-      } else {
-        BACKG ="#000";
-      }
-      $ (".BACKG").css ("background", BACKG); // Repeat in didRender ()!
-    },
-    //============================================================================================
-    findText () { // ##### Open dialog to search Xmp metadata text in the current imdbRoot
+    toggleBackg () { // ##### Change theme light/dark
 
       if (BACKG === "#000") {
-        BACKG = "#b0b0b0";
+        BACKG = "#cbcbcb";
         TEXTC = "#000";
-        BLUET = "#08d"
+        BLUET = "#0085ff";
       } else {
         BACKG ="#000"; // background
         TEXTC = "#fff"; // text color
@@ -2389,6 +2384,10 @@ export default Component.extend (contextMenuMixin, {
       $ (".BACKG").css ("background", BACKG); // Repeat in didRender ()!
       $ (".TEXTC").css ("color", TEXTC); // Repeat in didRender ()!
       $ (".BLUET").css ("color", BLUET); // Repeat in didRender ()!
+
+    },
+    //============================================================================================
+    findText () { // ##### Open dialog to search Xmp metadata text in the current imdbRoot
 
       if (!(allow.imgHidden || allow.adminAll)) {
         userLog ("LOCKED", true);
@@ -2920,11 +2919,11 @@ export default Component.extend (contextMenuMixin, {
 });
 // G L O B A L S, that is, 'outside' (global) variables and functions (globals)
 /////////////////////////////////////////////////////////////////////////////////////////
-let BACKG = "#b0b0b0";
+let BACKG = "#cbcbcb";
 let TEXTC = "#000";
-let BLUET = "#08d";
+let BLUET = "#0085ff";
 let albumWait = false;
-let logAdv = "Logga in för att kunna se inställningar, anonymt utan namn eller lösenord, eller med namnet 'gäst' utan lösenord för att också få vissa redigeringsrättigheter"; // i18n
+let logAdv = "Logga in för att kunna se inställningar: Anonymt utan namn och lösenord, eller med namnet 'gäst' utan lösenord som ger vissa redigeringsrättigheter"; // i18n
 let nosObs = "Skriv gärna på prov, men du saknar tillåtelse att spara text"; // i18n
 let nopsGif = "GIF-fil kan bara ha tillfällig text"; // i18n
 //let nopsLink = "Text kan inte ändras/sparas permanent via länk"; // i18n Obsolete
@@ -3717,13 +3716,14 @@ function extractContent(htmlString) { // Extracts text from an HTML string
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function devSpec () { // Device specific features/settings
   // How do we make context menus with iPad/iOS?
-  if ( (navigator.userAgent).includes ("iPad")) {
+  /*if ( (navigator.userAgent).includes ("iPad")) {
     $ ("#full_size").hide (); // the central full size image link
   }
   if (window.screen.width < 500) {
     $ ("#full_size").hide (); // the central full size image link
     $ ("a.toggleAuto").hide (); // slide show button
-  }
+  }*/
+  return false;
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function disableSettings () { // Disables the confirm button, and all checkboxes
@@ -4161,8 +4161,10 @@ $ ( () => {
     var fileName = $ ("#i" + ednp + " img").attr ('title');
     $ ("#i" + ednp + " .img_txt1" ).html (text1);
     $ ("#i" + ednp + " .img_txt1" ).attr ('title', text1.replace(/<[^>]+>/g, " "));
+    $ ("#i" + ednp + " .img_txt1" ).attr ('totip', text1.replace(/<[^>]+>/g, " "));
     $ ("#i" + ednp + " .img_txt2" ).html (text2);
     $ ("#i" + ednp + " .img_txt2" ).attr ('title', text2.replace(/<[^>]+>/g, " "));
+    $ ("#i" + ednp + " .img_txt2" ).attr ('totip', text2.replace(/<[^>]+>/g, " "));
     if ($ (".img_show .img_name").text () === namepic) {
       $ ("#wrap_show .img_txt1").html (text1);
       $ ("#wrap_show .img_txt2").html (text2);
@@ -4267,6 +4269,24 @@ var allowance = [ // 'allow' order
   "saveChanges",  // +  " save order/changes (= saveOrder)
   "setSetting",   // +  " change settings
   "textEdit"      // +  " edit image texts (metadata)
+];
+var allowSV = [ // Ordered as 'allow', IMPORTANT!
+  "Får göra vadsomhelst",
+  "göra/radera album",
+  "(arbeta med bilagor + 4)",
+  "(se bilagor)",
+  "göra/radera länkar",
+  "radera bilder + 5",
+  "redigera bilder",
+  "gömma/visa bilder",
+  "ladda ned originalbilder",
+  "flytta om bilder",
+  "ladda upp bilder",
+  "redigera/spara anteckningar",
+  "se anteckningar",
+  "spara ändringar utöver text",
+  "ändra inställningar",
+  "redigera/spara bildtexter"
 ];
 var allowvalue = "0".repeat (allowance.length);
 $ ("#allowValue").text (allowvalue);

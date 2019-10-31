@@ -319,7 +319,6 @@ button.ui-dialog-titlebar-close span {
   font-family: Verdana, Geneva, Tahoma, sans-serif !important;
   font-size: 0.5em;
   font-weight: bold;
-  color: deepskyblue;
   position: relative;
   top: 0;
   margin: -8px 0 -12px -8px;
@@ -329,15 +328,17 @@ button.ui-dialog-titlebar-close span {
   display: inline-block;
   margin: 1em 0 0.75em 2em;
 }
+#title * {
+  color: inherit;
+}
 #title .proid {
   font-family: Verdana, Geneva, Tahoma, sans-serif!important;
   font-size: 1em!important;
-  color: deepskyblue;
   font-weight: bold;
   padding: 0;
   margin: 0;
   display: inline-block;
-  border: 0px solid gray;
+  border: 0px solid #aaa;
   border-radius: 2px;
   vertical-align: top;
 }
@@ -351,29 +352,25 @@ button.ui-dialog-titlebar-close span {
   font-size: 0.8em;
   text-align: center;
   cursor: pointer;
-  color: deepskyblue;
   padding: 0 3px 1px 2px;
   margin: 0 0.2em;
   display: inline-block;
-  border: 1.0px solid #eee;
+  border: 1.0px solid #aaa;
   border-radius: 2px;
   background: transparent;
 }
 #title span.cred.name {
   font-size: 0.8em!important;
   font-family: Verdana, Geneva, Tahoma, sans-serif!important;
-  color: deepskyblue;
   padding: 0 0 1px 0;
 }
 #title span.cred.name b {
   font-family: Verdana, Geneva, Tahoma, sans-serif!important;
-  color: deepskyblue;
   padding: 0 0 1px 0;
 }
 #title span.cred.status {
   font-size: 0.8em!important;
   font-family: Verdana, Geneva, Tahoma, sans-serif!important;
-  color: deepskyblue;
   padding: 0 0 1px 0;
   cursor: pointer;
 }
@@ -572,8 +569,8 @@ button[disabled] {
   margin-left: 1em;
 }
 .subAlbum {
-  background:transparent;
-  display:inline-block;
+  background: transparent;
+  display: inline-block;
   vertical-align:top;
   width: 100px;
   margin: 0.5em 0 0 0;
@@ -583,9 +580,22 @@ button[disabled] {
 .img_show .imDir .albumName {
   padding-right: 50px;
 }
+.BUT_0 *:hover {
+  color: deepskyblue;
+}
+.BUT_0 {
+  display: inline-block;
+  width: 1em;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+  padding: 0 0 0 0.4em;
+  margin: -0.2em 0.1em 0.25em 0;
+  cursor: pointer;
+  font-size: 1.2em;
+}
 .BUT_1 {
   width: 1em;
-  border: 1.5px solid #ccc;
+  border: 1px solid #aaa;
   border-radius: 4px;
   padding: 0 0.1em 0.2em 0.4em;
   margin: 0 0 0 0;
@@ -987,7 +997,7 @@ div.settings {
   margin: 0;
   padding: 0.5em 1em 0.5em 0.5em;
   text-align: right;
-  border: 1px solid #eee;
+  border: 1px solid #aaa;
   border-radius: 0.5em;
   z-index: 28;
 }
@@ -996,7 +1006,7 @@ div.settings select {
   margin: 0 0 0.5em 0;
   cursor: pointer;
   background: transparent;
-  border: solid 1.0px #eee;
+  border: solid 1.0px #aaa;
   border-radius: 3px;
 }
 select option {
@@ -1010,7 +1020,7 @@ div.settings button {
   color: #333;
   background: #e0ddda;
   margin: 0.35em 0.1em 0.1em 0;
-  border: 1.0px solid #eee;
+  border: 1.0px solid #aaa;
   border-radius: 3px;
   cursor: pointer;
 }
@@ -1429,7 +1439,6 @@ div.settings span {
         transition: opacity 0.2s linear; }
     a {
       cursor: pointer;
-      color: #aef;
       text-decoration: none; }
     a:hover {
       color: deepskyblue;
