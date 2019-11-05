@@ -36,6 +36,7 @@ export default Component.extend (contextMenuMixin, {
         rootList = rootList.split ("\n");
         let seltxt = rootList [0];
         rootList.splice (0, 1, "");
+        rootList [0] = "Välj albumkatalog: "; // i18n, must have a space
         let selix = rootList.indexOf (seltxt);
         if (selix > 0) {
           this.set ("imdbRoot", seltxt);
@@ -840,6 +841,12 @@ export default Component.extend (contextMenuMixin, {
         }), 177);
       }), 10);
     });
+
+    $ (function () {
+      $( "#genMenu" ).menu ();
+      $ ("#genMenu").hide ();
+    });
+
     // Trigger the jQuery tooltip on 'totip="..."' (custom attribute)
     $ (function () {
       $ (document).tooltip ({
@@ -1084,7 +1091,9 @@ export default Component.extend (contextMenuMixin, {
 //console.log("tgt.classList",tgt.classList);
         tgtClass = tgt.classList [0] || "";
       }
-      //if (-1 < tgtClass.indexOf ("context-menu") || tgtClass === "spinner") {
+      if (tgtClass !== "BUT_0") {
+        $ ("#genMenu").hide ();
+      }
       if (tgtClass === "context-menu" || tgtClass === "spinner") {
         return;
       }
@@ -1161,6 +1170,7 @@ export default Component.extend (contextMenuMixin, {
       } else
       if (event.keyCode === 27) { // ESC key
         $ (".jstreeAlbumSelect").hide ();
+        $ ("#genMenu").hide ();
         if ($ ("div.settings").is (":visible")) { // Hide settings
           $ ("div.settings, div.settings div.root, div.settings div.check").hide ();
           return;
@@ -1313,10 +1323,10 @@ export default Component.extend (contextMenuMixin, {
             //that.set ("imdbDir", "");
             $ ("#imdbDir").text ("");
           } else {
-            that.set ("albumText", "&nbsp;&nbsp; Valt album: &nbsp;");
+            that.set ("albumText", " Valt album: &nbsp;");
             that.set ("albumName", '<strong class="albumName">' + tmpName + '</strong>');
             //that.set ("albumName", tmpName);
-            $ (".jstreeAlbumSelect p:first a").attr ("title", " Ta bort | gör nytt album ");
+            $ (".jstreeAlbumSelect p:last a").attr ("title", " Ta bort | gör nytt album ");
           }
           resolve (data); // Return file-name text lines
           console.log ("ORDER received");
@@ -1767,6 +1777,7 @@ export default Component.extend (contextMenuMixin, {
       document.getElementById ("imageList").className = "hide-all";
       document.getElementById ("divDropbox").className = "hide-all";
 
+      if (value.indexOf (" ") > -1) {value = "";}
       if (value === "") {
         $ ("div.settings div.check").hide ();
       } else {
@@ -2372,6 +2383,8 @@ export default Component.extend (contextMenuMixin, {
     //============================================================================================
     toggleBackg () { // ##### Change theme light/dark
 
+      $ ("#genMenu").hide ();
+
       if (BACKG === "#000") {
         BACKG = "#cbcbcb";
         TEXTC = "#000";
@@ -2384,10 +2397,19 @@ export default Component.extend (contextMenuMixin, {
       $ (".BACKG").css ("background", BACKG); // Repeat in didRender ()!
       $ (".TEXTC").css ("color", TEXTC); // Repeat in didRender ()!
       $ (".BLUET").css ("color", BLUET); // Repeat in didRender ()!
-
+    },
+    //============================================================================================
+    toggleMenu () { // ##### Open/close the jQuery genMenu
+      if ($ ("#genMenu").is (":visible")) {
+        $ ("#genMenu").hide ();
+      } else {
+        $ ("#genMenu").show ();
+      }
     },
     //============================================================================================
     findText () { // ##### Open dialog to search Xmp metadata text in the current imdbRoot
+
+      $ ("#genMenu").hide ();
 
       if (!(allow.imgHidden || allow.adminAll)) {
         userLog ("LOCKED", true);
@@ -2401,7 +2423,7 @@ export default Component.extend (contextMenuMixin, {
           userLog ("ALBUM?", true);
           return;
         }
-        //$ (".jstreeAlbumSelect").hide ();
+        $ (".jstreeAlbumSelect").hide ();
         ediTextClosed ();
         $ (diaSrch).show ();
         $ ("#searcharea").dialog ("open");

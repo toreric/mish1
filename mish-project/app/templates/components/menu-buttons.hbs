@@ -13,14 +13,14 @@
     </div>
     <!-- ///// Root directory and checkbox SETTINGS ///// -->
     <div class="settings" draggable="false" ondragstart="return false" style="display:none">
-      <div class="root">
+      <!-- div class="root">
         <span style="margin:-0.25em 2em 0.5em 0"> Välj albumkatalog </span><br>
         <select id="rootSel" title="Välj albumkatalog" totip="Välj albumkatalog" onchange={{action 'selectRoot' value='target.value'}}>
           {{#each imdbRoots as |rootChoice|}}
-            <option onclick="this.parentElement.blur()" value={{rootChoice}} selected={{eq imdbRoot rootChoice}}>{{rootChoice}}</option><!-- imdbRoot (== #imdbRoot) is set as chosen -->
+            <option onclick="this.parentElement.blur()" value={{rootChoice}} selected={{eq imdbRoot rootChoice}}>{{rootChoice}}</option><! - imdbRoot (== #imdbRoot) is set as chosen - >
           {{/each}}
         </select>
-      </div>
+      </div -->
       <div class="check">
         <button class="confirm" {{action 'setAllow' true}}>Bekräfta</button>
         <button {{action 'toggleSettings'}}> Stäng </button>
@@ -30,10 +30,7 @@
       </div>
     </div>
   </form>
-  <!-- SEARCH BUTTON without href attribute -->
-  <p class="search_link" draggable="false" ondragstart="return false">
-    <a class="BLUET" draggable="false" ondragstart="return false" {{action 'findText' }} title="Sök i bildtexter...">&nbsp;SÖK TEXT</a>
-  </p>
+  <!-- TEST BUTTON -->
   <button class="testerButton" title="Dummy button" {{action "testSomething"}} style="top:0;right:0;position:absolute" style="display:none"> · </button>
   <br><span class="usrlg"></span><!-- User information log -->
 </div>
@@ -66,15 +63,33 @@
 <div id="topMargin" title="pixels above slide shown" style="display:none">15</div>
 <div id="uploadNames" title="last uploaded" style="display:none"></div>
 <div id="userDir" title="user's home or choice" style="display:none"></div>
-<!-- ///// SELECT IMAGE DB DIRECTORIY, jstree ///// -->
+<!-- ///// MAIN MENU, SELECT IMAGE DB DIRECTORIY, jstree ///// -->
 <div class="jstreeAlbumSelect BACKG" onclick="return false" draggable="false" ondragstart="return false" style="display:none">
+
+  <p onclick="return false" draggable="false" ondragstart="return false" style="margin:0.5em 0.25em 0.5em 0.2em">
+    <a {{action 'findText'}}>Finn bilder: Sök i bildtexter...</a>
+
+  <span class="root">
+    <select id="rootSel" title="Välj albumkatalog" totip="Välj albumkatalog" onchange={{action 'selectRoot' value='target.value'}}>
+      {{#each imdbRoots as |rootChoice|}}
+        <option onclick="this.parentElement.blur()" value={{rootChoice}} selected={{eq imdbRoot rootChoice}}>{{rootChoice}}</option><!-- imdbRoot (== #imdbRoot) is set as chosen -->
+      {{/each}}
+    </select>
+  </span></p>
+
+  <p onclick="return false" draggable="false" ondragstart="return false" style="margin:0.5em 0.25em 0.5em 0.2em">
+    <a {{action 'toggleBackg'}}>Mörk eller ljus bakgrund</a>
+  </p>
+
+  <p onclick="return false" draggable="false" ondragstart="return false" style="margin:0.5em 0.25em 0.5em 0.2em">
+    <a {{action 'albumEdit'}}><em>{{{albumText}}}</em>{{{albumName}}}</a>
+  </p>
+
+  <hr>
   {{ember-jstree
     data=albumData
     eventDidSelectNode=(action "selectAlbum")
   }}
-  <p onclick="return false" draggable="false" ondragstart="return false" style="margin:0.5em 0.25em 0.5em 1em">
-    <em>{{{albumText}}}</em><a {{action 'albumEdit'}}>{{{albumName}}}</a>
-  </p>
 </div>
 
 <!-- ///// SPECIAL PLACEHOLDERS/LINKS (hidden) ///// -->
@@ -141,7 +156,7 @@
 
 <!-- ///// LEFT A-LINK BUTTONS (NOTE: without href attributes) /////  -->
 <div id="smallButtons" class="">
-  <a id="toggleTree" title=" Välj album " draggable="false" ondragstart="return false" {{action 'toggleAlbumTree' imdbRoot}}>@</a>
+  <a id="toggleTree" title=" Välj album " draggable="false" ondragstart="return false" {{action 'toggleAlbumTree' imdbRoot}}>≡</a>
   <a id="questionMark" title="Användarhandledning" draggable="false" ondragstart="return false" {{action 'toggleHelp'}}>?</a>
   <a id="reLd" title="Återställ osparade ändringar" draggable="false" ondragstart="return false" {{action 'refresh'}} src="/images/reload.png"></a>
   <a id="toggleName" title="Bildnamnen" draggable="false" ondragstart="return false" {{action 'toggleNameView'}}>N</a>
@@ -223,15 +238,44 @@
 <!-- Uses subaList and allNames from menu-buttons.js -->
 <p class='albumsHdr' draggable="false" ondragstart="return false">
 
-  <div class="BUT_0 BLUET" title="MENY" {{action 'toggleBackg' }}><b>≡</b></div>
+  <div class="BUT_0 BLUET" title="MENY" {{action 'toggleMenu' }}>≡</div>
+
+  <ul id="genMenu">
+    <li><div {{action 'findText' }}>Finn bilder: Sök i bildtexter...</div></li>
+    <li><div {{action 'toggleBackg' }}>Byt bakgrundsfärg, mörk/ljus</div></li>
+  </ul>
+
+    <!-- li><div>Clothing</div></li>
+    <li><div>Electronics</div>
+      <ul>
+        <li class="ui-state-disabled"><div>Home Entertainment</div></li>
+        <li><div>Car Hifi</div></li>
+        <li><div>Utilities</div></li>
+      </ul>
+    </li>
+    <li><div>Movies</div></li>
+    <li><div>Music</div>
+      <ul>
+        <li><div>Rock</div>
+          <ul>
+            <li><div>Alternative</div></li>
+            <li><div>Classic</div></li>
+          </ul>
+        </li>
+        <li><div>Jazz</div>
+          <ul>
+            <li><div>Freejazz</div></li>
+            <li><div>Big Band</div></li>
+            <li><div>Modern</div></li>
+          </ul>
+        </li>
+        <li><div>Pop</div></li>
+      </ul>
+    </li>
+    <li class="ui-state-disabled"><div>Specials (n/a)</div></li>
+  </ul -->
 
   <span class="imDir path BACKG">{{{albumName}}}</span>
-  <!-- span class="imDir ifZero BACKG">
-    <span class="imDir BACKG"> &mdash; </span>
-    <span class="numShown BACKG" title="shown">0</span>&nbsp;visas,
-    <span class="numHidden BACKG" title="invisible">0</span>&nbsp;dolda
-    (<span class="numMarked BACKG" title="marked">0</span>&nbsp;markerade)
-  </span -->
   <br><!-- Links to SubAlbums -->
   <div class="miniImgs">
     {{#each subaList as |suba|}}

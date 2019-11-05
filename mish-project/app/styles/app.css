@@ -2,16 +2,8 @@
   font-family: Georgia, 'Times New Roman', Times, serif;
   font-size: 1em;
 }
-/*.BACKG {
-  background-color: #000;
-  background-color: attr(data-backg)!important;
-  background-color: #000!important;
-  background-color: #b0b0b0!important;
-}*/
 body {
  width: 99%!important;
- /*background-color: #b0b0b0;
- background-color: #000;*/
 }
 .lastRow, .copyright {
   font: 0.9em monospace;
@@ -22,8 +14,6 @@ a.jstree-anchor small {
   background: transparent;
   font-size: 70%;
   vertical-align: 4px;
-  /*vertical-align: super;
-  color: #0bf;*/
   color: #1ce;
 }
 a.jstree-anchor.jstree-hovered small {
@@ -60,7 +50,7 @@ li.context-menu__item, li.context-menu--left {
 }
 li.context-menu__item span, li.context-menu--left span {
   background-color: #eee;
-  color: #444;
+  color: black;
   margin: 0;
 }
 li.context-menu__item span:hover, li.context-menu--left span:hover {
@@ -81,7 +71,7 @@ ul.context-menu li:first-child span, ul.context-menu li:last-child span {
 li.context-menu__item--disabled span, ul.context-menu--left li.context-menu__item--disabled span {
   padding: 0.001em;
   margin: 0;
-  opacity: 0.4;
+  opacity: 0.36;
 }
 .context-menu__item__label {
   display: inline;
@@ -91,6 +81,74 @@ button {
   border-radius: 3px;
   cursor: pointer;
 }
+.ui-menu {
+  min-width: 50px;
+  max-width: 300px;
+  border: 1px solid #777;
+  border-radius: 4px;
+  margin-top: -5px!important;
+  white-space: nowrap;
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	display: block;
+	outline: 0;
+  position: absolute;
+}
+.ui-menu .ui-menu {
+	position: absolute;
+}
+.ui-menu .ui-menu-item {
+  text-align: left;
+	margin: 0;
+  padding: 0;
+	cursor: pointer;
+}
+.ui-menu .ui-menu-item-wrapper {
+  background: #eee;
+  color: black;
+	position: relative;
+	padding: 3px .75em;
+}
+.ui-menu .ui-menu-divider {
+	margin: 5px 0;
+	height: 0;
+	font-size: 0;
+	line-height: 0;
+	border-width: 1px 0 0 0;
+}
+.ui-menu .ui-state-focus,
+.ui-menu .ui-state-active {
+	margin: 0px;
+  background: #ccc;
+}
+
+/* icon support */
+.ui-menu-icons {
+	position: relative;
+}
+.ui-menu-icons .ui-menu-item-wrapper {
+	padding-left: 2em;
+}
+
+/* left-aligned */
+.ui-menu .ui-icon {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: .2em;
+	margin: auto 0;
+}
+
+/* right-aligned */
+.ui-menu .ui-menu-icon {
+	left: auto;
+	right: 0;
+}
+.ui-state-disabled .ui-menu-item-wrapper {
+  color: #777;
+}
+
 .ui-dialog {
   z-index: 12;
   padding: 0.1em;
@@ -110,6 +168,7 @@ button {
   font-size: 1em;
   color: blue;
   height: auto;
+  border-radius: 4px;
 }
 .ui-widget-header {
   text-align: center;
@@ -592,6 +651,7 @@ button[disabled] {
   margin: -0.2em 0.1em 0.25em 0;
   cursor: pointer;
   font-size: 1.2em;
+  font-weight: bold;
 }
 .BUT_1 {
   width: 1em;
@@ -859,7 +919,7 @@ div.img_mini.symlink div.markTrue, div.img_mini.symlink div.markFalse {
   text-align: center;
   /*background-color: #b0b0b0;
   background-color: #000;*/
-  margin: 0.95em 0 auto 0;
+  margin: 0.95em 0 auto 2.15em;
   padding-top: 3em;     /* click-back area above .img_show */
   padding-bottom: 20em; /* and below .img_txt2             */
   z-index: 10;
