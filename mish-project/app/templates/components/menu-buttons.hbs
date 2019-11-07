@@ -1,6 +1,6 @@
 {{! template-lint-disable }}
 <!-- ///// HEADER AND ALSO THE LOGIN AND SETTINGS BUTTON ///// -->
-<div id="title" class="BLUET" draggable="false" ondragstart="return false" display="inline">
+<div id="title" class="BACKG BLUET" draggable="false" ondragstart="return false" display="">
   <span class="proid" title=""> Mish</span>
   <form action="">
     <div style="display: inline-block;vertical-align: top;">
@@ -9,23 +9,17 @@
       <input type="password" class="cred password" size="10" title="Lösenord" placeholder="Password">
       <span class="cred name"></span>
       <span class="cred status" {{action "infStatus"}}></span>
-      <button type="submit" class="viewSettings" title="" {{action "toggleSettings"}}> Inställningar </button>
     </div>
     <!-- ///// Root directory and checkbox SETTINGS ///// -->
-    <div class="settings" draggable="false" ondragstart="return false" style="display:none">
-      <!-- div class="root">
-        <span style="margin:-0.25em 2em 0.5em 0"> Välj albumkatalog </span><br>
-        <select id="rootSel" title="Välj albumkatalog" totip="Välj albumkatalog" onchange={{action 'selectRoot' value='target.value'}}>
-          {{#each imdbRoots as |rootChoice|}}
-            <option onclick="this.parentElement.blur()" value={{rootChoice}} selected={{eq imdbRoot rootChoice}}>{{rootChoice}}</option><! - imdbRoot (== #imdbRoot) is set as chosen - >
-          {{/each}}
-        </select>
-      </div -->
-      <div class="check">
-        <button class="confirm" {{action 'setAllow' true}}>Bekräfta</button>
-        <button {{action 'toggleSettings'}}> Stäng </button>
-        <div id="setAllow">
-          Insert checkboxes here
+    <div style="display: inline-block">
+      <button type="submit" class="viewSettings" title="" {{action "toggleSettings"}}>Inställningar</button>
+      <div class="settings" draggable="false" ondragstart="return false" style="display:none">
+        <div class="check">
+          <div id="setAllow">
+            Insert checkboxes here
+          </div>
+          <button class="confirm" {{action 'setAllow' true}}>Bekräfta</button>
+          <button {{action 'toggleSettings'}}> Stäng </button>
         </div>
       </div>
     </div>
@@ -64,32 +58,35 @@
 <div id="uploadNames" title="last uploaded" style="display:none"></div>
 <div id="userDir" title="user's home or choice" style="display:none"></div>
 <!-- ///// MAIN MENU, SELECT IMAGE DB DIRECTORIY, jstree ///// -->
-<div class="jstreeAlbumSelect BACKG" onclick="return false" draggable="false" ondragstart="return false" style="display:none">
+<div class="mainMenu BACKG" onclick="return false" draggable="false" ondragstart="return false" style="display:none">
 
-  <p onclick="return false" draggable="false" ondragstart="return false" style="margin:0.5em 0.25em 0.5em 0.2em">
-    <a {{action 'findText'}}>Finn bilder: Sök i bildtexter...</a>
-
-  <span class="root">
-    <select id="rootSel" title="Välj albumkatalog" totip="Välj albumkatalog" onchange={{action 'selectRoot' value='target.value'}}>
-      {{#each imdbRoots as |rootChoice|}}
-        <option onclick="this.parentElement.blur()" value={{rootChoice}} selected={{eq imdbRoot rootChoice}}>{{rootChoice}}</option><!-- imdbRoot (== #imdbRoot) is set as chosen -->
-      {{/each}}
-    </select>
-  </span></p>
-
-  <p onclick="return false" draggable="false" ondragstart="return false" style="margin:0.5em 0.25em 0.5em 0.2em">
-    <a {{action 'toggleBackg'}}>Mörk eller ljus bakgrund</a>
+  <p onclick="return false" draggable="false" ondragstart="return false">
+    <a {{action 'findText'}}>Finn bilder:</a> Sök i bildtexter i
+    <span class="root">
+      <select id="rootSel" title="Välj albumkatalog" totip="Välj albumkatalog" onchange={{action 'selectRoot' value='target.value'}}>
+        {{#each imdbRoots as |rootChoice|}}
+          <option onclick="this.parentElement.blur()" value={{rootChoice}} selected={{eq imdbRoot rootChoice}}>{{rootChoice}}</option><!-- imdbRoot (== #imdbRoot) is set as chosen -->
+        {{/each}}
+      </select>
+    </span>
   </p>
 
-  <p onclick="return false" draggable="false" ondragstart="return false" style="margin:0.5em 0.25em 0.5em 0.2em">
-    <a {{action 'albumEdit'}}><em>{{{albumText}}}</em>{{{albumName}}}</a>
+  <p onclick="return false" draggable="false" ondragstart="return false">
+    <a {{action 'toggleBackg'}}>Byt till mörk eller ljus bakgrund</a>
   </p>
 
-  <hr>
-  {{ember-jstree
-    data=albumData
-    eventDidSelectNode=(action "selectAlbum")
-  }}
+  <p onclick="return false" draggable="false" ondragstart="return false" title="Ta bort | gör nytt album" totip="Ta bort | gör nytt album">
+    <a {{action 'albumEdit'}}>{{{albumText}}}</a>{{{albumName}}}
+  </p>
+  <p onclick="return false" draggable="false" ondragstart="return false">
+    <a {{action 'toggleJstreeAlbumSelect'}}>{{jstreeHdr}}</a>
+  </p>
+  <div class="jstreeAlbumSelect" style="display:none">
+    {{ember-jstree
+      data=albumData
+      eventDidSelectNode=(action "selectAlbum")
+    }}
+  </div>
 </div>
 
 <!-- ///// SPECIAL PLACEHOLDERS/LINKS (hidden) ///// -->
@@ -103,7 +100,7 @@
 <div class="img_show" style="display:none" draggable="false">
   <span class="imDir path BACKG">{{{albumName}}}</span>
   <div id="wrap_pad" class="BACKG" draggable="false">
-    <!-- ///// RIGHT A-LINK BUTTONS (NOTE: without href attributes) /////  -->
+    <!-- ///// RIGHT BUTTONS (NOTE: without href attributes) /////  -->
     <div class="nav_links" draggable="false" ondragstart="return false">
       <!-- NEXT-ARROW-BUTTONS -->
       <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' true }} title="Nästa bild">»</a> &nbsp;<br>
@@ -154,9 +151,9 @@
   </div>
 </div>
 
-<!-- ///// LEFT A-LINK BUTTONS (NOTE: without href attributes) /////  -->
+<!-- ///// LEFT BUTTONS (NOTE: without href attributes) /////  -->
 <div id="smallButtons" class="">
-  <a id="toggleTree" title=" Välj album " draggable="false" ondragstart="return false" {{action 'toggleAlbumTree' imdbRoot}}>≡</a>
+  <a id="menuButton" title="HUVUDMENY" draggable="false" ondragstart="return false" {{action 'toggleMainMenu' imdbRoot}}>≡</a>
   <a id="questionMark" title="Användarhandledning" draggable="false" ondragstart="return false" {{action 'toggleHelp'}}>?</a>
   <a id="reLd" title="Återställ osparade ändringar" draggable="false" ondragstart="return false" {{action 'refresh'}} src="/images/reload.png"></a>
   <a id="toggleName" title="Bildnamnen" draggable="false" ondragstart="return false" {{action 'toggleNameView'}}>N</a>
@@ -179,7 +176,7 @@
     <b style="color:#0b0">Gå till originalbilden</b> med högerklick i grön markeringsring</span></p>
   <p style="text-align:left;margin-left:1.5em;line-height:1.7em" draggable="false" ondragstart="return false">
     <b>Knapparna till vänster</b> (vilka som syns beror på hur du är inloggad):<br>
-    <a id="albSel">@</a> Välj album, visa/dölj albumval (alternativ till albumlänkarna)<br>
+    <a id="albSel">≡</a> Huvudmeny: Sök text, byt bakgrund, albumöversikt med direktval<br>
     <a id="questionMark0">?</a> Visa/dölj den här användarhandledningen<br>
     <a id="reLd0"><img draggable="false" ondragstart="return false" src="/images/reload.png"></a> Ladda om albumet, återställ eventuella osparade ändringar¹³ (’ångerknapp’, men avser ej textändringar)<br>
     <a id="toggleName0">N</a> Visa/dölj namn på bilden (filnamn utan .filtyp)<br>
@@ -238,14 +235,14 @@
 <!-- Uses subaList and allNames from menu-buttons.js -->
 <p class='albumsHdr' draggable="false" ondragstart="return false">
 
-  <div class="BUT_0 BLUET" title="MENY" {{action 'toggleMenu' }}>≡</div>
+  <!-- div class="BUT_0 BLUET" title="MENY" {{action 'toggleMenu' }}>≡</div>
 
   <ul id="genMenu">
     <li><div {{action 'findText' }}>Finn bilder: Sök i bildtexter...</div></li>
     <li><div {{action 'toggleBackg' }}>Byt bakgrundsfärg, mörk/ljus</div></li>
   </ul>
 
-    <!-- li><div>Clothing</div></li>
+    <li><div>Clothing</div></li>
     <li><div>Electronics</div>
       <ul>
         <li class="ui-state-disabled"><div>Home Entertainment</div></li>

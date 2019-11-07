@@ -16,9 +16,9 @@ export default Component.extend (contextMenuMixin, {
   /////////////////////////////////////////////////////////////////////////////////////////
 
   rstBrdrs: task (function* () {
-    if ($ (".jstreeAlbumSelect").is (":visible")) {
+    if ($ (".mainMenu").is (":visible")) {
       // Close this if visible:
-      $ (".jstreeAlbumSelect").hide ();
+      $ (".mainMenu").hide ();
     } else {
       resetBorders ();
     }
@@ -50,7 +50,8 @@ export default Component.extend (contextMenuMixin, {
 
       if (imdbroot === "") {
         // Prepare to select imdbRoot
-        $ ("div.settings div.root").show ();
+        $ (".mainMenu").show ();
+        //$ ("div.settings div.root").show ();
         $ ("div.settings div.check").hide ();
         spinnerWait (false);
         //spinnerWait (true);
@@ -793,6 +794,7 @@ export default Component.extend (contextMenuMixin, {
   //imdbDir: "",  // Current picture directory, selected from imdbDirs
   imdbDirs: () => {return ['Albums?']}, // Reset in requestDirs
   imdbPics: () => {return ['Alpics?']}, // Reset in requestDirs
+  jstreeHdr: "",
   albumName: "",
   albumText: "",
   albumData: () => {return []}, // Directory structure for the selected imdbRoot
@@ -804,6 +806,7 @@ export default Component.extend (contextMenuMixin, {
   init () { // ##### Component initiation
     this._super (...arguments);
     $ (document).ready ( () => {
+      $ ("#menuButton").attr ("title", "HUVUDMENY"); // i18n
       // Set the hidden-picture text background color:
       //$ ("#hideColor").text ("rgb(85, 85, 85)");
       $ ("#hideColor").text ("rgb(153, 153, 153)");
@@ -842,10 +845,10 @@ export default Component.extend (contextMenuMixin, {
       }), 10);
     });
 
-    $ (function () {
+    /*$ (function () {
       $( "#genMenu" ).menu ();
       $ ("#genMenu").hide ();
-    });
+    });*/
 
     // Trigger the jQuery tooltip on 'totip="..."' (custom attribute)
     $ (function () {
@@ -938,7 +941,7 @@ export default Component.extend (contextMenuMixin, {
         if (sortnames === undefined) {sortnames = "";}
         if (sortnames === "Error!") {
           spinnerWait (false);
-          $ (".jstreeAlbumSelect").show ();
+          $ (".mainMenu").show ();
           if ($ ("#imdbDir").text () !== "") {
             document.getElementById ("imdbError").className = "show-inline";
           }
@@ -1091,9 +1094,6 @@ export default Component.extend (contextMenuMixin, {
 //console.log("tgt.classList",tgt.classList);
         tgtClass = tgt.classList [0] || "";
       }
-      if (tgtClass !== "BUT_0") {
-        $ ("#genMenu").hide ();
-      }
       if (tgtClass === "context-menu" || tgtClass === "spinner") {
         return;
       }
@@ -1128,7 +1128,7 @@ export default Component.extend (contextMenuMixin, {
               $ (".ember-view.jstree").jstree ("deselect_all");
               $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_" + (1 + idx)));
               $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
-              //$ (".jstreeAlbumSelect").show ();
+              //$ (".mainMenu").show ();
               let namepic = file.replace (/^(.*\/)*(.+)\.[^.]*$/, "$2");
               later ( ( () => {
                 gotoMinipic (namepic);
@@ -1169,8 +1169,7 @@ export default Component.extend (contextMenuMixin, {
         that.actions.toggleHelp ();
       } else
       if (event.keyCode === 27) { // ESC key
-        $ (".jstreeAlbumSelect").hide ();
-        $ ("#genMenu").hide ();
+        $ (".mainMenu").hide ();
         if ($ ("div.settings").is (":visible")) { // Hide settings
           $ ("div.settings, div.settings div.root, div.settings div.check").hide ();
           return;
@@ -1317,16 +1316,16 @@ export default Component.extend (contextMenuMixin, {
             document.title = 'Mish: ' + removeUnderscore (that.get ("imdbRoot") + " — " + tmpName, true);
           }
           tmpName = removeUnderscore (tmpName); // Improve readability
+          that.set ("jstreeHdr", "");
           if (data === "Error!") {
             tmpName += " &mdash; <em style=\"color:red;background:transparent\">just nu oåtkomligt</em>" // i18n
             that.set ("albumName", tmpName);
             //that.set ("imdbDir", "");
             $ ("#imdbDir").text ("");
           } else {
-            that.set ("albumText", " Valt album: &nbsp;");
+            that.set ("albumText", " Valt album:");
             that.set ("albumName", '<strong class="albumName">' + tmpName + '</strong>');
-            //that.set ("albumName", tmpName);
-            $ (".jstreeAlbumSelect p:last a").attr ("title", " Ta bort | gör nytt album ");
+            that.set ("jstreeHdr", "Alla album:");
           }
           resolve (data); // Return file-name text lines
           console.log ("ORDER received");
@@ -1468,7 +1467,7 @@ export default Component.extend (contextMenuMixin, {
         idx = names.slice (here + 1).indexOf (name + "/" + subName);
 //console.log("B",idx,name,names);
         if (idx < 0) {
-          $ (".jstreeAlbumSelect").hide ();
+          $ (".mainMenu").hide ();
 //console.log("C",idx,name,names);
         } else {
           idx = idx + here + 1;
@@ -1477,7 +1476,7 @@ export default Component.extend (contextMenuMixin, {
       }
       if (idx < 0) {
 //console.log("E",idx,name,names);
-        $ (".jstreeAlbumSelect").hide ();
+        $ (".mainMenu").hide ();
         return;
       } else {
         $ (".ember-view.jstree").jstree ("close_all");
@@ -1769,7 +1768,7 @@ export default Component.extend (contextMenuMixin, {
     selectRoot (value) { // ##### Select album root dir (imdb) from dropdown
 
       //spinnerWait (true);
-      $ ("#toggleTree").attr ("title", "Välj album");
+      //$ ("#menuButton").attr ("title", "HUVUDMENY, välj album");
       // Close all dialogs/windows
       ediTextClosed ();
       //$ ("div.settings, div.settings div.root, div.settings div.check").hide ();
@@ -1800,7 +1799,7 @@ export default Component.extend (contextMenuMixin, {
         $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_1"));
         userLog ("START " + imdbroot);
         //initFlag = false;
-        $ ("#toggleTree").click ();
+        $ ("#menuButton").click ();
         // The picFound album is regenerated
         // The following commands must come in sequence
         let lpath = "imdb/" + $ ("#picFound").text ();
@@ -1947,11 +1946,11 @@ export default Component.extend (contextMenuMixin, {
         }
         $ ("#refresh-1").click ();
         /*if (value) {
-          $ ("#toggleTree").attr ("title", "Valt album:  " + that.get ("albumName") + "  (" + imdbDir.replace (/imdb/, that.get ("imdbRoot")) + ")"); // /imdb/ == imdbLink
+          $ ("#menuButton").attr ("title", "Valt album:  " + that.get ("albumName") + "  (" + imdbDir.replace (/imdb/, that.get ("imdbRoot")) + ")"); // /imdb/ == imdbLink
         }*/
 
         if (value) {
-          $ ("#toggleTree").attr ("title", "Valt album:  " + that.get ("albumName") + "  (" + albumPath () + ")");
+          //$ ("#menuButton").attr ("title", "HUVUDMENY, valt album:  " + that.get ("albumName") + "  (" + albumPath () + ")");
           //$ (".imDir.path").attr ("title", albumPath ());
           $ (".imDir.path").attr ("title-1", albumPath ());
         }
@@ -1969,7 +1968,7 @@ export default Component.extend (contextMenuMixin, {
       });
     },
     //============================================================================================
-    toggleAlbumTree () {
+    toggleMainMenu () {
 
       /*if ($ ("#imdbRoot").text () !== imdbroot) {
         this.actions.imageList (false); // Hide since source will change
@@ -1982,14 +1981,22 @@ export default Component.extend (contextMenuMixin, {
         $ ("#imdbDir").text ("");
         this.set ("albumName", "");
         this.set ("albumText", "");
-        $ ("#toggleTree").attr ("title", "Välj album");
+        $ ("#menuButton").attr ("title", "Välj album");
       }*/
       document.getElementById ("divDropbox").className = "hide-all";
       //var that = this;
-      $ ("div.settings, div.settings div.root, div.settings div.check").hide ();
+      $ ("div.settings, div.settings div.check").hide ();
+      if (!$ (".mainMenu").is (":visible")) {
+        $ (".mainMenu").show ();
+        //$ ("#requestDirs").click ();
+      } else {
+        $ (".mainMenu").hide ();
+      }
+    },
+    //============================================================================================
+    toggleJstreeAlbumSelect () {
       if (!$ (".jstreeAlbumSelect").is (":visible")) {
         $ (".jstreeAlbumSelect").show ();
-        //$ ("#requestDirs").click ();
       } else {
         $ (".jstreeAlbumSelect").hide ();
       }
@@ -2091,7 +2098,7 @@ export default Component.extend (contextMenuMixin, {
     showDropbox () { // ##### Display (toggle) the Dropbox file upload area
 
       if ($ ("#imdbDir").text () === "") {return;}
-      $ (".jstreeAlbumSelect").hide ();
+      $ (".mainMenu").hide ();
       $ ("#link_show a").css ('opacity', 0 );
       if (document.getElementById ("divDropbox").className === "hide-all") {
         document.getElementById ("divDropbox").className = "show-block";
@@ -2127,7 +2134,7 @@ export default Component.extend (contextMenuMixin, {
     //============================================================================================
     showShow (showpic, namepic, origpic) { // ##### Render a 'show image' in its <div>
 
-      $ (".jstreeAlbumSelect").hide ();
+      $ (".mainMenu").hide ();
       $ ("div.settings, div.settings div.root, div.settings div.check").hide ();
       $ ("ul.context-menu").hide ();
       $ ("#" + escapeDots (namepic) + " a img").blur ();
@@ -2360,7 +2367,7 @@ export default Component.extend (contextMenuMixin, {
         let header = "Användarhandledning<br>(främst för dator med mus och tangentbord)"
         infoDia ("helpText", null, header, $ ("div.helpText").html (), "Stäng", false);
         $ ("#helpText").parent ().css ("top", "0");
-        $ (".jstreeAlbumSelect").hide ();
+        $ (".mainMenu").hide ();
       }
     },
     //============================================================================================
@@ -2383,8 +2390,6 @@ export default Component.extend (contextMenuMixin, {
     //============================================================================================
     toggleBackg () { // ##### Change theme light/dark
 
-      $ ("#genMenu").hide ();
-
       if (BACKG === "#000") {
         BACKG = "#cbcbcb";
         TEXTC = "#000";
@@ -2399,17 +2404,7 @@ export default Component.extend (contextMenuMixin, {
       $ (".BLUET").css ("color", BLUET); // Repeat in didRender ()!
     },
     //============================================================================================
-    toggleMenu () { // ##### Open/close the jQuery genMenu
-      if ($ ("#genMenu").is (":visible")) {
-        $ ("#genMenu").hide ();
-      } else {
-        $ ("#genMenu").show ();
-      }
-    },
-    //============================================================================================
     findText () { // ##### Open dialog to search Xmp metadata text in the current imdbRoot
-
-      $ ("#genMenu").hide ();
 
       if (!(allow.imgHidden || allow.adminAll)) {
         userLog ("LOCKED", true);
@@ -2420,10 +2415,10 @@ export default Component.extend (contextMenuMixin, {
         $ ("#searcharea").dialog ("close");
       } else {
         if ($ ("#imdbRoot").text () === "") {
-          userLog ("ALBUM?", true);
+          userLog ("VÄLJ ALBUMKATALOG", true); //i18n
           return;
         }
-        $ (".jstreeAlbumSelect").hide ();
+        $ (".mainMenu").hide ();
         ediTextClosed ();
         $ (diaSrch).show ();
         $ ("#searcharea").dialog ("open");
@@ -2541,7 +2536,7 @@ export default Component.extend (contextMenuMixin, {
         ui.css ("max-height", hs - up + "px");
         uy.css ("top", hs - uy.height () - 13 + "px")
       }
-      $ (".jstreeAlbumSelect").hide ();
+      $ (".mainMenu").hide ();
       markBorders (namepic);
     },
     //============================================================================================
@@ -2793,11 +2788,11 @@ export default Component.extend (contextMenuMixin, {
               userLog ("START " + $ ("#imdbRoot").text ());
             }
             // Hide album root selector if unqualified
-            if (allow.albumEdit || allow.adminAll) {
+            /*if (allow.albumEdit || allow.adminAll) {
               $ ("div.settings, div.settings div.root").show ();
             } else {
               $ ("div.settings, div.settings div.root").show ();
-            }
+            }*/
             // The remaining is already prepared since loginError() returned false
           }
           spinnerWait (false);
@@ -2909,7 +2904,7 @@ export default Component.extend (contextMenuMixin, {
         $ ("div.settings div.root").hide ();
       } else {
         $ ("div.settings div.root").show (); //important!
-        $ (".jstreeAlbumSelect").hide ();
+        $ (".mainMenu").hide ();
       }
       this.actions.setAllow (); // Resets unconfirmed changes
       document.querySelector ('div.settings button.confirm').disabled = true;
@@ -2929,13 +2924,13 @@ export default Component.extend (contextMenuMixin, {
         $ (".settings input[type=checkbox]+label").css ("cursor", "default");
       }
       if ($ ("div.settings").is (":visible")) {
-        $ (".jstreeAlbumSelect").hide ();
+        $ (".mainMenu").hide ();
       }
     },
     //============================================================================================
     goTop () {
       scrollTo (0, 0);
-      $ (".jstreeAlbumSelect").hide ();
+      $ (".mainMenu").hide ();
     }
   }
 });
@@ -3059,9 +3054,9 @@ function spinnerWait (runWait) {
     $ (".spinner").show ();
     document.getElementById("reLd").disabled = true;
     document.getElementById("saveOrder").disabled = true;
-    document.getElementById("toggleTree").disabled = true;
+    document.getElementById("menuButton").disabled = true;
     $ ("div.settings, div.settings div.root, div.settings div.check").hide ();
-    $ (".jstreeAlbumSelect").hide ();
+    $ (".mainMenu").hide ();
     document.getElementById ("divDropbox").className = "hide-all";
   } else { // End waiting
     if (albumWait) {return;}
@@ -3069,7 +3064,7 @@ function spinnerWait (runWait) {
     later ( ( () => {
       document.getElementById("reLd").disabled = false;
       document.getElementById("saveOrder").disabled = false;
-      document.getElementById("toggleTree").disabled = false;
+      document.getElementById("menuButton").disabled = false;
       document.getElementById("showDropbox").disabled = false; // May be disabled at upload!
     }), 100);
     //if (allow.imgUpload || allow.adminAll) {document.getElementById("uploadPics").disabled = false;}
@@ -4037,7 +4032,7 @@ function selectPicFound () {
   $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_" + index));
   $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
 
-  //$ (".jstreeAlbumSelect").show ();
+  //$ (".mainMenu").show ();
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Search image text in the current imdbRoot

@@ -389,6 +389,7 @@ button.ui-dialog-titlebar-close span {
 }
 #title * {
   color: inherit;
+  background: inherit;
 }
 #title .proid {
   font-family: Verdana, Geneva, Tahoma, sans-serif!important;
@@ -417,6 +418,9 @@ button.ui-dialog-titlebar-close span {
   border: 1.0px solid #aaa;
   border-radius: 2px;
   background: transparent;
+}
+div.check button {
+  margin-top: 0.4em!important;
 }
 #title span.cred.name {
   font-size: 0.8em!important;
@@ -568,7 +572,7 @@ div[aria-describedby='textareas'] {
   background-repeat: no-repeat!important;
   background-position: center!important;
 }
-#smallButtons a#toggleTree {
+#smallButtons a#menuButton {
   background-color: #0085ff;
   height: 0.7em;
   line-height: 0.7em;
@@ -631,27 +635,17 @@ button[disabled] {
   background: transparent;
   display: inline-block;
   vertical-align:top;
-  width: 100px;
-  margin: 0.5em 0 0 0;
-  font-size: 80%;
+  width: 80px;
+  margin: 0.5em 20px 0 0;
+  font-size: 85%;
   font-weight: bold;
 }
 .img_show .imDir .albumName {
   padding-right: 50px;
 }
-.BUT_0 *:hover {
-  color: deepskyblue;
-}
-.BUT_0 {
-  display: inline-block;
-  width: 1em;
-  border: 1px solid #aaa;
-  border-radius: 4px;
-  padding: 0 0 0 0.4em;
-  margin: -0.2em 0.1em 0.25em 0;
-  cursor: pointer;
-  font-size: 1.2em;
-  font-weight: bold;
+strong.albumName {
+  font-style: normal;
+  margin: 0.5em 0.25em 0.5em 0.2em;
 }
 .BUT_1 {
   width: 1em;
@@ -1047,33 +1041,31 @@ input[type=radio]+label {
   cursor: pointer;
 }
 div.settings {
-  /*position: fixed;
-  margin: 0.2em 0 0 0;
+  position: absolute;
+  background: inherit;
+  /*margin: 0.2em 0 0 0;
   top: 15px;
   right: 40%;*/
-  display: inline-block;
+  display: block;
   font-family: Tahoma, Verdana, Geneva, sans-serif;
   font-size: 75%;
-  margin: 0;
-  padding: 0.5em 1em 0.5em 0.5em;
+  margin: 0 0.2em;
+  padding: 0.2em 1em 0.5em 0.5em;
   text-align: right;
   border: 1px solid #aaa;
-  border-radius: 0.5em;
+  border-radius: 2px;
   z-index: 28;
 }
-div.settings select {
-  font-family: Tahoma, Verdana, Geneva, sans-serif;
-  margin: 0 0 0.5em 0;
+/*div.settings select {*/
+span.root * {
   cursor: pointer;
   background: transparent;
   border: solid 1.0px #aaa;
-  border-radius: 3px;
+  border-radius: 2px;
+  color: inherit;
+  font-weight: bold;
 }
 select option {
-  border:none;
-  color: #111;
-  background-color: lightgrey;
-  padding: 0.2em;
 }
 div.settings button {
   font-size: 100%!important;
@@ -1156,27 +1148,35 @@ div.settings span {
   border-bottom: 2px solid black;
 }
 .modal-body {
-  margin-top: 40px;
+  margin-top: 38px;
   padding: 5px;
 }
-.jstreeAlbumSelect {
+.mainMenu {
   position: fixed;
-  top: 15px;
-  left: 35px;
+  top: 36px;
+  left: 5px;
   margin: 0;
   padding: 2px;
-  border: 3px solid gray;
-  border-radius: 5px;
+  border: 1.5px solid gray;
+  border-radius: 4px;
+  border-top-left-radius: 0px;
   vertical-align: middle;
   text-align: left;
   background: #000;
   z-index: 12;
 }
-.jstreeAlbumSelect .albumName:hover {
+.mainMenu p {
+  margin:0.5em 0.25em 0.5em;
+}
+.mainMenu p a {
+  font-style: italic;
+  padding: 0.7em 0 0 0;
+}
+/*.mainMenu .albumName:hover {
   color: #00bfff;
   cursor: pointer;
-}
-/*.jstreeAlbumSelect, .jstreeAlbumSelect p, .jstreeAlbumSelect em, .jstreeAlbumSelect strong {
+}*/
+/*.mainMenu, .mainMenu p, .mainMenu em, .mainMenu strong {
   background-color: #345;
 }
 .jstree-node, .jstree-children, .jstree-container-ul, .jstree-anchor {
@@ -1185,6 +1185,10 @@ div.settings span {
 .jstree-default .jstree-node {
   background-color: #345;
 }*/
+.jstreeAlbumSelect {
+  border: 1px solid gray;
+  border-radius: 2px;
+}
 .jstree-container-ul {
   margin-left: 0; /*was 1.1em*/
   max-height: 20em;
