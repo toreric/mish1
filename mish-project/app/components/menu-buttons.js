@@ -844,12 +844,6 @@ export default Component.extend (contextMenuMixin, {
         }), 177);
       }), 10);
     });
-
-    /*$ (function () {
-      $( "#genMenu" ).menu ();
-      $ ("#genMenu").hide ();
-    });*/
-
     // Trigger the jQuery tooltip on 'totip="..."' (custom attribute)
     $ (function () {
       $ (document).tooltip ({
@@ -1326,6 +1320,8 @@ export default Component.extend (contextMenuMixin, {
             that.set ("albumText", " Valt album:");
             that.set ("albumName", '<strong class="albumName">' + tmpName + '</strong>');
             that.set ("jstreeHdr", "Alla album:");
+            $ ("#jstreeHdr").attr ("title", "Visa alla album"); //i18n
+            $ ("#jstreeHdr").attr ("totip", "Visa alla ...");
           }
           resolve (data); // Return file-name text lines
           console.log ("ORDER received");
@@ -2390,10 +2386,11 @@ export default Component.extend (contextMenuMixin, {
     //============================================================================================
     toggleBackg () { // ##### Change theme light/dark
 
+      $ (".mainMenu").hide ();
       if (BACKG === "#000") {
         BACKG = "#cbcbcb";
         TEXTC = "#000";
-        BLUET = "#0085ff";
+        BLUET = "#146";
       } else {
         BACKG ="#000"; // background
         TEXTC = "#fff"; // text color
@@ -2938,9 +2935,9 @@ export default Component.extend (contextMenuMixin, {
 /////////////////////////////////////////////////////////////////////////////////////////
 let BACKG = "#cbcbcb";
 let TEXTC = "#000";
-let BLUET = "#0085ff";
+let BLUET = "#146";
 let albumWait = false;
-let logAdv = "Logga in för att kunna se inställningar: Anonymt utan namn och lösenord, eller med namnet 'gäst' utan lösenord som ger vissa redigeringsrättigheter"; // i18n
+let logAdv = "Logga in för att kunna se inställningar: Anonymt utan namn och lösenord, eller med namnet ’gäst’ utan lösenord som ger vissa redigeringsrättigheter"; // i18n
 let nosObs = "Skriv gärna på prov, men du saknar tillåtelse att spara text"; // i18n
 let nopsGif = "GIF-fil kan bara ha tillfällig text"; // i18n
 //let nopsLink = "Text kan inte ändras/sparas permanent via länk"; // i18n Obsolete
@@ -3056,6 +3053,7 @@ function spinnerWait (runWait) {
     document.getElementById("saveOrder").disabled = true;
     document.getElementById("menuButton").disabled = true;
     $ ("div.settings, div.settings div.root, div.settings div.check").hide ();
+    $ ("#menuButton").hide ();
     $ (".mainMenu").hide ();
     document.getElementById ("divDropbox").className = "hide-all";
   } else { // End waiting
@@ -3067,6 +3065,7 @@ function spinnerWait (runWait) {
       document.getElementById("menuButton").disabled = false;
       document.getElementById("showDropbox").disabled = false; // May be disabled at upload!
     }), 100);
+    $ ("#menuButton").show ();
     //if (allow.imgUpload || allow.adminAll) {document.getElementById("uploadPics").disabled = false;}
   }
 }

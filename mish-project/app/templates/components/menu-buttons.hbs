@@ -10,9 +10,10 @@
       <span class="cred name"></span>
       <span class="cred status" {{action "infStatus"}}></span>
     </div>
-    <!-- ///// Root directory and checkbox SETTINGS ///// -->
+    <!-- ///// Checkbox SETTINGS ///// -->
     <div style="display: inline-block">
       <button type="submit" class="viewSettings" title="" {{action "toggleSettings"}}>Inställningar</button>
+      <a class="finish" title="Tillbaka till startsidan" totip="Tillbaka till startsidan" href="start.html"><b>AVSLUTA</b></a>
       <div class="settings" draggable="false" ondragstart="return false" style="display:none">
         <div class="check">
           <div id="setAllow">
@@ -57,38 +58,6 @@
 <div id="topMargin" title="pixels above slide shown" style="display:none">15</div>
 <div id="uploadNames" title="last uploaded" style="display:none"></div>
 <div id="userDir" title="user's home or choice" style="display:none"></div>
-<!-- ///// MAIN MENU, SELECT IMAGE DB DIRECTORIY, jstree ///// -->
-<div class="mainMenu BACKG" onclick="return false" draggable="false" ondragstart="return false" style="display:none">
-
-  <p onclick="return false" draggable="false" ondragstart="return false">
-    <a {{action 'findText'}}>Finn bilder:</a> Sök i bildtexter i
-    <span class="root">
-      <select id="rootSel" title="Välj albumkatalog" totip="Välj albumkatalog" onchange={{action 'selectRoot' value='target.value'}}>
-        {{#each imdbRoots as |rootChoice|}}
-          <option onclick="this.parentElement.blur()" value={{rootChoice}} selected={{eq imdbRoot rootChoice}}>{{rootChoice}}</option><!-- imdbRoot (== #imdbRoot) is set as chosen -->
-        {{/each}}
-      </select>
-    </span>
-  </p>
-
-  <p onclick="return false" draggable="false" ondragstart="return false">
-    <a {{action 'toggleBackg'}}>Byt till mörk eller ljus bakgrund</a>
-  </p>
-
-  <p onclick="return false" draggable="false" ondragstart="return false" title="Ta bort | gör nytt album" totip="Ta bort | gör nytt album">
-    <a {{action 'albumEdit'}}>{{{albumText}}}</a>{{{albumName}}}
-  </p>
-  <p onclick="return false" draggable="false" ondragstart="return false">
-    <a {{action 'toggleJstreeAlbumSelect'}}>{{jstreeHdr}}</a>
-  </p>
-  <div class="jstreeAlbumSelect" style="display:none">
-    {{ember-jstree
-      data=albumData
-      eventDidSelectNode=(action "selectAlbum")
-    }}
-  </div>
-</div>
-
 <!-- ///// SPECIAL PLACEHOLDERS/LINKS (hidden) ///// -->
 <button style="display:none;" id="abumEditOption" {{action 'abumEditOption'}}></button>
 <!-- input style="display:none;" id="fileDialog" type="file" nwdirectory directory -->
@@ -153,14 +122,48 @@
 
 <!-- ///// LEFT BUTTONS (NOTE: without href attributes) /////  -->
 <div id="smallButtons" class="">
-  <a id="menuButton" title="HUVUDMENY" draggable="false" ondragstart="return false" {{action 'toggleMainMenu' imdbRoot}}>≡</a>
-  <a id="questionMark" title="Användarhandledning" draggable="false" ondragstart="return false" {{action 'toggleHelp'}}>?</a>
-  <a id="reLd" title="Återställ osparade ändringar" draggable="false" ondragstart="return false" {{action 'refresh'}} src="/images/reload.png"></a>
-  <a id="toggleName" title="Bildnamnen" draggable="false" ondragstart="return false" {{action 'toggleNameView'}}>N</a>
-  <a id="toggleHide" title="Visa/dölj gömda bilder" draggable="false" ondragstart="return false" {{action 'toggleHideFlagged'}}></a>
-  <a id ="showDropbox" title="Ladda upp..." draggable="false" ondragstart="return false" {{action 'showDropbox'}} style="display:none">U</a>
-  <a id="saveOrder" title="Spara ändringar" draggable="false" ondragstart="return false" {{action 'saveOrder'}}>S</a>
-  <a class="nav_" draggable="false" ondragstart="return false" title="Gå upp, visa login" style="position:fixed;left:-2px;bottom:0;margin:0;text-align:center:" {{action 'goTop'}}>&uarr;</a>
+  <a id="menuButton" class="smBu" title="HUVUDMENY" draggable="false" ondragstart="return false" {{action 'toggleMainMenu' imdbRoot}}>≡</a>
+
+  <!-- ///// MAIN MENU, SELECT IMAGE DB DIRECTORIY, jstree ///// -->
+  <div class="mainMenu BACKG" onclick="return false" draggable="false" ondragstart="return false" style="display:none">
+
+    <p onclick="return false" draggable="false" ondragstart="return false">
+      <a {{action 'findText'}}>Finn bilder:</a> Sök i bildtexter i
+      <span class="root">
+        <select id="rootSel" title="Välj albumkatalog" totip="Välj albumkatalog" onchange={{action 'selectRoot' value='target.value'}}>
+          {{#each imdbRoots as |rootChoice|}}
+            <option onclick="this.parentElement.blur()" value={{rootChoice}} selected={{eq imdbRoot rootChoice}}>{{rootChoice}}</option><!-- imdbRoot (== #imdbRoot) is set as chosen -->
+          {{/each}}
+        </select>
+      </span>
+      <button class="ui-button mainMenuClose ui-dialog-titlebar-close" title="Close" {{action 'toggleMainMenu' imdbRoot}}>×</button>
+    </p>
+
+    <p onclick="return false" draggable="false" ondragstart="return false">
+      <a {{action 'toggleBackg'}}>Byt till mörk eller ljus bakgrund</a>
+    </p>
+
+    <p onclick="return false" draggable="false" ondragstart="return false" title="Ta bort eller gör nytt album" title-1="Ta bort eller gör nytt album ...">
+      <a {{action 'albumEdit'}}>{{{albumText}}}</a>{{{albumName}}}
+    </p>
+    <p onclick="return false" draggable="false" ondragstart="return false">
+      <a id ="jstreeHdr" {{action 'toggleJstreeAlbumSelect'}}>{{jstreeHdr}}</a>
+    </p>
+    <div class="jstreeAlbumSelect" style="display:none">
+      {{ember-jstree
+        data=albumData
+        eventDidSelectNode=(action "selectAlbum")
+      }}
+    </div>
+  </div>
+
+  <a id="questionMark" class="smBu" title="Användarhandledning" draggable="false" ondragstart="return false" {{action 'toggleHelp'}}>?</a>
+  <a id="reLd" class="smBu" title="Återställ osparade ändringar" draggable="false" ondragstart="return false" {{action 'refresh'}} src="/images/reload.png"></a>
+  <a id="toggleName" class="smBu" title="Bildnamnen" draggable="false" ondragstart="return false" {{action 'toggleNameView'}}>N</a>
+  <a id="toggleHide" class="smBu" title="Visa/dölj gömda bilder" draggable="false" ondragstart="return false" {{action 'toggleHideFlagged'}}></a>
+  <a id ="showDropbox" class="smBu" title="Ladda upp..." draggable="false" ondragstart="return false" {{action 'showDropbox'}} style="display:none">U</a>
+  <a id="saveOrder" class="smBu" title="Spara ändringar" draggable="false" ondragstart="return false" {{action 'saveOrder'}}>S</a>
+  <a class="nav_" class="smBu" draggable="false" ondragstart="return false" title="Gå upp, visa login" style="position:fixed;left:-2px;bottom:0;margin:0;text-align:center:" {{action 'goTop'}}>&uarr;</a>
 </div>
 
 <img src="/images/snurra.svg" width="75%" class="spinner" draggable="false" ondragstart="return false" {{action 'hideSpinner'}} style="display:none">

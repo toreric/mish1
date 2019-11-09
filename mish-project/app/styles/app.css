@@ -299,6 +299,15 @@ button.ui-dialog-titlebar-close:hover {
 button.ui-dialog-titlebar-close span {
   width: 0;
 }
+button.mainMenuClose.ui-dialog-titlebar-close {
+  position:  static!important;
+  float: right;
+  margin: -0.1em 0 0 0.3em!important;
+  background: #aaa;
+}
+button.mainMenuClose.ui-dialog-titlebar-close:hover {
+  background: deeppink;
+}
 #notes textarea {
   font-family: Georgia, 'Times New Roman', Times, serif !important;
   width: 98%;
@@ -327,14 +336,14 @@ button.ui-dialog-titlebar-close span {
 }
 .blackBorder {
   text-shadow:
-    -1px -1px 0 #222,
-     0   -1px 0 #222,
-     1px -1px 0 #222,
-     1px  0   0 #222,
-     1px  1px 0 #222,
-     0    1px 0 #222,
-    -1px  1px 0 #222,
-    -1px  0   0 #222;
+    -0.5px -0.5px 0 #222,
+     0     -0.5px 0 #222,
+     0.5px -0.5px 0 #222,
+     0.5px  0     0 #222,
+     0.5px  0.5px 0 #222,
+     0      0.5px 0 #222,
+    -0.5px  0.5px 0 #222,
+    -0.5px  0     0 #222;
 }
 .shortMessage {
   position: fixed;
@@ -407,7 +416,7 @@ button.ui-dialog-titlebar-close span {
   vertical-align: top;
   margin: 0;
 }
-#title input.cred, #title button {
+#title input.cred, #title button, a.finish * {
   font-family: Verdana, Geneva, Tahoma, sans-serif!important;
   font-size: 0.8em;
   text-align: center;
@@ -516,7 +525,7 @@ div[aria-describedby='textareas'] {
   background: transparent;
   z-index: 8;
 }
-#smallButtons a {
+#smallButtons a.smBu {
   display: inline-block;
   width: 1em;
   height: 1em;
@@ -545,7 +554,7 @@ div[aria-describedby='textareas'] {
   height: .95em;
   padding: 0;
 }
-#smallButtons a:hover {
+#smallButtons a.smBu:hover {
   color: lightgray;
 }
 #smallButtons a#goTop, #goTop0 {
@@ -576,6 +585,22 @@ div[aria-describedby='textareas'] {
   background-color: #0085ff;
   height: 0.7em;
   line-height: 0.7em;
+  z-index: 13;
+}
+#smallButtons.mainMenu p * {
+  display: inline;
+  width: auto;
+  height: auto;
+  background: inherit;
+  color: inherit;
+  margin: 0;
+  padding: 0;
+  /* Prevent highlighting: */
+  -khtml-user-select: none;
+  -o-user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 .btn-std {
   font-weight: bold;
@@ -629,7 +654,7 @@ button[disabled] {
 .albumsHdr {
   background-color: transparent;
   text-align: left;
-  margin-left: 1em;
+  margin: 0.5em 0 0 1em;
 }
 .subAlbum {
   background: transparent;
@@ -680,10 +705,10 @@ a.imDir img:hover {
 }
 /* CSS tooltip title-1 for long one-liners.
 The jquery ui-tooltip is used elsewere (totip in *.js) */
-.imDir.path[title-1] {
+*[title-1] {
   position: relative;
 }
-.imDir.path[title-1]:hover::after/*,
+*[title-1]:hover::after/*,
 .imDir.path[title-1]:focus::after*/ {
   content: attr(title-1);
   position: absolute;
@@ -916,7 +941,7 @@ div.img_mini.symlink div.markTrue, div.img_mini.symlink div.markFalse {
   margin: 0.95em 0 auto 2.15em;
   padding-top: 3em;     /* click-back area above .img_show */
   padding-bottom: 20em; /* and below .img_txt2             */
-  z-index: 10;
+  z-index: 8;
 }
 .nav_links {
   display: none;
@@ -1154,12 +1179,11 @@ div.settings span {
 .mainMenu {
   position: fixed;
   top: 36px;
-  left: 5px;
-  margin: 0;
-  padding: 2px;
+  left: 2px;
+  margin: 0 3px;
+  padding: 0 2px 2px 2px;
   border: 1.5px solid gray;
-  border-radius: 4px;
-  border-top-left-radius: 0px;
+  border-radius: 2px;
   vertical-align: middle;
   text-align: left;
   background: #000;
@@ -1169,8 +1193,10 @@ div.settings span {
   margin:0.5em 0.25em 0.5em;
 }
 .mainMenu p a {
-  font-style: italic;
-  padding: 0.7em 0 0 0;
+  text-decoration: underline;
+  font-weight: bold;
+  opacity: 0.8;
+  font-size: 90%;
 }
 /*.mainMenu .albumName:hover {
   color: #00bfff;
@@ -1188,12 +1214,14 @@ div.settings span {
 .jstreeAlbumSelect {
   border: 1px solid gray;
   border-radius: 2px;
+  margin: -3px;
+  padding: 3px;
 }
 .jstree-container-ul {
   margin-left: 0; /*was 1.1em*/
   max-height: 20em;
   overflow-y: auto;
-  scrollbar-color: #07d black !important;
+  scrollbar-color: #07e #999 !important;
   scrollbar-width: thin !important;
 }
 .jstree-node {
