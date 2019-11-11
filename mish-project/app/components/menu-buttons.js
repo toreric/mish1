@@ -806,7 +806,7 @@ export default Component.extend (contextMenuMixin, {
   init () { // ##### Component initiation
     this._super (...arguments);
     $ (document).ready ( () => {
-      $ ("#menuButton").attr ("title", "HUVUDMENY"); // i18n
+      $ ("#menuButton").attr ("title", "Öppna menyn"); // i18n
       // Set the hidden-picture text background color:
       //$ ("#hideColor").text ("rgb(85, 85, 85)");
       $ ("#hideColor").text ("rgb(153, 153, 153)");
@@ -814,7 +814,6 @@ export default Component.extend (contextMenuMixin, {
       $ ("body").addClass ("BACKG TEXTC");
       $ ("body").css ("background", BACKG);
       $ ("body").css ("color", TEXTC);
-
       later ( ( () => {
         console.log ("jQuery v" + $ ().jquery);
         // The time stamp is produced with the Bash 'ember-b-script'
@@ -1763,8 +1762,6 @@ export default Component.extend (contextMenuMixin, {
     //============================================================================================
     selectRoot (value) { // ##### Select album root dir (imdb) from dropdown
 
-      //spinnerWait (true);
-      //$ ("#menuButton").attr ("title", "HUVUDMENY, välj album");
       // Close all dialogs/windows
       ediTextClosed ();
       //$ ("div.settings, div.settings div.root, div.settings div.check").hide ();
@@ -1946,8 +1943,7 @@ export default Component.extend (contextMenuMixin, {
         }*/
 
         if (value) {
-          //$ ("#menuButton").attr ("title", "HUVUDMENY, valt album:  " + that.get ("albumName") + "  (" + albumPath () + ")");
-          //$ (".imDir.path").attr ("title", albumPath ());
+          $ (".imDir.path").attr ("title", albumPath ());
           $ (".imDir.path").attr ("title-1", albumPath ());
         }
 
@@ -2386,7 +2382,7 @@ export default Component.extend (contextMenuMixin, {
     //============================================================================================
     toggleBackg () { // ##### Change theme light/dark
 
-      $ (".mainMenu").hide ();
+      if ($ ("#imdbRoot").text ()) {$ (".mainMenu").hide ();}
       if (BACKG === "#000") {
         BACKG = "#cbcbcb";
         TEXTC = "#000";
@@ -4289,16 +4285,16 @@ var allowance = [ // 'allow' order
 var allowSV = [ // Ordered as 'allow', IMPORTANT!
   "Får göra vadsomhelst",
   "göra/radera album",
-  "(arbeta med bilagor + 4)",
+  "(arbeta med bilagor +4)",
   "(se bilagor)",
   "göra/radera länkar",
-  "radera bilder + 5",
+  "radera bilder +5",
   "redigera bilder",
   "gömma/visa bilder",
   "ladda ned originalbilder",
   "flytta om bilder",
   "ladda upp bilder",
-  "redigera/spara anteckningar",
+  "redigera/spara anteckningar +13",
   "se anteckningar",
   "spara ändringar utöver text",
   "ändra inställningar",

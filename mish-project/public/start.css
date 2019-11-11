@@ -1,0 +1,37 @@
+body::after {
+  content: "";
+  background: url("images/bg034030hq.jpeg");
+  opacity: 0.7;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  position: absolute;
+  z-index: -1;
+}
+h3, p {
+  display: inline;
+  padding-left: 0.1em;
+}
+#wrap {
+}
+#lef {
+  display: inline-block;
+  float: left;
+  width: 24%;
+}
+#gall {
+  display: inline-block;
+  width: 50%;
+  text-align: center;
+}
+#gall img {
+  width: 10em;
+  height: auto;
+  margin: 0.2em;
+}
+#rig {
+  display: inline-block;
+  width: 24%;
+  float: right;
+}
