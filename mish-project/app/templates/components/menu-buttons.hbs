@@ -11,12 +11,9 @@
       <input type="text" class="cred user" size="10" title="Användare" placeholder="User name" value="">
       <input type="password" class="cred password" size="10" title="Lösenord" placeholder="Password">
       <span class="cred name"></span>
-      <span class="cred status" {{action "infStatus"}}></span>
+      <span class="cred status" {{action "toggleSettings"}}></span>
     </div>
-    <!-- ///// Checkbox SETTINGS ///// -->
-    <div style="display: inline-block">
-      <button type="submit" class="viewSettings" title="" {{action "toggleSettings"}}>Inställningar</button>
-      <div class="settings" draggable="false" ondragstart="return false" style="display:none">
+    <div class="settings" draggable="false" ondragstart="return false" style="display:none">
         <div class="check">
           <div id="setAllow">
             Insert checkboxes here
@@ -25,6 +22,9 @@
           <button {{action 'toggleSettings'}}> Stäng </button>
         </div>
       </div>
+    <!-- ///// Checkbox SETTINGS ///// -->
+    <div style="display: inline-block">
+      <button type="submit" class="viewSettings" title="" {{action "infStatus"}}>Inställningar</button>
     </div>
   </form>
   <!-- TEST BUTTON -->
@@ -88,7 +88,7 @@
       <!-- HELP -->
       <a class="nav_ qnav_" draggable="false" {{action 'toggleNav'}}>?</a> &nbsp;<br>
       <!-- FULL SIZE -->
-      <a class="nav_ " id="full_size" draggable="false" {{action 'fullSize'}} title="Full storlek">&#65291;</a> &nbsp;
+      <a class="nav_ " id="full_size" draggable="false" {{action 'fullSize'}} title="Full storlek">&#9974;</a> &nbsp;
     </div>
 
     <div id="wrap_show" draggable="false"><!-- IMAGE AND TEXT CONTAINER -->
@@ -131,7 +131,7 @@
   <div class="mainMenu BACKG" onclick="return false" draggable="false" ondragstart="return false" style="display:none">
 
     <p onclick="return false" draggable="false" ondragstart="return false">
-      <a {{action 'findText'}}>Finn bilder:</a> Sök i bildtexter i
+      <a {{action 'findText'}} style="padding-top:1.6em">Finn bilder:</a> Sök i bildtexter i
       <span class="root">
         <select id="rootSel" title="Välj albumkatalog" totip="Välj albumkatalog" onchange={{action 'selectRoot' value='target.value'}}>
           {{#each imdbRoots as |rootChoice|}}

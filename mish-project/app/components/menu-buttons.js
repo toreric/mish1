@@ -1510,8 +1510,7 @@ export default Component.extend (contextMenuMixin, {
         // Swedish
         allowHtml [j] = "<span>" + allowSV [j] + " " + (j + 1) + ' </span>' + code (Number (allowvalue [j]), j); // i18n
       }
-
-      $ ("#setAllow").html ("<span style=\"margin-right:8em\">Dina rättigheter:</span><br>" + allowHtml.join ("<br>"));
+      $ ("#setAllow").html ("<span style=\"margin:0\">Dina rättigheter (</span><a style=\"margin:0\" onclick=\"$ ('#title button.viewSettings').click ()\">se mer</a><span style=\"margin-right:6em\">):</span><br>" + allowHtml.join ("<br>"));
       allowFunc ();
 
       if (newSetting) { // Allow only one confirmation per settings-view
@@ -2089,6 +2088,7 @@ export default Component.extend (contextMenuMixin, {
     //============================================================================================
     showDropbox () { // ##### Display (toggle) the Dropbox file upload area
 
+      if ($ (".toggleAuto").text () === "STOP") {return;} // Auto slide show is running
       if ($ ("#imdbDir").text () === "") {return;}
       $ (".mainMenu").hide ();
       $ ("#link_show a").css ('opacity', 0 );
@@ -2274,6 +2274,7 @@ export default Component.extend (contextMenuMixin, {
     refresh (nospin) { // ##### Reload the imageList and update the sort order
 
       if ($ ("#imdbDir").text () === "") {return;}
+      if ($ (".toggleAuto").text () === "STOP") {return;} // Auto slide show is running
       if (!nospin) {
         spinnerWait (true);
       }
@@ -2286,6 +2287,7 @@ export default Component.extend (contextMenuMixin, {
     //============================================================================================
     saveOrder () { // ##### Save, in imdbDir on server, the ordered name list for the thumbnails on the screen. Note that they may, by user's drag-and-drop, have an unknown sort order (etc.)
 
+      if ($ (".toggleAuto").text () === "STOP") {return;} // Auto slide show is running
       if (!(allow.saveChanges || allow.adminAll) || $ ("#imdbDir").text () === "") {return;}
       $ ("#link_show a").css ('opacity', 0 );
 
@@ -2823,10 +2825,10 @@ export default Component.extend (contextMenuMixin, {
             let tmp1 = " (logga ut om du vill byta inloggning)";
             $ ("#title button.cred").attr ("title", tmp + tmp1);
             $ (".cred.name").attr ("title", tmp);
-            $ (".cred.status").attr ("title", tmp);
+            $ (".cred.status").attr ("title", "Se dina rättigheter");
             $ ("#title button.cred").attr ("totip", tmp + tmp1);
             $ (".cred.name").attr ("totip", tmp);
-            $ (".cred.status").attr ("totip", tmp);
+            $ (".cred.status").attr ("totip", "Se dina rättigheter");
             // Assure that the album tree is properly shown after LOGIN
             that.set ("albumData", []);
             //that.set ("albumName", "");

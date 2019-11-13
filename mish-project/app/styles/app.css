@@ -416,6 +416,9 @@ button.mainMenuClose.ui-dialog-titlebar-close:hover {
   vertical-align: top;
   margin: 0;
 }
+#title a.finish {
+  font-size: 70%!important;
+}
 #title input.cred, #title button, #title a.finish {
   font-family: Verdana, Geneva, Tahoma, sans-serif!important;
   font-size: 0.8em;
@@ -428,8 +431,9 @@ button.mainMenuClose.ui-dialog-titlebar-close:hover {
   border-radius: 2px;
   background: transparent;
 }
-#title a.finish, #title button.viewSettings {
-  font-size: 70%;
+/* Next button was integrated with .cred.status */
+#title button.viewSettings {
+  display: none!important;
 }
 div.check button {
   margin-top: 0.4em!important;
@@ -1001,7 +1005,7 @@ div.img_mini.symlink div.markTrue, div.img_mini.symlink div.markFalse {
   text-decoration: none;
 }
 .nav_links #full_size {
-  padding: 0.2em 0.5em 0.2em 0.5em;
+  padding: 0em 0.5em 0.1em 0.6em;
 }
 input.showTime[type="number"] {
   width: 1.3em;
@@ -1073,20 +1077,17 @@ input[type=radio]+label {
 div.settings {
   position: absolute;
   background: inherit;
-  /*margin: 0.2em 0 0 0;
-  top: 15px;
-  right: 40%;*/
   display: block;
   font-family: Tahoma, Verdana, Geneva, sans-serif;
   font-size: 75%;
   margin: 0 0.2em;
+  margin: 0 0 0 6em;
   padding: 0.2em 1em 0.5em 0.5em;
   text-align: right;
   border: 1px solid #aaa;
   border-radius: 2px;
   z-index: 28;
 }
-/*div.settings select {*/
 span.root * {
   cursor: pointer;
   background: transparent;
@@ -1106,13 +1107,20 @@ div.settings button {
   border-radius: 3px;
   cursor: pointer;
 }
-div.settings span {
+div.settings span, div.settings a {
   font-family: Tahoma, Verdana, Geneva, sans-serif;
   margin: 0 0.3em 0 0;
   display: inline-block;
+  white-space: nowrap;
   vertical-align: middle;
   line-height: 1em;
   background: transparent;
+}
+div.settings a {
+  text-decoration: underline;
+}
+div.settings a:hover {
+  color: #000;
 }
 #wrap_show {
   display: inline-table;

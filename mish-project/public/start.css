@@ -1,3 +1,8 @@
+body {
+  display: inline-block;
+  text-align: center;
+  width: 100%;
+}
 body::after {
   content: "";
   background: url("images/bg034030hq.jpeg");
@@ -13,25 +18,41 @@ h3, p {
   display: inline;
   padding-left: 0.1em;
 }
+a {
+  color: #000;
+  display: inline;
+  padding-left: 0.2em;
+  text-decoration: underline;
+  white-space: nowrap;
+}
+a:hover {
+  color: #555;
+  cursor: pointer;
+}
 #wrap {
 }
 #lef {
   display: inline-block;
-  float: left;
-  width: 24%;
+  vertical-align: top;
+  width: 16em;
 }
-#gall {
+#lef img {
+  width: 16em;
+}
+#mid {
   display: inline-block;
-  width: 50%;
+  vertical-align: top;
+  width: 6em;
   text-align: center;
 }
-#gall img {
-  width: 10em;
-  height: auto;
-  margin: 0.2em;
+#mid img {
+  width: 6em;
 }
 #rig {
   display: inline-block;
-  width: 24%;
-  float: right;
+  vertical-align: top;
+  width: 6em;
+}
+#rig img {
+  width: 6em;
 }
