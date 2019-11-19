@@ -6,7 +6,7 @@
     <a class="finish" title="Tillbaka till startsidan" totip="Tillbaka till startsidan" href="start.html">AVSLUTA</a>
   </div>
   <form action="">
-    <div style="display: inline-block;vertical-align: top;">
+    <div style="display:inline-block;vertical-align:top;">
       <button type="submit" class="cred login" title="" {{action "logIn"}}>Logga in</button>
       <input type="text" class="cred user" size="10" title="Användare" placeholder="User name" value="">
       <input type="password" class="cred password" size="10" title="Lösenord" placeholder="Password">
@@ -15,11 +15,17 @@
     </div>
     <div class="settings" draggable="false" ondragstart="return false" style="display:none">
         <div class="check">
-          <div id="setAllow">
-            Insert checkboxes here
+          <div>
+            <span>
+              Dina rättigheter (<a onclick="$ ('#title button.viewSettings').click ()">se mer</a>):
+              <button {{action 'toggleSettings'}}>×</button>
+            </span>
+            <div id="setAllow">
+              Insert checkboxes here
+            </div>
           </div>
           <button class="confirm" {{action 'setAllow' true}}>Bekräfta</button>
-          <button {{action 'toggleSettings'}}> Stäng </button>
+          <button {{action 'toggleSettings'}}>Stäng</button>
         </div>
       </div>
     <!-- ///// Checkbox SETTINGS ///// -->
@@ -37,7 +43,8 @@
 <!-- ///// PARAMETER STORE ///// -->
 <div id="allowValue" title="permissions" style="display:none"></div>
 <div id="backImg" style="display:none"></div>
-<div id="hideColor" style="display:none">rgb(85, 85, 85)</div>
+<div id="bkgrColor" style="display:none">rgb(59, 59, 59)</div>
+<div id="hideColor" style="display:none">rgb(102, 102, 102)</div>
 <div id="hideFlag" style="display:none" title="do'nt show 'hidden'pictures">1</div>
 <div id="hideNames" style="display:none" title="hide picture names">1</div>
 <div id="imdbCoco" title="albums content counts" style="display:none"></div>
@@ -232,7 +239,7 @@
 <!-- ///// START OF DROPBOX AND MINI-LIST CONTAINER ///// -->
 <div id="imageList" class="hide-all" onclick={{perform rstBrdrs}}><!-- THUMBNAIL CONTAINER -->
 <!-- ///// DROPBOX  CONTAINER ///// -->
-<div id="divDropbox" class="" >
+<div id="divDropbox" class="">
   {{#drop-zone url='/upload' autoProcessQueue=false  acceptedFiles='image/jpeg,image/tiff,image/png,image/gif'}}
   {{/drop-zone}}
 </div>

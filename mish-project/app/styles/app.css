@@ -419,24 +419,33 @@ button.mainMenuClose.ui-dialog-titlebar-close:hover {
 #title a.finish {
   font-size: 70%!important;
 }
-#title input.cred, #title button, #title a.finish {
+#title input.cred, #title a.finish {
   font-family: Verdana, Geneva, Tahoma, sans-serif!important;
   font-size: 0.8em;
   text-align: center;
   cursor: pointer;
   padding: 0 3px 1px 2px;
-  margin: 0 0.2em;
+  margin: 0 0 0 0.4em;
   display: inline-block;
   border: 1.0px solid #aaa;
   border-radius: 2px;
   background: transparent;
 }
+#title button {
+  font-family: Verdana, Geneva, Tahoma, sans-serif!important;
+  font-size: 0.8em;
+  border: 1.0px solid #aaa;
+  border-radius: 2px;
+}
 /* Next button was integrated with .cred.status */
 #title button.viewSettings {
   display: none!important;
 }
-div.check button {
-  margin-top: 0.4em!important;
+#title div.check div span {
+  margin: 0.3em 0 0 0!important;
+}
+#title div.check div span button {
+  margin: -0.3em -0.4em 0 4em!important;
 }
 #title span.cred.name {
   font-size: 0.8em!important;
@@ -462,6 +471,33 @@ div.check button {
 #title span.usrlg {
   font: bold 0.75em monospace!important;
   color: yellowgreen;
+}
+div.settings button {
+  font-size: 100%!important;
+  color: #333;
+  background: #e0ddda;
+  margin: 0.3em 0.1em 0.1em 0.4em;
+  padding: 0 0.3em 0.1em 0.3em;
+  border: 1.0px solid #aaa;
+  border-radius: 3px;
+  cursor: pointer;
+}
+div.settings span {
+  font-family: Tahoma, Verdana, Geneva, sans-serif;
+  margin: 0.3em 0em 0em 0.4em;
+  display: inline-block;
+  white-space: nowrap;
+  vertical-align: middle;
+  line-height: 1em;
+  background: transparent;
+  padding: 0 0.4em 0 0;
+}
+div.settings a {
+  font-family: Tahoma, Verdana, Geneva, sans-serif;
+  text-decoration: underline;
+}
+div.settings a:hover {
+  color: #000;
 }
 #dialog img {
   width: 26em;
@@ -1039,7 +1075,7 @@ input[type=checkbox]+label::before {
   display: inline-block;
   border: 1px solid white;
   border-radius: 2px;
-  margin: 0 -0.04em 0 0em;
+  margin: 0 0 -0.2em 0em;
   width: 0.5em;
   height: 0.5em;
 }
@@ -1081,7 +1117,7 @@ div.settings {
   font-family: Tahoma, Verdana, Geneva, sans-serif;
   font-size: 75%;
   margin: 0 0.2em;
-  margin: 0 0 0 6em;
+  margin: 0 0 0 7em;
   padding: 0.2em 1em 0.5em 0.5em;
   text-align: right;
   border: 1px solid #aaa;
@@ -1098,35 +1134,9 @@ span.root * {
 }
 select option {
 }
-div.settings button {
-  font-size: 100%!important;
-  color: #333;
-  background: #e0ddda;
-  margin: 0.35em 0.1em 0.1em 0;
-  border: 1.0px solid #aaa;
-  border-radius: 3px;
-  cursor: pointer;
-}
-div.settings span, div.settings a {
-  font-family: Tahoma, Verdana, Geneva, sans-serif;
-  margin: 0 0.3em 0 0;
-  display: inline-block;
-  white-space: nowrap;
-  vertical-align: middle;
-  line-height: 1em;
-  background: transparent;
-}
-div.settings a {
-  text-decoration: underline;
-}
-div.settings a:hover {
-  color: #000;
-}
 #wrap_show {
   display: inline-table;
   width: 20%;
-  background: #888;
-  background: #777;
   margin: 0 50px 0 -4px;
 }
 #wrap_show.symlink {

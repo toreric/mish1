@@ -16,17 +16,16 @@ body::after {
 }
 h3, p {
   display: inline;
-  padding-left: 0.1em;
 }
 a {
-  color: #000;
+  color: #111;
   display: inline;
   padding-left: 0.2em;
   text-decoration: underline;
   white-space: nowrap;
 }
 a:hover {
-  color: #555;
+  color: #888;
   cursor: pointer;
 }
 #wrap {

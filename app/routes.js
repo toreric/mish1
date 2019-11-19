@@ -29,7 +29,7 @@ module.exports = function (app) {
   // ----- Image data(base) directory
   let IMDB_DIR = null // Must be set in route
   // ----- For debug data(base) directories
-  let show_imagedir = false
+  let show_imagedir = false // for debugging
 
   // ##### R O U T I N G  E N T R I E S
   // Remember to check 'Express route tester'!
@@ -42,13 +42,21 @@ module.exports = function (app) {
       console.log (req.originalUrl)
     }
     //console.log (process.memoryUsage ())
+    // Check if this is a direct address to a picture (or an album?)
+
+    console.log (req.params)
+    if (req.body && req.body.like) {
+      console.log(req.body.like)
+    }
+
     next () // pass control to the next matching handler
   })
 
   // ##### #0 00 Find information 'from outside'
   app.get ('/:p([^/]+(/[^/]+)*)', function (req, res, next) {
 //console.log (req.params.p)
-    if (req.params.p.toString ().slice (0, 5) === "find/") {
+  //if (req.params.p.toString ().slice (0, 5) === "find/") {
+  if (req.params.p.toString ().slice (0, 1) === "#") {
       res.send ('Try to find something in ' + IMDB_ROOT)
     }
     next ()
@@ -588,6 +596,8 @@ module.exports = function (app) {
 
     let like = removeDiacritics (req.body.like)
     let cols = eval ("[" + req.body.cols + "]")
+console.log(like)
+console.log(cols)
     //console.log(like,cols)
     let taco = ["description", "creator", "source", "album", "name"]
     let columns = ""
@@ -595,7 +605,7 @@ module.exports = function (app) {
       if (cols [i]) {columns += "||" + taco [i]}
     }
     columns = columns.slice (2)
-
+console.log(columns)
 //---------
     try {
       let db = new sqlite.Database ('imdb/_imdb_images.sqlite', function (err) {

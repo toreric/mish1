@@ -51,7 +51,6 @@ export default Component.extend (contextMenuMixin, {
       if (imdbroot === "") {
         // Prepare to select imdbRoot
         $ (".mainMenu").show ();
-        //$ ("div.settings div.root").show ();
         $ ("div.settings div.check").hide ();
         spinnerWait (false);
         //spinnerWait (true);
@@ -809,7 +808,10 @@ export default Component.extend (contextMenuMixin, {
       $ ("#menuButton").attr ("title", "Öppna menyn"); // i18n
       // Set the hidden-picture text background color:
       //$ ("#hideColor").text ("rgb(85, 85, 85)");
-      $ ("#hideColor").text ("rgb(153, 153, 153)");
+      //$ ("#hideColor").text ("rgb(153, 153, 153)");
+      // Remember update *.hbs
+      $ ("#bkgrColor").text ("rgb(59, 59, 59)"); // #333
+      $ ("#hideColor").text ("rgb(102, 102, 102)"); // #666
       // Set body class BACKG:
       $ ("body").addClass ("BACKG TEXTC");
       $ ("body").css ("background", BACKG);
@@ -1062,6 +1064,14 @@ export default Component.extend (contextMenuMixin, {
           later ( ( () => {
             $ ("#saveOrder").click ();
           }), 200);
+          let delay = 25*n;
+          later ( ( () => {
+            let ntot = $ (".img_mini").length;
+            let nlink = $ (".img_mini.symlink" ).length;
+            let ntext = ", " + (ntot - nlink) + " bilder";
+            if (nlink > 0) {ntext += " (egna) + " + nlink + " länkade";} // i18n
+            $ ("div.BUT_2").text ($ ("div.BUT_2").text () + ntext);
+          }), delay);
         }).catch (error => {
           console.error (test + ' in function refreshAll: ' + error.message);
         });
@@ -1164,7 +1174,7 @@ export default Component.extend (contextMenuMixin, {
       if (event.keyCode === 27) { // ESC key
         $ (".mainMenu").hide ();
         if ($ ("div.settings").is (":visible")) { // Hide settings
-          $ ("div.settings, div.settings div.root, div.settings div.check").hide ();
+          $ ("div.settings, div.settings div.check").hide ();
           return;
         }
         if (document.getElementById ("divDropbox").className !== "hide-all") { // Hide upload
@@ -1510,13 +1520,21 @@ export default Component.extend (contextMenuMixin, {
         // Swedish
         allowHtml [j] = "<span>" + allowSV [j] + " " + (j + 1) + ' </span>' + code (Number (allowvalue [j]), j); // i18n
       }
-      $ ("#setAllow").html ("<span style=\"margin:0\">Dina rättigheter (</span><a style=\"margin:0\" onclick=\"$ ('#title button.viewSettings').click ()\">se mer</a><span style=\"margin-right:6em\">):</span><br>" + allowHtml.join ("<br>"));
+
+
+      /*let butxt = $ ("#setAllow").html ().split ("\n") [0].trim ();
+      if (butxt.length < 1) {butxt = $ ("#setAllow").html ().split ("\n") [1].trim ();}
+console.log("BUTXT",butxt);
+      butxt = butxt.replace (/.*(<button.+button>)., "$1");*/
+      $ ("#setAllow").html ( allowHtml.join ("<br>"));
+
+
       allowFunc ();
 
       if (newSetting) { // Allow only one confirmation per settings-view
         disableSettings ();
         later ( ( () => {
-          $ ("div.settings, div.settings div.root, div.settings div.check").hide ();
+          $ ("div.settings, div.settings div.check").hide ();
         }), 500);
       }
 
@@ -1763,7 +1781,7 @@ export default Component.extend (contextMenuMixin, {
 
       // Close all dialogs/windows
       ediTextClosed ();
-      //$ ("div.settings, div.settings div.root, div.settings div.check").hide ();
+      //$ ("div.settings, div.settings div.check").hide ();
       $ (".img_show").hide ();
       document.getElementById ("imageList").className = "hide-all";
       document.getElementById ("divDropbox").className = "hide-all";
@@ -1896,7 +1914,7 @@ export default Component.extend (contextMenuMixin, {
                   nsub--;
                   let obj = $ (element).closest ("div.subAlbum");
                   obj.addClass ("BUT_1");
-                  if (iz === 2 && nsub > 0) {
+                  if (iz === 2 && nsub > -9) {
                     obj.after ("<div class=\"BUT_2\"> " + nsub + " underalbum</div><br>"); // i18n
                   }
                 }
@@ -1913,7 +1931,7 @@ export default Component.extend (contextMenuMixin, {
                   nsub--;
                   let obj = $ (element).closest ("div.subAlbum");
                   obj.addClass ("BUT_1");
-                  if (nsub > 0) {
+                  if (nsub > -9) {
                     obj.after ("<div class=\"BUT_2\"> " + nsub + " underalbum</div><br>"); // i18n
                   }
                 }
@@ -1921,7 +1939,7 @@ export default Component.extend (contextMenuMixin, {
             });
           } else {
             let obj = $ ("div.subAlbum").first ();
-            if (nsub > 0) {
+            if (nsub > -9) {
               obj.before ("<div class=\"BUT_2\"> " + nsub + " underalbum</div><br>"); // i18n
             }
             console.log ("Selected: " + imdbDir + ", nsub = " + nsub);
@@ -2047,7 +2065,7 @@ export default Component.extend (contextMenuMixin, {
             h = h + 1;
           } else {
             //nodelem.style.backgroundColor='#222';
-            nodelem.style.backgroundColor='#777';
+            nodelem.style.backgroundColor=$ ("#bkgrColor").text ();
             if (yes) {
               nodelem.style.display='block-inline';
             }
@@ -2094,7 +2112,7 @@ export default Component.extend (contextMenuMixin, {
       $ ("#link_show a").css ('opacity', 0 );
       if (document.getElementById ("divDropbox").className === "hide-all") {
         document.getElementById ("divDropbox").className = "show-block";
-        $ ("div.settings, div.settings div.root, div.settings div.check").hide ();
+        $ ("div.settings, div.settings div.check").hide ();
         this.actions.hideShow ();
         $ ("#dzinfo").html ("VÄLJ FOTOGRAFIER FÖR UPPLADDNING"); // i18n
         scrollTo (null, $ ("#highUp").offset ().top);
@@ -2127,7 +2145,7 @@ export default Component.extend (contextMenuMixin, {
     showShow (showpic, namepic, origpic) { // ##### Render a 'show image' in its <div>
 
       $ (".mainMenu").hide ();
-      $ ("div.settings, div.settings div.root, div.settings div.check").hide ();
+      $ ("div.settings, div.settings div.check").hide ();
       $ ("ul.context-menu").hide ();
       $ ("#" + escapeDots (namepic) + " a img").blur ();
       $ ("#picName").text (namepic);
@@ -2691,7 +2709,7 @@ export default Component.extend (contextMenuMixin, {
         $ ("#title span.cred.status").text ("");
         $ ("#title span.cred.status").hide ();
         this.set ("loggedIn", false);
-        $ ("div.settings, div.settings div.root, div.settings div.check").hide ();
+        $ ("div.settings, div.settings div.check").hide ();
         $ ("#title button.viewSettings").hide ();
         $ ("#title button.cred").focus ();
         userLog ("LOGOUT");
@@ -2755,7 +2773,7 @@ export default Component.extend (contextMenuMixin, {
             $ ("#title button.cred").attr ("title", logAdv);
             $ ("#title button.cred").attr ("totip", logAdv);
             this.set ("loggedIn", false);
-            $ ("div.settings, div.settings div.root, div.settings div.check").hide ();
+            $ ("div.settings, div.settings div.check").hide ();
             userLog ("LOGIN error");
             $ ("#title button.cred").focus ();
             that.actions.setAllow ();
@@ -2782,13 +2800,6 @@ export default Component.extend (contextMenuMixin, {
               execute ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb").then ();
               userLog ("START " + $ ("#imdbRoot").text ());
             }
-            // Hide album root selector if unqualified
-            /*if (allow.albumEdit || allow.adminAll) {
-              $ ("div.settings, div.settings div.root").show ();
-            } else {
-              $ ("div.settings, div.settings div.root").show ();
-            }*/
-            // The remaining is already prepared since loginError() returned false
           }
           spinnerWait (false);
           $ (document).tooltip ("enable");
@@ -2885,7 +2896,7 @@ export default Component.extend (contextMenuMixin, {
     toggleSettings () { // ##### Show/change settings
 
       if (!this.get ("loggedIn")) {
-        $ ("div.settings, div.settings div.root, div.settings div.check").hide ();
+        $ ("div.settings, div.settings div.check").hide ();
         return;
       }
       spinnerWait (false);
@@ -2894,13 +2905,7 @@ export default Component.extend (contextMenuMixin, {
       ediTextClosed ();
       document.getElementById ("divDropbox").className = "hide-all";
       $ (".img_show").hide (); // settings + img_show don't go together
-      $ ("div.settings, div.settings div.root, div.settings div.check").toggle ();
-      if (!(allow.albumEdit || allow.adminAll)) {
-        $ ("div.settings div.root").hide ();
-      } else {
-        $ ("div.settings div.root").show (); //important!
-        $ (".mainMenu").hide ();
-      }
+      $ ("div.settings, div.settings div.check").toggle ();
       this.actions.setAllow (); // Resets unconfirmed changes
       document.querySelector ('div.settings button.confirm').disabled = true;
       var n = document.querySelectorAll ('input[name="setAllow"]').length;
@@ -2908,7 +2913,6 @@ export default Component.extend (contextMenuMixin, {
         document.querySelectorAll ('input[name="setAllow"]') [i].disabled = false;
         document.querySelectorAll ('input[name="setAllow"]') [i].addEventListener ('change', function () {
           document.querySelector ('div.settings button.confirm').disabled = false;
-          $ ("div.settings div.root").hide ();
         })
       }
       // Protect the first checkbox (must be 'allow.adminAll'), set in the sqLite tables:
@@ -2943,7 +2947,7 @@ let preloadShowImg = [];
 let loginStatus = "";
 let tempStore = "";
 let savedAlbumIndex = 0;
-let returnTitles = ["TOPP", "UPP", "SENASTE"];
+let returnTitles = ["TOPP", "UPP", "SENASTE"]; // i18n
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Get the 'true' album path ('imdb' is the symbolic link to the actual root of albums)
@@ -3050,7 +3054,7 @@ function spinnerWait (runWait) {
     document.getElementById("reLd").disabled = true;
     document.getElementById("saveOrder").disabled = true;
     document.getElementById("menuButton").disabled = true;
-    $ ("div.settings, div.settings div.root, div.settings div.check").hide ();
+    $ ("div.settings, div.settings div.check").hide ();
     $ ("#menuButton").hide ();
     $ (".mainMenu").hide ();
     document.getElementById ("divDropbox").className = "hide-all";
@@ -3335,8 +3339,8 @@ function hideFunc (picNames, nels, act) { // ===== Execute a hide request
     sortOrder = part1 + hideFlag + part2.slice (k); // Insert the new flag
     /*$ ("#i" + escapeDots (picName)).css ('background-color', '#222');
     $ ("#wrap_show").css ('background-color', '#222'); // *Just in case the show image is visible     $ ("#i" + escapeDots (picName)).show ();*/
-    $ ("#i" + escapeDots (picName)).css ('background-color', '#777');
-    $ ("#wrap_show").css ('background-color', '#777'); // *Just in case the show image is visible     $ ("#i" + escapeDots (picName)).show ();
+    $ ("#i" + escapeDots (picName)).css ('background-color', $ ("#bkgrColor").text ());
+    $ ("#wrap_show").css ('background-color', $ ("#bkgrColor").text ()); // *Just in case the show image is visible     $ ("#i" + escapeDots (picName)).show ();
     if (hideFlag === "1") { // If it's going to be hidden: arrange its CSS ('local hideFlag')
       $ ("#i" + escapeDots (picName)).css ('background-color', $ ("#hideColor").text ());
       $ ("#wrap_show").css ('background-color', $ ("#hideColor").text ()); // *Just in case -
@@ -4291,11 +4295,11 @@ var allowSV = [ // Ordered as 'allow', IMPORTANT!
   "(se bilagor)",
   "göra/radera länkar",
   "radera bilder +5",
-  "redigera bilder",
+  "(redigera bilder)",
   "gömma/visa bilder",
-  "ladda ned originalbilder",
+  "ladda ned originalbilder från album",
   "flytta om bilder",
-  "ladda upp bilder",
+  "ladda upp originalbilder till album",
   "redigera/spara anteckningar +13",
   "se anteckningar",
   "spara ändringar utöver text",
