@@ -55,8 +55,8 @@ module.exports = function (app) {
   // ##### #0 00 Find information 'from outside'
   app.get ('/:p([^/]+(/[^/]+)*)', function (req, res, next) {
 //console.log (req.params.p)
-  //if (req.params.p.toString ().slice (0, 5) === "find/") {
-  if (req.params.p.toString ().slice (0, 1) === "#") {
+  if (req.params.p.toString ().slice (0, 5) === "find/") {
+  //if (req.params.p.toString ().slice (0, 1) === "#") {
       res.send ('Try to find something in ' + IMDB_ROOT)
     }
     next ()

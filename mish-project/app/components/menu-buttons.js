@@ -832,7 +832,7 @@ export default Component.extend (contextMenuMixin, {
         $ ("#title form button.viewSettings").hide ();
         later ( ( () => { // To top of screen:
           scrollTo (0, 0);
-          $ ("#title button.cred").focus ();
+          $ ("#title a.finish").focus ();
           later ( ( () => { // Default user:
             $ (".cred.user").attr ("value", "gäst"); // i18n
             $ (".cred.login").click ();
@@ -2711,9 +2711,8 @@ console.log("BUTXT",butxt);
         this.set ("loggedIn", false);
         $ ("div.settings, div.settings div.check").hide ();
         $ ("#title button.viewSettings").hide ();
-        $ ("#title button.cred").focus ();
         userLog ("LOGOUT");
-        $ ("#title button.cred").focus ();
+        $ ("#title a.finish").focus ();
         that.set ("albumData", []);
         //that.set ("albumName", "");
         //that.set ("albumText", "");
@@ -2775,7 +2774,6 @@ console.log("BUTXT",butxt);
             this.set ("loggedIn", false);
             $ ("div.settings, div.settings div.check").hide ();
             userLog ("LOGIN error");
-            $ ("#title button.cred").focus ();
             that.actions.setAllow ();
             //later ( ( () => {
               //console.log ("Err, allowValue", $ ("#allowValue").text ());
@@ -2800,6 +2798,7 @@ console.log("BUTXT",butxt);
               execute ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb").then ();
               userLog ("START " + $ ("#imdbRoot").text ());
             }
+            $ ("#title a.finish").focus ();
           }
           spinnerWait (false);
           $ (document).tooltip ("enable");

@@ -809,7 +809,7 @@ The jquery ui-tooltip is used elsewere (totip in *.js) */
   margin: auto;
   margin-bottom: 0px;
 }
-.img_mini .img_name, .img_mini .img_txt1, .img_mini .img_txt2 {
+.img_mini .img_txt1, .img_mini .img_txt2 {
   font-size: 84%;
   height: 1.2em;
   font-weight: normal;
@@ -827,12 +827,14 @@ The jquery ui-tooltip is used elsewere (totip in *.js) */
 .img_txt1 a, .img_txt2 a {
   color:lightskyblue;
 }
-.img_mini .img_name {
-  display: none;
-  color: deeppink;
-}
 .img_mini .img_txt1 *, .img_mini .img_txt2 * {
   background: transparent;
+}
+.img_mini .img_name {
+  display: none;
+  font-size: 84%;
+  color: deeppink;
+  text-align: right;
 }
 .img_txt1, .img_txt2 {
   cursor: pointer;
