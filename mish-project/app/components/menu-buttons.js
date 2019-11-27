@@ -104,7 +104,7 @@ export default Component.extend (contextMenuMixin, {
         this.set ("albumText", "");
         this.set ("albumName", "");
       }
-      albumWait = false;
+      //albumWait = false;
     }
 
   }),
@@ -339,10 +339,6 @@ export default Component.extend (contextMenuMixin, {
     { label: 'Ladda ned...',
       disabled: () => {
         return !(["admin", "editall", "edit"].indexOf (loginStatus) > -1 && (allow.imgOriginal || allow.adminAll));
-        /*let dis = true; THIS way is too slow for copy protection!!
-        let picName = $ ("#picName").text ();
-        if (!picName.startsWith ("Vbm") && !picName.startsWith ("CPR") && ["admin", "editall", "edit"].indexOf (loginStatus) > -1 && ((allow.imgOriginal || allow.adminAll) && window.screen.width > 500 && window.screen.height > 500)) {dis = false;}
-        return dis;*/
       },
       action () {
         $ ("#downLoad").click (); // Call via DOM since "this" is ...where?
@@ -530,10 +526,6 @@ export default Component.extend (contextMenuMixin, {
             click: function () {
               $ (this).dialog ('close');
               moveFunc (picNames);
-              /*later ( ( () => {
-                $ ("#reLd").click ();
-                spinnerWait (false);
-              }), 1600);*/
             }
           },
           {
@@ -551,10 +543,6 @@ export default Component.extend (contextMenuMixin, {
                 $ ("#picNames").text (picNames.join ("\n"));
                 $ (this).dialog ('close');
                 moveFunc (picNames);
-                /*later ( ( () => {
-                  $ ("#reLd").click ();
-                  spinnerWait (false);
-                }), 1600);*/
               }
             }
           }]);
@@ -575,10 +563,6 @@ export default Component.extend (contextMenuMixin, {
           markBorders (picNames [0]); // Mark this single one, even if it wasn't clicked
           moveFunc (picNames);
           niceDialogOpen ();
-          /*later ( ( () => {
-            $ ("#reLd").click ();
-            spinnerWait (false);
-          }), 1600);*/
         }
       }
     },
@@ -732,8 +716,6 @@ export default Component.extend (contextMenuMixin, {
   //contextSelection: [{ paramDum: false }],  // The context menu "selection" parameter (not used)
   contextSelection: () => {return {}},
   _contextMenu (e) {
-//    document.addEventListener ('click', (evnt) => {triggerClick (evnt);}, false);
-//    document.removeEventListener ('mouseup', (e) => {triggerClick (evnt);}, false);
     later ( ( () => {
       // At text edit (ediText) || running slide show
       if ( ($ ("div[aria-describedby='textareas']").css ("display") !== "none") ||
@@ -773,11 +755,11 @@ export default Component.extend (contextMenuMixin, {
         $ ("ul.context-menu.context-menu--left").css ("right", "2px");
         $ ("ul.context-menu").show ();
 
-      } else {
+      } /*else {
         $ ("ul.context-menu").hide ();
         $ ("#picName").text ('');
         $ ("#picOrig").text ('');
-      }
+      }*/
     }), 7); // was 20
   },
 
@@ -917,7 +899,9 @@ export default Component.extend (contextMenuMixin, {
         $ ("span#showSpeed").hide ();
         $ ("div.ember-view.jstree").attr ("onclick", "return false");
 
-        $ (".img_mini.symlink [alt='MARKER']").attr("title", "Markera, eller med högerklick: Gå till källan");
+        if (allow.imgHidden || allow.adminAll) { // Qualified if at least Guest
+          $ (".img_mini.symlink [alt='MARKER']").attr("title", "Markera, eller med högerklick: Gå till källan");
+        }
       }), 10);
     });
   },
@@ -1051,7 +1035,41 @@ export default Component.extend (contextMenuMixin, {
               $ (".numHidden").text ("0");
               $ (".numShown").text ($ (".img_mini").length);
             }
+
+            later ( ( () => {
+              if ($ ("strong.albumName") [0].innerHTML.replace (/&nbsp;/g, " ") === $ ("#picFound").text ().replace (/_/g, " ")) {
+                $ ("div.BUT_2").text (""); // The search result album doesn't need this info
+              } else {
+                let ntot = $ (".img_mini").length;
+                let nlink = $ (".img_mini.symlink" ).length;
+                //console.log(ntot,nlink);
+                let ntext = $ ("div.BUT_2").text ().replace (/(^[^,]*),.*$/, "$1");
+                let nown = ntot - nlink;
+                if (nown === 1) {
+                  ntext += ", 1 bild";
+                } else {
+                  ntext += ", " + nown + " bilder";
+                } // i18n
+                let ltext = " länkade";
+                if (nlink === 1) {ltext = " länkad";}
+                if (nlink > 0) {
+                  if (nown === 1) {
+                    ntext += " (egen) + " + nlink + ltext;
+                  } else {
+                    ntext += " (egna) + " + nlink + ltext;
+                  }
+                } // i18n
+                $ ("div.BUT_2").text (ntext);
+              }
+            }), 777);
+
             userLog ("RELOAD");
+          } else {
+            later ( ( () => {
+              if ($ ("strong.albumName") [0].innerHTML.replace (/&nbsp;/g, " ") === $ ("#picFound").text ().replace (/_/g, " ")) {
+                $ ("div.BUT_2").text (""); // The search result album doesn't need this info
+              }
+            }), 777);
           }
           test = 'E1';
           later ( ( () => {
@@ -1064,14 +1082,6 @@ export default Component.extend (contextMenuMixin, {
           later ( ( () => {
             $ ("#saveOrder").click ();
           }), 200);
-          let delay = 25*n;
-          later ( ( () => {
-            let ntot = $ (".img_mini").length;
-            let nlink = $ (".img_mini.symlink" ).length;
-            let ntext = ", " + (ntot - nlink) + " bilder";
-            if (nlink > 0) {ntext += " (egna) + " + nlink + " länkade";} // i18n
-            $ ("div.BUT_2").text ($ ("div.BUT_2").text () + ntext);
-          }), delay);
         }).catch (error => {
           console.error (test + ' in function refreshAll: ' + error.message);
         });
@@ -1090,11 +1100,11 @@ export default Component.extend (contextMenuMixin, {
 
     var triggerClick = (evnt) => {
       var that = this;
-//console.log("evnt",evnt);
+      //console.log("evnt",evnt);
       var tgt = evnt.target;
       let tgtClass = "";
       if (tgt) {
-//console.log("tgt.classList",tgt.classList);
+        //console.log("tgt.classList",tgt.classList);
         tgtClass = tgt.classList [0] || "";
       }
       if (tgtClass === "context-menu" || tgtClass === "spinner") {
@@ -1122,10 +1132,9 @@ export default Component.extend (contextMenuMixin, {
               albumDir = file.replace (/^[^/]+(.*)\/[^/]+$/, "$1").trim ();
               let idx = $ ("#imdbDirs").text ().split ("\n").indexOf (albumDir);
               if (idx < 0) {
-                infoDia (null, null, "Tyvärr ...", "<br>Albumet <b>" + albumDir.replace (/^(.*\/)+/, "") + "</b> kan inte visas!", "Ok", true);
+                infoDia (null, null, "Tyvärr ...", "<br>Albumet <b>" + albumDir.replace (/^(.*\/)+/, "") + "</b> med den här bilden kan inte visas", "Ok", true);
                 return;
               }
-//console.log ("Album:", albumDir, idx);
               $ (".ember-view.jstree").jstree ("close_all");
               $ (".ember-view.jstree").jstree ("_open_to", "#j1_" + (1 + idx));
               $ (".ember-view.jstree").jstree ("deselect_all");
@@ -1173,6 +1182,7 @@ export default Component.extend (contextMenuMixin, {
       } else
       if (event.keyCode === 27) { // ESC key
         $ (".mainMenu").hide ();
+        $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
         if ($ ("div.settings").is (":visible")) { // Hide settings
           $ ("div.settings, div.settings div.check").hide ();
           return;
@@ -1453,34 +1463,27 @@ export default Component.extend (contextMenuMixin, {
     },
     //============================================================================================
     subaSelect (subName) { // ##### Sub-album link selected
-//console.log("subName",subName,subName.length);
       subName = subName.replace (/&nbsp;/g, "_"); // Restore readable album name!
       let names = $ ("#imdbDirs").text ().split ("\n");
       let name = $ ("#imdbDir").text ().slice (4); // Remove 'imdb'
-//console.log("name",name,name.length);
       let here, idx;
       if (subName === "|«") { // top in tree
         idx = 0;
       } else if (subName === "«") { // up in tree
         name = name.replace (/((\/[^/])*)(\/[^/]*$)/, "$1");
         idx = names.indexOf (name);
-//console.log("A",idx,name,names);
       } else if (subName === "‹›") { // most recent
         idx = savedAlbumIndex;
       } else {
         here = names.indexOf (name);
         idx = names.slice (here + 1).indexOf (name + "/" + subName);
-//console.log("B",idx,name,names);
         if (idx < 0) {
           $ (".mainMenu").hide ();
-//console.log("C",idx,name,names);
         } else {
           idx = idx + here + 1;
-//console.log("D",idx,name,names);
         }
       }
       if (idx < 0) {
-//console.log("E",idx,name,names);
         $ (".mainMenu").hide ();
         return;
       } else {
@@ -1520,12 +1523,6 @@ export default Component.extend (contextMenuMixin, {
         // Swedish
         allowHtml [j] = "<span>" + allowSV [j] + " " + (j + 1) + ' </span>' + code (Number (allowvalue [j]), j); // i18n
       }
-
-
-      /*let butxt = $ ("#setAllow").html ().split ("\n") [0].trim ();
-      if (butxt.length < 1) {butxt = $ ("#setAllow").html ().split ("\n") [1].trim ();}
-console.log("BUTXT",butxt);
-      butxt = butxt.replace (/.*(<button.+button>)., "$1");*/
       $ ("#setAllow").html ( allowHtml.join ("<br>"));
 
 
@@ -1819,17 +1816,12 @@ console.log("BUTXT",butxt);
     //============================================================================================
     selectAlbum () {
 
-//console.log(this.get ("imdbDirs"));
       let that = this;
       let value = $ ("[aria-selected='true'] a.jstree-clicked");
       if (value && value.length > 0) {
         value = value.attr ("title").toString ();
       } else {
         value =  "";
-      }
-      if (albumWait) {
-        document.getElementById ("imageList").className = "hide-all";
-        return;
       }
       ediTextClosed ();
       $ ("div.ember-view.jstree").attr ("onclick", "return false");
@@ -1846,7 +1838,6 @@ console.log("BUTXT",butxt);
           $ (".showCount").hide ();
           $ (".miniImgs").hide ();
         }
-//console.log("1>>>>>>>>>>\n",value);
         let imdbDir = value;
         $ ("#imdbDir").text (value);
         let selDir = value.slice (4);
@@ -1859,17 +1850,14 @@ console.log("BUTXT",butxt);
           tmp1 = ["", "", ""];
         }
         let i0 = selDirs.indexOf (selDir);
-//console.log("selDir",selDir,"selDirs",selDirs,"i0",i0);
         for (let i=i0; i<selDirs.length; i++) {
           if (selDir === selDirs [i].slice (0, selDir.length)) {
             let cand = selDirs [i].slice (selDir.length);
             if (cand.indexOf ("/") === 0 && cand.replace (/^(\/[^/]+).*$/, "$1") === cand) {
-//console.log("cand",cand);
               if (cand.slice (1) !== $ ("#picFound").text ()) {
                 //tmp.push (cand.slice (1).replace (/_/g, " "));
                 tmp.push (cand.slice (1));
                 tmp1.push (selPics [i]);
-//console.log("tmp",tmp);
               }
             }
           }
@@ -1895,9 +1883,22 @@ console.log("BUTXT",butxt);
             name: tmp [i].replace (/_/g, " ")
           });
         }
-//console.log("album",tmp);
-//console.log("image",tmp1);
+        let tmp2 = [""];
+        if (value) {tmp2 = value.split ("/");}
+        if (tmp2 [tmp2.length - 1] === "") {tmp2 = tmp2.slice (0, -1)} // removes trailing /
+        tmp2 = tmp2.slice (1); // remove symbolic link name
+        if (tmp2.length > 0) {
+          that.set ("albumName", tmp2 [tmp2.length - 1]);
+        } else {
+          that.set ("albumName", that.get ("imdbRoot"));
+        }
+        $ ("#refresh-1").click ();
+        if (value) {
+          $ (".imDir.path").attr ("title", albumPath ());
+          $ (".imDir.path").attr ("title-1", albumPath ());
+        }
         this.set ("subaList", a);
+
         later ( ( () => {
           $ ("a.imDir").attr ("title", "Album");
           let n = $ ("a.imDir").length/2; // there is also a bottom link line...
@@ -1914,8 +1915,14 @@ console.log("BUTXT",butxt);
                   nsub--;
                   let obj = $ (element).closest ("div.subAlbum");
                   obj.addClass ("BUT_1");
-                  if (iz === 2 && nsub > -9) {
-                    obj.after ("<div class=\"BUT_2\"> " + nsub + " underalbum</div><br>"); // i18n
+                  if (iz === 2) {
+                    if (nsub < 1) {
+                      obj.after ("<div class=\"BUT_2\"> Inga underalbum</div><br>"); // i18n
+                    } else if (nsub === 1) {
+                      obj.after ("<div class=\"BUT_2\"> Ett underalbum</div><br>"); // i18n
+                    } else {
+                      obj.after ("<div class=\"BUT_2\"> " + nsub + " underalbum</div><br>"); // i18n
+                    }
                   }
                 }
               }
@@ -1931,7 +1938,11 @@ console.log("BUTXT",butxt);
                   nsub--;
                   let obj = $ (element).closest ("div.subAlbum");
                   obj.addClass ("BUT_1");
-                  if (nsub > -9) {
+                  if (nsub < 1) {
+                    obj.after ("<div class=\"BUT_2\"> Inga underalbum</div><br>"); // i18n
+                  } else if (nsub === 1) {
+                    obj.after ("<div class=\"BUT_2\"> Ett underalbum</div><br>"); // i18n
+                  } else {
                     obj.after ("<div class=\"BUT_2\"> " + nsub + " underalbum</div><br>"); // i18n
                   }
                 }
@@ -1939,30 +1950,17 @@ console.log("BUTXT",butxt);
             });
           } else {
             let obj = $ ("div.subAlbum").first ();
-            if (nsub > -9) {
+            if (nsub < 1) {
+              obj.before ("<div class=\"BUT_2\"> Inga underalbum</div><br>"); // i18n
+            } else if (nsub === 1) {
+              obj.before ("<div class=\"BUT_2\"> Ett underalbum</div><br>"); // i18n
+            } else {
               obj.before ("<div class=\"BUT_2\"> " + nsub + " underalbum</div><br>"); // i18n
             }
             console.log ("Selected: " + imdbDir + ", nsub = " + nsub);
           }
-        }), 50);
-        let tmp2 = [""];
-        if (value) {tmp2 = value.split ("/");}
-        if (tmp2 [tmp2.length - 1] === "") {tmp2 = tmp2.slice (0, -1)} // removes trailing /
-        tmp2 = tmp2.slice (1); // remove symbolic link name
-        if (tmp2.length > 0) {
-          that.set ("albumName", tmp2 [tmp2.length - 1]);
-        } else {
-          that.set ("albumName", that.get ("imdbRoot"));
-        }
-        $ ("#refresh-1").click ();
-        /*if (value) {
-          $ ("#menuButton").attr ("title", "Valt album:  " + that.get ("albumName") + "  (" + imdbDir.replace (/imdb/, that.get ("imdbRoot")) + ")"); // /imdb/ == imdbLink
-        }*/
+        }), 777);
 
-        if (value) {
-          $ (".imDir.path").attr ("title", albumPath ());
-          $ (".imDir.path").attr ("title-1", albumPath ());
-        }
 
         resolve (true);
         later ( ( () => {
@@ -1979,19 +1977,7 @@ console.log("BUTXT",butxt);
     //============================================================================================
     toggleMainMenu () {
 
-      /*if ($ ("#imdbRoot").text () !== imdbroot) {
-        this.actions.imageList (false); // Hide since source will change
-        $ ("#imdbRoot").text (imdbroot);
-        this.set ("imdbRoot", imdbroot);
-        this.set ("albumData", []);
-        this.set ("albumName", "");
-        this.set ("albumText", "");
-        $ ("#imdbDirs").text ("");
-        $ ("#imdbDir").text ("");
-        this.set ("albumName", "");
-        this.set ("albumText", "");
-        $ ("#menuButton").attr ("title", "Välj album");
-      }*/
+      $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
       document.getElementById ("divDropbox").className = "hide-all";
       //var that = this;
       $ ("div.settings, div.settings div.check").hide ();
@@ -2004,6 +1990,8 @@ console.log("BUTXT",butxt);
     },
     //============================================================================================
     toggleJstreeAlbumSelect () {
+
+      $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
       if (!$ (".jstreeAlbumSelect").is (":visible")) {
         $ (".jstreeAlbumSelect").show ();
       } else {
@@ -2037,6 +2025,7 @@ console.log("BUTXT",butxt);
     //============================================================================================
     hideFlagged (yes) { // #####
 
+      $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
      return new Promise ( (resolve) => {
 
       $ ("#link_show a").css ('opacity', 0 );
@@ -2106,6 +2095,7 @@ console.log("BUTXT",butxt);
     //============================================================================================
     showDropbox () { // ##### Display (toggle) the Dropbox file upload area
 
+      $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
       if ($ (".toggleAuto").text () === "STOP") {return;} // Auto slide show is running
       if ($ ("#imdbDir").text () === "") {return;}
       $ (".mainMenu").hide ();
@@ -2144,6 +2134,7 @@ console.log("BUTXT",butxt);
     //============================================================================================
     showShow (showpic, namepic, origpic) { // ##### Render a 'show image' in its <div>
 
+      $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
       $ (".mainMenu").hide ();
       $ ("div.settings, div.settings div.check").hide ();
       $ ("ul.context-menu").hide ();
@@ -2362,6 +2353,7 @@ console.log("BUTXT",butxt);
     //============================================================================================
     toggleNameView () { // ##### Toggle-view file names
 
+      $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
       $ ("#link_show a").css ('opacity', 0 );
       $ (".img_name").toggle ();
       if (document.getElementsByClassName ("img_name") [0].style.display === "none") {
@@ -2373,6 +2365,7 @@ console.log("BUTXT",butxt);
     //============================================================================================
     toggleHelp () { // ##### Toggle-view user manual
 
+      $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
       if ($ ("#helpText").is (":visible") || $ ("#navAuto").text () === "true") {
         $ ('#helpText').dialog ("close");
       } else {
@@ -2457,6 +2450,7 @@ console.log("BUTXT",butxt);
     //============================================================================================
     ediText (namepic) { // ##### Edit picture texts
 
+      $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
       var displ = $ ("div[aria-describedby='textareas']").css ("display");
       var name0 = $ ("div[aria-describedby='textareas'] span.ui-dialog-title span").html ();
       if (allow.textEdit || allow.adminAll) {
@@ -2560,8 +2554,9 @@ console.log("BUTXT",butxt);
       if (!(allow.imgOriginal || allow.adminAll)) {return;}
       var name = $ ("#picName").text ();
       // Only selected user classes may view or download protected images
+console.log(loginStatus, name);
       if ((name.startsWith ("Vbm") || name.startsWith ("CPR")) && ["admin", "editall", "edit"].indexOf (loginStatus) < 0) {
-        userLog ("PROTECTED", true);
+        userLog ("COPYRIGHT©protected", true);
         return;
       }
       spinnerWait (true);
@@ -2605,8 +2600,9 @@ console.log("BUTXT",butxt);
       if (!(allow.imgOriginal || allow.adminAll)) {return;}
       let name = $ ("#picName").text ();
       // Only selected user classes may view or download protected images
+console.log(loginStatus, name);
       if ((name.startsWith ("Vbm") || name.startsWith ("CPR")) && ["admin", "editall", "edit"].indexOf (loginStatus) < 0) {
-        userLog ("COPYRIGHT©protected");
+        userLog ("COPYRIGHT©protected", true);
         return;
       }
       $ ("#link_show a").css ('opacity', 0 );
@@ -2653,6 +2649,7 @@ console.log("BUTXT",butxt);
     //============================================================================================
     toggleMark (name) { // ##### Mark an image
 
+      $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
       if (!name) {
         name = document.getElementById ("link_show").nextElementSibling.nextElementSibling.textContent.trim ();
       }
@@ -2674,8 +2671,8 @@ console.log("BUTXT",butxt);
     logIn () { // ##### User login/confirm/logout button pressed
 
       var usr = "", status = "";
-      albumWait = true;
-      //$ ("div[aria-describedby='textareas']").css ("display", "none");
+      //albumWait = true;
+      $ ("div[aria-describedby='textareas']").css ("display", "none");
       $ ("#dialog").dialog ("close");
       $ ("#searcharea").dialog ("close");
       document.getElementById ("divDropbox").className = "hide-all";
@@ -2694,7 +2691,8 @@ console.log("BUTXT",butxt);
           $ ("#title input.cred").blur ();
           $ ("#title button.cred").focus (); // Prevents FF showing link to saved passwords
         }),100);
-        albumWait = false;
+        //albumWait = false;
+        //spinnerWait (false);
         return;
       }
       if (btnTxt === "Logga ut") { // Log out
@@ -2740,16 +2738,17 @@ console.log("BUTXT",butxt);
         //$ ("#imdbDirs").text ("");
         //$ ("#imdbDir").text ("");
         $ ("#requestDirs").click ();
-        spinnerWait (true);
+        //spinnerWait (true);
         setTimeout (function () { // NOTE: Normally, later replaces setTimeout
           $ (".ember-view.jstree").jstree ("deselect_all");
           $ (".ember-view.jstree").jstree ("close_all");
           $ (".ember-view.jstree").jstree ("open_node", "#j1_1");
           later ( ( () => {
             $ (".ember-view.jstree").jstree ("select_node", "#j1_1");
+            spinnerWait (false);
           }), 2000);
         }, 2000);                 // NOTE: Preserved here just as an example
-        albumWait = false;
+        //albumWait = false;
         return;
       }
       if (btnTxt === "Bekräfta") { // Confirm
@@ -2800,10 +2799,10 @@ console.log("BUTXT",butxt);
             }
             $ ("#title a.finish").focus ();
           }
+          //albumWait = false;
           spinnerWait (false);
-          $ (document).tooltip ("enable");
         });
-        albumWait = false;
+        $ (document).tooltip ("enable");
       }
 
       // When password doesn't match user, return true; [else set 'allowvalue' and return false]
@@ -2894,6 +2893,7 @@ console.log("BUTXT",butxt);
 //============================================================================================
     toggleSettings () { // ##### Show/change settings
 
+      $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
       if (!this.get ("loggedIn")) {
         $ ("div.settings, div.settings div.check").hide ();
         return;
@@ -2934,10 +2934,18 @@ console.log("BUTXT",butxt);
 });
 // G L O B A L S, that is, 'outside' (global) variables and functions (globals)
 /////////////////////////////////////////////////////////////////////////////////////////
+var BLINK; // setInterval return handle
+var BLINK_TAG; // DOM reference for the function blink_text
+// Set BLINK_TAG and start with: BLINK = setInterval (blink_text, 600);
+// Cancel with clearInterval (BLINK);
+var blink_text = function () {
+  $(BLINK_TAG).fadeOut(350);
+  $(BLINK_TAG).fadeIn(150);
+}
 let BACKG = "#cbcbcb";
 let TEXTC = "#000";
 let BLUET = "#146";
-let albumWait = false;
+//let albumWait = false;
 let logAdv = "Logga in för att kunna se inställningar: Anonymt utan namn och lösenord, eller med namnet ’gäst’ utan lösenord som ger vissa redigeringsrättigheter"; // i18n
 let nosObs = "Skriv gärna på prov, men du saknar tillåtelse att spara text"; // i18n
 let nopsGif = "GIF-fil kan bara ha tillfällig text"; // i18n
@@ -3036,38 +3044,34 @@ function gotoMinipic (namepic) {
       markBorders (namepic); // Mark this one
     }
   } ());
-
-  /*return new Promise (resolve => {
-    while (true) {
-      later ( ( () => {
-        spinner = document.querySelector("img.spinner");
-      }), 999);
-      if (spinner.style.visibility === "hidden" || spinner.style.display === "none") {break;}
-    }*/
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Wait for server activities etc.
 function spinnerWait (runWait) {
+  $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
   if (runWait) {
     $ (".spinner").show ();
+    clearInterval (BLINK); // Unlock if occasionaly in use ...
+    BLINK_TAG = "#menuButton";
+    BLINK = setInterval (blink_text, 600);
+    $ (".mainMenu").hide ();
+    $ ("div.settings, div.settings div.check").hide ();
+    document.getElementById("menuButton").disabled = true;
     document.getElementById("reLd").disabled = true;
     document.getElementById("saveOrder").disabled = true;
-    document.getElementById("menuButton").disabled = true;
-    $ ("div.settings, div.settings div.check").hide ();
-    $ ("#menuButton").hide ();
-    $ (".mainMenu").hide ();
     document.getElementById ("divDropbox").className = "hide-all";
   } else { // End waiting
-    if (albumWait) {return;}
+    //if (albumWait) {return;}
     $ (".spinner").hide ();
+    clearInterval (BLINK);
     later ( ( () => {
+      document.getElementById("menuButton").disabled = false;
       document.getElementById("reLd").disabled = false;
       document.getElementById("saveOrder").disabled = false;
-      document.getElementById("menuButton").disabled = false;
       document.getElementById("showDropbox").disabled = false; // May be disabled at upload!
     }), 100);
-    $ ("#menuButton").show ();
-    //if (allow.imgUpload || allow.adminAll) {document.getElementById("uploadPics").disabled = false;}
+    //$ ("#menuButton").removeClass ("blink");
+    //clearInterval (stopper);
   }
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -3560,7 +3564,6 @@ function reqDirs (imdbroot) { // Read the dirs in imdb (requestDirs)
             dirCoco [j] = dirCoco [j].replace (/\*/, "—*");
           }
         }
-//console.log(dirList);
         // Don't keep current album visible if not in dirList:
         let curr = $ ("#imdbDir").text ().match(/\/.*$/); // Remove imdbLink
         if (curr) {curr = curr.toString ();} else {
@@ -3574,9 +3577,7 @@ function reqDirs (imdbroot) { // Read the dirs in imdb (requestDirs)
           tempStore = ix + 1; // ELSEWHERE:
           //$ (".ember-view.jstree").jstree ("select_node", $ ("#j1_" + tempStore));
         }
-//console.log("########\n",dirList);
         dirList = dirList.join ("\n");
-//console.log("########\n",dirList);
         $ ("#imdbDirs").text (dirList);
         dirCoco = dirCoco.join ("\n");
         $ ("#imdbCoco").text (dirCoco);
@@ -3790,7 +3791,6 @@ function aData (dirList) { // Construct the jstree data template from dirList
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function serverShell (anchor) { // Send commands in 'anchor text' to server shell
   var cmds = $ ("#"+anchor).text ();
-  //console.log(cmds);
   cmds = cmds.split ("\n");
   let commands = [];
   for (var i=0; i<cmds.length; i++) {
@@ -3815,7 +3815,6 @@ function mexecute (commands) { // Execute on the server, return a promise
     let xhr = new XMLHttpRequest ();
     xhr.open ('POST', 'mexecute/');
     xhr.onload = function () {
-      //console.log ("Status", this.status);
       resolve (xhr.responseText); // usually empty
     };
     xhr.onerror = function () {
@@ -3865,9 +3864,6 @@ function ediTextSelWidth () { // Selects a useful edit dialog width within avail
 var prepDialog = () => {
     $ ("#helpText").dialog ({autoOpen: false, resizable: true, title: "Användarhandledning"}); // Initiate a dialog...
     $ (".ui-dialog .ui-dialog-titlebar-close").text ("×");
-    //later ( ( () => {
-    //  $ ("#helpText").dialog ("close"); // and close it
-    //}), 100);
     // Initiate a dialog, ready to be used:
     $ ("#dialog").dialog ({resizable: true}); // Initiate a dialog...
     $ (".ui-dialog .ui-dialog-titlebar-close").text ("×");
@@ -3919,35 +3915,25 @@ let prepSearchDialog = () => {
             for (let i=0; i<boxes.length; i++) {
               sWhr [i] = boxes [i].checked;
               if (sWhr [i]) {n++}
-            }
+            } // If no search alternative is checked, check at least the first
             if (!n) {
-              return;
+              boxes [0].checked = true;
             }
-//console.log(sWhr);
             //spinnerWait (true);
             searchText (sTxt, and, sWhr).then (result => {
               $ ("#temporary_1").text ("");
               let cmd = [];
-
-              /*/ Clear out the search result album
-              let lpath = "imdb/" + $ ("#picFound").text ();
-              // The following commands must come in sequence (the picFound album is regenerated)
-              cmd.push ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb");*/
-
               // Insert links of found pictures into picFound:
               let n = 0, paths = [], albs = [];
               // Maximum numer of pictures from the search results to show:
               let nLimit = 100;
               if (result) {
                 paths = result.split ("\n").sort ();
-//console.log(" result:\n" + result);
-//console.log(" paths:\n" + paths.join ("\n"));
                 let chalbs = $ ("#imdbDirs").text ().split ("\n");
                 n = paths.length;
                 let lpath = "imdb/" + $ ("#picFound").text ();
                 for (let i=0; i<n; i++) {
                   let chalb = paths [i].replace (/^[^/]+(.*)\/[^/]+$/, "$1");
-//console.log(chalb, chalbs.indexOf (chalb));
                   if (!(chalbs.indexOf (chalb) < 0)) {
                     let fname = paths [i].replace (/^.*\/([^/]+$)/, "$1");
                     let linkfrom = paths [i];
@@ -3962,28 +3948,28 @@ let prepSearchDialog = () => {
                 paths = albs;
               }
               n = paths.length;
-              //if (n > 0) {
-                // Clear out the search result album
-                let lpath = "imdb/" + $ ("#picFound").text ();
-                // The following commands must come in sequence (the picFound album is regenerated)
-                execute ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb").then ();
-              //}
+              // Clear out the search result album
+              let lpath = "imdb/" + $ ("#picFound").text ();
+              // The following commands must come in sequence (the picFound album is regenerated)
+              execute ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb").then ();
               userLog (n + " FOUND");
               $ ("#temporary_1").text (cmd.join ("\n"));
               let yes ="Visa i <b>" + removeUnderscore ($ ("#picFound").text (), true) + "</b>";
               let modal = false;
               let p3 =  "<p style='margin:-0.3em 1.6em 0.2em 0;background:transparent'>" + sTxt + "</p>Funna i <span style='font-weight:bold'>" + $ ("#imdbRoot").text () + "</span>:&nbsp; " + n + (n>nLimit?" (i listan, bara " + nLimit + " kan visas)":"");
-              // Run `serverShell ("temporary_1")` via `infoDia (null, "", ... )`
-              infoDia (null, "", p3, "<div style='text-align:left;margin:0.3em 0 0 2em'>" + paths.join ("<br>").replace (/imdb\//g, "./") + "</div>", yes, modal);
-              //alert (n +"\n"+ result);
-              if (n === 0) {document.getElementById("yesBut").disabled = true;}
-              $ ("button.findText").show ();
-              $ ("button.updText").css ("float", "right");
-              selectPicFound ();
-              //spinnerWait (false);
-              if (n <= 100 && loginStatus === "guest") { // Simply show the search result at once...
-                $ ("div[aria-describedby='dialog'] button#yesBut").click ();
-              } // ...else inspect and decide whether to click the show button
+              later ( ( () => {
+                // Run `serverShell ("temporary_1")` via `infoDia (null, "", ... )`
+                infoDia (null, "", p3, "<div style='text-align:left;margin:0.3em 0 0 2em'>" + paths.join ("<br>").replace (/imdb\//g, "./") + "</div>", yes, modal);
+                //$ ("#dialog").focus ();
+                if (n === 0) {document.getElementById("yesBut").disabled = true;}
+                $ ("button.findText").show ();
+                $ ("button.updText").css ("float", "right");
+                selectPicFound ();
+                spinnerWait (false);
+                if (n && n <= 100 && loginStatus === "guest") { // Simply show the search result at once...
+                  $ ("div[aria-describedby='dialog'] button#yesBut").click ();
+                } // ...else inspect and decide whether to click the show button
+              }), 200);
             });
           }
         }
@@ -4027,7 +4013,7 @@ function selectPicFound () {
   let index = 1 + $ ("#imdbDirs").text ().split ("\n").indexOf ("/" + $ ("#picFound").text ());
   $ (".ember-view.jstree").jstree ("close_all");
   $ (".ember-view.jstree").jstree ("_open_to", "#j1_" + index);
-  console.log($ ("#picFound").text () + " (index = " + index + ")");
+console.log($ ("#picFound").text () + " (index = " + index + ")");
   $ (".ember-view.jstree").jstree ("deselect_all");
   $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_" + index));
   $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
