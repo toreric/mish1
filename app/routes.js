@@ -111,9 +111,13 @@ module.exports = function (app) {
       linkto = execSync ("readlink " + file).toString ().trim ()
       if (linkto [0] !== '.') {linkto = './' + linkto}
     }
-    var fileStat = "<i>Filnamn</i>: " + file + "<br><br>"
+    // Exclude the imdbLink name, nov 2014, in order to difficultize direct
+    // access to the original pictures from the server. This could be made even
+    // better, e.g., by selection of a random symlink name at program restart. 
+    var filex = file.replace (/^[^/]+\//, "./")
+    var fileStat = "<i>Filnamn</i>: " + filex + "<br><br>"
     if (linkto) {
-      fileStat = "<i>Filnamn</i>: <span style='color:#0a4'>" + file + "</span><br><br>"
+      fileStat = "<i>Filnamn</i>: <span style='color:#0a4'>" + filex + "</span><br><br>"
       fileStat += "<i>Länk till</i>: " + linkto + "<br><br>"
     }
     fileStat += "<i>Storlek</i>: " + stat.size/1000000 + " Mb<br>"
@@ -348,7 +352,8 @@ module.exports = function (app) {
       ////////////////////////////////////////////////////////
       // Get, check and package quadruple file names:
       //    [ 3 x relative-path, and simple-name ]   of
-      //    [ origfile, showfile, minifile, nameonly ]
+      //    [ origfile (without root-link-name, nov 2014),
+      //                       showfile, minifile, nameonly ]
       // where the corresponding images will be sized (e.g.)
       //    [ full, 640x640, 150x150, -- ]   with file type
       //    [ image/*, png, png, -- ]   *(see application.hbs)
@@ -415,7 +420,7 @@ module.exports = function (app) {
     res.location ('/')
     res.send (tmpName)
     res.end ()
-    console.log ('Fullsize image generated')
+    console.log ('Started fullsize image generation')
   })
 
   // ##### #4. Download full-size original image file: Get the host name in responseURL
@@ -807,7 +812,7 @@ console.log(columns)
     })
   }
 
-  // ===== Read the dir's content of sub-dirs (not recursively)
+  // ===== Read the dir's content of album sub-dirs (not recursively)
   readSubdir = async (dir, files = []) => {
     let items = await fs.readdirAsync (dir) // items are file || dir names
     return Promise.map (items, async (name) => { // Cannot use mapSeries here (why?)
@@ -951,7 +956,8 @@ console.log(columns)
     // Triggers browswer autorefresh but no meaning to refresh symlinks:
     let qrn = '?' + Math.random().toString(36).substr(2,4)
     if (symlink === 'symlink') {qrn = ''}
-    return (origfile +'\n'+ showfile + qrn +'\n'+ minifile + qrn +'\n'+ namefile +'\n'+ txt12.trim () +'\n'+ symlink).trim () // NOTE: returns 7 rows
+    // origfile without root-link-name, nov 2014, e.g. imdb/aa/bb => aa/bb :
+    return (origfile.replace (/^[^/]+\//, "") +'\n'+ showfile + qrn +'\n'+ minifile + qrn +'\n'+ namefile +'\n'+ txt12.trim () +'\n'+ symlink).trim () // NOTE: returns 7 rows
   }
 
   // ===== Make a shell command asyncronous

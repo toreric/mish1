@@ -28,9 +28,9 @@
           <button {{action 'toggleSettings'}}>Stäng</button>
         </div>
       </div>
-    <!-- ///// Checkbox SETTINGS ///// -->
-    <div style="display: inline-block">
-      <button type="submit" class="viewSettings" title="" {{action "infStatus"}}>Inställningar</button>
+    <!-- Settings button, not visible -->
+    <div style="display: none">
+      <button type="submit" class="viewSettings" title="" {{action "infStatus"}}>settings</button>
     </div>
   </form>
   <!-- TEST BUTTON -->
@@ -44,7 +44,7 @@
 <div id="allowValue" title="permissions" style="display:none"></div>
 <div id="backImg" style="display:none"></div>
 <div id="bkgrColor" style="display:none">rgb(59, 59, 59)</div>
-<div id="hideColor" style="display:none">rgb(102, 102, 102)</div>
+<div id="hideColor" style="display:none">rgb(92, 98, 102)</div>
 <div id="hideFlag" style="display:none" title="do'nt show 'hidden'pictures">1</div>
 <div id="hideNames" style="display:none" title="hide picture names">1</div>
 <div id="imdbCoco" title="albums content counts" style="display:none"></div>
@@ -138,9 +138,9 @@
   <div class="mainMenu BACKG" onclick="return false" draggable="false" ondragstart="return false" style="display:none">
 
     <p onclick="return false" draggable="false" ondragstart="return false">
-      <a {{action 'findText'}} style="padding-top:1.1em">Finn bilder:</a> Sök i bildtexter i
+      <a {{action 'findText'}} style="padding-top:1.1em">Finn bilder:</a> Sök i
       <span class="root">
-        <select id="rootSel" title="Välj albumkatalog" totip="Välj albumkatalog" onchange={{action 'selectRoot' value='target.value'}}>
+        <select id="rootSel" title="Välj albumkatalog här" totip="Välj albumkatalog här" onchange={{action 'selectRoot' value='target.value'}}>
           {{#each imdbRoots as |rootChoice|}}
             <option onclick="this.parentElement.blur()" value={{rootChoice}} selected={{eq imdbRoot rootChoice}}>{{rootChoice}}</option><!-- imdbRoot (== #imdbRoot) is set as chosen -->
           {{/each}}
@@ -153,10 +153,10 @@
       <a {{action 'toggleBackg'}}>Byt till mörk eller ljus bakgrund</a><span style="float:right">fullskärm <b>F11</b></span>
     </p>
 
-    <p onclick="return false" draggable="false" ondragstart="return false" title="Ta bort eller gör nytt album" title-1="Ta bort eller gör nytt album ...">
+    <p onclick="return false" draggable="false" ondragstart="return false" title="Ta bort eller gör nytt album ...">
       <a {{action 'albumEdit'}}>{{{albumText}}}</a>{{{albumName}}}
     </p>
-    <p onclick="return false" draggable="false" ondragstart="return false">
+    <p onclick="return false" draggable="false" ondragstart="return false" title="Visa alla album (hela albumträdet)">
       <a id ="jstreeHdr" {{action 'toggleJstreeAlbumSelect'}}>{{jstreeHdr}}</a>
     </p>
     <div class="jstreeAlbumSelect" style="display:none">

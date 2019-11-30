@@ -302,7 +302,7 @@ button.ui-dialog-titlebar-close span {
 button.mainMenuClose.ui-dialog-titlebar-close {
   position:  static!important;
   float: right;
-  margin: -0.1em 0 0 0.3em!important;
+  margin: -0.15em 0 0 0.3em!important;
   background: #aaa;
 }
 button.mainMenuClose.ui-dialog-titlebar-close:hover {
@@ -436,10 +436,6 @@ button.mainMenuClose.ui-dialog-titlebar-close:hover {
   font-size: 0.8em;
   border: 1.0px solid #aaa;
   border-radius: 2px;
-}
-/* Next button was integrated with .cred.status */
-#title button.viewSettings {
-  display: none!important;
 }
 #title div.check div span {
   margin: 0.3em 0 0 0!important;
@@ -753,12 +749,11 @@ The jquery ui-tooltip is used elsewere (totip in *.js) */
 *[title-1] {
   position: relative;
 }
-*[title-1]:hover::after/*,
-.imDir.path[title-1]:focus::after*/ {
+*[title-1]:hover::after {
   content: attr(title-1);
   position: absolute;
   left: 0;
-  top: 1.6em;
+  top: 1.35em;
   text-align: left;
   white-space: nowrap;
   border: 0.5px #aaaaaa solid;
@@ -766,7 +761,7 @@ The jquery ui-tooltip is used elsewere (totip in *.js) */
   background-color: #beebff;
   padding: 0.2em 0.2em 0.25em 0.4em;
   color: #000;
-  font-size: 0.8em;
+  font-size: 0.9em;
   z-index: 1000;
 }
 /*.miniImgs {
@@ -983,8 +978,6 @@ div.img_mini.symlink div.markTrue, div.img_mini.symlink div.markFalse {
 #wrap_pad {
   position: relative;
   text-align: center;
-  /*background-color: #b0b0b0;
-  background-color: #000;*/
   margin: 0.95em 0 auto 2.15em;
   padding-top: 3em;     /* click-back area above .img_show */
   padding-bottom: 20em; /* and below .img_txt2             */
@@ -1115,6 +1108,7 @@ input[type=radio]+label {
 div.settings {
   position: absolute;
   background: inherit;
+  opacity: 0.9;
   display: block;
   font-family: Tahoma, Verdana, Geneva, sans-serif;
   font-size: 75%;
@@ -1147,7 +1141,6 @@ select option {
 #link_show {
   position: relative;
   background: transparent;
-  /*z-index: 12;*/
 }
 #link_show a {
   display: flex;
@@ -1211,31 +1204,29 @@ select option {
   border-radius: 2px;
   vertical-align: middle;
   text-align: left;
-  background: #000;
+  background: inherit;
+  opacity: 0.9;
   z-index: 12;
 }
 .mainMenu p {
-  margin:0.5em 0.25em 0.5em;
+  margin:0.5em 0.2em 0.3em -0.2em;
 }
 .mainMenu p a {
-  text-decoration: underline;
+  text-decoration: none;
   font-weight: bold;
   opacity: 0.8;
   font-size: 90%;
+  border: solid 1px gray;
+  border-radius: 0 4px 4px 0;
+  background: #666;
+  line-height: 2.2em;
+  margin: -0.4em 0 0 0;
+  padding: 0.6em 0.4em 0.6em 0.4em;
+  color: white;
 }
-/*.mainMenu .albumName:hover {
-  color: #00bfff;
-  cursor: pointer;
-}*/
-/*.mainMenu, .mainMenu p, .mainMenu em, .mainMenu strong {
-  background-color: #345;
+.mainMenu p a:hover {
+  color: #7df;
 }
-.jstree-node, .jstree-children, .jstree-container-ul, .jstree-anchor {
-  background-color: #345;
-}
-.jstree-default .jstree-node {
-  background-color: #345;
-}*/
 .jstreeAlbumSelect {
   border: 1px solid gray;
   border-radius: 2px;
