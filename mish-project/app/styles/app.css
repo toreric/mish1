@@ -416,10 +416,14 @@ button.mainMenuClose.ui-dialog-titlebar-close:hover {
   vertical-align: top;
   margin: 0;
 }
-#title a.finish {
+#title span.eraseCheck {
+  cursor: auto!important;
+  display: inline;
+}
+#title a.finish, #title span.eraseCheck {
   font-size: 70%!important;
 }
-#title input.cred, #title a.finish {
+#title input.cred, #title a.finish, #title span.eraseCheck {
   font-family: Verdana, Geneva, Tahoma, sans-serif!important;
   font-size: 0.8em;
   text-align: center;
@@ -1073,6 +1077,15 @@ input[type=checkbox]+label::before {
   margin: 0 0 -0.2em 0em;
   width: 0.5em;
   height: 0.5em;
+}
+input[type=checkbox]+label[for="eraOrig"]::before {
+  content: '';
+  display: inline-block;
+  border: 1px solid white;
+  border-radius: 0.3em;
+  margin: 0 0 -0.1px 0;
+  width: 0.6em;
+  height: 0.6em;
 }
 /* styling the checked 'checkbox': */
 input[type=checkbox]:checked+label::before {

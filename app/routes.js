@@ -28,6 +28,8 @@ module.exports = function (app) {
   let IMDB_ROOT = null // Must be set in route
   // ----- Image data(base) directory
   let IMDB_DIR = null // Must be set in route
+  // ----- Name of symlink to IMDB_ROOT is set here
+  let IMDB_LINK = "imdb"     // <<<<<<<<<<<<<<<<<<<
   // ----- For debug data(base) directories
   let show_imagedir = false // for debugging
 
@@ -113,7 +115,7 @@ module.exports = function (app) {
     }
     // Exclude the imdbLink name, nov 2014, in order to difficultize direct
     // access to the original pictures from the server. This could be made even
-    // better, e.g., by selection of a random symlink name at program restart. 
+    // better, e.g., by selection of a random symlink name at program restart.
     var filex = file.replace (/^[^/]+\//, "./")
     var fileStat = "<i>Filnamn</i>: " + filex + "<br><br>"
     if (linkto) {
@@ -136,7 +138,7 @@ module.exports = function (app) {
 
     var homeDir = imdbHome () // From env.var. $IMDB_HOME or $HOME
     IMDB_ROOT = req.params.imdbroot.replace (/@/g, "/").trim ()
-    let imdbLink = "imdb" // Symlink pointing to current albums
+    let imdbLink = IMDB_LINK // Symlink pointing to current albums
     setRootLink (homeDir, IMDB_ROOT, imdbLink)
 
    setTimeout(function () {
@@ -596,7 +598,7 @@ module.exports = function (app) {
 
     var homeDir = imdbHome () // From env.var. $IMDB_HOME or $HOME
     IMDB_ROOT = req.params.imdbroot.replace (/@/g, "/").trim ()
-    let imdbLink = "imdb" // Symlink pointing to current albums
+    let imdbLink = IMDB_LINK // Symlink pointing to current albums
     setRootLink (homeDir, IMDB_ROOT, imdbLink)
 
     let like = removeDiacritics (req.body.like)
@@ -689,7 +691,7 @@ console.log(columns)
 
   // ===== Check if an album/directory name can be accepted
   function acceptedDirName (name) { // Note that &ndash; is accepted:
-    let acceptedName = 0 === name.replace (/[/\-–@_.a-öA-Ö0-9]+/g, "").length && name !== "imdb"
+    let acceptedName = 0 === name.replace (/[/\-–@_.a-öA-Ö0-9]+/g, "").length && name !== IMDB_LINK
     return acceptedName && name.slice (0,1) !== "." && !name.includes ('/.')
   }
 
@@ -922,8 +924,8 @@ console.log(columns)
   async function pkgonefile (file) {
     let origfile = file
     let symlink = await symlinkFlag (origfile)
-    let fileObj = path.parse (file)
-    let namefile = fileObj.name.trim ()
+    let fileObj = path.parse (origfile)
+    let namefile = fileObj.name
     if (namefile.length === 0) {return null}
     let showfile = path.join (fileObj.dir, '_show_' + namefile + '.png')
     let minifile = path.join (fileObj.dir, '_mini_' + namefile + '.png')
@@ -933,9 +935,16 @@ console.log(columns)
     } else {
       //let linkto = await cmdasync ("readlink " + origfile).then ().toString ().trim () // NOTE: Buggy, links badly, why, wrong syntax?
       let linkto = execSync ("readlink " + origfile).toString ().trim ()
-      linkto = path.dirname (linkto) // Extract path and create links:
+      let linkObj = path.parse (linkto)
+
+      await cmdasync ("ln -sfn " + linkObj.dir + "/" +"_show_"+ linkObj.name + ".png " + showfile)
+      .then (
+      await cmdasync ("ln -sfn " + linkObj.dir + "/" +"_mini_"+ linkObj.name + ".png " + minifile))
+      .then ()
+
+      /*linkto = path.dirname (linkto) // Extract path and create links:
       await cmdasync ("ln -sfn " + linkto + "/" + path.basename (showfile) + " " + showfile)
-      .then (await cmdasync ("ln -sfn " + linkto + "/" + path.basename (minifile) + " " + minifile)).then ()
+      .then (await cmdasync ("ln -sfn " + linkto + "/" + path.basename (minifile) + " " + minifile)).then ()*/
     }
     let cmd = []
     let tmp = '--' // Should never show up
@@ -1003,7 +1012,8 @@ function pause (ms) { // not used
   console.log('pause',ms)
   return new Promise (done => setTimeout (done, ms))
 }
-
+// SQL för att göra lista på dubletter, kanske för att göra PDF med Pdfkit?
+//SELECT a.name, a.filepath FROM imginfo a JOIN (SELECT name, COUNT(*), filepath FROM imginfo GROUP BY name HAVING COUNT(*) > 1) b ON a.name = b.name ORDER BY a.name;
 // ===== GLOBALS
 
 // Data for the removeDiacritics function (se below)

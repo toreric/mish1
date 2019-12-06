@@ -575,6 +575,13 @@ export default Component.extend (contextMenuMixin, {
           picNames = [], nodelem = [], nodelem0, linked, i;
         picName = $ ("#picName").text ().trim ();
 
+        // Decide whether also the ORIGINAL will be erased when a LINKED PICTURE is erased
+        if (allow.deleteImg && $ ("#eraOrig") [0].checked === true) {
+          eraseOriginals = true;
+        } else {
+          eraseOriginals = false;
+        }
+
         // A symlink clicked:
         var title = "Otillåtet"; // i18n
         var text = "<br>— du får bara radera länkar —"; // i18n
@@ -584,7 +591,7 @@ export default Component.extend (contextMenuMixin, {
           infoDia (null, null, title, text, yes, true);
           return;
         }
-
+        // nels == no of all elements (images), linked == no of linked elements
         picNames [0] = picName;
         nodelem0 = document.getElementById ("i" + picName).firstElementChild.nextElementSibling;
         nels = 1;
@@ -598,7 +605,16 @@ export default Component.extend (contextMenuMixin, {
           nelstxt = nels; // To be used as text...
           if (nels === 2) {all = "båda "; nelstxt = "två";}
           for (i=0; i<nodelem.length; i++) {
-            picNames.push (nodelem [i].nextElementSibling.innerHTML.trim ());
+            if (linked [i] && eraseOriginals) {
+/**/          /* file path måste användas, går inte med bara namnen
+              Här blir det att ta fram länkmålet, i else imdb/img-title
+              Gör om sedan också deleteFiles (picNames, nels) till i stället
+              till exempel deleteFiles (picPaths, nels)  */
+              //picNames.push (någonting annat i stället);
+              picNames.push (nodelem [i].nextElementSibling.innerHTML.trim ());
+            } else {
+              picNames.push (nodelem [i].nextElementSibling.innerHTML.trim ());
+            }
           }
         }
         delNames = picName;
@@ -613,7 +629,11 @@ export default Component.extend (contextMenuMixin, {
           delNames =  cosp (picNames);
           nelstxt = "<b>Vill du radera " + all + nelstxt + "?</b><br>" + delNames + "<br>ska raderas permanent";
           if (linked) {
-            nelstxt += " *<br><span style='color:green;font-size:85%'>* då <span style='color:green;text-decoration:underline'>länk</span> raderas berörs inte originalet</span>";
+            if (eraseOriginals) {
+              nelstxt += " *<br><span style='color:red;font-weight:bold'>* Med <span style='color:green;text-decoration:underline'>länk</span> raderas även originalet!</span>";
+            } else {
+              nelstxt += " *<br><span style='color:green;font-size:85%'>* Då <span style='color:green;text-decoration:underline'>länk</span> raderas berörs inte originalet</span>";
+            }
           }
           $ ("#dialog").html (nelstxt); // i18n
           var eraseText = $ ("#imdbDir").text ().replace (/^(.+[/])+/, "") + ": Radera...";
@@ -658,7 +678,9 @@ export default Component.extend (contextMenuMixin, {
         function nextStep (nels) {
           var nameText = $ ("#imdbDir").text ().replace (/^(.+[/])+/, "");
           if (nameText === $ ("#imdbLink").text ()) {nameText = $ ("#imdbRoot").text ();}
-          var eraseText = "Radera i " + nameText + ":"; // i18n
+          var eraseText = "Radera i " + nameText + ":";
+/**/      // i18n  HÄR MÅSTE VARNAS FÖR ORIGINAL TILL LÄNKAR IFALL eraseOriginals = true
+          // och: ÄNDRA TILL FAKTISK FILPATH I STÄLLET FÖR BARA NAMNET
           resetBorders (); // Reset all borders, can be first step!
           markBorders (picName); // Mark this one
           if (nels === 1) {
@@ -666,7 +688,11 @@ export default Component.extend (contextMenuMixin, {
           }
           nelstxt = "<b>Vänligen bekräfta:</b><br>" + delNames + "<br>i <b>" + nameText + "<br>ska alltså raderas?</b><br>(<i>kan inte ångras</i>)"; // i18n
           if (linked) {
-            nelstxt += "<br><span style='color:green;font-size:85%'>Då <span style='color:green;text-decoration:underline'>länk</span> raderas berörs inte originalet</span>"; // i18n
+            if (eraseOriginals) {
+              nelstxt += "<br><span style='color:red;font-weight:bold'>Med <span style='color:green;text-decoration:underline'>länk</span> raderas också originalet!</span>"; // i18n
+            } else {
+              nelstxt += "<br><span style='color:green;font-size:85%'>Då <span style='color:green;text-decoration:underline'>länk</span> raderas berörs inte originalet</span>"; // i18n
+            }
           }
           $ ("#dialog").html (nelstxt);
           $ ("#dialog").dialog ( { // Initiate a new, confirmation dialog
@@ -728,7 +754,6 @@ export default Component.extend (contextMenuMixin, {
       if (nodelem.tagName === 'IMG' && nodelem.className.indexOf ('left-click') > -1 || nodelem.parentElement.id === 'link_show') {
         // Set the target image path. If the show-image is clicked the target is likely an
         // invisible navigation link, thus reset to parent.firstchild (= no-op for mini-images):
-/**/
         let tmp = nodelem.parentElement.firstElementChild.title.trim ()
         $ ("#picOrig").text ($ ("#imdbLink").text () +"/"+ tmp);
         // Set the target image name, which is in the second parent sibling in both cases:
@@ -1123,7 +1148,6 @@ export default Component.extend (contextMenuMixin, {
           let classes = $ (tgt).parent ("div").parent ("div").attr("class");
           let albumDir, file, tmp;
           if (classes && -1 < classes.split (" ").indexOf ("symlink")) { // ...of a symlink...
-/**/
             tmp = $ (tgt).parent ("div").parent ("div").find ("img").attr ("title");
             tmp = $ ("#imdbLink").text () + "/" + tmp;
             // ...then go to the linked picture:
@@ -1824,7 +1848,7 @@ console.log("setNavKeys", showpic, namepic, origpic);
       let that = this;
       let value = $ ("[aria-selected='true'] a.jstree-clicked");
       if (value && value.length > 0) {
-/**/        value = value.attr ("title").toString ();
+        value = value.attr ("title").toString ();
       } else {
         value =  "";
       }
@@ -2153,8 +2177,7 @@ console.log("setNavKeys", showpic, namepic, origpic);
       $ (".img_show").hide (); // Hide in case a previous is not already hidden
       $ ("#link_show a").css ('opacity', 0 );
       $ (".img_show img:first").attr ('src', showpic);
-/**/
-console.log("showShow", origpic, origpic.replace (/^[^/]+\//, ""));
+//console.log("showShow", origpic, origpic.replace (/^[^/]+\//, ""));
       $ (".img_show img:first").attr ("title", origpic.replace (/^[^/]+\//, ""));
       $ (".img_show .img_name").text (namepic); // Should be plain text
       $ (".img_show .img_txt1").html ($ ('#i' + escapeDots (namepic) + ' .img_txt1').html ());
@@ -2244,7 +2267,6 @@ console.log("showShow", origpic, origpic.replace (/^[^/]+\//, ""));
       if (!namepic) {return;} // Maybe malplacé...
       var toshow = document.getElementById ("i" + namepic);
       minipic = toshow.firstElementChild.firstElementChild.getAttribute ("src");
-/**/
       origpic = toshow.firstElementChild.firstElementChild.getAttribute ("title");
       origpic = $ ("#imdbLink").text () + "/" + origpic;
       var showpic = minipic.replace ("/_mini_", "/_show_");
@@ -2402,7 +2424,7 @@ console.log("showShow", origpic, origpic.replace (/^[^/]+\//, ""));
     //============================================================================================
     toggleBackg () { // ##### Change theme light/dark
 
-      if ($ ("#imdbRoot").text ()) {$ (".mainMenu").hide ();}
+      //if ($ ("#imdbRoot").text ()) {$ (".mainMenu").hide ();}
       if (BACKG === "#000") {
         BACKG = "#cbcbcb";
         TEXTC = "#000";
@@ -2481,7 +2503,6 @@ console.log("showShow", origpic, origpic.replace (/^[^/]+\//, ""));
           }
         }), 20);
         // NOTE: An ID string for 'getElementById' should have dots unescaped!
-/**/
         origpic = document.getElementById ("i" + namepic).firstElementChild.firstElementChild.getAttribute ("title"); // With path
         origpic = $ ("#imdbLink").text () + "/" + origpic;
 
@@ -2493,7 +2514,6 @@ console.log("showShow", origpic, origpic.replace (/^[^/]+\//, ""));
           ediTextClosed ();
           return;
         }
-/**/
         origpic = $ (".img_show img:first").attr ("title"); // With path
         origpic = $ ("#imdbLink").text () + "/" + origpic;
       }
@@ -2573,7 +2593,6 @@ console.log(loginStatus, name);
       spinnerWait (true);
       return new Promise ( (resolve, reject) => {
         var xhr = new XMLHttpRequest ();
-/**/
         var origpic = $ (".img_show img:first").attr ("title"); // With path
         origpic = $ ("#imdbLink").text () + "/" + origpic;
         xhr.open ('GET', 'fullsize/' + origpic, true, null, null); // URL matches routes.js with *?
@@ -2627,7 +2646,6 @@ console.log(loginStatus, name);
           resetBorders (); // Reset all borders
           markBorders (tmp); // Mark this one
         }), 50);
-/**/
         var origpic = $ ('#i' + escapeDots (tmp) + ' img.left-click').attr ("title"); // With path
         origpic = $ ("#imdbLink").text () + "/" + origpic;
         xhr.open ('GET', 'download/' + origpic, true, null, null); // URL matches routes.js with *?
@@ -2686,7 +2704,7 @@ console.log(loginStatus, name);
     logIn () { // ##### User login/confirm/logout button pressed
 
       var usr = "", status = "";
-      //albumWait = true;
+      $ ("#title span.eraseCheck").css ("display", "none");
       $ ("div[aria-describedby='textareas']").css ("display", "none");
       $ ("#dialog").dialog ("close");
       $ ("#searcharea").dialog ("close");
@@ -2829,16 +2847,16 @@ console.log(loginStatus, name);
             var cred = credentials.split ("\n");
             var password = cred [0];
             status = cred [1];
-            var allow = cred [2];
+            var allval = cred [2];
             if (pwd !== password) {
               zeroSet (); // Important!
-              allow = $ ("#allowValue").text ();
+              allval = $ ("#allowValue").text ();
               status = "viewer";
             }
             loginStatus = status; // global
             if (status === "viewer") {usr = "anonym";}  // i18n
             //spinnerWait (true);
-            $ ("#allowValue").text (allow);
+            $ ("#allowValue").text (allval);
             $ ("#title span.cred.name").html ("<b>"+ usr +"</b>");
             $ ("#title span.cred.status").html ("["+ status +"]");
             let tmp = "Du är inloggad som ’" + usr + "’ med [" + status + "]-rättigheter"; // i18n
@@ -2864,6 +2882,15 @@ console.log(loginStatus, name);
                 $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
                 later ( ( () => {
                   $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_1"));
+                  // Show the unchecked erase link+source checkbox if relevant
+                  eraseOriginals = false;
+                  if ((allow.deleteImg || allow.adminAll) && ["admin", "editall"].indexOf (loginStatus) > -1) {
+                    $ ("#title span.eraseCheck").css ("display", "inline");
+                    $ ("#eraOrig").checked = false;
+                  } else {
+                    $ ("#title span.eraseCheck").css ("display", "none");
+                    $ ("#eraOrig").checked = false;
+                  }
                 }), 2000);
                 resolve (false);
               }, 2000);                 // NOTE: Preserved here just as an example
@@ -2957,6 +2984,7 @@ let BACKG = "#cbcbcb";
 let TEXTC = "#000";
 let BLUET = "#146";
 //let albumWait = false;
+let eraseOriginals = false;
 let logAdv = "Logga in för att kunna se inställningar: Anonymt utan namn och lösenord, eller med namnet ’gäst’ utan lösenord som ger vissa redigeringsrättigheter"; // i18n
 let nosObs = "Skriv gärna på prov, men du saknar tillåtelse att spara text"; // i18n
 let nopsGif = "GIF-fil kan bara ha tillfällig text"; // i18n
@@ -3129,7 +3157,6 @@ function deleteFile (picName) { // ===== Delete an image
   return new Promise ( (resolve, reject) => {
     // ===== XMLHttpRequest deleting 'picName'
     var xhr = new XMLHttpRequest ();
-/**/
     var origpic = $ ('#i' + escapeDots (picName) + ' img.left-click').attr ("title"); // With path
     origpic = $ ("#imdbLink").text () + "/" + origpic;
     xhr.open ('GET', 'delete/' + origpic, true, null, null); // URL matches routes.js with *?
@@ -3178,31 +3205,33 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) { // ===== I
     modal: modal,
     closeOnEscape: true,
   });
-  $ (id).html (text);
-  // Define button array
-  $ (id).dialog ('option', 'buttons', [
-  {
-    text: yes, // Okay. See below
-      id: "yesBut",
-    click: function () {
-      if (picName === "") { // Special case: link, move, ..., and then refresh
-        spinnerWait (true);
-        serverShell ("temporary_1");
-        later ( ( () => {
-          document.getElementById("reLd").disabled = false;
-          $ ("#reLd").click ();
-        }), 800);
+  later ( ( () => {
+    $ (id).html (text);
+    // Define button array
+    $ (id).dialog ('option', 'buttons', [
+    {
+      text: yes, // Okay. See below
+        id: "yesBut",
+      click: function () {
+        if (picName === "") { // Special case: link, move, ..., and then refresh
+          spinnerWait (true);
+          serverShell ("temporary_1");
+          later ( ( () => {
+            document.getElementById("reLd").disabled = false;
+            $ ("#reLd").click ();
+          }), 800);
+        }
+        $ (this).dialog ("close");
+        if (flag && !picName) { // Special case: evaluate #temporary
+          console.log ($ ("#temporary").text ());
+          eval ($ ("#temporary").text ());
+        }
+        return true;
       }
-      $ (this).dialog ("close");
-      if (flag && !picName) { // Special case: evaluate #temporary
-        console.log ($ ("#temporary").text ());
-        eval ($ ("#temporary").text ());
-      }
-      return true;
-    }
-  }]);
-  niceDialogOpen (dialogId);
-  $ ("div[aria-describedby='" + dialogId + "'] span.ui-dialog-title").html (title); //#
+    }]);
+    niceDialogOpen (dialogId);
+    $ ("div[aria-describedby='" + dialogId + "'] span.ui-dialog-title").html (title); //#
+  }), 22);
   later ( ( () => {
     $ ("#yesBut").focus ();
     $ ("#yesBut").html (yes);
@@ -3401,13 +3430,13 @@ function linkFunc (picNames) { // ===== Execute a link-these-files-to... request
   for (i=0; i<albums.length; i++) { // Remove current album from options
     if (albums [i] !== curr) {lalbum.push (albums [i]);}
   }
-/**/
-  var rex = /^[^/]*\//;
-  var codeLink = "'var lalbum=this.value;var lpath = \"\";if (this.selectedIndex === 0) {return false;}lpath = lalbum.replace (/^[^/]*(.*)/, $ (\"#imdbLink\").text () + \"$1\");console.log(\"Link to\",lpath);var picNames = $(\"#picNames\").text ().split (\"\\n\");var cmd=[];for (var i=0; i<picNames.length; i++) {var linkfrom = document.getElementById (\"i\" + picNames [i]).getElementsByTagName(\"img\")[0].getAttribute (\"title\");linkfrom = \"../\".repeat (lpath.split (\"/\").length - 1) + linkfrom.replace (" + rex + ", \"\");var linkto = lpath + \"/\" + picNames [i];linkto += linkfrom.match(/\\.[^.]*$/);cmd.push(\"ln -sf \"+linkfrom+\" \"+linkto);}$ (\"#temporary\").text (lpath);$ (\"#temporary_1\").text (cmd.join(\"\\n\"));$ (\"#checkNames\").click ();'";
-  //console.log(codeLink);
+  //var rex = /^[^/]*\//;
+  var codeLink = "'var lalbum=this.value;var lpath = \"\";if (this.selectedIndex === 0) {return false;}lpath = lalbum.replace (/^[^/]*(.*)/, $ (\"#imdbLink\").text () + \"$1\");console.log(\"Link to\",lpath);var picNames = $(\"#picNames\").text ().split (\"\\n\");var cmd=[];for (var i=0; i<picNames.length; i++) {var linkfrom = document.getElementById (\"i\" + picNames [i]).getElementsByTagName(\"img\")[0].getAttribute (\"title\");linkfrom = \"../\".repeat (lpath.split (\"/\").length - 1) + linkfrom;var linkto = lpath + \"/\" + picNames [i];linkto += linkfrom.match(/\\.[^.]*$/);cmd.push(\"ln -sf \"+linkfrom+\" \"+linkto);}$ (\"#temporary\").text (lpath);$ (\"#temporary_1\").text (cmd.join(\"\\n\"));$ (\"#checkNames\").click ();'";
+//console.log(codeLink);
 
   var r = $ ("#imdbRoot").text ();
   var codeSelect = '<select class="selectOption" onchange=' + codeLink + '>\n<option value="">Välj ett album:</option>';
+console.log(codeSelect);
   for (i=0; i<lalbum.length; i++) {
     var v = r + lalbum [i];
     codeSelect += '\n<option value ="' +v+ '">' +v+ '</option>';
@@ -3431,7 +3460,6 @@ function moveFunc (picNames) { // ===== Execute a link-this-file-to... request
   for (i=0; i<albums.length; i++) { // Remove current album from options
     if (albums [i] !== curr) {malbum.push (albums [i]);}
   }
-/**/
   let codeMove = "'let malbum = this.value;let mpath = \"\";if (this.selectedIndex === 0) {return false;}mpath = malbum.replace (/^[^/]*(.*)/, $ (\"#imdbLink\").text () + \"$1\");console.log(\"Move to\",mpath);let picNames = $(\"#picNames\").text ().split (\"\\n\");let cmd=[];for (let i=0; i<picNames.length; i++) {let movefrom = \" \" + document.getElementById (\"i\" + picNames [i]).getElementsByTagName(\"img\")[0].getAttribute (\"title\");let mini = movefrom.replace (/([^\\/]+)(\\.[^\\/.]+)$/, \"_mini_$1.png\");let show = movefrom.replace (/([^\\/]+)(\\.[^\\/.]+)$/, \"_show_$1.png\");let moveto = \" \" + mpath + \"/\";cmd.push (\"mv -fu\" +movefrom+mini+show+moveto);}$ (\"#temporary\").text (mpath);$ (\"#temporary_1\").text (cmd.join(\"\\n\"));$ (\"#checkNames\").click ();'"
   //console.log(codeMove);
 
@@ -3954,6 +3982,15 @@ let prepSearchDialog = () => {
                     let fname = paths [i].replace (/^.*\/([^/]+$)/, "$1");
                     let linkfrom = paths [i];
                     linkfrom = "../".repeat (lpath.split ("/").length - 1) + linkfrom.replace (/^[^/]*\//, "");
+
+                    // In order to show duplicates make the link names unique
+                    // by adding four random characters (r4) to the basename (n1)
+                    let n1 = fname.replace (/\.[^.]*$/, "")
+                    let n2 = fname.replace (/(.+)(\.[^.]*$)/, "$2")
+                    if (n2 [0] !== ".") {n2 = ""}
+                    let r4 = Math.random().toString(36).substr(2,4)
+                    fname = n1 + r4 + n2
+
                     let linkto = lpath + "/" + fname;
                     if (albs.length < nLimit) {
                       cmd.push ("ln -sf " + linkfrom + " " + linkto);
@@ -3977,14 +4014,15 @@ let prepSearchDialog = () => {
                 // Run `serverShell ("temporary_1")` via `infoDia (null, "", ... )`
                 let imdbx = new RegExp ($ ("#imdbLink").text () + "/", "g");
                 infoDia (null, "", p3, "<div style='text-align:left;margin:0.3em 0 0 2em'>" + paths.join ("<br>").replace (imdbx, "./") + "</div>", yes, modal);
-                //infoDia (null, "", p3, "<div style='text-align:left;margin:0.3em 0 0 2em'>" + paths.join ("<br>").replace (/imdb\//g, "./") + "</div>", yes, modal);
                 if (n === 0) {document.getElementById("yesBut").disabled = true;}
                 $ ("button.findText").show ();
                 $ ("button.updText").css ("float", "right");
                 selectPicFound ();
                 spinnerWait (false);
                 if (n && n <= 100 && loginStatus === "guest") { // Simply show the search result at once...
-                  $ ("div[aria-describedby='dialog'] button#yesBut").click ();
+                  later ( ( () => {
+                    $ ("div[aria-describedby='dialog'] button#yesBut").click ();
+                  }), 20);
                 } // ...else inspect and decide whether to click the show button
               }), 200);
             });
@@ -4105,7 +4143,6 @@ $ ( () => {
       click: () => { // "Non-trivial" dialog button, to a new level
         var namepic = $ ("div[aria-describedby='textareas'] span.ui-dialog-title span").html ();
         var ednp = escapeDots (namepic);
-/**/
         var linkPath = $ ("#i" + ednp + " img").attr ("title");
         linkPath = $ ("#imdbLink").text () + "/" + linkPath;
         var filePath = linkPath; // OK if not a link
@@ -4178,7 +4215,6 @@ $ ( () => {
     $ ('textarea[name="description"]').val (text1.replace (/<br>/g, "\n"));
     $ ('textarea[name="creator"]').val (text2.replace (/<br>/g, "\n"));
     var ednp = escapeDots (namepic);
-/**/
     var fileName = $ ("#i" + ednp + " img").attr ("title");
     fileName = $ ("#imdbLink").text () + "/" + fileName;
     $ ("#i" + ednp + " .img_txt1" ).html (text1);
@@ -4301,7 +4337,7 @@ var allowSV = [ // Ordered as 'allow', IMPORTANT!
   "radera bilder +5",
   "(redigera bilder)",
   "gömma/visa bilder",
-  "ladda ned originalbilder från album",
+  "se högupplösta bilder",
   "flytta om bilder",
   "ladda upp originalbilder till album",
   "redigera/spara anteckningar +13",
