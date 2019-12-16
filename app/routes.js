@@ -598,8 +598,8 @@ module.exports = function (app) {
 
     var homeDir = imdbHome () // From env.var. $IMDB_HOME or $HOME
     IMDB_ROOT = req.params.imdbroot.replace (/@/g, "/").trim ()
-    let imdbLink = IMDB_LINK // Symlink pointing to current albums
-    setRootLink (homeDir, IMDB_ROOT, imdbLink)
+    //let imdbLink = IMDB_LINK // Symlink pointing to current albums
+    setRootLink (homeDir, IMDB_ROOT, IMDB_LINK)
 
     let like = removeDiacritics (req.body.like)
     let cols = eval ("[" + req.body.cols + "]")
@@ -615,7 +615,7 @@ console.log(cols)
 console.log(columns)
 //---------
     try {
-      let db = new sqlite.Database ('imdb/_imdb_images.sqlite', function (err) {
+      let db = new sqlite.Database (IMDB_LINK + '/_imdb_images.sqlite', function (err) {
         if (err) {
           console.error (err.message)
           res.send (err.message)
@@ -669,6 +669,11 @@ console.log(columns)
     let pngname = path.parse (fileName).name + '.png'
     let IMDB_DIR = path.parse (fileName).dir + '/'
     let IMDB_PATH = PWD_PATH + '/' + IMDB_DIR
+    let lnk = ''
+    try {
+      lnk = execSync ('readlink -n ' + PWD_PATH + '/' + fileName).toString ()
+    } catch (err) {} // Ignore
+    //console.logn("LINK?", lnk.length, lnk);
     fs.unlinkAsync (PWD_PATH + '/' + fileName) // File not found isn't caught!
     .then (fs.unlinkAsync (IMDB_PATH +'_mini_'+ pngname)) // File not found isn't caught!
     .then (fs.unlinkAsync (IMDB_PATH +'_show_'+ pngname)) // File not found isn't caught!
@@ -682,11 +687,54 @@ console.log(columns)
         tmp = 'NO PERMISSION to' + PWD_PATH + '/' + fileName
         tmp = '\033[31m' + tmp + '\033[0m'
         return tmp
-// ==================== HÄR BORDE EN STOR VARNING KOMMA FRAM FÖR TEXT TILL FEL USER
+// HÄR BORDE EN STOR VARNING KOMMA FRAM FÖR TEXT TILL FEL USER -- varför det?
       }
     })
+    if (!lnk) {
+      sqlUpdate (fileName);
+    }
     tmp = 'DELETED ' + fileName
     return tmp
+  }
+
+  // ===== Check and add|remove|update an image file record in the database
+  // Se vidare  #0.1 Get file information  etc.
+  function sqlUpdate (filePath) {
+
+    console.log ('UPDATING', filePath)
+    try {
+      let db = new sqlite.Database (IMDB_LINK + '/_imdb_images.sqlite', function (err) {
+        if (err) {
+          console.error (err.message)
+          return
+        }
+      })
+      console.log ('OPENED _imdb_images.sqlite')
+      db.close ()
+      console.log ('CLOSED _imdb_images.sqlite')
+      /*db.serialize ( () => {
+        let sql = 'SELECT id, filepath, ' + columns + ' AS txtstr FROM imginfo WHERE ' + like
+//console.log(sql)
+        db.all (sql, [], function (err, rows) {
+//console.log(JSON.stringify (rows))
+          foundpath = ""
+          if (rows) {
+            tempstore = rows
+            setTimeout ( () => {
+              tempstore.forEach( (row) => {
+                foundpath += row.filepath.trim () + "\n"
+              })
+//console.log(" Found:\n" + foundpath.trim ())
+              res.send (foundpath.trim ())
+              res.end ()
+            }, 1000)
+          }
+        })
+        db.close ()
+      })*/
+    } catch (err) {
+      console.error ("€€RR", err.message)
+    }
   }
 
   // ===== Check if an album/directory name can be accepted
@@ -695,7 +743,7 @@ console.log(columns)
     return acceptedName && name.slice (0,1) !== "." && !name.includes ('/.')
   }
 
-  // ===== Check if a imsge/file name can be accepted
+  // ===== Check if an image/file name can be accepted
   // Also, cf. 'acceptedFiles' in menu-buttons.hbs (for Dropbox/drop-zone)
   function acceptedFileName (name) {
     // This function must equal the acceptedFileName function in drop-zone.js

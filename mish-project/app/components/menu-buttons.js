@@ -571,18 +571,17 @@ export default Component.extend (contextMenuMixin, {
         return !(allow.delcreLink || allow.deleteImg || allow.adminAll);
       },
       action () {
-        var picName, all, nels, nelstxt, delNames,
-          picNames = [], nodelem = [], nodelem0, linked, i;
-        picName = $ ("#picName").text ().trim ();
-
         // Decide whether also the ORIGINAL will be erased when a LINKED PICTURE is erased
         if (allow.deleteImg && $ ("#eraOrig") [0].checked === true) {
           eraseOriginals = true;
         } else {
           eraseOriginals = false;
         }
-
-        // A symlink clicked:
+        var picPath, picName, delNames, all, nels, nelstxt,
+          picPaths = [], picNames = [], nodelem = [], nodelem0, linked;
+        picName = $ ("#picName").text ().trim ();
+        picPath = $ ("#imdbLink").text () + "/" + $ ("#i" + escapeDots (picName) + " a img").attr ("title");
+        // Non-symlink clicked:
         var title = "Otillåtet"; // i18n
         var text = "<br>— du får bara radera länkar —"; // i18n
         var yes = "Uppfattat" // i18n
@@ -592,31 +591,49 @@ export default Component.extend (contextMenuMixin, {
           return;
         }
         // nels == no of all elements (images), linked == no of linked elements
-        picNames [0] = picName;
         nodelem0 = document.getElementById ("i" + picName).firstElementChild.nextElementSibling;
+        nodelem [0] = nodelem0;
         nels = 1;
         var picMarked = nodelem0.className === "markTrue";
         if (picMarked) {
           picNames = [];
+          picPaths = [];
           nodelem = document.getElementsByClassName ("markTrue");
           linked = $ (".symlink .markTrue").length;
           all = "alla ";
           nels = nodelem.length;
           nelstxt = nels; // To be used as text...
           if (nels === 2) {all = "båda "; nelstxt = "två";}
-          for (i=0; i<nodelem.length; i++) {
-            if (linked [i] && eraseOriginals) {
-/**/          /* file path måste användas, går inte med bara namnen
-              Här blir det att ta fram länkmålet, i else imdb/img-title
-              Gör om sedan också deleteFiles (picNames, nels) till i stället
-              till exempel deleteFiles (picPaths, nels)  */
-              //picNames.push (någonting annat i stället);
-              picNames.push (nodelem [i].nextElementSibling.innerHTML.trim ());
-            } else {
-              picNames.push (nodelem [i].nextElementSibling.innerHTML.trim ());
-            }
-          }
         }
+        for (let i=0; i<nels; i++) {
+          picNames.push (nodelem [i].nextElementSibling.innerHTML.trim ());
+        }
+//console.log(picNames);
+        for (let i=0; i<nodelem.length; i++) {
+            symlink = document.getElementById ("i" + picNames [i]).classList.contains ('symlink');
+            if (symlink && eraseOriginals) {
+              /* Use file paths instead of picture names in order to make
+              possible erase even symlinked originals (e.g. for dups removal):
+              deleteFiles (picNames, nels) was changed to
+              deleteFiles (picNames, nels, picPaths) and
+              deleteFile (picName) was changed to deleteFile (picPath)
+              */
+              let tmp = $ ("#imdbLink").text () + "/" + $ ("#i" + escapeDots (picNames [i]) + " a img").attr ("title");
+              execute ("readlink -n " + tmp).then (res => {
+//console.log("READLINK", res);
+//console.log(picNames, picNames [i]);
+                res = res.replace (/^(\.{1,2}\/)*/, $ ("#imdbLink").text () + "/");
+                picPaths.push (res);
+//console.log("PICPATHS", picName, picNames [i]);
+                if (picName === picNames [i]) {
+                  picPath = res;
+                }
+              });
+            } else {
+              picPaths.push ($ ("#imdbLink").text () + "/" + $ ("#i" + escapeDots (picNames [i]) + " a img").attr ("title"));
+            }
+        }
+
         delNames = picName;
         if (nels > 1) {
 
@@ -630,7 +647,7 @@ export default Component.extend (contextMenuMixin, {
           nelstxt = "<b>Vill du radera " + all + nelstxt + "?</b><br>" + delNames + "<br>ska raderas permanent";
           if (linked) {
             if (eraseOriginals) {
-              nelstxt += " *<br><span style='color:red;font-weight:bold'>* Med <span style='color:green;text-decoration:underline'>länk</span> raderas även originalet!</span>";
+              nelstxt += " *<br><span style='color:black;font-weight:bold'>* Med <span style='color:green'>länk</span> raderas nu även <span style='color:red'>originalet!</span></span>";
             } else {
               nelstxt += " *<br><span style='color:green;font-size:85%'>* Då <span style='color:green;text-decoration:underline'>länk</span> raderas berörs inte originalet</span>";
             }
@@ -661,6 +678,7 @@ export default Component.extend (contextMenuMixin, {
             click: function () {
               var nodelem = [];       // Redefined since:
               nodelem [0] = nodelem0; // Else illegal, displays "read-only"!
+              picPaths [0] = picPath;
               picNames [0] = picName;
               delNames = picName;
               nels = 1;
@@ -673,14 +691,17 @@ export default Component.extend (contextMenuMixin, {
           $ ("#singButt").html ('Nej, bara <span  style="color:deeppink">' + picName + '</span>'); // May contain html
           niceDialogOpen ();
           $ ("#allButt").focus ();
-        } else {nextStep (nels);}
+        } else {
+          nextStep (nels);
+        }
 
         function nextStep (nels) {
+          /*for (let i=0; i<nels; i++) {
+          console.log ("DELETE", picNames [i], picPaths [i]);
+          }*/
           var nameText = $ ("#imdbDir").text ().replace (/^(.+[/])+/, "");
           if (nameText === $ ("#imdbLink").text ()) {nameText = $ ("#imdbRoot").text ();}
           var eraseText = "Radera i " + nameText + ":";
-/**/      // i18n  HÄR MÅSTE VARNAS FÖR ORIGINAL TILL LÄNKAR IFALL eraseOriginals = true
-          // och: ÄNDRA TILL FAKTISK FILPATH I STÄLLET FÖR BARA NAMNET
           resetBorders (); // Reset all borders, can be first step!
           markBorders (picName); // Mark this one
           if (nels === 1) {
@@ -689,7 +710,7 @@ export default Component.extend (contextMenuMixin, {
           nelstxt = "<b>Vänligen bekräfta:</b><br>" + delNames + "<br>i <b>" + nameText + "<br>ska alltså raderas?</b><br>(<i>kan inte ångras</i>)"; // i18n
           if (linked) {
             if (eraseOriginals) {
-              nelstxt += "<br><span style='color:red;font-weight:bold'>Med <span style='color:green;text-decoration:underline'>länk</span> raderas också originalet!</span>"; // i18n
+              nelstxt += " *<br><span style='color:black;font-weight:bold'>* Med <span style='color:green'>länk</span> raderas nu även <span style='color:red'>originalet!</span></span>";
             } else {
               nelstxt += "<br><span style='color:green;font-size:85%'>Då <span style='color:green;text-decoration:underline'>länk</span> raderas berörs inte originalet</span>"; // i18n
             }
@@ -714,10 +735,10 @@ export default Component.extend (contextMenuMixin, {
               }*/
               console.log ("To be deleted: " + delNames); // delNames is picNames as a string
               // NOTE: Must be a 'clean' call (no then or <await>):
-              deleteFiles (picNames, nels);
+              deleteFiles (picNames, nels, picPaths);
               $ (this).dialog ('close');
               later ( ( () => {
-                userLog ($ ("#temporary").text ());
+                userLog ($ ("#temporary").text ()); // From deleteFiles
                 $ ("#temporary").text ("");
               }), 1000);
               scrollTo (null, $ ("#highUp").offset ().top);
@@ -731,7 +752,7 @@ export default Component.extend (contextMenuMixin, {
               console.log ("Untouched: " + delNames);
               $ (this).dialog ('close');
             }
-          }]);
+           }]);
           niceDialogOpen ();
           $ ("#yesBut").focus ();
         }
@@ -3114,7 +3135,7 @@ function spinnerWait (runWait) {
   }
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function deleteFiles (picNames, nels) { // ===== Delete image(s)
+function deleteFiles (picNames, nels, picPaths) { // ===== Delete image(s)
 //let deleteFiles = (picNames, nels) => { // ===== Delete image(s)
 
   // nels = number of elements in picNames to be deleted
@@ -3127,7 +3148,7 @@ function deleteFiles (picNames, nels) { // ===== Delete image(s)
       if (!(allow.deleteImg || isSymlink && allow.delcreLink || allow.adminAll)) {
         keep.push (picNames [i]);
       } else {
-        deleteFile (picNames [i]).then (result => {
+        deleteFile (picPaths [i]).then (result => {
           if (result.slice (0,3) === "DEL") {
             ndel++; // Save until later:
             $ ("#temporary").text (ndel + " DELETED");
@@ -3152,13 +3173,14 @@ function deleteFiles (picNames, nels) { // ===== Delete image(s)
   });
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function deleteFile (picName) { // ===== Delete an image
+function deleteFile (picPath) { // ===== Delete an image
   $ ("#link_show a").css ('opacity', 0 );
   return new Promise ( (resolve, reject) => {
     // ===== XMLHttpRequest deleting 'picName'
     var xhr = new XMLHttpRequest ();
-    var origpic = $ ('#i' + escapeDots (picName) + ' img.left-click').attr ("title"); // With path
-    origpic = $ ("#imdbLink").text () + "/" + origpic;
+    //var origpic = $ ('#i' + escapeDots (picName) + ' img.left-click').attr ("title"); // With path
+    //origpic = $ ("#imdbLink").text () + "/" + origpic;
+    var origpic = picPath;
     xhr.open ('GET', 'delete/' + origpic, true, null, null); // URL matches routes.js with *?
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {
@@ -3575,9 +3597,9 @@ function reqDirs (imdbroot) { // Read the dirs in imdbLink (requestDirs)
         $ ("#userDir").text (dirList [0].slice (0, dirList [0].indexOf ("@")));
         $ ("#imdbRoot").text (dirList [0].slice (dirList [0].indexOf ("@") + 1));
         $ ("#imdbLink").text (dirList [1]);
-later ( ( () => {
-  console.log("reqDirs", $ ("#userDir").text (), $ ("#imdbRoot").text (), $ ("#imdbLink").text ());
-}), 55);
+//later ( ( () => {
+//  console.log("reqDirs", $ ("#userDir").text (), $ ("#imdbRoot").text (), $ ("#imdbLink").text ());
+//}), 55);
         var imdbLen = dirList [1].length;
         dirList = dirList.slice (1);
         var nodeVersion = dirList [dirList.length - 1];
@@ -3984,11 +4006,11 @@ let prepSearchDialog = () => {
 
                     // In order to show duplicates make the link names unique
                     // by adding four random characters (r4) to the basename (n1)
-                    let n1 = fname.replace (/\.[^.]*$/, "")
-                    let n2 = fname.replace (/(.+)(\.[^.]*$)/, "$2")
-                    if (n2 [0] !== ".") {n2 = ""}
-                    let r4 = Math.random().toString(36).substr(2,4)
-                    fname = n1 + r4 + n2
+                    let n1 = fname.replace (/\.[^.]*$/, "");
+                    let n2 = fname.replace (/(.+)(\.[^.]*$)/, "$2");
+                    if (n2 [0] !== ".") {n2 = "";}
+                    let r4 = Math.random().toString(36).substr(2,4);
+                    fname = n1 + "." + r4 + n2;
 
                     let linkto = lpath + "/" + fname;
                     if (albs.length < nLimit) {
