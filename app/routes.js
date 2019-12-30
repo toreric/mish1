@@ -12,8 +12,12 @@ module.exports = function (app) {
   //var bodyParser = require ('body-parser')
   //app.use (bodyParser.urlencoded ( {extended: false}))
   //app.use (bodyParser.json())
-  var sqlite = require('sqlite3').verbose ()
-  var setdb = new sqlite.Database('_imdb_settings.sqlite')
+  var sqlite3 = require('sqlite3') //.verbose ()
+  const sqlitePromise = require ('sqlite3-promisify')
+  const TransactionDatabase = require ("sqlite3-transactions").TransactionDatabase
+  var setdb = new sqlite3.Database('_imdb_settings.sqlite')
+
+  var sqlite = require ('sqlite') // Tis is sqlite3 'with await', 2019!
 
   //var jsdom = require('jsdom')
   //var dialog = require('nw-dialog')
@@ -46,9 +50,9 @@ module.exports = function (app) {
     //console.log (process.memoryUsage ())
     // Check if this is a direct address to a picture (or an album?)
 
-    console.log (req.params)
+    console.log ("PARAMS", req.params)
     if (req.body && req.body.like) {
-      console.log(req.body.like)
+      console.log("LIKE", req.body.like)
     }
 
     next () // pass control to the next matching handler
@@ -101,7 +105,7 @@ module.exports = function (app) {
       return new Promise (function (resolve, reject) {
         fs.lstat (file, function (err, stats) {
           if (err) {
-            console.error ('symlinkFlag')
+            console.error ('filestat isSymlink', err.message)
           } else {
             resolve (stats.isSymbolicLink ())
           }
@@ -115,12 +119,13 @@ module.exports = function (app) {
     }
     // Exclude the imdbLink name, nov 2014, in order to difficultize direct
     // access to the original pictures from the server. This could be made even
-    // better, e.g., by selection of a random symlink name at program restart.
+    // better, e.g., by selection of a random symlink name at program restart -
+    // remember though, the database 'filepath' contains the imdbLink name!!!
     var filex = file.replace (/^[^/]+\//, "./")
     var fileStat = "<i>Filnamn</i>: " + filex + "<br><br>"
     if (linkto) {
       fileStat = "<i>Filnamn</i>: <span style='color:#0a4'>" + filex + "</span><br><br>"
-      fileStat += "<i>Länk till</i>: " + linkto + "<br><br>"
+      fileStat += "<i>Länk till original</i>: " + linkto + "<br><br>"
     }
     fileStat += "<i>Storlek</i>: " + stat.size/1000000 + " Mb<br>"
     var tmp = execSync ("exif_dimension " + file).toString ().trim ()
@@ -438,8 +443,8 @@ module.exports = function (app) {
     res.location ('/')
     var fileName = req.params[0] // with path
     let tmp = rmPic (fileName)
-    console.log (tmp)
-    res.send (tmp)
+    console.log (' ' + fileName + ' deleted')
+    res.send (tmp) // tmp == 'DELETED'
   })
 
   // ##### #6. START PAGE start page
@@ -448,10 +453,25 @@ module.exports = function (app) {
     // path must be "absolute or specify root to res.sendFile"
   })
 
+  // ##### #6.5 Update one or more database entries
+  app.post ('/sqlupdate', upload.none (), async function (req, res, next) {
+    console.log(req.body);
+    let filepaths = req.body.filepaths
+    console.log ('SQLUPDATE', filepaths)
+    let files = filepaths.trim ().split ('\n')
+    for (let i=0; i<files.length; i++) {
+      sqlUpdate (files [i])
+      await new Promise (z => setTimeout (z, 1000))
+    }
+    res.location ('/')
+    res.send ('')
+    res.end ()
+  })
+
   // ##### #6.6 Multiple shell commands executed using Bluebird promise mapSeries
   app.post ('/mexecute', upload.none (), function (req, res, next) {
     let cmds = req.body.cmds
-    let commands = cmds.split ("\n")
+    let commands = cmds.split ('\n')
     let results = []
     Promise.mapSeries (commands, function (cmd) { // mapSeries first tested here
       cmd = cmd.trim () // since \r may appear, why??
@@ -464,7 +484,7 @@ module.exports = function (app) {
     })
   })
 
-  // ##### #7.1
+  // ##### #7.1 ¿¿ Never used ??
   app.post ('/setimdbdir/:imagedir', function (req, res) {
     IMDB_DIR = req.params.imagedir.replace (/@/g, "/")
     res.send (IMDB_DIR)
@@ -501,7 +521,7 @@ module.exports = function (app) {
         //.then (console.log (' originalname: ' + file.originalname), res.send (file.originalname))
         .catch (function (error) {
           if (error.code === "ENOENT") {
-            console.log ('FILE NOT FOUND: ' + IMDB_PATH + '_xxx_' + pngname)
+            console.log ('FILE NOT FOUND:', IMDB_PATH + '_xxx_' + pngname)
           } else {
             // how to break the uploading???
             // res.status (500).end () // no effect, only console log shows up, if availible:
@@ -561,10 +581,10 @@ module.exports = function (app) {
       body = Buffer.concat (body).toString ()
       // Here `body` has the entire request body stored in it as a string
       var tmp = body.split ('\n')
-      var fileName = tmp [0].trim () // @*** the path is included here @***
+      var fileName = tmp [0].trim () // the path is included here @***
 
       let okay = fs.constants.W_OK | fs.constants.R_OK
-      fs.access (fileName, okay, err => {
+      fs.access (fileName, okay, async err => {
         if (err) {
           res.send ("Cannot write to " + fileName)
           console.log ('\033[31mNO WRITE PERMISSION to ' + fileName + '\033[0m')
@@ -587,6 +607,7 @@ module.exports = function (app) {
           var u = undefined // Restore ONLY mtime:
           Utimes.utimes (fileName, u, Number (mtime), u, function (error) {if (error) {throw error}})
           res.send ('')
+          sqlUpdate (fileName) // with path @***
         }
       })
     })
@@ -603,8 +624,8 @@ module.exports = function (app) {
 
     let like = removeDiacritics (req.body.like)
     let cols = eval ("[" + req.body.cols + "]")
-console.log(like)
-console.log(cols)
+console.log("SEARCH1", like)
+console.log("SEARCH2", cols)
     //console.log(like,cols)
     let taco = ["description", "creator", "source", "album", "name"]
     let columns = ""
@@ -612,10 +633,10 @@ console.log(cols)
       if (cols [i]) {columns += "||" + taco [i]}
     }
     columns = columns.slice (2)
-console.log(columns)
+console.log("SEARCH3", columns)
 //---------
     try {
-      let db = new sqlite.Database (IMDB_LINK + '/_imdb_images.sqlite', function (err) {
+      let db = new sqlite3.Database (IMDB_LINK + '/_imdb_images.sqlite', function (err) {
         if (err) {
           console.error (err.message)
           res.send (err.message)
@@ -660,6 +681,7 @@ console.log(columns)
   let allfiles
   let foundpath
   let tempstore
+  let recId
 
   // ===== COMMON FUNCTIONS
 
@@ -687,54 +709,103 @@ console.log(columns)
         tmp = 'NO PERMISSION to' + PWD_PATH + '/' + fileName
         tmp = '\033[31m' + tmp + '\033[0m'
         return tmp
-// HÄR BORDE EN STOR VARNING KOMMA FRAM FÖR TEXT TILL FEL USER -- varför det?
+// ??? HÄR BORDE EN STOR VARNING KOMMA FRAM FÖR TEXT TILL FEL USER -- varför det?
       }
     })
-    if (!lnk) {
-      sqlUpdate (fileName);
-    }
-    tmp = 'DELETED ' + fileName
-    return tmp
+    return 'DELETED'
   }
 
   // ===== Check and add|remove|update an image file record in the database
   // Se vidare  #0.1 Get file information  etc.
-  function sqlUpdate (filePath) {
-
-    console.log ('UPDATING', filePath)
-    try {
-      let db = new sqlite.Database (IMDB_LINK + '/_imdb_images.sqlite', function (err) {
-        if (err) {
-          console.error (err.message)
-          return
+  // och #10. Search text  etc.
+  // Funkar ej om 'filepaths' är mer än en fil ... (async hell)
+  async function sqlUpdate (filepaths) {
+    let pathlist = filepaths.trim ().split ("\n")
+    for (let i=0; i<pathlist.length; i++) { // forLoop
+      let db = await sqlite.open (IMDB_LINK + '/_imdb_images.sqlite')
+      await db.run ("PRAGMA journal_mode=WAL")
+      // Classify the file as exising or not
+      let filePath = pathlist [i]
+      let pathArr = filePath.split ("/")
+      let xmpParams = [], dbValues = {}
+      let fileExists = false
+      try {
+        let fd = fs.openSync (filePath, 'r+')
+        if (fd) {
+          fileExists = true
+          fs.closeSync (fd)
         }
-      })
-      console.log ('OPENED _imdb_images.sqlite')
-      db.close ()
-      console.log ('CLOSED _imdb_images.sqlite')
-      /*db.serialize ( () => {
-        let sql = 'SELECT id, filepath, ' + columns + ' AS txtstr FROM imginfo WHERE ' + like
-//console.log(sql)
-        db.all (sql, [], function (err, rows) {
-//console.log(JSON.stringify (rows))
-          foundpath = ""
-          if (rows) {
-            tempstore = rows
-            setTimeout ( () => {
-              tempstore.forEach( (row) => {
-                foundpath += row.filepath.trim () + "\n"
-              })
-//console.log(" Found:\n" + foundpath.trim ())
-              res.send (foundpath.trim ())
-              res.end ()
-            }, 1000)
-          }
-        })
-        db.close ()
-      })*/
-    } catch (err) {
-      console.error ("€€RR", err.message)
-    }
+      } catch (err) {
+        fileExists = false
+      }
+      let sqlGetId = "SELECT id FROM imginfo WHERE filepath='" + filePath + "'"
+      row = await db.get (sqlGetId)
+      let recId = -1
+      if (row) {recId = row ['id']}
+
+      // Get metadata from the picture:
+      function getSqlParams () {
+        let xmpkey = ['description', 'creator', 'source']
+        for (let j=0; j<xmpkey.length; j++) {
+          let cmd = 'xmpget ' + xmpkey [j] + ' ' + filePath
+          xmpParams [j] = removeDiacritics (execSync (cmd).toString ())
+        }
+        dbValues =
+        { $filepath:  filePath,
+          $name:      pathArr [pathArr.length - 1].replace (/\.[^.]+$/, ""),
+          $album:     removeDiacritics (filePath.replace (/^[^/]+(\/(.*\/)*)[^/]+$/, "$1")),
+          $description: xmpParams [0],
+          $creator:   xmpParams [1],
+          $source:    xmpParams [2],
+          $subject:   '',
+          $tcreated:  '',
+          $tchanged:  ''
+        }
+      }
+
+      console.log (" fileExists", fileExists, "recId", recId, i);
+
+      if (recId > -1) { // in db table
+        // RECORD 1 means that the database HAS a record
+        // EXISTS 0 means that the image file does NOT exist
+        // and the other way round ...
+
+        if (fileExists) {
+          /* RECORD 1  EXISTS 1
+          ¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤ */
+          console.log (' sql UPDATE', recId, filePath)
+          // update the table row with id = recId
+          getSqlParams ()
+          await db.run ('UPDATE imginfo SET (filepath,name,album,description,creator,source,subject,tcreated,tchanged) = ($filepath,$name,$album,$description,$creator,$source,$subject,$tcreated,$tchanged) WHERE id=' + recId, values = dbValues)
+
+        } else {
+          /* RECORD 1  EXISTS 0
+          ¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤ */
+          console.log (' sql DELETE', recId, filePath)
+          let sqlDelete = "DELETE FROM imginfo WHERE id=" + recId
+          await db.run (sqlDelete)
+        }
+
+      } else { // not in db table
+
+        if (fileExists) {
+          /* RECORD 0  EXISTS 1
+          ¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤ */
+          console.log (' sql INSERT', filePath)
+          // insert a table row with filepath = filePath
+          getSqlParams ()
+          await db.run ('INSERT INTO imginfo (filepath,name,album,description,creator,source,subject,tcreated,tchanged) VALUES ($filepath,$name,$album,$description,$creator,$source,$subject,$tcreated,$tchanged)', values = dbValues)
+
+        } else {
+          /* RECORD 0  EXISTS 0
+          ¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤ */
+          console.log (' sql NOOP', filePath)
+          // do nothing
+        } // if else
+      } // if else
+      await new Promise (z => setTimeout (z, 1000))
+      await db.close ()
+    } // forLoop
   }
 
   // ===== Check if an album/directory name can be accepted
@@ -1011,7 +1082,7 @@ console.log(columns)
       txt12 = txt12 +'\n'+ tmp
     }
     // Triggers browswer autorefresh but no meaning to refresh symlinks:
-    let qrn = '?' + Math.random().toString(36).substr(2,4)
+    let qrn = '?' + Math.random ().toString (36).substr (2,4)
     if (symlink === 'symlink') {qrn = ''}
     // origfile without root-link-name, nov 2014, e.g. imdb/aa/bb => aa/bb :
     return (origfile.replace (/^[^/]+\//, "") +'\n'+ showfile + qrn +'\n'+ minifile + qrn +'\n'+ namefile +'\n'+ txt12.trim () +'\n'+ symlink).trim () // NOTE: returns 7 rows
@@ -1031,7 +1102,7 @@ console.log(columns)
     return new Promise (function (resolve, reject) {
       fs.lstat (file, function (err, stats) {
         if (err) {
-          console.error ('symlinkFlag')
+          console.error ('symlinkFlag', err.message)
         } else if (stats.isSymbolicLink ()) {
           resolve ('symlink')
         } else {
@@ -1056,7 +1127,7 @@ console.log(columns)
 }
 // End module.exports
 
-function pause (ms) { // not used
+function pause (ms) { // or use await new Promise (z => setTimeout (z, 2000))
   console.log('pause',ms)
   return new Promise (done => setTimeout (done, ms))
 }

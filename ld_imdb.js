@@ -103,7 +103,8 @@ function removeDiacritics (str) {
 }
 //=============================================================================
 // The core program begins here -- load image metadata into _imdb_images.sqlite
-// Transactions must be added!
+// Transactions is a must-be!
+// NOTE: imdbLink is used hardcoded (perhaps make it argv [3]?)
 if (process.argv [2] == "-e") {
   let sqlite = require('sqlite3').verbose ()
   let TransactionDatabase = require("sqlite3-transactions").TransactionDatabase

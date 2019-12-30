@@ -634,6 +634,7 @@ export default Component.extend (contextMenuMixin, {
             }
         }
 
+//console.log(picPaths);
         delNames = picName;
         if (nels > 1) {
 
@@ -647,7 +648,7 @@ export default Component.extend (contextMenuMixin, {
           nelstxt = "<b>Vill du radera " + all + nelstxt + "?</b><br>" + delNames + "<br>ska raderas permanent";
           if (linked) {
             if (eraseOriginals) {
-              nelstxt += " *<br><span style='color:black;font-weight:bold'>* Med <span style='color:green'>länk</span> raderas nu även <span style='color:red'>originalet!</span></span>";
+              nelstxt += " *<br><span style='color:black;font-weight:bold'>* <span style='color:#d00'>Originalet</span> till <span style='color:green'>länk</span> raderas nu också!</span>"; // #d00 is deep red
             } else {
               nelstxt += " *<br><span style='color:green;font-size:85%'>* Då <span style='color:green;text-decoration:underline'>länk</span> raderas berörs inte originalet</span>";
             }
@@ -710,7 +711,7 @@ export default Component.extend (contextMenuMixin, {
           nelstxt = "<b>Vänligen bekräfta:</b><br>" + delNames + "<br>i <b>" + nameText + "<br>ska alltså raderas?</b><br>(<i>kan inte ångras</i>)"; // i18n
           if (linked) {
             if (eraseOriginals) {
-              nelstxt += " *<br><span style='color:black;font-weight:bold'>* Med <span style='color:green'>länk</span> raderas nu även <span style='color:red'>originalet!</span></span>";
+              nelstxt += " *<br><span style='color:black;font-weight:bold'>* <span style='color:#d00'>Originalet</span> till <span style='color:green'>länk</span> raderas nu också!</span>"; // #d00 is deep red
             } else {
               nelstxt += "<br><span style='color:green;font-size:85%'>Då <span style='color:green;text-decoration:underline'>länk</span> raderas berörs inte originalet</span>"; // i18n
             }
@@ -734,13 +735,14 @@ export default Component.extend (contextMenuMixin, {
                 return;
               }*/
               console.log ("To be deleted: " + delNames); // delNames is picNames as a string
+//console.log(picPaths);
               // NOTE: Must be a 'clean' call (no then or <await>):
               deleteFiles (picNames, nels, picPaths);
               $ (this).dialog ('close');
-              later ( ( () => {
+              /*later ( ( () => {
                 userLog ($ ("#temporary").text ()); // From deleteFiles
                 $ ("#temporary").text ("");
-              }), 1000);
+              }), 1000);*/
               scrollTo (null, $ ("#highUp").offset ().top);
               $ ("#refresh-1").click ();
             }
@@ -1495,8 +1497,10 @@ console.log("setNavKeys", showpic, namepic, origpic);
         });
       };
       xhr.send ();
-    }).catch (error => {
-      console.error (error.message);
+    })
+    .then ()
+    .catch (error => {
+      console.error ("requestNames", error.message);
     });
   },
   //----------------------------------------------------------------------------------------------
@@ -2445,7 +2449,7 @@ console.log("setNavKeys", showpic, namepic, origpic);
     //============================================================================================
     toggleBackg () { // ##### Change theme light/dark
 
-      //if ($ ("#imdbRoot").text ()) {$ (".mainMenu").hide ();}
+      if ($ ("#imdbRoot").text ()) {$ (".mainMenu").hide ();}
       if (BACKG === "#000") {
         BACKG = "#cbcbcb";
         TEXTC = "#000";
@@ -2907,10 +2911,10 @@ console.log(loginStatus, name);
                   eraseOriginals = false;
                   if ((allow.deleteImg || allow.adminAll) && ["admin", "editall"].indexOf (loginStatus) > -1) {
                     $ ("#title span.eraseCheck").css ("display", "inline");
-                    $ ("#eraOrig").checked = false;
+                    $ ("#eraOrig") [0].checked = false;
                   } else {
                     $ ("#title span.eraseCheck").css ("display", "none");
-                    $ ("#eraOrig").checked = false;
+                    $ ("#eraOrig") [0].checked = false;
                   }
                 }), 2000);
                 resolve (false);
@@ -3135,29 +3139,33 @@ function spinnerWait (runWait) {
   }
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function deleteFiles (picNames, nels, picPaths) { // ===== Delete image(s)
-//let deleteFiles = (picNames, nels) => { // ===== Delete image(s)
-
+async function deleteFiles (picNames, nels, picPaths) { // ===== Delete image(s)
   // nels = number of elements in picNames to be deleted
-  // ndel = number of elements in picNames successfully deleted
-  new Promise (resolve => {
-    let ndel = 0;
-    var keep = [], isSymlink;
+//console.log(picPaths);
+  let delPaths = [];
+  var keep = [], isSymlink;
     for (var i=0; i<nels; i++) {
       isSymlink = $ ('#i' + escapeDots (picNames [i])).hasClass ('symlink');
       if (!(allow.deleteImg || isSymlink && allow.delcreLink || allow.adminAll)) {
         keep.push (picNames [i]);
       } else {
-        deleteFile (picPaths [i]).then (result => {
+        var result = await deleteFile (picPaths [i]) //.then (result => {
           if (result.slice (0,3) === "DEL") {
-            ndel++; // Save until later:
-            $ ("#temporary").text (ndel + " DELETED");
-            //console.log (ndel + " DELETED");
+            delPaths.push (picPaths [i]);
+//console.log('00 delPaths',delPaths);  // undefined ??? HJÄLP!
           } else {
             console.log (result);
           }
-        });
+        //});
       }
+    }
+//console.log("01 delPaths", delPaths);  // undefined ??? HJÄLP!
+  later ( ( () => {
+    userLog (delPaths.length + " DELETED")
+    // Delete database entries
+    if (delPaths.length > 0) {
+//console.log("delPaths", delPaths);
+      delEntries (delPaths.join ("\n"));
     }
     if (keep.length > 0) {
       console.log ("No delete permission for " + cosp (keep, true));
@@ -3167,10 +3175,12 @@ function deleteFiles (picNames, nels, picPaths) { // ===== Delete image(s)
       }), 100);
     }
     later ( ( () => {
+      document.getElementById("reLd").disabled = false;
+      $ ("#reLd").click ();
+      document.getElementById("saveOrder").disabled = false;
       $ ("#saveOrder").click ();
     }), 200);
-    resolve ();
-  });
+  }), 2000);
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function deleteFile (picPath) { // ===== Delete an image
@@ -3205,6 +3215,26 @@ function deleteFile (picPath) { // ===== Delete an image
     //console.log ('Deleted: ' + picName);
   }).catch (error => {
     console.error (error.message);
+  });
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function delEntries (delPaths) {
+  let data = new FormData ();
+  data.append ("filepaths", delPaths);
+  return new Promise ( (resolve, reject) => {
+    let xhr = new XMLHttpRequest ();
+    xhr.open ('POST', 'sqlupdate/')
+    xhr.onload = function () {
+      resolve (xhr.responseText); // empty
+    };
+    xhr.onerror = function () {
+      resolve (xhr.statusText);
+      reject ({
+        status: this.status,
+        statusText: xhr.statusText
+      });
+    };
+    xhr.send (data);
   });
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -3874,7 +3904,7 @@ function serverShell (anchor) { // Send commands in 'anchor text' to server shel
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function mexecute (commands) { // Execute on the server, return a promise
-  let data = new FormData();
+  let data = new FormData ();
   data.append ("cmds", commands);
   return new Promise ( (resolve, reject) => {
     let xhr = new XMLHttpRequest ();
@@ -4120,7 +4150,7 @@ function searchText (searchString, and, searchWhere) {
   if (!$ ("#imdbDir").text ()) {
     $ ("#imdbDir").text ($ ("#imdbLink").text () + "/" + $ ("#picFound").text ());
   }
-  let srchData = new FormData();
+  let srchData = new FormData ();
   srchData.append ("like", str);
   srchData.append ("cols", searchWhere);
   srchData.append ("info", "not used yet");
