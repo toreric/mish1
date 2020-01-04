@@ -1216,7 +1216,7 @@ export default Component.extend (contextMenuMixin, {
         var minipic = tgt.src;
         var showpic = minipic.replace ("/_mini_", "/_show_");
         document.getElementById ("divDropbox").className = "hide-all";
-console.log("setNavKeys", showpic, namepic, origpic);
+//console.log("setNavKeys", showpic, namepic, origpic);
         this.actions.showShow (showpic, namepic, origpic);
         return;
       }
@@ -1456,7 +1456,7 @@ console.log("setNavKeys", showpic, namepic, origpic);
             $ ('#navKeys').text ('false'); // Prevents unintended use of L/R arrows
           }
           for (i=0; i<n_files; i++) {
-            result [j + 4] = result [j + 4].replace (/&lt;br&gt;/g,"<br>");
+            if (result [j + 4]) {result [j + 4] = result [j + 4].replace (/&lt;br&gt;/g,"<br>");}
             var f = Fobj.create ({
               orig: result [j],
               show: result [j + 1],
@@ -1794,19 +1794,27 @@ console.log("setNavKeys", showpic, namepic, origpic);
         var lpath =  $ ('#temporary').text (); // <- the server dir
         getBaseNames (lpath).then (names => {
           //console.log("checkNames:", names);
-          var links = $ ("#picNames").text ().split ("\n"); // <- the names to be checked
+          var cNames = $ ("#picNames").text ().split ("\n"); // <- the names to be checked
           var cmds = $ ('#temporary_1').text ().split ("\n"); // <- corresp. shell commands
-          //console.log(cmds.join ("\n"));
-          for (var i=0; i<links.length; i++) {
-            if (names.indexOf (links [i]) > -1) {
+          chkPaths = [];
+          for (var i=0; i<cNames.length; i++) {
+            if (names.indexOf (cNames [i]) > -1) { // comment out if the file already exists:
               cmds [i] = cmds [i].replace (/^[^ ]+ [^ ]+ /, "#exists already: ");
               userLog ("NOTE exists");
+            } else {
+              let cmdArr = cmds [i].split (" ");
+              if (cmdArr [0] === "mv") {
+                chkPaths.push (cmdArr [2]);
+                chkPaths.push (cmdArr [cmdArr.length - 1] + cmdArr [2].replace(/^([^/]*\/)*/, ""));
+              }
             }
           }
-          //console.log(cmds.join ("\n"));
+console.log(cmds.join ("\n"));
+console.log(chkPaths.join ("\n"));
           $ ('#temporary_1').text (cmds.join ("\n"));
         });
       }), 100);
+      // Somewhere later, 'sqlUpdate (chkPaths)' will be called, from refresh ()
     },
     //============================================================================================
     hideSpinner () { // ##### The spinner may be clicked away if it renamains for some reason
@@ -2149,8 +2157,10 @@ console.log("setNavKeys", showpic, namepic, origpic);
     showDropbox () { // ##### Display (toggle) the Dropbox file upload area
 
       $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
-      if ($ (".toggleAuto").text () === "STOP") {return;} // Auto slide show is running
       if ($ ("#imdbDir").text () === "") {return;}
+      if ($ (".toggleAuto").text () === "STOP") {return;} // Auto slide show is running
+      // Do not permit uploading into the search result (Found ...) album:
+      if ($ ("#imdbDir").text ().replace (/^[^/]*\//, "") === $ ("#picFound").text ()) {return;}
       $ (".mainMenu").hide ();
       $ ("#link_show a").css ('opacity', 0 );
       if (document.getElementById ("divDropbox").className === "hide-all") {
@@ -2170,7 +2180,6 @@ console.log("setNavKeys", showpic, namepic, origpic);
         document.getElementById("reLd").disabled = false;
         document.getElementById("saveOrder").disabled = false;
         scrollTo (null, $ ("#highUp").offset ().top);
-        //scrollTo (null, $ (".showCount:first").offset ().top);
       }
     },
     //============================================================================================
@@ -2207,6 +2216,15 @@ console.log("setNavKeys", showpic, namepic, origpic);
       $ (".img_show .img_name").text (namepic); // Should be plain text
       $ (".img_show .img_txt1").html ($ ('#i' + escapeDots (namepic) + ' .img_txt1').html ());
       $ (".img_show .img_txt2").html ($ ('#i' + escapeDots (namepic) + ' .img_txt2').html ());
+      // In search result view, show original path:
+      if ($ ("#imdbDir").text ().replace (/^[^/]*\//, "") === $ ("#picFound").text ()) {
+        execute ("readlink -n " + origpic).then (res => {
+          res = res.replace (/^[^/]+\//, "./");
+          $ ("#pathOrig").html ("&nbsp;Original: " + res);
+        });
+      } else {
+        $ ("#pathOrig").text ("");
+      }
       // The mini image 'id' is the 'trimmed file name' prefixed with 'i'
       if (typeof this.set === 'function') { // false if called from showNext
         var savepos = $ ('#i' + escapeDots (namepic)).offset ();
@@ -2338,12 +2356,22 @@ console.log("setNavKeys", showpic, namepic, origpic);
 
       if ($ ("#imdbDir").text () === "") {return;}
       if ($ (".toggleAuto").text () === "STOP") {return;} // Auto slide show is running
+
       if (!nospin) {
         spinnerWait (true);
       }
       $ ("#link_show a").css ('opacity', 0 );
       $ (".img_show").hide ();
       this.refreshAll ().then ( () => {
+        // Do not insert the search result into the sql DB table:
+        if ($ ("#imdbDir").text ().replace (/^[^/]*\//, "") === $ ("#picFound").text ()) {
+          return true;
+        }
+        // Perform waiting DB updates
+        if (chkPaths.length > 0) {
+          sqlUpdate (chkPaths.join ("\n"));
+        }
+        chkPaths = []
         return true;
       });
     },
@@ -2352,6 +2380,9 @@ console.log("setNavKeys", showpic, namepic, origpic);
 
       if ($ (".toggleAuto").text () === "STOP") {return;} // Auto slide show is running
       if (!(allow.saveChanges || allow.adminAll) || $ ("#imdbDir").text () === "") {return;}
+      // The search result album is randomly reused and shoud never be saved:
+      if ($ ("#imdbDir").text ().replace (/^[^/]*\//, "") === $ ("#picFound").text ()) {return;}
+
       $ ("#link_show a").css ('opacity', 0 );
 
       new Promise (resolve => {
@@ -3017,6 +3048,7 @@ let nopsGif = "GIF-fil kan bara ha tillfällig text"; // i18n
 let preloadShowImg = [];
 let loginStatus = "";
 let tempStore = "";
+let chkPaths = []; // For DB picture paths to be soon updated (or removed)
 let savedAlbumIndex = 0;
 let returnTitles = ["TOPP", "UPP", "SENASTE"]; // i18n
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -3141,31 +3173,26 @@ function spinnerWait (runWait) {
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 async function deleteFiles (picNames, nels, picPaths) { // ===== Delete image(s)
   // nels = number of elements in picNames to be deleted
-//console.log(picPaths);
   let delPaths = [];
   var keep = [], isSymlink;
-    for (var i=0; i<nels; i++) {
-      isSymlink = $ ('#i' + escapeDots (picNames [i])).hasClass ('symlink');
-      if (!(allow.deleteImg || isSymlink && allow.delcreLink || allow.adminAll)) {
-        keep.push (picNames [i]);
+  for (var i=0; i<nels; i++) {
+    isSymlink = $ ('#i' + escapeDots (picNames [i])).hasClass ('symlink');
+    if (!(allow.deleteImg || isSymlink && allow.delcreLink || allow.adminAll)) {
+      keep.push (picNames [i]);
+    } else {
+      var result = await deleteFile (picPaths [i])
+      if (result.slice (0,3) === "DEL") {
+        delPaths.push (picPaths [i]);
       } else {
-        var result = await deleteFile (picPaths [i]) //.then (result => {
-          if (result.slice (0,3) === "DEL") {
-            delPaths.push (picPaths [i]);
-//console.log('00 delPaths',delPaths);  // undefined ??? HJÄLP!
-          } else {
-            console.log (result);
-          }
-        //});
+        console.log (result);
       }
     }
-//console.log("01 delPaths", delPaths);  // undefined ??? HJÄLP!
+  }
   later ( ( () => {
     userLog (delPaths.length + " DELETED")
     // Delete database entries
     if (delPaths.length > 0) {
-//console.log("delPaths", delPaths);
-      delEntries (delPaths.join ("\n"));
+      sqlUpdate (delPaths.join ("\n"));
     }
     if (keep.length > 0) {
       console.log ("No delete permission for " + cosp (keep, true));
@@ -3218,9 +3245,10 @@ function deleteFile (picPath) { // ===== Delete an image
   });
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function delEntries (delPaths) {
+function sqlUpdate (picPaths) {
+  if (!picPaths) {return;}
   let data = new FormData ();
-  data.append ("filepaths", delPaths);
+  data.append ("filepaths", picPaths);
   return new Promise ( (resolve, reject) => {
     let xhr = new XMLHttpRequest ();
     xhr.open ('POST', 'sqlupdate/')
@@ -3500,22 +3528,25 @@ function linkFunc (picNames) { // ===== Execute a link-these-files-to... request
   $ ("select.selectOption").focus ();
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function moveFunc (picNames) { // ===== Execute a link-this-file-to... request
+function moveFunc (picNames) { // ===== Execute a move-this-file-to... request
   // picNames should also be saved as string in #picNames
   var albums = $ ("#imdbDirs").text ();
   albums = albums.split ("\n");
   let curr = $ ("#imdbDir").text ().match(/\/.*$/); // Remove imdbLink
+  let picf = $ ("#picFound").text () // Remove if possibly picFound
   if (curr) {curr = curr.toString ();} else {curr = "";}
   let malbum = [];
   let i;
-  for (i=0; i<albums.length; i++) { // Remove current album from options
-    if (albums [i] !== curr) {malbum.push (albums [i]);}
+  for (i=0; i<albums.length; i++) { // Remove current and find result albums from options
+    if (albums [i] !== curr && albums [i].indexOf (picf) < 0) {
+      malbum.push (albums [i]);
+    }
   }
   let codeMove = "'let malbum = this.value;let mpath = \"\";if (this.selectedIndex === 0) {return false;}mpath = malbum.replace (/^[^/]*(.*)/, $ (\"#imdbLink\").text () + \"$1\");console.log(\"Move to\",mpath);let picNames = $(\"#picNames\").text ().split (\"\\n\");let cmd=[];for (let i=0; i<picNames.length; i++) {let movefrom = \" \" + $(\"#imdbLink\").text() + \"/\" + document.getElementById (\"i\" + picNames [i]).getElementsByTagName(\"img\")[0].getAttribute (\"title\");let mini = movefrom.replace (/([^\\/]+)(\\.[^\\/.]+)$/, \"_mini_$1.png\");let show = movefrom.replace (/([^\\/]+)(\\.[^\\/.]+)$/, \"_show_$1.png\");let moveto = \" \" + mpath + \"/\";cmd.push (\"mv -fu\" +movefrom+mini+show+moveto);}$ (\"#temporary\").text (mpath);$ (\"#temporary_1\").text (cmd.join(\"\\n\"));$ (\"#checkNames\").click ();'"
 
   let r = $ ("#imdbRoot").text ();
   let codeSelect = '<select class="selectOption" onchange=' + codeMove + '>\n<option value="">Välj ett album:</option>';
-console.log(codeSelect);
+//console.log(codeSelect);
   for (i=0; i<malbum.length; i++) {
     let v = r + malbum [i];
     codeSelect += '\n<option value ="' +v+ '">' +v+ '</option>';
@@ -3976,10 +4007,10 @@ let prepSearchDialog = () => {
     let tw = sw - 25; // Text width
     $ ('<div id="searcharea" style="margin:0;padding:0;width:'+sw+'px"><div class="diaMess"> <div class="edWarn" style="font-weight:normal;text-align:right" ></div> \
     <div class="srchIn">Sök i:&nbsp; <span class="glue"><input id="t1" type="checkbox" name="search1" value="description" checked/><label for="t1">&nbsp;bildtext</label></span>&nbsp; \
-    <span class="glue"><input id="t2" type="checkbox" name="search2" value="creator"/><label for="t2">&nbsp;ursprung</label></span>&nbsp; \
+    <span class="glue"><input id="t2" type="checkbox" name="search2" value="creator" checked/><label for="t2">&nbsp;ursprung</label></span>&nbsp; \
     <span class="glue"><input id="t3" type="checkbox" name="search3" value="source"/><label for="t3">&nbsp;anteckningar</label></span>&nbsp; \
     <span class="glue"><input id="t4" type="checkbox" name="search4" value="album"/><label for="t4">&nbsp;album</label></span>&nbsp; \
-    <span class="glue"><input id="t5" type="checkbox" name="search5" value="name"/><label for="t5">&nbsp;namn</label></span></div> \
+    <span class="glue"><input id="t5" type="checkbox" name="search5" value="name" checked/><label for="t5">&nbsp;namn</label></span></div> \
     <div class="orAnd">Regel för åtskilda ord/textbitar (\' och % räknas som blank):<br><span class="glue"><input id="r1" type="radio" name="searchmode" value="AND" checked/><label for="r1">&nbsp;alla&nbsp;ska&nbsp;hittas</label></span>&nbsp; <span class="glue"><input id="r2" type="radio" name="searchmode" value="OR"/><label for="r2">&nbsp;minst&nbsp;ett&nbsp;av&nbsp;dem&nbsp;ska&nbsp;hittas</label></span></div> <span class="srchMsg"></span></div><textarea name="searchtext" placeholder="(minst tre tecken utöver omgivande blanka)" rows="4" style="min-width:'+tw+'px" /></div>').dialog ( {
       title: "Finn bilder: Sök i bildtexter",
 

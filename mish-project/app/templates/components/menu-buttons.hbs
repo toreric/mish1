@@ -1,4 +1,27 @@
 {{! template-lint-disable }}
+
+<script>
+function copyToClipboard (str) {
+  const el = document.createElement('textarea');  // Create a <textarea> element
+  el.value = str.trim ();                         // Set its value to the string that you want copied
+  el.setAttribute('readonly', '');                // Make it readonly to be tamper-proof
+  el.style.position = 'absolute';
+  el.style.left = '-9999px';                      // Move outside the screen to make it invisible
+  document.body.appendChild(el);                  // Append the <textarea> element to the HTML document
+  const selected =
+    document.getSelection().rangeCount > 0        // Check if there is any content selected previously
+      ? document.getSelection().getRangeAt(0)     // Store selection if found
+      : false;                                    // Mark as false to know no selection existed before
+  el.select();                                    // Select the <textarea> content
+  document.execCommand('copy');                   // Copy - only works as a result of a user action (e.g. click events)
+  document.body.removeChild(el);                  // Remove the <textarea> element
+  if (selected) {                                 // If a selection existed before copying
+    document.getSelection().removeAllRanges();    // Unselect everything on the HTML document
+    document.getSelection().addRange(selected);   // Restore the original selection
+  }
+}
+</script>
+
 <!-- ///// HEADER AND ALSO THE LOGIN AND SETTINGS BUTTON ///// -->
 <div id="title" class="BACKG BLUET" draggable="false" ondragstart="return false" display="">
   <span class="proid" title=""> Mish</span>
@@ -52,6 +75,7 @@
 <div id="allowValue" title="permissions" style="display:none"></div>
 <div id="backImg" style="display:none"></div>
 <div id="bkgrColor" style="display:none">rgb(59, 59, 59)</div>
+<div id="chkPaths" style="display:none" title="for update SQlite DB"></div>
 <div id="hideColor" style="display:none">rgb(92, 98, 102)</div>
 <div id="hideFlag" style="display:none" title="do'nt show 'hidden'pictures">1</div>
 <div id="hideNames" style="display:none" title="hide picture names">1</div>
@@ -127,12 +151,13 @@
 
             </div>
             <div class="markDummy"></div><!-- Substitutes markShow, moved up ^ -->
-            <div class="img_name" draggable="false" ondragstart="return false"></div>
+            <div class="img_name" title="Click = Copy!" totip="Click = Copy!" onclick="copyToClipboard(this.innerHTML)"></div>
             <div class="img_txt1" draggable="false" ondragstart="return false" {{action 'ediText'}}></div>
             <div class="img_txt2" draggable="false" ondragstart="return false" {{action 'ediText'}}></div>
           </td>
         </tr>
       </tab>
+      <span id="pathOrig"></span>
     </div>
 
   </div>
@@ -238,8 +263,8 @@
   type="submit" class="show-inline btn-std" {{action 'downLoad'}}>Download...</button>
 <!-- Should be called from the context menu exclusively: --><button id="deleteFile"
   type="submit" class="show-inline btn-std" {{action 'deleteFile'}}>DELETE</button>
-<!-- Should be called from the linkFunc dialog exclusively: --><button id="checkNames"
- {{action 'checkNames'}}></button><button id="linkNames" {{action 'linkNames'}}></button>
+<!-- Should be called from the linkFunc or moveFunk dialogs, exclusively: --><button id="checkNames"
+ {{action 'checkNames'}}></button>
 </p>
 
 <div id="highUp"></div>
@@ -290,7 +315,7 @@
         <img src="{{file.mini}}" class="left-click" title="{{file.orig}}" draggable="false" ondragstart="return false">
         </a>
         <div id="" class="markFalse" alt="MARKER" title="Markera" {{action 'toggleMark' file.name}}  draggable="false" ondragstart="return false"><img src="/images/markericon.svg" draggable="false" ondragstart="return false" class="mark"></div>
-        <div class="img_name">
+        <div class="img_name" title="Click = Copy!" totip="Click = Copy!" onclick="copyToClipboard(this.innerHTML)">
           {{file.name}}
         </div>
         <div class="img_txt1" title="{{file.txt1}}" totip="{{file.txt1}}" {{action 'ediText' file.name}}>

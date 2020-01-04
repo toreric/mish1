@@ -19,7 +19,7 @@ export default Component.extend({
   url: null,
   withCredentials: null,
   method: 'POST',
-  parallelUploads: 8,
+  parallelUploads: 4,
   maxFilesize: null,
   filesizeBase: null,
   paramName: null,
@@ -237,7 +237,7 @@ export default Component.extend({
             }
           } else {
             console.log ("Illegal file name: " + file.name);
-            // userLog unreachable
+            // userLog() unreachable
             $ ("#uploadFinished").html ('<span style="color:deeppink">OTILLÅTET FILNAMN<br>' + file.name + "</span>");
             later ( () => {
               file.previewElement.querySelector ("a.dz-remove").click ();

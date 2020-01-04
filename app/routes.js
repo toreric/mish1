@@ -460,8 +460,8 @@ module.exports = function (app) {
     console.log ('SQLUPDATE', filepaths)
     let files = filepaths.trim ().split ('\n')
     for (let i=0; i<files.length; i++) {
-      sqlUpdate (files [i])
-      await new Promise (z => setTimeout (z, 1000))
+      await new Promise (z => setTimeout (z, 888))
+      await sqlUpdate_1 (files [i])
     }
     res.location ('/')
     res.send ('')
@@ -493,44 +493,43 @@ module.exports = function (app) {
 
   // ##### #7.2 Image upload, using Multer multifile and Bluebird promise upload
   // Called from the drop-zone component, NOTE: The name 'file' is mandatory!
-  app.post ('/upload', upload.array ('file'), function (req, res, next) {
+  app.post ('/upload', upload.array ('file'), async function (req, res, next) {
     console.log ("IMDB_DIR =", IMDB_DIR)
     if (!IMDB_DIR) { // If not already set: refrain
       console.log ("Image directory missing, cannot upload")
       return
     }
-    async function uploadWrap () {
-      // ----- Image data base absolute path
-      var IMDB_PATH = PWD_PATH + '/' + IMDB_DIR
-      var fileNames = ""
-      await Promise.mapSeries (req.files, function (file) { // Can we use mapSeries here?
-        //console.log (JSON.stringify (file)) // the file object
-        //console.log (file.originalname)
-        console.log (file.path)
-        file.originalname = file.originalname.replace (/ /g, "_") // Spaces prohibited
-        //console.log (file.originalname)
-        fs.readFileAsync (file.path)
-        .then (contents => fs.writeFileAsync (IMDB_PATH + file.originalname, contents, 'binary'))
-        .then (console.log (++n_upl +' TMP: '+ file.path + ' written to' +'\nUPLOADED: '+ IMDB_DIR + file.originalname),
-        fileNames = fileNames + file.originalname)
-        // Delete showfile and minifile if the main file is refreshed
-        .then(pngname = path.parse (file.originalname).name + '.png')
-        .then (fs.unlinkAsync (IMDB_PATH +'_mini_'+ pngname)) // File not found isn't caught, see Express unhandledRejection!
-        .then (fs.unlinkAsync (IMDB_PATH +'_show_'+ pngname)) // File not found isn't caught, see Express unhandledRejection!
-        .then (res.send (file.originalname))
-        //.then (console.log (' originalname: ' + file.originalname), res.send (file.originalname))
-        .catch (function (error) {
-          if (error.code === "ENOENT") {
-            console.log ('FILE NOT FOUND:', IMDB_PATH + '_xxx_' + pngname)
-          } else {
-            // how to break the uploading???
-            // res.status (500).end () // no effect, only console log shows up, if availible:
-            console.log ('\033[31m' + n_upl +': '+ file.path + ' NO WRITE PERMISSION to' + '\n' + IMDB_PATH + file.originalname + '\033[0m')
-          }
-        })
+    // ----- Image data base absolute path
+    var IMDB_PATH = PWD_PATH + '/' + IMDB_DIR
+    await Promise.mapSeries (req.files, function (file) { // Can we use mapSeries here?
+      //console.log (JSON.stringify (file)) // the file object
+      //console.log (file.originalname)
+      console.log (file.path)
+      file.originalname = file.originalname.replace (/ /g, "_") // Spaces prohibited
+      //console.log (file.originalname)
+      fs.readFileAsync (file.path)
+      .then (contents => fs.writeFileAsync (IMDB_PATH + file.originalname, contents, 'binary'))
+      .then (async () => {
+        await new Promise (z => setTimeout (z, 888))
+        await sqlUpdate_1 (IMDB_DIR + file.originalname)
+      }) // Add to the sql DB
+      .then (console.log (++n_upl +' TMP: '+ file.path + ' written to' +'\nUPLOADED: '+ IMDB_DIR + file.originalname))
+      // Delete showfile and minifile if the main file is refreshed
+      .then(pngname = path.parse (file.originalname).name + '.png')
+      .then (fs.unlinkAsync (IMDB_PATH +'_mini_'+ pngname)) // File not found isn't caught, see Express unhandledRejection!
+      .then (fs.unlinkAsync (IMDB_PATH +'_show_'+ pngname)) // File not found isn't caught, see Express unhandledRejection!
+      .then (res.send (file.originalname))
+      //.then (console.log (' originalname: ' + file.originalname), res.send (file.originalname))
+      .catch (function (error) {
+        if (error.code === "ENOENT") {
+          console.log ('FILE NOT FOUND:', IMDB_PATH + '_xxx_' + pngname)
+        } else {
+          // how to break the uploading???
+          // res.status (500).end () // no effect, only console log shows up, if availible:
+          console.log ('\033[31m' + n_upl +': '+ file.path + ' NO WRITE PERMISSION to' + '\n' + IMDB_PATH + file.originalname + '\033[0m')
+        }
       })
-    }
-    uploadWrap ()
+    })
   })
 
   // ##### #8. Save the _imdb_order.txt file
@@ -607,7 +606,8 @@ module.exports = function (app) {
           var u = undefined // Restore ONLY mtime:
           Utimes.utimes (fileName, u, Number (mtime), u, function (error) {if (error) {throw error}})
           res.send ('')
-          sqlUpdate (fileName) // with path @***
+          await new Promise (z => setTimeout (z, 888))
+          await sqlUpdate_1 (fileName) // with path @***
         }
       })
     })
@@ -719,7 +719,8 @@ console.log("SEARCH3", columns)
   // Se vidare  #0.1 Get file information  etc.
   // och #10. Search text  etc.
   // Funkar ej om 'filepaths' är mer än en fil ... (async hell)
-  async function sqlUpdate (filepaths) {
+  function sqlUpdate_1 (filepaths) {
+  return new Promise (async function (resolve, reject) {
     let pathlist = filepaths.trim ().split ("\n")
     for (let i=0; i<pathlist.length; i++) { // forLoop
       let db = await sqlite.open (IMDB_LINK + '/_imdb_images.sqlite')
@@ -803,9 +804,11 @@ console.log("SEARCH3", columns)
           // do nothing
         } // if else
       } // if else
-      await new Promise (z => setTimeout (z, 1000))
+      await new Promise (z => setTimeout (z, 222))
       await db.close ()
     } // forLoop
+    resolve (true)
+  }) // Promise
   }
 
   // ===== Check if an album/directory name can be accepted
@@ -1127,12 +1130,13 @@ console.log("SEARCH3", columns)
 }
 // End module.exports
 
-function pause (ms) { // or use await new Promise (z => setTimeout (z, 2000))
+function pause (ms) { // or use 'await new Promise (z => setTimeout (z, 2000))'
   console.log('pause',ms)
   return new Promise (done => setTimeout (done, ms))
 }
 // SQL för att göra lista på dubletter, kanske för att göra PDF med Pdfkit?
 //SELECT a.name, a.filepath FROM imginfo a JOIN (SELECT name, COUNT(*), filepath FROM imginfo GROUP BY name HAVING COUNT(*) > 1) b ON a.name = b.name ORDER BY a.name;
+// Eller enklare: SELECT name, COUNT(*) FROM imginfo GROUP BY name HAVING COUNT(*) > 1 ORDER BY name;
 // ===== GLOBALS
 
 // Data for the removeDiacritics function (se below)
