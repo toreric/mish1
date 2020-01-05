@@ -5,6 +5,12 @@
 body {
  width: 99%!important;
 }
+@media print {
+  html, #wrap_pad {
+    page-break-after: avoid;
+    height: 98%;
+  }
+}
 .lastRow, .copyright {
   font: 0.9em monospace;
   width: 100%;

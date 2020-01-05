@@ -65,7 +65,7 @@ function copyToClipboard (str) {
     </span>
   </div>
   <!-- TEST BUTTON -->
-  <button class="testerButton" title="Dummy button" {{action "testSomething"}} style="top:0;right:0;position:absolute" style="display:none"> · </button>
+  <button class="testerButton" title="Dummy button" {{action "doPrint"}} style="top:0;right:0;position:absolute" style="">print</button>
   <br><span class="usrlg"></span><!-- User information log -->
 </div>
 <!-- ///// JQUERY DIALOGS ///// -->
@@ -107,28 +107,29 @@ function copyToClipboard (str) {
 <div class="shortMessage blackBorder" style="display:none">RT-log-message</div>
 <a href="null" id="download" style="display:none" download>DOWNLOAD-AREA</a>
 
+<!-- ///// RIGHT BUTTONS (NOTE: without href attributes) /////  -->
+<div class="nav_links" draggable="false" ondragstart="return false">
+  <!-- NEXT-ARROW-BUTTONS -->
+  <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' true }} title="Nästa bild">»</a> &nbsp;<br>
+  <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' false}} title="Föregående bild">«</a> &nbsp;<br>
+  <!-- AUTO-SLIDE-SHOW SELECT -->
+  <a class="nav_ toggleAuto" draggable="false" ondragstart="return false" {{action 'toggleAuto'}} style="font-size:1.2em;font-family:monospace" title="Automatiskt bildbyte">AUTO</a><br>
+  <!-- AUTO-SLIDE-SHOW SPEED SELECT -->
+  <span class="nav_" id="showSpeed" draggable="false" ondragstart="return false">
+    <input class="showTime" type="number" min="1" max="99" value="2" title="Välj tid > 0 s">s&nbsp;&nbsp;<br>
+    <!-- CHOOSE AUTO-SHOW s/texline OR s/slide -->
+    <a class="speedBase nav_" {{action 'speedBase'}} title="Välj per bild eller bildtextrad">&nbsp;per<br>&nbsp;text-&nbsp;<br>&nbsp;rad</a>
+  </span><br>
+  <!-- HELP -->
+  <a class="nav_ qnav_" draggable="false" {{action 'toggleNav'}}>?</a> &nbsp;<br>
+  <!-- FULL SIZE -->
+  <a class="nav_ " id="full_size" draggable="false" {{action 'fullSize'}} title="Full storlek">&#9974;</a> &nbsp;
+</div>
+
 <!-- ///// DISPLAY THE (SLIDE) SHOW IMAGE ///// -->
 <div class="img_show" style="display:none" draggable="false">
   <span class="imDir path BACKG">{{{albumName}}}</span>
   <div id="wrap_pad" class="BACKG" draggable="false">
-    <!-- ///// RIGHT BUTTONS (NOTE: without href attributes) /////  -->
-    <div class="nav_links" draggable="false" ondragstart="return false">
-      <!-- NEXT-ARROW-BUTTONS -->
-      <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' true }} title="Nästa bild">»</a> &nbsp;<br>
-      <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' false}} title="Föregående bild">«</a> &nbsp;<br>
-      <!-- AUTO-SLIDE-SHOW SELECT -->
-      <a class="nav_ toggleAuto" draggable="false" ondragstart="return false" {{action 'toggleAuto'}} style="font-size:1.2em;font-family:monospace" title="Automatiskt bildbyte">AUTO</a><br>
-      <!-- AUTO-SLIDE-SHOW SPEED SELECT -->
-      <span class="nav_" id="showSpeed" draggable="false" ondragstart="return false">
-        <input class="showTime" type="number" min="1" max="99" value="2" title="Välj tid > 0 s">s&nbsp;&nbsp;<br>
-        <!-- CHOOSE AUTO-SHOW s/texline OR s/slide -->
-        <a class="speedBase nav_" {{action 'speedBase'}} title="Välj per bild eller bildtextrad">&nbsp;per<br>&nbsp;text-&nbsp;<br>&nbsp;rad</a>
-      </span><br>
-      <!-- HELP -->
-      <a class="nav_ qnav_" draggable="false" {{action 'toggleNav'}}>?</a> &nbsp;<br>
-      <!-- FULL SIZE -->
-      <a class="nav_ " id="full_size" draggable="false" {{action 'fullSize'}} title="Full storlek">&#9974;</a> &nbsp;
-    </div>
 
     <div id="wrap_show" draggable="false"><!-- IMAGE AND TEXT CONTAINER -->
       <tab style="background:transparent" draggable="false">

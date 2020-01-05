@@ -6,7 +6,7 @@ import EmberObject from '@ember/object';
 import { Promise } from 'rsvp';
 import $ from 'jquery';
 import { later } from '@ember/runloop';
-//import Ember from 'ember';
+import Ember from 'ember';
 import { htmlSafe } from '@ember/string';
 import { task } from 'ember-concurrency';
 import contextMenuMixin from 'ember-context-menu';
@@ -1268,7 +1268,7 @@ export default Component.extend (contextMenuMixin, {
           }), 100);
           if (Z) {console.log ('*d');}
         } else
-        if ($ (".img_show").css ("display") === "block") { // Show image is visible
+          if ($ (".img_show").css ("display") === "block") { // Show image is visible
           that.actions.hideShow ();
           if (Z) {console.log ('*e');}
         } else {
@@ -1504,9 +1504,22 @@ export default Component.extend (contextMenuMixin, {
     });
   },
   //----------------------------------------------------------------------------------------------
+  printThis: Ember.inject.service(),
+
   // TEMPLATE ACTIONS, functions reachable from the HTML page
   /////////////////////////////////////////////////////////////////////////////////////////
   actions: {
+    //============================================================================================
+    doPrint() {
+      const selector = "#wrap_pad";
+      const options = {
+        importStyle: true,
+        printContainer: false,
+        pageTitle: $ ("#imdbRoot").text () + $ ("#imdbDir").text ().replace (/^[^/]+/, ""),
+      }
+
+      this.get('printThis').print(selector, options);
+    },
     //============================================================================================
     infStatus () {
       var title = "Information om användarrättigheter"; // i18n
@@ -1610,6 +1623,7 @@ export default Component.extend (contextMenuMixin, {
         return;
       }
       $ (".img_show").hide ();
+      $ (".nav_links").hide ();
       var imdbRoot = $ ("#imdbRoot").text ();
       if (imdbDir.indexOf ("/") < 0) {
         imdbDir = imdbRoot;
@@ -1841,6 +1855,7 @@ console.log(chkPaths.join ("\n"));
       // Close all dialogs/windows
       ediTextClosed ();
       $ (".img_show").hide ();
+      $ (".nav_links").hide ();
       document.getElementById ("imageList").className = "hide-all";
       document.getElementById ("divDropbox").className = "hide-all";
 
@@ -2209,6 +2224,7 @@ console.log(chkPaths.join ("\n"));
        $ ("#full_size").hide (); // button
       if (allow.imgOriginal || allow.adminAll) {$ ("#full_size").show ();}
       $ (".img_show").hide (); // Hide in case a previous is not already hidden
+      $ (".nav_links").hide ();
       $ ("#link_show a").css ('opacity', 0 );
       $ (".img_show img:first").attr ('src', showpic);
 //console.log("showShow", origpic, origpic.replace (/^[^/]+\//, ""));
@@ -2235,6 +2251,7 @@ console.log(chkPaths.join ("\n"));
       }
       $ ("#wrap_show").css ('background-color', $ ('#i' + escapeDots (namepic)).css ('background-color'));
       $ (".img_show").show ();
+      $ (".nav_links").show ();
       scrollTo (null, $ (".img_show img:first").offset ().top - $ ("#topMargin").text ());
       $ ("#markShow").removeClass ();
       if (document.getElementById ("i" + namepic).firstElementChild.nextElementSibling.className === "markTrue") {
@@ -2314,6 +2331,7 @@ console.log(chkPaths.join ("\n"));
       origpic = $ ("#imdbLink").text () + "/" + origpic;
       var showpic = minipic.replace ("/_mini_", "/_show_");
       $ (".img_show").hide (); // Hide to get right savepos
+      $ (".nav_links").hide ();
       var savepos = $ ('#i' + escapeDots (namepic)).offset ();
       if (savepos !== undefined) {
         $ ('#backPos').text (savepos.top); // Save position
@@ -2362,6 +2380,7 @@ console.log(chkPaths.join ("\n"));
       }
       $ ("#link_show a").css ('opacity', 0 );
       $ (".img_show").hide ();
+      $ (".nav_links").hide ();
       this.refreshAll ().then ( () => {
         // Do not insert the search result into the sql DB table:
         if ($ ("#imdbDir").text ().replace (/^[^/]*\//, "") === $ ("#picFound").text ()) {
@@ -2768,6 +2787,7 @@ console.log(loginStatus, name);
       ediTextClosed ();
       var that = this;
       $ (".img_show").hide ();
+      $ (".nav_links").hide ();
       var btnTxt = $ ("#title button.cred").text ();
       $ ("#title span.cred.status").show ();
       if (btnTxt === "Logga in") { // Log in (should be buttonText[0] ... i18n)
@@ -2984,7 +3004,7 @@ console.log(loginStatus, name);
         });
       }
     },
-//============================================================================================
+    //============================================================================================
     toggleSettings () { // ##### Show/change settings
 
       $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
@@ -2998,7 +3018,7 @@ console.log(loginStatus, name);
       ediTextClosed ();
       document.getElementById ("divDropbox").className = "hide-all";
       $ (".img_show").hide (); // settings + img_show don't go together
-      $ ("div.settings, div.settings div.check").toggle ();
+      $ (".nav_links").hide ();
       this.actions.setAllow (); // Resets unconfirmed changes
       document.querySelector ('div.settings button.confirm').disabled = true;
       var n = document.querySelectorAll ('input[name="setAllow"]').length;
@@ -3115,6 +3135,7 @@ function hideShow_g () {
   $ (".img_show div").blur ();
   if ($ (".img_show").is (":visible")) {
     $ (".img_show").hide ();
+    $ (".nav_links").hide ();
     gotoMinipic ($ (".img_show .img_name").text ());
   }
 }
