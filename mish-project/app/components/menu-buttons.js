@@ -26,7 +26,7 @@ export default Component.extend (contextMenuMixin, {
   }),
 
   requestDirs: task (function* () {
-
+console.log("requestDirs clicked (no parameters)");
     let imdbroot = this.get ("imdbRoot");
     document.title = "Mish";
     if (imdbroot === "") {
@@ -52,15 +52,20 @@ export default Component.extend (contextMenuMixin, {
         // Prepare to select imdbRoot
         $ (".mainMenu").show ();
         $ (".mainMenu p:gt(1)").hide (); // Shown at selectRoot ()
+        this.set ("albumData", [])
         spinnerWait (false);
         //spinnerWait (true);
         return;
       }
     }
-    document.title = "Mish: " + removeUnderscore (imdbroot, true);
 
+    document.title = "Mish: " + removeUnderscore (imdbroot, true);
+    // MUST BE POSTPONED UNTIL imdLink is server-established!
     if (this.get ("albumData").length === 0) {
-      yield reqDirs (imdbroot); // Request all subdirectories recursively ((2))
+      // Regenerate the picFound album: the shell commands must execute in sequence
+      let lpath = $ ("#imdbLink").text () + "/" + $ ("#picFound").text ();
+      execute ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb")
+      .then (yield reqDirs (imdbroot)); // Request all subdirectories recursively ((2))
     }
     this.set ("userDir", $ ("#userDir").text ());
     this.set ("imdbRoot", $ ("#imdbRoot").text ());
@@ -75,9 +80,6 @@ export default Component.extend (contextMenuMixin, {
         if (i === 0) {treePath [i] = imdbLink;} else {
           treePath [i] = imdbLink + treePath [i].toString ();
         }
-        /*let branch = treePath [i].split ("/");
-        if (branch [0] === "") {branch.splice (0, 1);}
-        //console.log (branch);*/
       }
       let albDat = aData (treePath);
       // Substitute the first name (in '{text:"..."') into the root name:
@@ -298,7 +300,7 @@ export default Component.extend (contextMenuMixin, {
         var sortOrder = $ ("#sortOrder").text ();
         var rex = new RegExp (picName + ",[\\d,]+\\n?", "");
         var k = sortOrder.search (rex);
-        if (k < 1) {return;}
+        if (k < 1) return;
         var line = sortOrder.match (rex) [0];
         sortOrder = sortOrder.replace (line, "");
         sortOrder = sortOrder.replace (/\\n\\n/g, "\n");
@@ -322,7 +324,7 @@ export default Component.extend (contextMenuMixin, {
         var sortOrder = $ ("#sortOrder").text ();
         var rex = new RegExp (picName + ",[\\d,]+\\n?", "");
         var k = sortOrder.search (rex);
-        if (k < 0) {return;}
+        if (k < 0) return;
         var line = sortOrder.match (rex) [0];
         sortOrder = sortOrder.replace (line, "");
         sortOrder = sortOrder.replace (/\\n\\n/g, "\n");
@@ -767,8 +769,7 @@ export default Component.extend (contextMenuMixin, {
   _contextMenu (e) {
     later ( ( () => {
       // At text edit (ediText) || running slide show
-      if ( ($ ("div[aria-describedby='textareas']").css ("display") !== "none") ||
-          ($ ("#navAuto").text () === "true") ) {
+      if ( ($ ("div[aria-describedby='textareas']").css ("display") !== "none") || ($ ("#navAuto").text () === "true") ) {
         $ ("ul.context-menu").hide ();
         return;
       }
@@ -837,19 +838,19 @@ export default Component.extend (contextMenuMixin, {
   init () { // ##### Component initiation
     this._super (...arguments);
     $ (document).ready ( () => {
+      $ ("#imdbLink").text ("imdb"); // <<<<<<<<<< === IMDB_LINK in routes.js
       $ ("#menuButton").attr ("title", "Öppna menyn"); // i18n
-      // Set the hidden-picture text background color:
-      //$ ("#hideColor").text ("rgb(85, 85, 85)");
-      //$ ("#hideColor").text ("rgb(153, 153, 153)");
       // Remember update *.hbs
       $ ("#bkgrColor").text ("rgb(59, 59, 59)"); // #333
-      //$ ("#hideColor").text ("rgb(102, 102, 102)"); // #666
+      // Set the hidden-picture text background color:
       $ ("#hideColor").text ("rgb(92, 98, 102)");
       // Set body class BACKG:
       $ ("body").addClass ("BACKG TEXTC");
       $ ("body").css ("background", BACKG);
       $ ("body").css ("color", TEXTC);
+console.log("init ()");
       later ( ( () => {
+console.log("init () later 1");
         console.log ("jQuery v" + $ ().jquery);
         // The time stamp is produced with the Bash 'ember-b-script'
         userLog ($ ("#timeStamp").text (), true);
@@ -858,24 +859,35 @@ export default Component.extend (contextMenuMixin, {
         $ ("#title button.cred").attr ("title", logAdv);
         $ ("#title button.cred").attr ("totip", logAdv);
         // Initialize settings:
-        $ ("#picFound").text ("Funna_bilder"); // i18n
+        picFound = "Funna_bilder"; // i18n
+        // This #picFound search result album will, harmlessly, have identical
+        // names within a session for any #imdbRoot (if switched between them)
+        let rnd = "." + Math.random().toString(36).substr(2,4);
+        $ ("#picFound").text (picFound + rnd); // i18n
+        console.log ("picFound:", $ ("#picFound").text ());
         zeroSet ();
         this.actions.setAllow ();
         this.actions.setAllow (true);
         later ( ( () => { // To top of screen:
+console.log("init () later 2");
           scrollTo (0, 0);
           $ ("#title a.finish").focus ();
           later ( ( () => { // Default user:
+console.log("init () later 3");
             $ (".cred.user").attr ("value", "gäst"); // i18n
             $ (".cred.login").click ();
-            later ( ( () => { // Confirm logIn:
-              $ (".cred.login").click ();
+            later ( ( () => {
+              $ (".cred.login").click (); // Confirm logIn
               $ (".cred.user").click (); // Prevents FF showing link to saved passwords
               $ (".cred.login").focus ();
+              this.actions.selectRoot ("");
+              later ( ( () => {
+                if ($ ("#imdbDir").text ()) this.actions.imageList (true);
+              }), 600);
             }), 1000);
-          }), 100);
-        }), 177);
-      }), 10);
+          }), 1000);
+        }), 200);
+      }), 200);
     });
     // Trigger the jQuery tooltip on 'totip="..."' (custom attribute)
     $ (function () {
@@ -1164,7 +1176,7 @@ export default Component.extend (contextMenuMixin, {
         that.actions.hideShow ();
         return;
       }
-      if (tgt.tagName !=="IMG") {return;}
+      if (tgt.tagName !=="IMG") return;
       if ($ (tgt).hasClass ("mark")) {
         if ((allow.imgHidden || allow.adminAll) && evnt.button === 2) {
           // Right click on the marker area of a thumbnail...
@@ -1200,7 +1212,7 @@ export default Component.extend (contextMenuMixin, {
         }
         return;
       }
-      if (evnt.button === 2) {return;} // contextmenu may take it
+      if (evnt.button === 2) return; // contextmenu may take it
       var namepic = tgt.parentElement.parentElement.id.slice (1);
 
       // Check if the intention is to "mark" (Shift + click):
@@ -1211,7 +1223,7 @@ export default Component.extend (contextMenuMixin, {
           return;
         }), 20);
       } else {
-        if (tgt.parentElement.className) {return;} // A mini-picture is classless
+        if (tgt.parentElement.className) return; // A mini-picture is classless
         var origpic = $ ("#imdbLink").text () + "/" + tgt.title;
         var minipic = tgt.src;
         var showpic = minipic.replace ("/_mini_", "/_show_");
@@ -1309,6 +1321,21 @@ export default Component.extend (contextMenuMixin, {
           if (Z) {console.log ('*i');}
         }
       } else
+      if (that.savekey !== 17 && event.keyCode === 70 && $ ("#navAuto").text () !== "true" &&
+      $ ("div[aria-describedby='searcharea']").css ("display") === "none" &&
+      $ ("div[aria-describedby='textareas']").css ("display") === "none" &&
+      !$ ("input.cred.user").is (":focus") &&
+      !$ ("input.cred.password").is (":focus")) { // F key
+        if (!($ ("#imdbDir").text () === "")) {
+          //$ ("#dialog").dialog ("close");
+          //$ ("#navAuto").text ("true");
+          later ( ( () => {
+            //$ (".nav_links .toggleAuto").text ("STOP");
+            that.actions.findText ();
+          }), 250);
+          if (Z) {console.log ('*j');}
+        }
+      } else
       if (that.savekey === 17 && event.keyCode === 83) { // Ctrl + S (for saving texts)
         event.preventDefault(); // Important!
         if ($ ("button.saveNotes").is (":visible")) {
@@ -1326,7 +1353,7 @@ export default Component.extend (contextMenuMixin, {
   },
   //----------------------------------------------------------------------------------------------
   runAuto (yes) { // ===== Help function for toggleAuto
-    if (Number ($ (".numShown:first").text ()) < 2) {return;}
+    if (Number ($ (".numShown:first").text ()) < 2) return;
     if (yes) {
       ediTextClosed ();
       $ ("#showSpeed").show ();
@@ -1510,7 +1537,7 @@ export default Component.extend (contextMenuMixin, {
   /////////////////////////////////////////////////////////////////////////////////////////
   actions: {
     //============================================================================================
-    doPrint() {
+    doPrint() { // PDF printing, beta
       const selector = "#wrap_pad";
       const options = {
         importStyle: true,
@@ -1530,6 +1557,7 @@ export default Component.extend (contextMenuMixin, {
     //============================================================================================
     subaSelect (subName) { // ##### Sub-album link selected
       subName = subName.replace (/&nbsp;/g, "_"); // Restore readable album name!
+      // NOTE: This restoring may be questionable with " " instead of "&nbsp;"
       let names = $ ("#imdbDirs").text ().split ("\n");
       let name = $ ("#imdbDir").text ().slice ($ ("#imdbLink").text ().length); // Remove imdbLink
       let here, idx;
@@ -1614,7 +1642,7 @@ export default Component.extend (contextMenuMixin, {
     albumEdit () { // ##### Erase or create (sub)albums (image folders)
 
       var imdbDir = $ ("#imdbDir").text ();
-      if (imdbDir === "—" || imdbDir === "") {return;}
+      if (imdbDir === "—" || imdbDir === "") return;
       // Extract the album name and replace &nbsp; with space:
       var album = $ (this.get ("albumName")).text ().replace (/\s/g, " ");
       var album1 = $ ("#picFound").text ().replace (/_/g, " ");
@@ -1633,10 +1661,10 @@ export default Component.extend (contextMenuMixin, {
 
       $ ("#temporary").text ("");
       $ ("#temporary_1").text ("");
-      // The code in this dialog will indirectly call abumEditOption () onchange:
+      // The code in this dialog will indirectly call albumEditOption () onchange:
       var code = '<span>' + imdbDir + '</span><br>';
       code += '<select class="selectOption" onchange=';
-      code += "'$ (\"#temporary\").text (this.value);$ (\"#abumEditOption\").click ();return false'>";
+      code += "'$ (\"#temporary\").text (this.value);$ (\"#albumEditOption\").click ();return false'>";
       code += '\n<option value="">&nbsp;Välj åtgärd för albumet&nbsp;</option>';
       code += '\n<option value="new">&nbsp;Gör ett nytt underalbum  &nbsp;</option>';
       if (imdbDir !== imdbRoot) {
@@ -1649,7 +1677,7 @@ export default Component.extend (contextMenuMixin, {
       }), 50);
     },
     //============================================================================================
-    abumEditOption () { // Executes albumEdit()'s selected option
+    albumEditOption () { // Executes albumEdit()'s selected option
       var opt = $ ("#temporary").text ();
       var chkName = $ ("#temporary_1").text ();
       var nameText = $ ("#imdbDir").text ().replace (/^(.+[/])+/, "");
@@ -1703,7 +1731,7 @@ export default Component.extend (contextMenuMixin, {
                 $ ("#temporary_1").text (nameNew);
                 $ (this).dialog ("close");
                 later ( ( () => {
-                  $ ("#abumEditOption").click ();
+                  $ ("#albumEditOption").click ();
                   later ( ( () => {
                     document.querySelector ("input.nameNew").disabled = true;
                     var tmp = document.querySelector ("input.nameNew").getAttribute ("style");
@@ -1717,7 +1745,7 @@ export default Component.extend (contextMenuMixin, {
                 $ ("#temporary_1").text (nameNew);
                 $ (this).dialog ("close");
                 later ( ( () => {
-                  $ ("#abumEditOption").click ();
+                  $ ("#albumEditOption").click ();
                 }), 100);
               }
 
@@ -1782,7 +1810,7 @@ export default Component.extend (contextMenuMixin, {
               $ ("#temporary").text ("new");
               $ (this).dialog ("close");
               later ( ( () => {
-                $ ("#abumEditOption").click ();
+                $ ("#albumEditOption").click ();
                 later ( ( () => {
                   document.querySelector ("input.nameNew").value = $ ("#temporary_1").text ();
                 }), 100);
@@ -1849,46 +1877,54 @@ console.log(chkPaths.join ("\n"));
       }
     },
     //============================================================================================
-    selectRoot (value) { // ##### Select album root dir (for imdbLink) from dropdown
+    selectRoot (value) { // ##### Select album root dir (to put in imdbLink) from dropdown
 
-      $ (".mainMenu p:gt(1)").hide ();
+console.log("selectRoot clicked:", value);
+      //$ (".mainMenu p:gt(1)").hide ();
       // Close all dialogs/windows
       ediTextClosed ();
       $ (".img_show").hide ();
       $ (".nav_links").hide ();
       document.getElementById ("imageList").className = "hide-all";
       document.getElementById ("divDropbox").className = "hide-all";
-
-      if (value.indexOf (" ") > -1) {value = "";}
-      if (value === "") {
-        $ ("div.settings div.check").hide ();
-      } else {
-        $ ("#imdbRoot").text (value);
-        this.set ("imdbRoot", value);
-        this.set ("albumData", []); // Triggers jstree rebuild with aData (
-        //this.set ("albumName", "");
-        //this.set ("albumText", "");
-        $ ("#imdbDirs").text ("");
-        //$ ("#imdbDir").text ("");
-        $ ("#imdbDir").text ($ ("#imdbLink").text ());
-      }
-
+      if (value.indexOf (" ") > -1) value = ""; // The header line contains space
+      if (value === "") return;
+      if ($ ("#imdbRoot").text () !== value)
+        this.set ("albumData", []); // Triggers jstree rebuild in requestDirs
+      $ ("#imdbRoot").text (value);
+      this.set ("imdbRoot", value);
+console.log("imdbRoot =", this.get ("imdbRoot", value)); // Fungerar!!
+      $ ("#imdbDirs").text ("");
+      $ ("#imdbDir").text ($ ("#imdbLink").text ());
       $ ("#requestDirs").click (); // perform ...
       later ( ( () => {
-        var imdbroot = $ ("#imdbRoot").text ();
-        $ (".ember-view.jstree").jstree ("deselect_all");
-        $ (".ember-view.jstree").jstree ("close_all");
-        $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
-        $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_1"));
-        userLog ("START " + imdbroot);
-        //initFlag = false;
-        $ ("#menuButton").click ();
-        // The picFound album is regenerated
-        // The following commands must come in sequence
-        let lpath = $ ("#imdbLink").text () + "/" + $ ("#picFound").text ();
-        execute ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb").then ();
-        $ (".mainMenu p").show ();
-      }), 2000);
+        // Send #imdbRoot and picFound to the server with this GET:
+        // (the sever needs #picFound base name for old file cleaning)
+        return new Promise ( (resolve) => {
+          var xhr = new XMLHttpRequest ();
+          xhr.open ('GET', 'imdbroot/' + value + "@" + picFound, true, null, null);
+          xhr.onload = function () {
+            resolve (true);
+          };
+          xhr.send ();
+        }).catch (error => {
+          if (error.status !== 404) {
+            console.error (error.message);
+          } else {
+            console.log (error.status, error.statusText, "or NodeJS server error?");
+          }
+        }).then ( () => {
+          var imdbroot = $ ("#imdbRoot").text ();
+          if (imdbroot) {
+            $ (".mainmenu, .mainMenu p").show ();
+            $ (".ember-view.jstree").jstree ("deselect_all");
+            $ (".ember-view.jstree").jstree ("close_all");
+            $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
+            $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_1"));
+            userLog ("START " + imdbroot);
+          }
+        });
+      }), 6000); // Time needed!
     },
     //============================================================================================
     selectAlbum () {
@@ -1905,9 +1941,10 @@ console.log(chkPaths.join ("\n"));
       $ ("ul.jstree-container-ul.jstree-children").attr ("onclick", "return false");
       new Promise ( (resolve) => {
         $ ("a.jstree-anchor").blur (); // Important?
+        let linLen = $ ("#imdbLink").text ().length
         if (value !== $ ("#imdbDir").text ()) {
           // save the index of the preceeding album
-          savedAlbumIndex = $ ("#imdbDirs").text ().split ("\n").indexOf ($ ("#imdbDir").text ().slice (4));
+          savedAlbumIndex = $ ("#imdbDirs").text ().split ("\n").indexOf ($ ("#imdbDir").text ().slice (linLen));
           $ ("#backImg").text ("");
           $ ("#picName").text ("");
           $ ("#picOrig").text ("");
@@ -1917,7 +1954,7 @@ console.log(chkPaths.join ("\n"));
         }
         let imdbDir = value;
         $ ("#imdbDir").text (value);
-        let selDir = value.slice (4);
+        let selDir = value.slice (linLen);
         let selDirs = $ ("#imdbDirs").text ().split ("\n");
         let selPics = $ ("#imdbLabels").text ().split ("\n");
         let tmp = [""]; // root
@@ -1927,6 +1964,7 @@ console.log(chkPaths.join ("\n"));
           tmp1 = ["", "", ""];
         }
         let i0 = selDirs.indexOf (selDir);
+console.log(i0, selDirs, "...selDir:", selDir + "¤");
         for (let i=i0; i<selDirs.length; i++) {
           if (selDir === selDirs [i].slice (0, selDir.length)) {
             let cand = selDirs [i].slice (selDir.length);
@@ -2059,7 +2097,6 @@ console.log(chkPaths.join ("\n"));
       $ ("div.settings, div.settings div.check").hide ();
       if (!$ (".mainMenu").is (":visible")) {
         $ (".mainMenu").show ();
-        //$ ("#requestDirs").click ();
       } else {
         $ (".mainMenu").hide ();
       }
@@ -2077,7 +2114,7 @@ console.log(chkPaths.join ("\n"));
     //============================================================================================
     toggleHideFlagged () { // #####
 
-      if ($ ("#sortOrder").text () === "") {return;}
+      if ($ ("#sortOrder").text () === "") return;
       if (!(allow.imgHidden || allow.adminAll)) {
         userLog ("HIDDEN protected");
         return;
@@ -2106,7 +2143,7 @@ console.log(chkPaths.join ("\n"));
 
       $ ("#link_show a").css ('opacity', 0 );
       var tmp = $ ('#sortOrder').text ().trim ();
-      if (tmp.length < 1) {return;}
+      if (tmp.length < 1) return;
       var rows = tmp.split ('\n');
       var n = 0, h = 0;
       for (var i=0; i<rows.length; i++) {
@@ -2172,10 +2209,10 @@ console.log(chkPaths.join ("\n"));
     showDropbox () { // ##### Display (toggle) the Dropbox file upload area
 
       $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
-      if ($ ("#imdbDir").text () === "") {return;}
-      if ($ (".toggleAuto").text () === "STOP") {return;} // Auto slide show is running
-      // Do not permit uploading into the search result (Found ...) album:
-      if ($ ("#imdbDir").text ().replace (/^[^/]*\//, "") === $ ("#picFound").text ()) {return;}
+      if ($ ("#imdbDir").text () === "") return;
+      if ($ (".toggleAuto").text () === "STOP") return; // Auto slide show is running
+// Do not permit uploading into the search result (Found ...) album:
+//if ($ ("#imdbDir").text ().replace (/^[^/]*\//, "") === $ ("#picFound").text ()) return;
       $ (".mainMenu").hide ();
       $ ("#link_show a").css ('opacity', 0 );
       if (document.getElementById ("divDropbox").className === "hide-all") {
@@ -2252,6 +2289,15 @@ console.log(chkPaths.join ("\n"));
       $ ("#wrap_show").css ('background-color', $ ('#i' + escapeDots (namepic)).css ('background-color'));
       $ (".img_show").show ();
       $ (".nav_links").show ();
+      /*
+      FIND SEARCH SHARING EXPERIMENT
+      if ($ ("#imdbDir").text ().replace (/^[^/]*\//, "") === $ ("#picFound").text ()) {
+        $ (".nav_links .nav_.pnav_").hide ();
+        $ ("#full_size").hide ();
+      } else { // Cannot print from the search content view (the files are removed)
+        $ (".nav_links .nav_.pnav_").show ();
+        $ ("#full_size").show ();
+      }*/
       scrollTo (null, $ (".img_show img:first").offset ().top - $ ("#topMargin").text ());
       $ ("#markShow").removeClass ();
       if (document.getElementById ("i" + namepic).firstElementChild.nextElementSibling.className === "markTrue") {
@@ -2324,7 +2370,7 @@ console.log(chkPaths.join ("\n"));
         }
       }
 
-      if (!namepic) {return;} // Maybe malplacé...
+      if (!namepic) return; // Maybe malplacé...
       var toshow = document.getElementById ("i" + namepic);
       minipic = toshow.firstElementChild.firstElementChild.getAttribute ("src");
       origpic = toshow.firstElementChild.firstElementChild.getAttribute ("title");
@@ -2347,10 +2393,10 @@ console.log(chkPaths.join ("\n"));
     //============================================================================================
     toggleAuto () { // ##### Start/stop auto slide show
 
-      if (Number ($ (".numShown:first").text ()) < 2) {return;}
+      if (Number ($ (".numShown:first").text ()) < 2) return;
 
       $ ("#dialog").dialog ("close");
-      if ($ ("#imdbDir").text () === "") {return;}
+      if ($ ("#imdbDir").text () === "") return;
       if ($ ("#navAuto").text () === "false") {
         $ ("#navAuto").text ("true");
         later ( ( () => {
@@ -2372,8 +2418,8 @@ console.log(chkPaths.join ("\n"));
     //============================================================================================
     refresh (nospin) { // ##### Reload the imageList and update the sort order
 
-      if ($ ("#imdbDir").text () === "") {return;}
-      if ($ (".toggleAuto").text () === "STOP") {return;} // Auto slide show is running
+      if ($ ("#imdbDir").text () === "") return;
+      if ($ (".toggleAuto").text () === "STOP") return; // Auto slide show is running
 
       if (!nospin) {
         spinnerWait (true);
@@ -2382,7 +2428,7 @@ console.log(chkPaths.join ("\n"));
       $ (".img_show").hide ();
       $ (".nav_links").hide ();
       this.refreshAll ().then ( () => {
-        // Do not insert the search result into the sql DB table:
+        // Do not insert this temporary search result into the sql DB table:
         if ($ ("#imdbDir").text ().replace (/^[^/]*\//, "") === $ ("#picFound").text ()) {
           return true;
         }
@@ -2397,10 +2443,10 @@ console.log(chkPaths.join ("\n"));
     //============================================================================================
     saveOrder () { // ##### Save, in imdbDir on server, the ordered name list for the thumbnails on the screen. Note that they may, by user's drag-and-drop, have an unknown sort order (etc.)
 
-      if ($ (".toggleAuto").text () === "STOP") {return;} // Auto slide show is running
-      if (!(allow.saveChanges || allow.adminAll) || $ ("#imdbDir").text () === "") {return;}
-      // The search result album is randomly reused and shoud never be saved:
-      if ($ ("#imdbDir").text ().replace (/^[^/]*\//, "") === $ ("#picFound").text ()) {return;}
+      if ($ (".toggleAuto").text () === "STOP") return; // Auto slide show is running
+      if (!(allow.saveChanges || allow.adminAll) || $ ("#imdbDir").text () === "") return;
+// The search result album is randomly reused and shoud never be saved:
+//if ($ ("#imdbDir").text ().replace (/^[^/]*\//, "") === $ ("#picFound").text ()) return;
 
       $ ("#link_show a").css ('opacity', 0 );
 
@@ -2562,7 +2608,7 @@ console.log(chkPaths.join ("\n"));
       } else {
         $ ("button.saveTexts").attr ("disabled", true);
       }
-      if ($ ("#navAuto").text () === "true") {return;}
+      if ($ ("#navAuto").text () === "true") return;
       $ ("#link_show a").css ('opacity', 0 );
       $ ('#navKeys').text ('false');
       // In case the name is given, the call originates in a mini-file (thumbnail)
@@ -2656,8 +2702,8 @@ console.log(chkPaths.join ("\n"));
     fullSize () { // ##### Show full resolution image
 
       $ ("#link_show a").css ('opacity', 0 );
-      if (window.screen.width < 500) {return;}
-      if (!(allow.imgOriginal || allow.adminAll)) {return;}
+      if (window.screen.width < 500) return;
+      if (!(allow.imgOriginal || allow.adminAll)) return;
       var name = $ ("#picName").text ();
       // Only selected user classes may view or download protected images
 console.log(loginStatus, name);
@@ -2704,7 +2750,7 @@ console.log(loginStatus, name);
     //============================================================================================
     downLoad () { // ##### Download an image
 
-      if (!(allow.imgOriginal || allow.adminAll)) {return;}
+      if (!(allow.imgOriginal || allow.adminAll)) return;
       let name = $ ("#picName").text ();
       // Only selected user classes may view or download protected images
 console.log(loginStatus, name);
@@ -2790,6 +2836,8 @@ console.log(loginStatus, name);
       $ (".nav_links").hide ();
       var btnTxt = $ ("#title button.cred").text ();
       $ ("#title span.cred.status").show ();
+
+      //¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
       if (btnTxt === "Logga in") { // Log in (should be buttonText[0] ... i18n)
         $ ("#title input.cred").show ();
         //$ ("#title input.cred.user").focus ();
@@ -2804,6 +2852,7 @@ console.log(loginStatus, name);
         //spinnerWait (false);
         return;
       }
+      //¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
       if (btnTxt === "Logga ut") { // Log out
         this.actions.imageList (false);
         spinnerWait (true);
@@ -2820,7 +2869,6 @@ console.log(loginStatus, name);
         //$ ("#title button.viewSettings").hide ();
         userLog ("LOGOUT");
         $ ("#title a.finish").focus ();
-        that.set ("albumData", []);
         //that.set ("albumName", "");
         //that.set ("albumText", "");
         //$ ("#imdbDirs").text ("");
@@ -2833,26 +2881,18 @@ console.log(loginStatus, name);
         $ ("#showDropbox").hide ();  // Hide upload button
 
         if ($ ("#imdbRoot").text ()) { // If imdb is initiated
-          // Clear out the search result album
+          // Regenerate the picFound album: the shell commands must execute in sequence
           let lpath = $ ("#imdbLink").text () + "/" + $ ("#picFound").text ();
-          // The following commands must come in sequence (the picFound album is regenerated)
           execute ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb").then ();
         }
         // Assure that the album tree is properly shown after LOGOUT
-        //that.set ("allNames", []);
-        //$ (".js-draggableObject").remove ();
-        that.set ("albumData", []);
-        //that.set ("albumName", "");
-        //that.set ("albumText", "");
-        //$ ("#imdbDirs").text ("");
-        //$ ("#imdbDir").text ("");
-        $ ("#requestDirs").click ();
-        //spinnerWait (true);
+        that.set ("albumData", []); // Triggers jstree rebuild in requestDirs
         setTimeout (function () { // NOTE: Normally, later replaces setTimeout
-          $ (".ember-view.jstree").jstree ("deselect_all");
-          $ (".ember-view.jstree").jstree ("close_all");
-          $ (".ember-view.jstree").jstree ("open_node", "#j1_1");
+          $ ("#requestDirs").click ();
           later ( ( () => {
+            $ (".ember-view.jstree").jstree ("deselect_all");
+            $ (".ember-view.jstree").jstree ("close_all");
+            $ (".ember-view.jstree").jstree ("open_node", "#j1_1");
             $ (".ember-view.jstree").jstree ("select_node", "#j1_1");
             spinnerWait (false);
           }), 2000);
@@ -2860,6 +2900,7 @@ console.log(loginStatus, name);
         //albumWait = false;
         return;
       }
+      //¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
       if (btnTxt === "Bekräfta") { // Confirm
         spinnerWait (true);
         this.actions.imageList (false);
@@ -2867,7 +2908,7 @@ console.log(loginStatus, name);
         var pwd = $ ("#title input.cred.password").val ().trim (); // Important
         $ ("#title input.cred.password").val ("");
         $ ("#title input.cred").hide ();
-        that.set ("albumData", []);
+        that.set ("albumData", []); // Triggers jstree rebuild in requestDirs
         //that.set ("albumName", "");
         //that.set ("albumText", "");
         //$ ("#imdbDirs").text ("");
@@ -2890,17 +2931,26 @@ console.log(loginStatus, name);
             $ ("#title button.cred").text ("Logga ut");
             //$ ("#title button.cred").attr ("title", "Du är inloggad ..."); // more below
             this.set ("loggedIn", true);
-            userLog ("LOGIN");
+            userLog ("LOGIN " + usr);
             that.actions.setAllow ();
             //later ( ( () => {
               //console.log (" In, allowValue", $ ("#allowValue").text ());
             //}), 200);
             if ($ ("#imdbRoot").text ()) { // If imdbLink is initiated
-              // Clear out the search result album
+              // Regenerate the picFound album: the shell commands must execute in sequence
               let lpath = $ ("#imdbLink").text () + "/" + $ ("#picFound").text ();
-              // The following commands must come in sequence (the picFound album is regenerated)
               execute ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb").then ();
               userLog ("START " + $ ("#imdbRoot").text ());
+              later ( ( () => {
+                $ ("#requestDirs").click ();
+                later ( ( () => {
+                  $ (".ember-view.jstree").jstree ("deselect_all");
+                  $ (".ember-view.jstree").jstree ("close_all");
+                  $ (".ember-view.jstree").jstree ("open_node", "#j1_1");
+                  $ (".ember-view.jstree").jstree ("select_node", "#j1_1");
+                  spinnerWait (false);
+                }), 2000);
+              }), 2000);
             }
             $ ("#title a.finish").focus ();
           }
@@ -2910,6 +2960,7 @@ console.log(loginStatus, name);
         $ (document).tooltip ("enable");
       }
 
+      //¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
       // When password doesn't match user, return true; [else set 'allowvalue' and return false]
       // Update aug 2017: else set anonymous viewer with no credentials, still return true
       function loginError () {
@@ -2943,12 +2994,8 @@ console.log(loginStatus, name);
             $ ("#title button.cred").attr ("totip", tmp + tmp1);
             $ (".cred.name").attr ("totip", tmp);
             $ (".cred.status").attr ("totip", "Se dina rättigheter");
-            // Assure that the album tree is properly shown after LOGIN
-            that.set ("albumData", []);
-            //that.set ("albumName", "");
-            //that.set ("albumText", "");
-            //$ ("#imdbDirs").text ("");
-            //$ ("#imdbDir").text ("");
+            // Assure that the album tree is properly shown
+            that.set ("albumData", []); // Triggers jstree rebuild in requestDirs
             that.actions.setAllow ();
             later ( ( () => {
               $ ("#requestDirs").click ();
@@ -2958,7 +3005,7 @@ console.log(loginStatus, name);
                 $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
                 later ( ( () => {
                   $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_1"));
-                  // Show the unchecked erase link+source checkbox if relevant
+                  // Show the unchecked erase-link&&source checkbox if relevant
                   eraseOriginals = false;
                   if ((allow.deleteImg || allow.adminAll) && ["admin", "editall"].indexOf (loginStatus) > -1) {
                     $ ("#title span.eraseCheck").css ("display", "inline");
@@ -3008,10 +3055,11 @@ console.log(loginStatus, name);
     toggleSettings () { // ##### Show/change settings
 
       $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
-      if (!this.get ("loggedIn")) {
+      if (!this.get ("loggedIn") || $ ("div.settings").is (":visible")) {
         $ ("div.settings, div.settings div.check").hide ();
         return;
       }
+      $ ("div.settings, div.settings div.check").show ();
       spinnerWait (false);
       $ ("#dialog").dialog ("close");
       $ ("#searcharea").dialog ("close");
@@ -3065,6 +3113,7 @@ let logAdv = "Logga in för att kunna se inställningar: Anonymt utan namn och l
 let nosObs = "Skriv gärna på prov, men du saknar tillåtelse att spara text"; // i18n
 let nopsGif = "GIF-fil kan bara ha tillfällig text"; // i18n
 //let nopsLink = "Text kan inte ändras/sparas permanent via länk"; // i18n Obsolete
+let picFound = "set by the init () function";
 let preloadShowImg = [];
 let loginStatus = "";
 let tempStore = "";
@@ -3180,7 +3229,7 @@ function spinnerWait (runWait) {
     document.getElementById("saveOrder").disabled = true;
     document.getElementById ("divDropbox").className = "hide-all";
   } else { // End waiting
-    //if (albumWait) {return;}
+    //if (albumWait) return;
     $ (".spinner").hide ();
     clearInterval (BLINK);
     later ( ( () => {
@@ -3267,7 +3316,7 @@ function deleteFile (picPath) { // ===== Delete an image
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function sqlUpdate (picPaths) {
-  if (!picPaths) {return;}
+  if (!picPaths) return;
   let data = new FormData ();
   data.append ("filepaths", picPaths);
   return new Promise ( (resolve, reject) => {
@@ -3314,7 +3363,7 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) { // ===== I
       text: yes, // Okay. See below
         id: "yesBut",
       click: function () {
-        if (picName === "") { // Special case: link, move, ..., and then refresh
+        if (picName === "") { // Special case: link | move | ..., and then refresh
           spinnerWait (true);
           serverShell ("temporary_1");
           later ( ( () => {
@@ -3557,8 +3606,7 @@ function moveFunc (picNames) { // ===== Execute a move-this-file-to... request
   let picf = $ ("#picFound").text () // Remove if possibly picFound
   if (curr) {curr = curr.toString ();} else {curr = "";}
   let malbum = [];
-  let i;
-  for (i=0; i<albums.length; i++) { // Remove current and find result albums from options
+  for (let i=0; i<albums.length; i++) { // Remove current and find result albums from options
     if (albums [i] !== curr && albums [i].indexOf (picf) < 0) {
       malbum.push (albums [i]);
     }
@@ -3568,7 +3616,7 @@ function moveFunc (picNames) { // ===== Execute a move-this-file-to... request
   let r = $ ("#imdbRoot").text ();
   let codeSelect = '<select class="selectOption" onchange=' + codeMove + '>\n<option value="">Välj ett album:</option>';
 //console.log(codeSelect);
-  for (i=0; i<malbum.length; i++) {
+  for (let i=0; i<malbum.length; i++) {
     let v = r + malbum [i];
     codeSelect += '\n<option value ="' +v+ '">' +v+ '</option>';
   }
@@ -3582,7 +3630,7 @@ function moveFunc (picNames) { // ===== Execute a move-this-file-to... request
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function saveOrderFunction (namelist) { // ===== XMLHttpRequest saving the thumbnail order list
 
-  if (!(allow.saveChanges || allow.adminAll) || $ ("#imdbDir").text () === "") {return;}
+  if (!(allow.saveChanges || allow.adminAll) || $ ("#imdbDir").text () === "") return;
 
   document.getElementById ("divDropbox").className = "hide-all"; // If shown...
   return new Promise ( (resolve, reject) => {
@@ -3659,7 +3707,7 @@ function reqRoot () { // Propose root directory (requestDirs)
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function reqDirs (imdbroot) { // Read the dirs in imdbLink (requestDirs)
-  if (imdbroot === undefined) {return;}
+  if (imdbroot === undefined) return;
   //spinnerWait (true);
   return new Promise ( (resolve, reject) => {
     var xhr = new XMLHttpRequest ();
@@ -3678,24 +3726,46 @@ function reqDirs (imdbroot) { // Read the dirs in imdbLink (requestDirs)
 //console.log(dirCoco);
         $ ("#userDir").text (dirList [0].slice (0, dirList [0].indexOf ("@")));
         $ ("#imdbRoot").text (dirList [0].slice (dirList [0].indexOf ("@") + 1));
-        $ ("#imdbLink").text (dirList [1]);
+          $ ("#imdbLink").text (dirList [1]);
 //later ( ( () => {
 //  console.log("reqDirs", $ ("#userDir").text (), $ ("#imdbRoot").text (), $ ("#imdbLink").text ());
 //}), 55);
         var imdbLen = dirList [1].length;
         dirList = dirList.slice (1);
+//console.log(dirList);
         var nodeVersion = dirList [dirList.length - 1];
         var nodeText = $ (".lastRow").html (); // In application.hbs
         nodeText = nodeText.replace (/NodeJS[^•]*•/, nodeVersion +" •");
         $ (".lastRow").html (nodeText); // In application.hbs
         // Remove the last line
         dirList.splice (dirList.length - 1, 1);
+        // Remove ...???
         for (let i=0; i<dirList.length; i++) {
           dirList [i] = dirList [i].slice (imdbLen);
         }
+//console.log(dirList);
+        // Remove old or not owned 'found albums' from the list
+
+        let newList = [], newCoco = [], newLabel = [];
+        // The length of "." + the random postfix is 5:
+        let test = $ ("#picFound").text ();
+        test = test.slice (0, test.length - 5);
+        for (let i=0; i<dirList.length; i++) {
+//console.log("####",dirList [i]);
+          if (dirList [i].slice (1, test.length+1) !== test || dirList [i].slice (1) === $ ("#picFound").text ()) {
+            newList.push (dirList [i])
+            newCoco.push (dirCoco [i])
+            newLabel.push (dirLabel [i])
+          }
+        }
+        dirList = newList;
+//console.log(dirList);
+        dirCoco = newCoco;
+        dirLabel = newLabel;
+
         // Remove "ignore" albums from the list if not allowed, starred in dirCoco
         if (!(allow.textEdit || allow.adminAll)) {
-          let newList = [], newCoco = [], newLabel = [];
+          newList = [], newCoco = [], newLabel = [];
           for (let j=0; j<dirList.length; j++) {
             if (dirCoco [j].indexOf ("*") < 0) {
               newList.push (dirList [j])
@@ -3704,13 +3774,16 @@ function reqDirs (imdbroot) { // Read the dirs in imdbLink (requestDirs)
             }
           }
           dirList = newList;
+//console.log(dirList);
           dirCoco = newCoco;
           dirLabel = newLabel;
+
         } else { // Modify the star appearance
           for (let j=0; j<dirCoco.length; j++) {
             dirCoco [j] = dirCoco [j].replace (/\*/, "—*");
           }
         }
+
         // Don't keep current album visible if not in dirList:
         let curr = $ ("#imdbDir").text ().match(/\/.*$/); // Remove imdbLink
         if (curr) {curr = curr.toString ();} else {
@@ -3725,7 +3798,7 @@ function reqDirs (imdbroot) { // Read the dirs in imdbLink (requestDirs)
           //$ (".ember-view.jstree").jstree ("select_node", $ ("#j1_" + tempStore));
         }
         dirList = dirList.join ("\n");
-        $ ("#imdbDirs").text (dirList);
+        $ ("#imdbDirs").text (dirList);//här
         dirCoco = dirCoco.join ("\n");
         $ ("#imdbCoco").text (dirCoco);
         dirLabel = dirLabel.join ("\n"); // Don't trim!
@@ -4011,6 +4084,7 @@ function ediTextSelWidth () { // Selects a useful edit dialog width within avail
 var prepDialog = () => {
     $ ("#helpText").dialog ({autoOpen: false, resizable: true, title: "Användarhandledning"}); // Initiate a dialog...
     $ (".ui-dialog .ui-dialog-titlebar-close").text ("×");
+    //$ ("#helpText").dialog ("close"); // and close it
     // Initiate a dialog, ready to be used:
     $ ("#dialog").dialog ({resizable: true}); // Initiate a dialog...
     $ (".ui-dialog .ui-dialog-titlebar-close").text ("×");
@@ -4104,9 +4178,8 @@ let prepSearchDialog = () => {
                 paths = albs;
               }
               n = paths.length;
-              // Clear out the search result album
+              // Regenerate the picFound album: the shell commands must execute in sequence
               let lpath = $ ("#imdbLink").text () + "/" + $ ("#picFound").text ();
-              // The following commands must come in sequence (the picFound album is regenerated)
               execute ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb").then ();
               userLog (n + " FOUND");
               $ ("#temporary_1").text (cmd.join ("\n"));
@@ -4114,10 +4187,14 @@ let prepSearchDialog = () => {
               let modal = false;
               let p3 =  "<p style='margin:-0.3em 1.6em 0.2em 0;background:transparent'>" + sTxt + "</p>Funna i <span style='font-weight:bold'>" + $ ("#imdbRoot").text () + "</span>:&nbsp; " + n + (n>nLimit?" (i listan, bara " + nLimit + " kan visas)":"");
               later ( ( () => {
-                // Run `serverShell ("temporary_1")` via `infoDia (null, "", ... )`
+                // Run `serverShell ("temporary_1")`, symlink creation, via `infoDia (null, "", ...
                 let imdbx = new RegExp ($ ("#imdbLink").text () + "/", "g");
                 infoDia (null, "", p3, "<div style='text-align:left;margin:0.3em 0 0 2em'>" + paths.join ("<br>").replace (imdbx, "./") + "</div>", yes, modal);
-                if (n === 0) {document.getElementById("yesBut").disabled = true;}
+                later ( ( () => {
+                  if (n === 0) {
+                    document.getElementById("yesBut").disabled = true;
+                  }
+                }), 40);
                 $ ("button.findText").show ();
                 $ ("button.updText").css ("float", "right");
                 selectPicFound ();
@@ -4159,7 +4236,7 @@ let prepSearchDialog = () => {
       },
     ]);
     let txt = $ ("button.ui-dialog-titlebar-close").html (); // Close => ×
-    txt.replace (/Close/, "×");                                    // Close => ×
+    txt.replace (/Close/, "×");                              // Close => ×
     $ ("button.ui-dialog-titlebar-close").html (txt);        // Close => ×
     $ ("div[aria-describedby='searcharea'] span.ui-dialog-title").html ('Finn bilder <span style="color:green">(ej länkar)</span>: Sök i bildtexter');
   });
@@ -4171,13 +4248,13 @@ function selectPicFound () {
   let index = 1 + $ ("#imdbDirs").text ().split ("\n").indexOf ("/" + $ ("#picFound").text ());
   $ (".ember-view.jstree").jstree ("close_all");
   $ (".ember-view.jstree").jstree ("_open_to", "#j1_" + index);
-console.log($ ("#picFound").text () + " (index = " + index + ")");
+//console.log($ ("#picFound").text () + " (index = " + index + ")");
   $ (".ember-view.jstree").jstree ("deselect_all");
   $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_" + index));
   $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// Search image text in the current imdbRoot
+// Search the image texts in the current imdbRoot
 function searchText (searchString, and, searchWhere) {
   hideShow_g ();
   ediTextClosed ();
@@ -4243,7 +4320,7 @@ $ ( () => {
   $ ("#textareas").dialog ('option', 'buttons', [
     {
       text: "Anteckningar",
-      click: () => { // "Non-trivial" dialog button, to a new level
+      click: () => { // 'Non-trivial' dialog button, to the 'notes' new level
         var namepic = $ ("div[aria-describedby='textareas'] span.ui-dialog-title span").html ();
         var ednp = escapeDots (namepic);
         var linkPath = $ ("#i" + ednp + " img").attr ("title");
@@ -4305,11 +4382,11 @@ $ ( () => {
     }
   ]);
 
-  var txt = $ ("button.ui-dialog-titlebar-close").html (); // Close => ×
-  txt.replace (/Close/, "×");                                    // Close => ×
-  $ ("button.ui-dialog-titlebar-close").html (txt);        // Close => ×
+  var txt = $ ("div.ui-dialog-titlebar button.ui-dialog-titlebar-close").html (); // Close => ×
+  txt.replace (/Close/, "×");                              // Close => ×
+  $ ("div.ui-dialog-titlebar button.ui-dialog-titlebar-close").html (txt);        // Close => ×
   // NOTE this clumpsy direct reference to jquery (how directly trigger ediTextClosed?):
-  $ ("button.ui-dialog-titlebar-close").attr ("onclick",'$("div[aria-describedby=\'textareas\'] span.ui-dialog-title span").html("");$("div[aria-describedby=\'textareas\']").hide();$("#navKeys").text("true");$("#smallButtons").show();$("div.nav_links").show()');
+  $ ("div.ui-dialog-titlebar button.ui-dialog-titlebar-close").attr ("onclick",'$("div[aria-describedby=\'textareas\'] span.ui-dialog-title span").html("");$("div[aria-describedby=\'textareas\']").hide();$("#navKeys").text("true");$("#smallButtons").show();');
 
   function storeText (namepic, text1, text2) {
     text1 = text1.replace (/ +/g, " ").replace (/\n /g, "<br>").replace (/\n/g, "<br>").trim ();
@@ -4331,7 +4408,7 @@ $ ( () => {
       $ ("#wrap_show .img_txt2").html (text2);
     }
     // Cannot save metadata in GIFs:
-    if (fileName.search (/\.gif$/i) > 0) {return;}
+    if (fileName.search (/\.gif$/i) > 0) return;
     // Get real file name if symlink:
     let linkPath = fileName;
     if ($ ("#i" + ednp).hasClass ("symlink")) {

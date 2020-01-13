@@ -7,8 +7,11 @@ body {
 }
 @media print {
   html, #wrap_pad {
-    page-break-after: avoid;
-    height: 98%;
+    page-break-after: avoid!important;
+    height: 99%!important;
+  }
+  #markShow {
+    display: none;
   }
 }
 .lastRow, .copyright {

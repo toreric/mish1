@@ -25,15 +25,19 @@ module.exports = function (app) {
 
   // ----- C O M M O N S
   // ----- Upload counter
-  var n_upl = 0
+  let n_upl = 0
   // ----- Present directory
   let PWD_PATH = path.resolve ('.')
   // ----- Image data(base) root directory
   let IMDB_ROOT = null // Must be set in route
   // ----- Image data(base) directory
   let IMDB_DIR = null // Must be set in route
-  // ----- Name of symlink to IMDB_ROOT is set here
-  let IMDB_LINK = "imdb"     // <<<<<<<<<<<<<<<<<<<
+  // ----- Name of symlink pointing to IMDB_ROOT
+  let IMDB_LINK = "imdb"    // <<<<<<<<<< must equal init () setting!
+  // ----- Base name of search result albums
+  let picFound = "unknown"
+  // ----- Max lifetime (minutes) after last access of as search result album
+  let toold = 60
   // ----- For debug data(base) directories
   let show_imagedir = false // for debugging
 
@@ -117,7 +121,7 @@ module.exports = function (app) {
       linkto = execSync ("readlink " + file).toString ().trim ()
       if (linkto [0] !== '.') {linkto = './' + linkto}
     }
-    // Exclude the imdbLink name, nov 2014, in order to difficultize direct
+    // Exclude the imdbLink name, nov 2019, in order to difficultize direct
     // access to the original pictures from the server. This could be made even
     // better, e.g., by selection of a random symlink name at program restart -
     // remember though, the database 'filepath' contains the imdbLink name!!!
@@ -138,88 +142,105 @@ module.exports = function (app) {
     res.send (fileStat)
   })
 
-  // ##### #0.2 Get imdb directory list
+  // ##### #0.1.9 Set IMDB_ROOT and picFound basename
+  app.get ('/imdbroot/:imdbroot', async function (req, res) {
+    var homeDir = imdbHome () // From env.var. $IMDB_HOME or $HOME
+    let p = req.params.imdbroot.trim ().split ("@")
+    IMDB_ROOT = p [0]
+    picFound = p [1]
+console.log("app.get: imdbroot/", homeDir, IMDB_ROOT, IMDB_LINK, picFound);
+    // IMDB_LINK = symlink pointing to current album
+    setRootLink (homeDir, IMDB_ROOT, IMDB_LINK)
+    // Remove all too old picFound files
+    await new Promise (z => setTimeout (z, 200))
+    let cmd = 'find -L ' + IMDB_LINK + ' -type d -name "' + picFound + '*" -amin +' + toold + ' | xargs rm -rf'
+    //console.log (cmd);
+    await cmdasync (cmd)
+    res.send (true)
+  })
+
+  // ##### #0.2 Get IMDB_LINK directory list
   app.get ('/imdbdirs/:imdbroot', function (req, res) {
 
     var homeDir = imdbHome () // From env.var. $IMDB_HOME or $HOME
     IMDB_ROOT = req.params.imdbroot.replace (/@/g, "/").trim ()
-    let imdbLink = IMDB_LINK // Symlink pointing to current albums
-    setRootLink (homeDir, IMDB_ROOT, imdbLink)
+    // IMDB_LINK = symlink pointing to current albums
+    setRootLink (homeDir, IMDB_ROOT, IMDB_LINK)
 
-   setTimeout(function () {
-    //Replacing: findDirectories (imdbLink).then (dirlist => {
-    allDirs (imdbLink).then (dirlist => {
-      //console.log ("\n\na\n", dirlist)
-      areAlbums (dirlist).then (async dirlist => {
-        dirlist = dirlist.sort ()
-        // imdbLink is the www-imdb root, add here:
-        // for findDirectories, allDirs doesn't need this
-        //dirlist.splice (0, 0, imdbLink + "/")
-        let dirtext = dirlist.join ("€")
-        let dircoco = [] // directory content counter
-        let dirlabel = [] // Album label thumbnail paths
-        for (let i=0; i<dirlist.length; i++) {
-          // Get all thumbnails and select randomly one to be used as "subdirectory label"
-          cmd = "echo -n `ls " + dirlist [i] + "/_mini_* 2>/dev/null`"
-          //let pics = execSync (cmd)
-          let pics = await execP (cmd)
-          pics = pics.toString ().trim ().split (" ")
-          if (!pics [0]) {pics = [];} // Remove a "" element
-          let npics = pics.length
-          if (npics > 0) {
-            let f = () => {let d = new Date; return Number (d.getTime ().toString ().slice (-1))}
-            let n = f () + 1;
-            let k = 0;
-            // Instead of seeding, loop 1 to 10 times to get some variation:
-            for (let i=0; i<n; i++) {
-              k = (Math.random ()*npics);
-            }
-            var albumLabel = pics [Number (k.toString ().replace (/\..*/, ""))]
-          } else {albumLabel = "€" + dirlist [i]}
-          // Count the number of thumbnails, i.e. pictures
-          //let pics = " (" + execSync ("echo -n `ls " + dirlist [i] + "|grep -c ^_mini_`") + ")"
-          // Count the number of subdirectories
-          let subs = occurrences (dirtext, dirlist [i]) - 1
-          npics = " (" + npics + ")"
-          if (i > 0 && subs) {npics += subs}
-          dircoco.push (npics)
-          dirlabel.push (albumLabel)
-        }
-        for (let i=0; i<dirlist.length; i++) {
-          if (dirlabel [i].slice (0, 1) === "€") {
-            var albumLabel = dirlabel [i].slice (1);
-            dirlabel [i] = "";
-            for (let j=i+1; j<dirlist.length; j++) {
-              if (albumLabel === dirlabel [j].slice (0, albumLabel.length)) {
-                dirlabel [i] = dirlabel [j];
-                break;
+    setTimeout (function () {
+      //Replacing: findDirectories (IMDB_LINK).then (dirlist => {
+      allDirs (IMDB_LINK).then (dirlist => {
+        //console.log ("\n\na\n", dirlist)
+        areAlbums (dirlist).then (async dirlist => {
+          dirlist = dirlist.sort ()
+          // IMDB_LINK is the www-imdb root, add here:
+          // for findDirectories, allDirs doesn't need this
+          //dirlist.splice (0, 0, IMDB_LINK + "/")
+          let dirtext = dirlist.join ("€")
+          let dircoco = [] // directory content counter
+          let dirlabel = [] // Album label thumbnail paths
+          for (let i=0; i<dirlist.length; i++) {
+            // Get all thumbnails and select randomly one to be used as "subdirectory label"
+            cmd = "echo -n `ls " + dirlist [i] + "/_mini_* 2>/dev/null`"
+            //let pics = execSync (cmd)
+            let pics = await execP (cmd)
+            pics = pics.toString ().trim ().split (" ")
+            if (!pics [0]) {pics = [];} // Remove a "" element
+            let npics = pics.length
+            if (npics > 0) {
+              let f = () => {let d = new Date; return Number (d.getTime ().toString ().slice (-1))}
+              let n = f () + 1;
+              let k = 0;
+              // Instead of seeding, loop 1 to 10 times to get some variation:
+              for (let i=0; i<n; i++) {
+                k = (Math.random ()*npics);
+              }
+              var albumLabel = pics [Number (k.toString ().replace (/\..*/, ""))]
+            } else {albumLabel = "€" + dirlist [i]}
+            // Count the number of thumbnails, i.e. pictures
+            //let pics = " (" + execSync ("echo -n `ls " + dirlist [i] + "|grep -c ^_mini_`") + ")"
+            // Count the number of subdirectories
+            let subs = occurrences (dirtext, dirlist [i]) - 1
+            npics = " (" + npics + ")"
+            if (i > 0 && subs) {npics += subs}
+            dircoco.push (npics)
+            dirlabel.push (albumLabel)
+          }
+          for (let i=0; i<dirlist.length; i++) {
+            if (dirlabel [i].slice (0, 1) === "€") {
+              var albumLabel = dirlabel [i].slice (1);
+              dirlabel [i] = "";
+              for (let j=i+1; j<dirlist.length; j++) {
+                if (albumLabel === dirlabel [j].slice (0, albumLabel.length)) {
+                  dirlabel [i] = dirlabel [j];
+                  break;
+                }
               }
             }
           }
-        }
-        let ignorePath = homeDir +"/"+ IMDB_ROOT + "/_imdb_ignore.txt";
-        let ignore = (await execP ("cat " + ignorePath)).toString ().trim ().split ("\n")
-        for (let j=0; j<ignore.length; j++) {
-          for (let i=0; i<dirlist.length; i++) {
-            if (ignore [j] && dirlist [i].startsWith (ignore [j])) {dircoco [i] += "*"}
+          let ignorePath = homeDir +"/"+ IMDB_ROOT + "/_imdb_ignore.txt";
+          let ignore = (await execP ("cat " + ignorePath)).toString ().trim ().split ("\n")
+          for (let j=0; j<ignore.length; j++) {
+            for (let i=0; i<dirlist.length; i++) {
+              if (ignore [j] && dirlist [i].startsWith (ignore [j])) {dircoco [i] += "*"}
+            }
           }
-        }
-        dirtext = dirtext.replace (/€/g, "\n")
-        dircoco = dircoco.join ("\n")
-        dirlabel = dirlabel.join ("\n")
-        // NOTE: rootDir = homeDir + "/" + IMDB_ROOT, but here "@" separates them (important!):
-        dirtext = homeDir +"@"+ IMDB_ROOT + "\n" + dirtext + "\nNodeJS " + process.version.trim ()
-        //console.log ("C\n", dirtext)
+          dirtext = dirtext.replace (/€/g, "\n")
+          dircoco = dircoco.join ("\n")
+          dirlabel = dirlabel.join ("\n")
+          // NOTE: rootDir = homeDir + "/" + IMDB_ROOT, but here "@" separates them (important!):
+          dirtext = homeDir +"@"+ IMDB_ROOT + "\n" + dirtext + "\nNodeJS " + process.version.trim ()
+          //console.log ("C\n", dirtext)
+          res.location ('/')
+          res.send (dirtext + "\n" + dircoco + "\n" + dirlabel)
+          res.end ()
+          console.log ('Directory information sent from server')
+        })
+      }).catch (function (error) {
         res.location ('/')
-        res.send (dirtext + "\n" + dircoco + "\n" + dirlabel)
-        res.end ()
-        console.log ('Directory information sent from server')
+        res.send (error.message)
       })
-    }).catch (function (error) {
-      res.location ('/')
-      res.send (error.message)
-    })
-   }, 1000)
+    }, 1000)
   })
 
   // ##### #0.3 readSubdir to select rootdir...
@@ -558,7 +579,7 @@ module.exports = function (app) {
         console.error(err.message)
       })
       //res.connection.destroy()
-      setTimeout(function () {
+      setTimeout (function () {
         res.sendFile ('index.html', {root: PWD_PATH + '/public/'}) // stay at the index.html file
       }, 200)
     })
@@ -619,7 +640,7 @@ module.exports = function (app) {
 
     var homeDir = imdbHome () // From env.var. $IMDB_HOME or $HOME
     IMDB_ROOT = req.params.imdbroot.replace (/@/g, "/").trim ()
-    //let imdbLink = IMDB_LINK // Symlink pointing to current albums
+    // IMDB_LINK = Symlink pointing to current albums
     setRootLink (homeDir, IMDB_ROOT, IMDB_LINK)
 
     let like = removeDiacritics (req.body.like)
@@ -898,6 +919,8 @@ console.log("SEARCH3", columns)
   // Replaces findDirectories (), NOTE: Includes imdbLink in the list!
   let allDirs = async imdbLink => {
     let IMDB_PATH = PWD_PATH + '/' + imdbLink
+console.log("PWD_PATH:", PWD_PATH);
+console.log("IMDB_PATH:", IMDB_PATH);
     let dirlist = await cmdasync ('find -L ' + IMDB_PATH + ' -type d|sort')
     dirlist = dirlist.toString ().trim () // Formalise string
     dirlist = dirlist.split ('\n')
@@ -1115,7 +1138,6 @@ console.log("SEARCH3", columns)
     })
   }
 
-
   // ===== Point the symlink to the chosen album root directory
   function setRootLink (homeDir, IMDB_ROOT, imdbLink) {
     console.log ("\nIMDB_HOME:", homeDir)
@@ -1124,6 +1146,7 @@ console.log("SEARCH3", columns)
     console.log ("IMDB_ROOT:", IMDB_ROOT)
     // Establish the symlink to the chosen album root directory
     execSync ("ln -sfn " + homeDir + "/" + IMDB_ROOT + " " + imdbLink)
+    // Confirm:
     let rootDir = execSync ("readlink " + imdbLink).toString ().trim ()
     console.log ("Path to '" + imdbLink + "': " + rootDir)
   }

@@ -65,7 +65,7 @@ function copyToClipboard (str) {
     </span>
   </div>
   <!-- TEST BUTTON -->
-  <button class="testerButton" title="Dummy button" {{action "doPrint"}} style="top:0;right:0;position:absolute" style="">print</button>
+  <button class="testerButton" title="Dummy button" {{action "doPrint"}} style="top:0;right:0;position:absolute" style="display:none">print</button>
   <br><span class="usrlg"></span><!-- User information log -->
 </div>
 <!-- ///// JQUERY DIALOGS ///// -->
@@ -123,7 +123,8 @@ function copyToClipboard (str) {
   <!-- HELP -->
   <a class="nav_ qnav_" draggable="false" {{action 'toggleNav'}}>?</a> &nbsp;<br>
   <!-- FULL SIZE -->
-  <a class="nav_ " id="full_size" draggable="false" {{action 'fullSize'}} title="Full storlek">&#9974;</a> &nbsp;
+  <a class="nav_ " id="full_size" draggable="false" {{action 'fullSize'}} title="Full storlek">&#9974;</a> &nbsp; <br>
+  <a class="nav_ pnav_" title="Skriv ut" {{action "doPrint"}} >■</a> &nbsp;
 </div>
 
 <!-- ///// DISPLAY THE (SLIDE) SHOW IMAGE ///// -->

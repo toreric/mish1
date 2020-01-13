@@ -29,13 +29,13 @@ var port = process.env.PORT || 3000
 app.use ('/', express.static (__dirname))
 app.use ('/', express.static (__dirname + '/public'))
 
-// configure our routes
+// 1 configure our routes
 require ('./app/routes')(app)
 
-// start our app
+// 2 start our app
 app.listen (port)
 
-// expose app
+// 3 expose app
 exports = module.exports = app
 
 console.log ('\nExpress server, port ' + port + '\n')

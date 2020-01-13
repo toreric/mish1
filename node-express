@@ -16,8 +16,9 @@ cd /home/tore/Arbeten/mish
 IMDB_HOME=/home/tore
 #IMDB_ROOT=MISH
 IMDB_ROOT=Framkallning_2019
-IMDB_ROOT=album-1
-IMDB_ROOT='""' # Empty argument that still appears right positioned in the 'node server.js' call
+IMDB_ROOT=Album-1
+IMDB_ROOT='""' # Empty argument (must be '""') that is passed
+################# correctly positioned to 'node server.js'
 if [[ $1 ]]; then
   IMDB_HOME=$1
   if [[ $2 ]]; then
