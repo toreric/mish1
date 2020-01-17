@@ -101,7 +101,7 @@ function copyToClipboard (str) {
 <div id="userDir" title="user's home or choice" style="display:none"></div>
 
 <!-- ///// SPECIAL PLACEHOLDERS/LINKS (hidden) ///// -->
-<button style="display:none;" id="abumEditOption" {{action 'abumEditOption'}}></button>
+<button style="display:none;" id="albumEditOption" {{action 'albumEditOption'}}></button>
 <!-- input style="display:none;" id="fileDialog" type="file" nwdirectory directory -->
 <input style="display:none" id="requestDirs" onclick={{perform requestDirs}}>
 <div class="shortMessage blackBorder" style="display:none">RT-log-message</div>
@@ -110,10 +110,10 @@ function copyToClipboard (str) {
 <!-- ///// RIGHT BUTTONS (NOTE: without href attributes) /////  -->
 <div class="nav_links" draggable="false" ondragstart="return false">
   <!-- NEXT-ARROW-BUTTONS -->
-  <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' true }} title="Nästa bild">»</a> &nbsp;<br>
-  <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' false}} title="Föregående bild">«</a> &nbsp;<br>
+  <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' true }} title="Nästa bild [>]">»</a> &nbsp;<br>
+  <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' false}} title="Föregående bild [<]">«</a> &nbsp;<br>
   <!-- AUTO-SLIDE-SHOW SELECT -->
-  <a class="nav_ toggleAuto" draggable="false" ondragstart="return false" {{action 'toggleAuto'}} style="font-size:1.2em;font-family:monospace" title="Automatiskt bildbyte">AUTO</a><br>
+  <a class="nav_ toggleAuto" draggable="false" ondragstart="return false" {{action 'toggleAuto'}} style="font-size:1.2em;font-family:monospace" title="Automatiskt bildbyte [A]">AUTO</a><br>
   <!-- AUTO-SLIDE-SHOW SPEED SELECT -->
   <span class="nav_" id="showSpeed" draggable="false" ondragstart="return false">
     <input class="showTime" type="number" min="1" max="99" value="2" title="Välj tid > 0 s">s&nbsp;&nbsp;<br>
@@ -173,7 +173,7 @@ function copyToClipboard (str) {
   <div class="mainMenu BACKG" onclick="return false" draggable="false" ondragstart="return false" style="display:none">
 
     <p onclick="return false" draggable="false" ondragstart="return false">
-      <a {{action 'findText'}} style="padding-top:1.1em">Finn bilder:</a> Sök i
+      <a {{action 'findText'}} style="padding-top:1.1em">Finn bilder <span style="font:normal 1em monospace!important">[F]</span>:</a> Sök i
       <span class="root">
         <select id="rootSel" title="Välj albumkatalog här" totip="Välj albumkatalog här" onchange={{action 'selectRoot' value='target.value'}}>
           {{#each imdbRoots as |rootChoice|}}

@@ -36,7 +36,7 @@ module.exports = function (app) {
   let IMDB_LINK = "imdb"    // <<<<<<<<<< must equal init () setting!
   // ----- Base name of search result albums
   let picFound = "unknown"
-  // ----- Max lifetime (minutes) after last access of as search result album
+  // ----- Max lifetime (minutes) after last access of a search result album
   let toold = 60
   // ----- For debug data(base) directories
   let show_imagedir = false // for debugging
@@ -148,11 +148,11 @@ module.exports = function (app) {
     let p = req.params.imdbroot.trim ().split ("@")
     IMDB_ROOT = p [0]
     picFound = p [1]
-console.log("app.get: imdbroot/", homeDir, IMDB_ROOT, IMDB_LINK, picFound);
+console.log("0.1.9", homeDir, IMDB_ROOT, IMDB_LINK, picFound);
     // IMDB_LINK = symlink pointing to current album
     setRootLink (homeDir, IMDB_ROOT, IMDB_LINK)
-    // Remove all too old picFound files
     await new Promise (z => setTimeout (z, 200))
+    // Remove all too old picFound files
     let cmd = 'find -L ' + IMDB_LINK + ' -type d -name "' + picFound + '*" -amin +' + toold + ' | xargs rm -rf'
     //console.log (cmd);
     await cmdasync (cmd)
@@ -160,22 +160,25 @@ console.log("app.get: imdbroot/", homeDir, IMDB_ROOT, IMDB_LINK, picFound);
   })
 
   // ##### #0.2 Get IMDB_LINK directory list
-  app.get ('/imdbdirs/:imdbroot', function (req, res) {
-
-    var homeDir = imdbHome () // From env.var. $IMDB_HOME or $HOME
-    IMDB_ROOT = req.params.imdbroot.replace (/@/g, "/").trim ()
+  app.get ('/imdbdirs/:imdbroot', async function (req, res) {
+    let homeDir = imdbHome () // From env.var. $IMDB_HOME or $HOME
+    let p = req.params.imdbroot.trim ().split ("@")
+    IMDB_ROOT = p [0]
+    // picFoundx == picFound + rendom extension
+    let picFoundx = p [1]
     // IMDB_LINK = symlink pointing to current albums
     setRootLink (homeDir, IMDB_ROOT, IMDB_LINK)
-
+    await new Promise (z => setTimeout (z, 200))
+    // Refresh picFoundx: the shell commands must execute in sequence
+    let pif = IMDB_LINK + '/' + picFoundx
+    let cmd = 'rm -rf ' + pif + ' && mkdir ' + pif + ' && touch ' + pif + '/.imdb'
+console.log("0.2", cmd);
+    await cmdasync (cmd)
     setTimeout (function () {
-      //Replacing: findDirectories (IMDB_LINK).then (dirlist => {
       allDirs (IMDB_LINK).then (dirlist => {
         //console.log ("\n\na\n", dirlist)
         areAlbums (dirlist).then (async dirlist => {
           dirlist = dirlist.sort ()
-          // IMDB_LINK is the www-imdb root, add here:
-          // for findDirectories, allDirs doesn't need this
-          //dirlist.splice (0, 0, IMDB_LINK + "/")
           let dirtext = dirlist.join ("€")
           let dircoco = [] // directory content counter
           let dirlabel = [] // Album label thumbnail paths
@@ -197,8 +200,6 @@ console.log("app.get: imdbroot/", homeDir, IMDB_ROOT, IMDB_LINK, picFound);
               }
               var albumLabel = pics [Number (k.toString ().replace (/\..*/, ""))]
             } else {albumLabel = "€" + dirlist [i]}
-            // Count the number of thumbnails, i.e. pictures
-            //let pics = " (" + execSync ("echo -n `ls " + dirlist [i] + "|grep -c ^_mini_`") + ")"
             // Count the number of subdirectories
             let subs = occurrences (dirtext, dirlist [i]) - 1
             npics = " (" + npics + ")"
@@ -230,7 +231,6 @@ console.log("app.get: imdbroot/", homeDir, IMDB_ROOT, IMDB_LINK, picFound);
           dirlabel = dirlabel.join ("\n")
           // NOTE: rootDir = homeDir + "/" + IMDB_ROOT, but here "@" separates them (important!):
           dirtext = homeDir +"@"+ IMDB_ROOT + "\n" + dirtext + "\nNodeJS " + process.version.trim ()
-          //console.log ("C\n", dirtext)
           res.location ('/')
           res.send (dirtext + "\n" + dircoco + "\n" + dirlabel)
           res.end ()
