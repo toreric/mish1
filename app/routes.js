@@ -35,7 +35,7 @@ module.exports = function (app) {
   // ----- Name of symlink pointing to IMDB_ROOT
   let IMDB_LINK = "imdb"    // <<<<<<<<<< must equal init () setting!
   // ----- Base name of search result albums
-  let picFound = "unknown"
+  let picFound = ""
   // ----- Max lifetime (minutes) after last access of a search result album
   let toold = 60
   // ----- For debug data(base) directories
@@ -148,10 +148,10 @@ module.exports = function (app) {
     let p = req.params.imdbroot.trim ().split ("@")
     IMDB_ROOT = p [0]
     picFound = p [1]
-console.log("0.1.9", homeDir, IMDB_ROOT, IMDB_LINK, picFound);
+    //console.log("0.1.9", homeDir, IMDB_ROOT, IMDB_LINK, picFound);
     // IMDB_LINK = symlink pointing to current album
     setRootLink (homeDir, IMDB_ROOT, IMDB_LINK)
-    await new Promise (z => setTimeout (z, 200))
+    await new Promise (z => setTimeout (z, 400))
     // Remove all too old picFound files
     let cmd = 'find -L ' + IMDB_LINK + ' -type d -name "' + picFound + '*" -amin +' + toold + ' | xargs rm -rf'
     //console.log (cmd);
@@ -164,7 +164,7 @@ console.log("0.1.9", homeDir, IMDB_ROOT, IMDB_LINK, picFound);
     let homeDir = imdbHome () // From env.var. $IMDB_HOME or $HOME
     let p = req.params.imdbroot.trim ().split ("@")
     IMDB_ROOT = p [0]
-    // picFoundx == picFound + rendom extension
+    // picFoundx == picFound + random extension
     let picFoundx = p [1]
     // IMDB_LINK = symlink pointing to current albums
     setRootLink (homeDir, IMDB_ROOT, IMDB_LINK)
@@ -172,8 +172,13 @@ console.log("0.1.9", homeDir, IMDB_ROOT, IMDB_LINK, picFound);
     // Refresh picFoundx: the shell commands must execute in sequence
     let pif = IMDB_LINK + '/' + picFoundx
     let cmd = 'rm -rf ' + pif + ' && mkdir ' + pif + ' && touch ' + pif + '/.imdb'
-console.log("0.2", cmd);
     await cmdasync (cmd)
+    // Remove all too old picFound files
+    // We have to extract the picFound basename in case picFound is not yet defined
+    if (!picFound) picFound = picFoundx.replace (/\..+$/, "")
+    cmd = 'find -L ' + IMDB_LINK + ' -type d -name "' + picFound + '*" -amin +' + toold + ' | xargs rm -rf'
+    await cmdasync (cmd)
+    //console.log("0.2", cmd);
     setTimeout (function () {
       allDirs (IMDB_LINK).then (dirlist => {
         //console.log ("\n\na\n", dirlist)
@@ -1140,15 +1145,15 @@ console.log("IMDB_PATH:", IMDB_PATH);
 
   // ===== Point the symlink to the chosen album root directory
   function setRootLink (homeDir, IMDB_ROOT, imdbLink) {
-    console.log ("\nIMDB_HOME:", homeDir)
+    //console.log ("\nIMDB_HOME:", homeDir)
     if (!IMDB_ROOT || IMDB_ROOT === "") {IMDB_ROOT = execSync ("echo $IMDB_ROOT").toString ().trim ()}
     if (IMDB_ROOT === "undefined") {IMDB_ROOT = "/";}
-    console.log ("IMDB_ROOT:", IMDB_ROOT)
+    //console.log ("IMDB_ROOT:", IMDB_ROOT)
     // Establish the symlink to the chosen album root directory
     execSync ("ln -sfn " + homeDir + "/" + IMDB_ROOT + " " + imdbLink)
     // Confirm:
     let rootDir = execSync ("readlink " + imdbLink).toString ().trim ()
-    console.log ("Path to '" + imdbLink + "': " + rootDir)
+    //console.log ("Path to '" + imdbLink + "': " + rootDir)
   }
 }
 // End module.exports

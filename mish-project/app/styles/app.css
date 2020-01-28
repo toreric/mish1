@@ -1298,17 +1298,17 @@ select option {
 }
 
 @-webkit-keyframes borderBlink {
-  from, to {border-color: 2.5px dotted transparent}
-  5% {border: 2.5px dotted deeppink}
+  from, to {border-color: 2px dashed transparent}
+  5% {border: 2px dashed white} /* deeppink replaced */
 }
 @keyframes borderBlink {
-  from, to {border: 2.5px dotted transparent}
-  5% {border: 2.5px dotted deeppink}
+  from, to {border: 2px dashed transparent}
+  5% {border: 2px dashed white} /* deeppink replaced */
 }
 .picPresent, img.dotted {
-  border: 2.5px dotted deeppink;
-  -webkit-animation: borderBlink 500ms step-end infinite;
-  animation: borderBlink 500ms step-end infinite;
+  border: 2px dashed white; /* deeppink replaced */
+  -webkit-animation: borderBlink 800ms step-end infinite;
+  animation: borderBlink 800ms step-end infinite;
 }
 
 #uploadFinished {

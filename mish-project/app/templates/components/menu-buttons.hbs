@@ -183,11 +183,9 @@ function copyToClipboard (str) {
       </span>
       <button class="ui-button mainMenuClose ui-dialog-titlebar-close" title="Close" {{action 'toggleMainMenu' imdbRoot}}>×</button>
     </p>
-
     <p onclick="return false" draggable="false" ondragstart="return false">
-      <a {{action 'toggleBackg'}}>Byt till mörk eller ljus bakgrund</a><span style="float:right">fullskärm <b>F11</b></span>
+      <a {{action 'toggleBackg'}}>Byt till mörk eller ljus bakgrund</a><span style="float:right;font:normal 1em monospace!important">&nbsp;[F11]=fullskärm!</span>
     </p>
-
     <p onclick="return false" draggable="false" ondragstart="return false" title="Ta bort eller gör nytt album ...">
       <a {{action 'albumEdit'}}>{{{albumText}}}</a>{{{albumName}}}
     </p>

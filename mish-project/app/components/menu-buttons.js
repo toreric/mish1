@@ -60,14 +60,15 @@ export default Component.extend (contextMenuMixin, {
 
     document.title = "Mish: " + removeUnderscore (imdbroot, true);
     //yield reqDirs (imdbroot); // Request all subdirs recursively ((2)
-
     // MUST BE POSTPONED UNTIL imdLink is server-established!
+
     if (this.get ("albumData").length === 0) {
       // Regenerate the picFound album: the shell commands must execute in sequence
       let lpath = $ ("#imdbLink").text () + "/" + $ ("#picFound").text ();
-      execute ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb").then ();
-      // Then:                   Request all subdirectories recursively ((2))
-      yield reqDirs (imdbroot);
+      execute ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb").then (async () => {
+        await new Promise (z => setTimeout (z, 2000)); //////// Funkar inte alls
+      });
+      yield reqDirs (imdbroot); // Then request subdirectories recursively ((2))
     }
 
     this.set ("userDir", $ ("#userDir").text ());
@@ -96,7 +97,7 @@ export default Component.extend (contextMenuMixin, {
       albDat = albDat.replace (/€/g, '"');
       this.set ("albumData", eval (albDat));
       if (tempStore) { // This is not in use (?) ... too sophisticated ...
-        //alert ('75 tempStore true');
+        //alert ('75 tempStore true'); // borde testa här hur det är ^^^
         $ (".ember-view.jstree").jstree ("close_all");
         $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
         $ (".ember-view.jstree").jstree ("_open_to", "#j1_" + tempStore);
@@ -832,7 +833,8 @@ export default Component.extend (contextMenuMixin, {
   jstreeHdr: "",
   albumName: "",
   albumText: "",
-  albumData: () => {return []}, // Directory structure for the selected imdbRoot
+  //albumData: () => {return []}, // Directory structure for the selected imdbRoot
+  albumData: "",
   loggedIn: false,
   subaList: [],
   // HOOKS, that is, Ember "hooks" in the execution cycle
@@ -851,6 +853,7 @@ export default Component.extend (contextMenuMixin, {
       $ ("body").addClass ("BACKG TEXTC");
       $ ("body").css ("background", BACKG);
       $ ("body").css ("color", TEXTC);
+//      picFound = "Funna_bilder"; // i18n
       later ( ( () => {
         console.log ("jQuery v" + $ ().jquery);
         // The time stamp is produced with the Bash 'ember-b-script'
@@ -860,7 +863,6 @@ export default Component.extend (contextMenuMixin, {
         $ ("#title button.cred").attr ("title", logAdv);
         $ ("#title button.cred").attr ("totip", logAdv);
         // Initialize settings:
-        picFound = "Funna_bilder"; // i18n
         // This #picFound search result album will, harmlessly, have identical
         // names within a session for any #imdbRoot (if switched between them)
         let rnd = "." + Math.random().toString(36).substr(2,4);
@@ -1881,7 +1883,8 @@ console.log(chkPaths.join ("\n"));
     //============================================================================================
     selectRoot (value) { // ##### Select album root dir (to put in imdbLink) from dropdown
 
-      //$ (".mainMenu p:gt(1)").hide ();
+      $ (".mainMenu p:gt(1)").hide ();
+      //$ (".mainMenu p:gt(1)").show ();
       // Close all dialogs/windows
       ediTextClosed ();
       $ (".img_show").hide ();
@@ -1889,18 +1892,19 @@ console.log(chkPaths.join ("\n"));
       document.getElementById ("imageList").className = "hide-all";
       document.getElementById ("divDropbox").className = "hide-all";
       if (value.indexOf (" ") > -1) value = ""; // The header line contains space
-      if (value === "") return;
-      if ($ ("#imdbRoot").text () !== value)
-        this.set ("albumData", []); // Triggers jstree rebuild in requestDirs
+      if (value === "") {
+        $ (".mainMenu p:gt(1)").show ();
+        return;
+      }
       $ ("#imdbRoot").text (value);
       this.set ("imdbRoot", value);
-console.log("imdbRoot =", this.get ("imdbRoot", value)); // Fungerar!!
+      this.set ("albumData", []); // Triggers jstree rebuild in requestDirs
       $ ("#imdbDirs").text ("");
       $ ("#imdbDir").text ($ ("#imdbLink").text ());
       $ ("#requestDirs").click (); // perform ...
       later ( ( () => {
         // Send #imdbRoot and picFound to the server with this GET:
-        // (the sever needs #picFound base name for old file cleaning)
+        // (the server needs #picFound base name for old file cleaning)
         return new Promise ( (resolve) => {
           var xhr = new XMLHttpRequest ();
           xhr.open ('GET', 'imdbroot/' + value + "@" + picFound, true, null, null);
@@ -1935,7 +1939,7 @@ console.log("imdbRoot =", this.get ("imdbRoot", value)); // Fungerar!!
       if (value && value.length > 0) {
         value = value.attr ("title").toString ();
       } else {
-        value =  "";
+        value = "";
       }
       ediTextClosed ();
       $ ("div.ember-view.jstree").attr ("onclick", "return false");
@@ -2011,6 +2015,7 @@ console.log("imdbRoot =", this.get ("imdbRoot", value)); // Fungerar!!
         if (value) {
           $ (".imDir.path").attr ("title-1", albumPath ());
         }
+//console.log("set subaList",a);
         this.set ("subaList", a);
 
         later ( ( () => {
@@ -2942,6 +2947,9 @@ console.log(loginStatus, name);
               // Regenerate the picFound album: the shell commands must execute in sequence
               let lpath = $ ("#imdbLink").text () + "/" + $ ("#picFound").text ();
               execute ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb").then ();
+              let lnk = this.get ("imdbLink");
+              let toold = 60; // minutes. NOTE: Also defined in routes.js, please MAKE COMMON!!
+              execute ('find -L ' + lnk + ' -type d -name "' + picFound + '*" -amin +' + toold + ' | xargs rm -rf').then ();
               userLog ("START " + $ ("#imdbRoot").text ());
               later ( ( () => {
                 $ ("#requestDirs").click ();
@@ -3115,7 +3123,8 @@ let logAdv = "Logga in för att kunna se inställningar: Anonymt utan namn och l
 let nosObs = "Skriv gärna på prov, men du saknar tillåtelse att spara text"; // i18n
 let nopsGif = "GIF-fil kan bara ha tillfällig text"; // i18n
 //let nopsLink = "Text kan inte ändras/sparas permanent via länk"; // i18n Obsolete
-let picFound = "set by the init () function";
+let picFound = "Funna_bilder"; // i18n
+//let picFound = "set by the init () function";
 let preloadShowImg = [];
 let loginStatus = "";
 let tempStore = "";
