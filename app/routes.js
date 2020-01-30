@@ -224,10 +224,11 @@ module.exports = function (app) {
               }
             }
           }
-          let ignorePath = homeDir +"/"+ IMDB_ROOT + "/_imdb_ignore.txt";
-          let ignore = (await execP ("cat " + ignorePath)).toString ().trim ().split ("\n")
+          let ignorePaths = homeDir +"/"+ IMDB_ROOT + "/_imdb_ignore.txt";
+          let ignore = (await execP ("cat " + ignorePaths)).toString ().trim ().split ("\n")
           for (let j=0; j<ignore.length; j++) {
             for (let i=0; i<dirlist.length; i++) {
+              ignore [j] = ignore [j].replace (/^[^/]*/, IMDB_LINK) // An 'ignore path' may start with ./
               if (ignore [j] && dirlist [i].startsWith (ignore [j])) {dircoco [i] += "*"}
             }
           }
