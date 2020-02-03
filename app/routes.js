@@ -64,12 +64,12 @@ module.exports = function (app) {
 
   // ##### #0 00 Find information 'from outside'
   app.get ('/:p([^/]+(/[^/]+)*)', function (req, res, next) {
-//console.log (req.params.p)
-  if (req.params.p.toString ().slice (0, 5) === "find/") {
-  //if (req.params.p.toString ().slice (0, 1) === "#") {
-      res.send ('Try to find something in ' + IMDB_ROOT)
+    let p = req.params.p.toString ().split ("/")
+    if (p [0] === "find") {
+      res.send (p)
+    } else {
+      next ()
     }
-    next ()
   })
 
   // ##### #0.0 Get file access information
@@ -224,12 +224,22 @@ module.exports = function (app) {
               }
             }
           }
-          let ignorePaths = homeDir +"/"+ IMDB_ROOT + "/_imdb_ignore.txt";
+          let fd, ignorePaths = homeDir +"/"+ IMDB_ROOT + "/_imdb_ignore.txt";
+          try { // Create _imdb_ignore.txt if missing
+            fd = await fs.openAsync (ignorePaths, 'r')
+            await fs.closeAsync (fd)
+          } catch (err) {
+            fd = await fs.openAsync (ignorePaths, 'w')
+            await fs.closeAsync (fd)
+          }
+          // An _imdb_ignore line/path may/should start with just './' (if not #)
           let ignore = (await execP ("cat " + ignorePaths)).toString ().trim ().split ("\n")
           for (let j=0; j<ignore.length; j++) {
             for (let i=0; i<dirlist.length; i++) {
-              ignore [j] = ignore [j].replace (/^[^/]*/, IMDB_LINK) // An 'ignore path' may start with ./
-              if (ignore [j] && dirlist [i].startsWith (ignore [j])) {dircoco [i] += "*"}
+              if (ignore [j] && ignore [j].slice (0, 1) !== '#') {
+                ignore [j] = ignore [j].replace (/^[^/]*/, IMDB_LINK)
+                if (ignore [j] && dirlist [i].startsWith (ignore [j])) dircoco [i] += "*"
+              }
             }
           }
           dirtext = dirtext.replace (/€/g, "\n")
@@ -946,13 +956,13 @@ console.log("IMDB_PATH:", IMDB_PATH);
         fd = await fs.openAsync (album + '/.imdb', 'r')
         await fs.closeAsync (fd)
         albums.push (album)
-        try {
+        /*try { // Create _imdb_ignore.txt if missing
           fd = await fs.openAsync (album + '/_imdb_ignore.txt', 'r')
           await fs.closeAsync (fd)
         } catch (err) {
           fd = fs.openSync (album + '/_imdb_ignore.txt', 'w')
           fs.closeSync (fd)
-        }
+        }*/
       } catch (err) {
         // Ignore
       }

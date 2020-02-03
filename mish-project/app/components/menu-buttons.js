@@ -614,7 +614,6 @@ export default Component.extend (contextMenuMixin, {
         for (let i=0; i<nels; i++) {
           picNames.push (nodelem [i].nextElementSibling.innerHTML.trim ());
         }
-//console.log(picNames);
         for (let i=0; i<nodelem.length; i++) {
             symlink = document.getElementById ("i" + picNames [i]).classList.contains ('symlink');
             if (symlink && eraseOriginals) {
@@ -626,11 +625,8 @@ export default Component.extend (contextMenuMixin, {
               */
               let tmp = $ ("#imdbLink").text () + "/" + $ ("#i" + escapeDots (picNames [i]) + " a img").attr ("title");
               execute ("readlink -n " + tmp).then (res => {
-//console.log("READLINK", res);
-//console.log(picNames, picNames [i]);
                 res = res.replace (/^(\.{1,2}\/)*/, $ ("#imdbLink").text () + "/");
                 picPaths.push (res);
-//console.log("PICPATHS", picName, picNames [i]);
                 if (picName === picNames [i]) {
                   picPath = res;
                 }
@@ -639,8 +635,6 @@ export default Component.extend (contextMenuMixin, {
               picPaths.push ($ ("#imdbLink").text () + "/" + $ ("#i" + escapeDots (picNames [i]) + " a img").attr ("title"));
             }
         }
-
-//console.log(picPaths);
         delNames = picName;
         if (nels > 1) {
 
@@ -741,7 +735,6 @@ export default Component.extend (contextMenuMixin, {
                 return;
               }*/
               console.log ("To be deleted: " + delNames); // delNames is picNames as a string
-//console.log(picPaths);
               // NOTE: Must be a 'clean' call (no then or <await>):
               deleteFiles (picNames, nels, picPaths);
               $ (this).dialog ('close');
@@ -833,8 +826,7 @@ export default Component.extend (contextMenuMixin, {
   jstreeHdr: "",
   albumName: "",
   albumText: "",
-  //albumData: () => {return []}, // Directory structure for the selected imdbRoot
-  albumData: "",
+  albumData: () => {return []}, // Directory structure for the selected imdbRoot
   loggedIn: false,
   subaList: [],
   // HOOKS, that is, Ember "hooks" in the execution cycle
@@ -853,7 +845,6 @@ export default Component.extend (contextMenuMixin, {
       $ ("body").addClass ("BACKG TEXTC");
       $ ("body").css ("background", BACKG);
       $ ("body").css ("color", TEXTC);
-//      picFound = "Funna_bilder"; // i18n
       later ( ( () => {
         console.log ("jQuery v" + $ ().jquery);
         // The time stamp is produced with the Bash 'ember-b-script'
@@ -903,6 +894,7 @@ export default Component.extend (contextMenuMixin, {
         show: {
           //effect: "slideDown",
           effect: "blind",
+          //duration: 0, do not use
           delay: 0
           //effect: "fade"
         },
@@ -1163,11 +1155,9 @@ export default Component.extend (contextMenuMixin, {
 
     var triggerClick = (evnt) => {
       var that = this;
-      //console.log("evnt",evnt);
       var tgt = evnt.target;
       let tgtClass = "";
       if (tgt) {
-        //console.log("tgt.classList",tgt.classList);
         tgtClass = tgt.classList [0] || "";
       }
       if (tgtClass === "context-menu" || tgtClass === "spinner") {
@@ -1188,7 +1178,7 @@ export default Component.extend (contextMenuMixin, {
             tmp = $ ("#imdbLink").text () + "/" + tmp;
             // ...then go to the linked picture:
             getFilestat (tmp).then (result => {
-              //console.log ("Länk:", tmp);
+              //console.log ("Link:", tmp);
               result = result.replace (/(<br>)+/g, "\n");
               result = result.replace(/<(?:.|\n)*?>/gm, ""); // Remove <tags>
               //console.log (result.split ("\n") [1]);
@@ -1219,7 +1209,6 @@ export default Component.extend (contextMenuMixin, {
       // Check if the intention is to "mark" (Shift + click):
       if (evnt.shiftKey) {
         later ( ( () => {
-          //console.log("NOTE: Click with shift pressed:",namepic);
           that.actions.toggleMark (namepic);
           return;
         }), 20);
@@ -1229,7 +1218,6 @@ export default Component.extend (contextMenuMixin, {
         var minipic = tgt.src;
         var showpic = minipic.replace ("/_mini_", "/_show_");
         document.getElementById ("divDropbox").className = "hide-all";
-//console.log("setNavKeys", showpic, namepic, origpic);
         this.actions.showShow (showpic, namepic, origpic);
         return;
       }
@@ -1674,7 +1662,6 @@ export default Component.extend (contextMenuMixin, {
         code += '\n<option value="erase">&nbsp;Radera albumet&nbsp;</option>';
       }
       code += '\n</select>';
-console.log(code);
       infoDia (null, null, album, code, 'Avbryt', true);
       later ( ( () => {
         $ ("select.selectOption").focus ();
@@ -1855,8 +1842,6 @@ console.log(code);
               }
             }
           }
-console.log(cmds.join ("\n"));
-console.log(chkPaths.join ("\n"));
           $ ('#temporary_1').text (cmds.join ("\n"));
         });
       }), 100);
@@ -2015,7 +2000,6 @@ console.log(chkPaths.join ("\n"));
         if (value) {
           $ (".imDir.path").attr ("title-1", albumPath ());
         }
-//console.log("set subaList",a);
         this.set ("subaList", a);
 
         later ( ( () => {
@@ -2076,8 +2060,9 @@ console.log(chkPaths.join ("\n"));
             } else {
               obj.before ("<div class=\"BUT_2\"> " + nsub + " underalbum</div><br>"); // i18n
             }
-            console.log ("Selected: " + imdbDir + ", nsub = " + nsub);
           }
+          // Don't show imdbLink (album root symlink name)
+          console.log ("Album " + imdbDir.replace (/^[^/]*/, ".") + ", nsub = " + nsub);
         }), 777);
 
 
@@ -2216,8 +2201,6 @@ console.log(chkPaths.join ("\n"));
       $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
       if ($ ("#imdbDir").text () === "") return;
       if ($ (".toggleAuto").text () === "STOP") return; // Auto slide show is running
-// Do not permit uploading into the search result (Found ...) album:
-//if ($ ("#imdbDir").text ().replace (/^[^/]*\//, "") === $ ("#picFound").text ()) return;
       $ (".mainMenu").hide ();
       $ ("#link_show a").css ('opacity', 0 );
       if (document.getElementById ("divDropbox").className === "hide-all") {
@@ -2269,7 +2252,6 @@ console.log(chkPaths.join ("\n"));
       $ (".nav_links").hide ();
       $ ("#link_show a").css ('opacity', 0 );
       $ (".img_show img:first").attr ('src', showpic);
-//console.log("showShow", origpic, origpic.replace (/^[^/]+\//, ""));
       $ (".img_show img:first").attr ("title", origpic.replace (/^[^/]+\//, ""));
       $ (".img_show .img_name").text (namepic); // Should be plain text
       $ (".img_show .img_txt1").html ($ ('#i' + escapeDots (namepic) + ' .img_txt1').html ());
@@ -2452,11 +2434,8 @@ console.log(chkPaths.join ("\n"));
 
       if ($ (".toggleAuto").text () === "STOP") return; // Auto slide show is running
       if (!(allow.saveChanges || allow.adminAll) || $ ("#imdbDir").text () === "") return;
-// The search result album is randomly reused and shoud never be saved:
-//if ($ ("#imdbDir").text ().replace (/^[^/]*\//, "") === $ ("#picFound").text ()) return;
 
       $ ("#link_show a").css ('opacity', 0 );
-
       new Promise (resolve => {
         spinnerWait (true);
         var i =0, k = 0, SName = [], names, SN;
@@ -2713,7 +2692,6 @@ console.log(chkPaths.join ("\n"));
       if (!(allow.imgOriginal || allow.adminAll)) return;
       var name = $ ("#picName").text ();
       // Only selected user classes may view or download protected images
-console.log(loginStatus, name);
       if ((name.startsWith ("Vbm") || name.startsWith ("CPR")) && ["admin", "editall", "edit"].indexOf (loginStatus) < 0) {
         userLog ("COPYRIGHT©protected", true);
         return;
@@ -2760,7 +2738,6 @@ console.log(loginStatus, name);
       if (!(allow.imgOriginal || allow.adminAll)) return;
       let name = $ ("#picName").text ();
       // Only selected user classes may view or download protected images
-console.log(loginStatus, name);
       if ((name.startsWith ("Vbm") || name.startsWith ("CPR")) && ["admin", "editall", "edit"].indexOf (loginStatus) < 0) {
         userLog ("COPYRIGHT©protected", true);
         return;
@@ -3120,7 +3097,7 @@ let BLUET = "#146";
 //let albumWait = false;
 let eraseOriginals = false;
 let logAdv = "Logga in för att kunna se inställningar: Anonymt utan namn och lösenord, eller med namnet ’gäst’ utan lösenord som ger vissa redigeringsrättigheter"; // i18n
-let nosObs = "Skriv gärna på prov, men du saknar tillåtelse att spara text"; // i18n
+let nosObs = "Skriv/kopiera gärna (text kan ej sparas, rättighet saknas)"; // i18n
 let nopsGif = "GIF-fil kan bara ha tillfällig text"; // i18n
 //let nopsLink = "Text kan inte ändras/sparas permanent via länk"; // i18n Obsolete
 let picFound = "Funna_bilder"; // i18n
@@ -3415,7 +3392,7 @@ function notesDia (picName, filePath, title, text, save, saveClose, close) { // 
     resizable: false
   });
   // Improve 'dialog title':
-  $ ("div[aria-describedby='notes'] span.ui-dialog-title").html ("<span class='pink'>" + picName + "</span> &nbsp; " + title);
+  $ ("div[aria-describedby='notes'] span.ui-dialog-title").html (title + " <span class='blue'>" + picName + "</span>");
 
   function notesSave () { // NOTE: This way to save metadata is probably the most efficient, and
     // 'xmpset' should perhaps ultimately replace 'set_xmp_creatior' and 'set_xmp_description'?
@@ -3732,18 +3709,11 @@ function reqDirs (imdbroot) { // Read the dirs in imdbLink (requestDirs)
         var dim = (dirList.length - 2)/3;
         var dirLabel = dirList.splice (2 + 2*dim, dim);
         var dirCoco = dirList.splice (2 + dim, dim);
-//console.log(dirList);
-//console.log(dirLabel);
-//console.log(dirCoco);
         $ ("#userDir").text (dirList [0].slice (0, dirList [0].indexOf ("@")));
         $ ("#imdbRoot").text (dirList [0].slice (dirList [0].indexOf ("@") + 1));
           $ ("#imdbLink").text (dirList [1]);
-//later ( ( () => {
-//  console.log("reqDirs", $ ("#userDir").text (), $ ("#imdbRoot").text (), $ ("#imdbLink").text ());
-//}), 55);
         var imdbLen = dirList [1].length;
         dirList = dirList.slice (1);
-//console.log(dirList);
         var nodeVersion = dirList [dirList.length - 1];
         var nodeText = $ (".lastRow").html (); // In application.hbs
         nodeText = nodeText.replace (/NodeJS[^•]*•/, nodeVersion +" •");
@@ -3754,15 +3724,11 @@ function reqDirs (imdbroot) { // Read the dirs in imdbLink (requestDirs)
         for (let i=0; i<dirList.length; i++) {
           dirList [i] = dirList [i].slice (imdbLen);
         }
-//console.log(dirList);
-        // Remove old or not owned 'found albums' from the list
-
         let newList = [], newCoco = [], newLabel = [];
         // The length of "." + the random postfix is 5:
         let test = $ ("#picFound").text ();
         test = test.slice (0, test.length - 5);
         for (let i=0; i<dirList.length; i++) {
-//console.log("####",dirList [i]);
           if (dirList [i].slice (1, test.length+1) !== test || dirList [i].slice (1) === $ ("#picFound").text ()) {
             newList.push (dirList [i])
             newCoco.push (dirCoco [i])
@@ -3770,7 +3736,6 @@ function reqDirs (imdbroot) { // Read the dirs in imdbLink (requestDirs)
           }
         }
         dirList = newList;
-//console.log(dirList);
         dirCoco = newCoco;
         dirLabel = newLabel;
 
@@ -3785,7 +3750,6 @@ function reqDirs (imdbroot) { // Read the dirs in imdbLink (requestDirs)
             }
           }
           dirList = newList;
-//console.log(dirList);
           dirCoco = newCoco;
           dirLabel = newLabel;
 
@@ -4340,7 +4304,7 @@ $ ( () => {
         var filePath = linkPath; // OK if not a link
         function xmpGetSource () {
           execute ("xmpget source " + filePath).then (result => {
-            notesDia (namepic, filePath, "Anteckningar", result, "Spara", "Spara och stäng", "Stäng");
+            notesDia (namepic, filePath, "Anteckningar till ", result, "Spara", "Spara och stäng", "Stäng");
           });
         }
         if ($ ("#i" + ednp).hasClass ("symlink")) {
@@ -4463,7 +4427,7 @@ $ ( () => {
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Refresh the editor dialog content
 function refreshEditor (namepic, origpic) {
-  $ ("div[aria-describedby='textareas'] span.ui-dialog-title").html ("<span class='pink'>" + namepic + "</span> &nbsp; Bildtexter");
+  $ ("div[aria-describedby='textareas'] span.ui-dialog-title").html ("Bildtexter till <span class='blue'>" + namepic + "</span>");
   // Take care of the notes etc. buttons:
   if (!(allow.notesView || allow.adminAll)) {
     $ ("div[aria-describedby='textareas'] .ui-dialog-buttonset button:first-child").css ("display", "none");

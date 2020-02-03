@@ -123,8 +123,9 @@ function copyToClipboard (str) {
   <!-- HELP -->
   <a class="nav_ qnav_" draggable="false" {{action 'toggleNav'}}>?</a> &nbsp;<br>
   <!-- FULL SIZE -->
-  <a class="nav_ " id="full_size" draggable="false" {{action 'fullSize'}} title="Full storlek">&#9974;</a> &nbsp; <br>
-  <a class="nav_ pnav_" title="Skriv ut" {{action "doPrint"}} >■</a> &nbsp;
+  <a class="nav_" id="full_size" draggable="false" {{action 'fullSize'}} title="Full storlek">↕↔↕</a> &nbsp; <br>
+  <a class="nav_ pnav_" title="Skriv ut" {{action 'doPrint'}}>■</a> &nbsp; <br>
+  <a class="nav_ pnav_" title="Stäng [Esc]" style="font-size:2em;padding:0 0.3em 0.1em 0.3em"{{action 'hideShow'}}>&times;</a> &nbsp;
 </div>
 
 <!-- ///// DISPLAY THE (SLIDE) SHOW IMAGE ///// -->
@@ -177,7 +178,7 @@ function copyToClipboard (str) {
       <span class="root">
         <select id="rootSel" title="Välj albumkatalog här" totip="Välj albumkatalog här" onchange={{action 'selectRoot' value='target.value'}}>
           {{#each imdbRoots as |rootChoice|}}
-            <option onclick="this.parentElement.blur()" value={{rootChoice}} selected={{eq imdbRoot rootChoice}}>{{rootChoice}}</option><!-- imdbRoot (== #imdbRoot) is set as chosen -->
+            <option onclick="this.parentElement.blur()" value={{rootChoice}} selected={{eq imdbRoot rootChoice}}>{{rootChoice}}</option>
           {{/each}}
         </select>
       </span>
@@ -221,7 +222,7 @@ function copyToClipboard (str) {
     <b style="color:#0b0">En bild med grön underkant/markeringsring är länkad</b> från annat album<br>
     <b style="color:#0b0">Gå till originalbilden</b> med högerklick i grön markeringsring</span></p>
   <p style="text-align:left;margin-left:1.5em;line-height:1.7em" draggable="false" ondragstart="return false">
-    <b>Knapparna till vänster</b> (vilka som syns beror på hur du är inloggad):<br>
+    <b>FÖRST knappar till vänster</b> (vilka som syns beror på hur du är inloggad):<br>
     <a id="albSel">☰</a> Huvudmeny: Välj album, sökning, byt bakgrund, albumöversikt<br>
     <a id="questionMark0">?</a> Visa/dölj den här användarhandledningen<br>
     <a id="reLd0"><img draggable="false" ondragstart="return false" src="/images/reload.png"></a> Ladda om albumet, återställ eventuella osparade ändringar¹³ (’ångerknapp’, men avser ej textändringar)<br>
