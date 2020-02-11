@@ -110,7 +110,6 @@ export default Component.extend (contextMenuMixin, {
         this.set ("albumText", "");
         this.set ("albumName", "");
       }
-      //albumWait = false;
     }
 
   }),
@@ -846,6 +845,11 @@ export default Component.extend (contextMenuMixin, {
       $ ("body").css ("background", BACKG);
       $ ("body").css ("color", TEXTC);
       later ( ( () => {
+        if (!getCookie("bgtheme")) {
+          setCookie("bgtheme", "light", 0);
+        } else {
+          this.actions.toggleBackg (); this.actions.toggleBackg ();
+        }
         console.log ("jQuery v" + $ ().jquery);
         // The time stamp is produced with the Bash 'ember-b-script'
         userLog ($ ("#timeStamp").text (), true);
@@ -1186,7 +1190,7 @@ export default Component.extend (contextMenuMixin, {
               albumDir = file.replace (/^[^/]+(.*)\/[^/]+$/, "$1").trim ();
               let idx = $ ("#imdbDirs").text ().split ("\n").indexOf (albumDir);
               if (idx < 0) {
-                infoDia (null, null, "Tyvärr ...", "<br>Albumet <b>" + albumDir.replace (/^(.*\/)+/, "") + "</b> med den här bilden kan inte visas", "Ok", true);
+                infoDia (null, null, "Tyvärr ...", "<br>Albumet <b>" + albumDir.replace (/^(.*\/)+/, "") + "</b> med den här bilden kan inte visas<br>(rätt till gömda album saknas)", "Ok", true);
                 return;
               }
               $ (".ember-view.jstree").jstree ("close_all");
@@ -1522,21 +1526,23 @@ export default Component.extend (contextMenuMixin, {
     });
   },
   //----------------------------------------------------------------------------------------------
-  printThis: Ember.inject.service(),
+  printThis: Ember.inject.service(), // ===== For the 'doPrint' function
 
   // TEMPLATE ACTIONS, functions reachable from the HTML page
   /////////////////////////////////////////////////////////////////////////////////////////
   actions: {
     //============================================================================================
-    doPrint() { // PDF printing, beta
+    doPrint() { // PDF print a show picture and its text (A4 portrait only)
       const selector = "#wrap_pad";
       const options = {
+        debug: false,
         importStyle: true,
+        loadCSS: "printthis.css",
         printContainer: false,
         pageTitle: $ ("#imdbRoot").text () + $ ("#imdbDir").text ().replace (/^[^/]+/, ""),
       }
 
-      this.get('printThis').print(selector, options);
+      this.get("printThis").print(selector, options);
     },
     //============================================================================================
     infStatus () {
@@ -2531,15 +2537,24 @@ export default Component.extend (contextMenuMixin, {
     //============================================================================================
     toggleBackg () { // ##### Change theme light/dark
 
-      if ($ ("#imdbRoot").text ()) {$ (".mainMenu").hide ();}
+      let bgtheme = getCookie ("bgtheme");
+console.log("bgtheme is", bgtheme);
+      if (bgtheme === "light") {
+        BACKG = "non0";
+      } else {
+        BACKG = "#000";
+      }
+      if ($ ("#imdbRoot").text ()) $ (".mainMenu").hide ();
       if (BACKG === "#000") {
         BACKG = "#cbcbcb";
         TEXTC = "#000";
         BLUET = "#146";
+        setCookie ("bgtheme", "light", 0);
       } else {
         BACKG ="#000"; // background
         TEXTC = "#fff"; // text color
         BLUET = "#aef"; // blue text
+        setCookie ("bgtheme", "dark", 0);
       }
       $ (".BACKG").css ("background", BACKG); // Repeat in didRender ()!
       $ (".TEXTC").css ("color", TEXTC); // Repeat in didRender ()!
@@ -2832,7 +2847,6 @@ export default Component.extend (contextMenuMixin, {
           $ ("#title input.cred").blur ();
           $ ("#title button.cred").focus (); // Prevents FF showing link to saved passwords
         }),100);
-        //albumWait = false;
         //spinnerWait (false);
         return;
       }
@@ -2881,7 +2895,6 @@ export default Component.extend (contextMenuMixin, {
             spinnerWait (false);
           }), 2000);
         }, 2000);                 // NOTE: Preserved here just as an example
-        //albumWait = false;
         return;
       }
       //¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
@@ -2915,7 +2928,9 @@ export default Component.extend (contextMenuMixin, {
             $ ("#title button.cred").text ("Logga ut");
             //$ ("#title button.cred").attr ("title", "Du är inloggad ..."); // more below
             this.set ("loggedIn", true);
-            userLog ("LOGIN " + usr);
+            status = $ ("#title span.cred.status").text (); // [<status>]
+            userLog ("LOGIN " + usr + " " + status);
+            status = status.slice(1,status.length-1); // <status>
             that.actions.setAllow ();
             //later ( ( () => {
               //console.log (" In, allowValue", $ ("#allowValue").text ());
@@ -2941,10 +2956,39 @@ export default Component.extend (contextMenuMixin, {
             }
             $ ("#title a.finish").focus ();
           }
-          //albumWait = false;
           spinnerWait (false);
         });
         $ (document).tooltip ("enable");
+        later ( () => {
+          //console.log (usr, "status is", status);
+          // At this point, we are always logged in with at least 'viewer' status
+
+          var picLink = getCookie ("find");
+          later ( () => {
+            if (picLink) picLink = picLink.split ("/");
+            else picLink = ["", ""];
+            if ($ ("#imdbRoots").text ().split ("\n").indexOf (picLink [0]) < 1) picLink = ["", ""];
+            else $ ("#imdbRoot").text (picLink [0]);
+            if (picLink [1] && status !== "viewer") {
+              console.log ("Find", picLink [1]);
+              this.actions.findText ();
+              let boxes = $ ('.srchIn input[type="checkbox"]');
+              for (let i=0; i<boxes.length; i++) {
+                if (i === boxes.length - 1) boxes [i].checked = true;
+                else boxes [i].checked = false;
+              }
+              //$ ('input[type="radio"]') [1].prop ("checked", true);
+              //$ ('.orAnd input[type="radio"]') [1].val ("true");
+              document.querySelector ('.orAnd input[type="radio"]').checked = false;
+              document.querySelectorAll ('.orAnd input[type="radio"]') [1].checked = true;
+              $ ("#searcharea textarea").val (picLink [1]);
+              later ( () => {
+                $ ("button.findText").click ();
+                //$ ("img.left-click") [0].click ();
+              }, 2000);
+            }
+          }, 200) ;
+        }, 2000);
       }
 
       //¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
@@ -3094,14 +3138,11 @@ var blink_text = function () {
 let BACKG = "#cbcbcb";
 let TEXTC = "#000";
 let BLUET = "#146";
-//let albumWait = false;
 let eraseOriginals = false;
 let logAdv = "Logga in för att kunna se inställningar: Anonymt utan namn och lösenord, eller med namnet ’gäst’ utan lösenord som ger vissa redigeringsrättigheter"; // i18n
 let nosObs = "Skriv/kopiera gärna (text kan ej sparas, rättighet saknas)"; // i18n
 let nopsGif = "GIF-fil kan bara ha tillfällig text"; // i18n
-//let nopsLink = "Text kan inte ändras/sparas permanent via länk"; // i18n Obsolete
 let picFound = "Funna_bilder"; // i18n
-//let picFound = "set by the init () function";
 let preloadShowImg = [];
 let loginStatus = "";
 let tempStore = "";
@@ -3109,6 +3150,32 @@ let chkPaths = []; // For DB picture paths to be soon updated (or removed)
 let savedAlbumIndex = 0;
 let returnTitles = ["TOPP", "UPP", "SENASTE"]; // i18n
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// Cookie functions
+function setCookie(cname, cvalue, exminutes) {
+  if (exminutes) {
+    var d = new Date();
+    d.setTime(d.getTime() + (exminutes*60000));
+    var expires = "expires="+ d.toUTCString();
+    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+  } else {
+    document.cookie = cname + "=" + cvalue + ";";
+  }
+  }
+function getCookie(cname) {
+  var name = cname + "=";
+  var decodedCookie = decodeURIComponent(document.cookie);
+  var ca = decodedCookie.split(';');
+  for(var i = 0; i <ca.length; i++) {
+    var c = ca[i];
+    while (c.charAt(0) == ' ') {
+      c = c.substring(1);
+    }
+    if (c.indexOf(name) == 0) {
+      return c.substring(name.length, c.length);
+    }
+  }
+  return "";
+}
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Get the 'true' album path (imdbx is the symbolic link to the actual root of albums)
 function albumPath () {
@@ -3217,7 +3284,6 @@ function spinnerWait (runWait) {
     document.getElementById("saveOrder").disabled = true;
     document.getElementById ("divDropbox").className = "hide-all";
   } else { // End waiting
-    //if (albumWait) return;
     $ (".spinner").hide ();
     clearInterval (BLINK);
     later ( ( () => {

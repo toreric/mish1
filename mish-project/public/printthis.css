@@ -1,0 +1,17 @@
+@media print {
+  @page  {
+    width: 210mm;
+    height: 297mm;
+    padding: 10mm 5mm 10mm 10mm;
+    margin: 12mm 6mm 6mm 6mm;
+    text-align: center;
+  }
+  img:first-of-type {
+    width: 1024px;
+    height: auto;
+    max-height: 1330px;
+  }
+  .img_txt1, .img_txt2 {
+    font-size: 175%;
+  }
+}

@@ -109,6 +109,7 @@ function copyToClipboard (str) {
 
 <!-- ///// RIGHT BUTTONS (NOTE: without href attributes) /////  -->
 <div class="nav_links" draggable="false" ondragstart="return false">
+  <a class="nav_" title="Stäng [Esc]" style="font-size:2em;padding:0 0.3em 0.1em 0.3em;margin-bottom:0.65em"{{action 'hideShow'}}>&times;</a> &nbsp;<br>
   <!-- NEXT-ARROW-BUTTONS -->
   <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' true }} title="Nästa bild [>]">»</a> &nbsp;<br>
   <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' false}} title="Föregående bild [<]">«</a> &nbsp;<br>
@@ -124,8 +125,7 @@ function copyToClipboard (str) {
   <a class="nav_ qnav_" draggable="false" {{action 'toggleNav'}}>?</a> &nbsp;<br>
   <!-- FULL SIZE -->
   <a class="nav_" id="full_size" draggable="false" {{action 'fullSize'}} title="Full storlek">↕↔↕</a> &nbsp; <br>
-  <a class="nav_ pnav_" title="Skriv ut" {{action 'doPrint'}}>■</a> &nbsp; <br>
-  <a class="nav_ pnav_" title="Stäng [Esc]" style="font-size:2em;padding:0 0.3em 0.1em 0.3em"{{action 'hideShow'}}>&times;</a> &nbsp;
+  <a class="nav_ pnav_" title="Skriv ut" {{action 'doPrint'}}>■</a> &nbsp;
 </div>
 
 <!-- ///// DISPLAY THE (SLIDE) SHOW IMAGE ///// -->

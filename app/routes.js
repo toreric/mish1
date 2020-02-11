@@ -41,6 +41,8 @@ module.exports = function (app) {
   // ----- For debug data(base) directories
   let show_imagedir = false // for debugging
 
+  let picLink = ""
+
   // ##### R O U T I N G  E N T R I E S
   // Remember to check 'Express route tester'!
   // ##### #0. General passing point
@@ -66,7 +68,12 @@ module.exports = function (app) {
   app.get ('/:p([^/]+(/[^/]+)*)', function (req, res, next) {
     let p = req.params.p.toString ().split ("/")
     if (p [0] === "find") {
-      res.send (p)
+      var homeDir = imdbHome () // From env.var. $IMDB_HOME or $HOME
+      IMDB_ROOT = p [1]
+      setRootLink (homeDir, IMDB_ROOT, IMDB_LINK)
+      res.cookie (p [0], p [1] + "/" + p [2], {httpOnly: false, expires: new Date (Date.now () + 9000)})
+      res.redirect ("../..")
+      res.end ()
     } else {
       next ()
     }
