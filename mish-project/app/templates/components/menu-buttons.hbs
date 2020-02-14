@@ -109,22 +109,28 @@ function copyToClipboard (str) {
 
 <!-- ///// RIGHT BUTTONS (NOTE: without href attributes) /////  -->
 <div class="nav_links" draggable="false" ondragstart="return false">
-  <a class="nav_" title="Stäng [Esc]" style="font-size:2em;padding:0 0.3em 0.1em 0.3em;margin-bottom:0.65em"{{action 'hideShow'}}>&times;</a> &nbsp;<br>
+  <a class="nav_" title="Stäng
+[Esc]" style="font-size:2em;padding:0 0.3em 0.1em 0.3em;margin-bottom:0.65em"{{action 'hideShow'}}>&times;</a> &nbsp;<br>
   <!-- NEXT-ARROW-BUTTONS -->
-  <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' true }} title="Nästa bild [>]">»</a> &nbsp;<br>
-  <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' false}} title="Föregående bild [<]">«</a> &nbsp;<br>
+  <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' true }} title="Nästa
+bild [>]">»</a> &nbsp;<br>
+  <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' false}} title="Föregående
+bild [<]">«</a> &nbsp;<br>
   <!-- AUTO-SLIDE-SHOW SELECT -->
-  <a class="nav_ toggleAuto" draggable="false" ondragstart="return false" {{action 'toggleAuto'}} style="font-size:1.2em;font-family:monospace" title="Automatiskt bildbyte [A]">AUTO</a><br>
+  <a class="nav_ toggleAuto" draggable="false" ondragstart="return false" {{action 'toggleAuto'}} style="font-size:1.2em;font-family:monospace" title="Automatiskt
+bildbyte [A]">AUTO</a><br>
   <!-- AUTO-SLIDE-SHOW SPEED SELECT -->
   <span class="nav_" id="showSpeed" draggable="false" ondragstart="return false">
     <input class="showTime" type="number" min="1" max="99" value="2" title="Välj tid > 0 s">s&nbsp;&nbsp;<br>
     <!-- CHOOSE AUTO-SHOW s/texline OR s/slide -->
-    <a class="speedBase nav_" {{action 'speedBase'}} title="Välj per bild eller bildtextrad">&nbsp;per<br>&nbsp;text-&nbsp;<br>&nbsp;rad</a>
+    <a class="speedBase nav_" {{action 'speedBase'}} title="Välj per bild
+eller bildtextrad">&nbsp;per<br>&nbsp;text-&nbsp;<br>&nbsp;rad</a>
   </span><br>
   <!-- HELP -->
   <a class="nav_ qnav_" draggable="false" {{action 'toggleNav'}}>?</a> &nbsp;<br>
   <!-- FULL SIZE -->
-  <a class="nav_" id="full_size" draggable="false" {{action 'fullSize'}} title="Full storlek">↕↔↕</a> &nbsp; <br>
+  <a class="nav_" id="full_size" draggable="false" {{action 'fullSize'}} title="Full
+storlek">↕↔↕</a> &nbsp; <br>
   <a class="nav_ pnav_" title="Skriv ut" {{action 'doPrint'}}>■</a> &nbsp;
 </div>
 

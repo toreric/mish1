@@ -1539,9 +1539,8 @@ export default Component.extend (contextMenuMixin, {
         importStyle: true,
         loadCSS: "printthis.css",
         printContainer: false,
-        pageTitle: $ ("#imdbRoot").text () + $ ("#imdbDir").text ().replace (/^[^/]+/, ""),
-      }
-
+        pageTitle: $ ("#wrap_pad .img_name").text () + " : " + $ ("#imdbRoot").text () + $ ("#imdbDir").text ().replace (/^[^/]+/, ""),
+      };
       this.get("printThis").print(selector, options);
     },
     //============================================================================================
@@ -1872,8 +1871,9 @@ export default Component.extend (contextMenuMixin, {
       }
     },
     //============================================================================================
-    selectRoot (value) { // ##### Select album root dir (to put in imdbLink) from dropdown
+    selectRoot (value, what) { // ##### Select album root dir (to put into imdbLink) from dropdown
 
+      if (what) {var that = what;} else that = this;
       $ (".mainMenu p:gt(1)").hide ();
       //$ (".mainMenu p:gt(1)").show ();
       // Close all dialogs/windows
@@ -1888,8 +1888,8 @@ export default Component.extend (contextMenuMixin, {
         return;
       }
       $ ("#imdbRoot").text (value);
-      this.set ("imdbRoot", value);
-      this.set ("albumData", []); // Triggers jstree rebuild in requestDirs
+      that.set ("imdbRoot", value);
+      that.set ("albumData", []); // Triggers jstree rebuild in requestDirs
       $ ("#imdbDirs").text ("");
       $ ("#imdbDir").text ($ ("#imdbLink").text ());
       $ ("#requestDirs").click (); // perform ...
@@ -2911,6 +2911,7 @@ console.log("bgtheme is", bgtheme);
         //$ ("#imdbDirs").text ("");
         //$ ("#imdbDir").text ("");
         zeroSet (); // #allowValue = '000... etc.
+        var picLink = getCookie ("find"); // Detects external "/find/..."
         loginError ().then (isLoginError => {
           if (isLoginError) {
             // Update aug 2017: will not happen
@@ -2932,9 +2933,16 @@ console.log("bgtheme is", bgtheme);
             userLog ("LOGIN " + usr + " " + status);
             status = status.slice(1,status.length-1); // <status>
             that.actions.setAllow ();
-            //later ( ( () => {
-              //console.log (" In, allowValue", $ ("#allowValue").text ());
-            //}), 200);
+            // The getCookie result is used here, detects external "/find/..."
+            if (picLink) picLink = picLink.split ("/");
+            else picLink = ["", ""];
+            if ($ ("#imdbRoots").text ().split ("\n").indexOf (picLink [0]) < 1) picLink = ["", ""];
+            else {
+              if ($ ("#imdbRoot").text () !== picLink [0]) { // Change album root
+                //pause (4000);
+                that.actions.selectRoot (picLink [0], that);
+              }
+            }
             if ($ ("#imdbRoot").text ()) { // If imdbLink is initiated
               // Regenerate the picFound album: the shell commands must execute in sequence
               let lpath = $ ("#imdbLink").text () + "/" + $ ("#picFound").text ();
@@ -2963,31 +2971,26 @@ console.log("bgtheme is", bgtheme);
           //console.log (usr, "status is", status);
           // At this point, we are always logged in with at least 'viewer' status
 
-          var picLink = getCookie ("find");
           later ( () => {
-            if (picLink) picLink = picLink.split ("/");
-            else picLink = ["", ""];
-            if ($ ("#imdbRoots").text ().split ("\n").indexOf (picLink [0]) < 1) picLink = ["", ""];
-            else $ ("#imdbRoot").text (picLink [0]);
             if (picLink [1] && status !== "viewer") {
-              console.log ("Find", picLink [1]);
-              this.actions.findText ();
-              let boxes = $ ('.srchIn input[type="checkbox"]');
-              for (let i=0; i<boxes.length; i++) {
-                if (i === boxes.length - 1) boxes [i].checked = true;
-                else boxes [i].checked = false;
-              }
-              //$ ('input[type="radio"]') [1].prop ("checked", true);
-              //$ ('.orAnd input[type="radio"]') [1].val ("true");
-              document.querySelector ('.orAnd input[type="radio"]').checked = false;
-              document.querySelectorAll ('.orAnd input[type="radio"]') [1].checked = true;
-              $ ("#searcharea textarea").val (picLink [1]);
               later ( () => {
-                $ ("button.findText").click ();
-                //$ ("img.left-click") [0].click ();
+                console.log ("Find", picLink [1]);
+                this.actions.findText ();
+                /*let boxes = $ ('.srchIn input[type="checkbox"]');
+                for (let i=0; i<boxes.length; i++) {
+                  if (i === boxes.length - 1) boxes [i].checked = true;
+                  else boxes [i].checked = false;
+                } USING changed DEFAULT INSTEAD
+                document.querySelector ('.orAnd input[type="radio"]').checked = false;
+                document.querySelectorAll ('.orAnd input[type="radio"]') [1].checked = true;*/
+                $ ("#searcharea textarea").val (picLink [1]);
+                later ( () => {
+                  $ ("button.findText").click ();
+                  //$ ("img.left-click") [0].click ();
+                }, 2000);
               }, 2000);
             }
-          }, 200) ;
+          }, 200);
         }, 2000);
       }
 
@@ -3176,6 +3179,12 @@ function getCookie(cname) {
   }
   return "";
 }
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ Execution pause (wait milliseconds)
+function pause (ms) { // or use 'await new Promise (z => setTimeout (z, 2000))'
+  console.log('pause',ms)
+  return new Promise (done => setTimeout (done, ms))
+}*/
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Get the 'true' album path (imdbx is the symbolic link to the actual root of albums)
 function albumPath () {
@@ -4147,7 +4156,7 @@ let prepSearchDialog = () => {
     <span class="glue"><input id="t3" type="checkbox" name="search3" value="source"/><label for="t3">&nbsp;anteckningar</label></span>&nbsp; \
     <span class="glue"><input id="t4" type="checkbox" name="search4" value="album"/><label for="t4">&nbsp;album</label></span>&nbsp; \
     <span class="glue"><input id="t5" type="checkbox" name="search5" value="name" checked/><label for="t5">&nbsp;namn</label></span></div> \
-    <div class="orAnd">Regel för åtskilda ord/textbitar (\' och % räknas som blank):<br><span class="glue"><input id="r1" type="radio" name="searchmode" value="AND" checked/><label for="r1">&nbsp;alla&nbsp;ska&nbsp;hittas</label></span>&nbsp; <span class="glue"><input id="r2" type="radio" name="searchmode" value="OR"/><label for="r2">&nbsp;minst&nbsp;ett&nbsp;av&nbsp;dem&nbsp;ska&nbsp;hittas</label></span></div> <span class="srchMsg"></span></div><textarea name="searchtext" placeholder="(minst tre tecken utöver omgivande blanka)" rows="4" style="min-width:'+tw+'px" /></div>').dialog ( {
+    <div class="orAnd">Regel för åtskilda ord/textbitar (\' och % räknas som blank):<br><span class="glue"><input id="r1" type="radio" name="searchmode" value="AND"/><label for="r1">&nbsp;alla&nbsp;ska&nbsp;hittas&nbsp;i&nbsp;varje&nbsp;bild</label></span>&nbsp; <span class="glue"><input id="r2" type="radio" name="searchmode" value="OR" checked/><label for="r2">&nbsp;minst&nbsp;ett&nbsp;av&nbsp;dem&nbsp;ska&nbsp;hittas&nbsp;i&nbsp;någon&nbsp;bild</label></span></div> <span class="srchMsg"></span></div><textarea name="searchtext" placeholder="(minst tre tecken utöver omgivande blanka)" rows="4" style="min-width:'+tw+'px" /></div>').dialog ( {
       title: "Finn bilder: Sök i bildtexter",
 
       //closeText: "×", // Replaced (why needed?) below by // Close => ×
