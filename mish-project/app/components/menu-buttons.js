@@ -1068,6 +1068,7 @@ export default Component.extend (contextMenuMixin, {
             newdata.insertAt (0, namedata [0]);
             namedata.removeAt (0, 1);
           }
+
           newsort = newsort.trim (); // Important
           test ='E0';
           this.set ("allNames", newdata); // The minipics reload is triggered here (RELOAD)
@@ -2320,13 +2321,15 @@ export default Component.extend (contextMenuMixin, {
       $ (".shortMessage").hide ();
       if (Number ($ (".numShown:first").text ()) < 2) {
         $ ("#link_show a").blur ();
+console.log("showNext", "A");
         return;
       }
-
+console.log("showNext", "B");
 
       if ($ ("#navAuto").text () !== "true") {
       //if ($ ("div[aria-describedby='textareas']").css ("display") === "none") {
         $ ("#dialog").dialog ("close");
+console.log("showNext", "C");
       }
       $ ("#link_show a").css ('opacity', 0 );
 
@@ -2538,7 +2541,6 @@ export default Component.extend (contextMenuMixin, {
     toggleBackg () { // ##### Change theme light/dark
 
       let bgtheme = getCookie ("bgtheme");
-console.log("bgtheme is", bgtheme);
       if (bgtheme === "light") {
         BACKG = "non0";
       } else {
@@ -2587,6 +2589,7 @@ console.log("bgtheme is", bgtheme);
         $ (diaSrch).css ("max-width", sw+"px");
         $ (diaSrch).css ("width", "");
         $ ('textarea[name="searchtext"]').focus ();
+        $ ('textarea[name="searchtext"]').select ();
         $ ("button.findText").html ("Sök i <b>" + $ ("#imdbRoot").text () + "</b>");
         $ ("button.findText").show ();
         $ ("button.updText").hide ();
@@ -4196,7 +4199,7 @@ let prepSearchDialog = () => {
               let cmd = [];
               // Insert links of found pictures into picFound:
               let n = 0, paths = [], albs = [];
-              // Maximum numer of pictures from the search results to show:
+              // Maximum number of pictures from the search results to show:
               let nLimit = 100;
               if (result) {
                 paths = result.split ("\n").sort ();

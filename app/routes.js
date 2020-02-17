@@ -56,21 +56,22 @@ module.exports = function (app) {
     //console.log (process.memoryUsage ())
     // Check if this is a direct address to a picture (or an album?)
 
-    console.log ("PARAMS", req.params)
+    //console.log ("PARAMS", req.params)
     if (req.body && req.body.like) {
       console.log("LIKE", req.body.like)
     }
 
-    next () // pass control to the next matching handler
+    next () // pass control to the next handler
   })
 
-  // ##### #0 00 Find information 'from outside'
+  // ##### #0 00 Find in browser: .../find/<album>/<text items>
   app.get ('/:p([^/]+(/[^/]+)*)', function (req, res, next) {
     let p = req.params.p.toString ().split ("/")
     if (p [0] === "find") {
       var homeDir = imdbHome () // From env.var. $IMDB_HOME or $HOME
       IMDB_ROOT = p [1]
       setRootLink (homeDir, IMDB_ROOT, IMDB_LINK)
+      // A few seconds cookie:
       res.cookie (p [0], p [1] + "/" + p [2], {httpOnly: false, expires: new Date (Date.now () + 9000)})
       res.redirect ("../..")
       res.end ()
@@ -811,7 +812,7 @@ console.log("SEARCH3", columns)
         }
       }
 
-      console.log (" fileExists", fileExists, "recId", recId, i);
+      //console.log (" fileExists", fileExists, "recId", recId, i);
 
       if (recId > -1) { // in db table
         // RECORD 1 means that the database HAS a record
@@ -821,7 +822,7 @@ console.log("SEARCH3", columns)
         if (fileExists) {
           /* RECORD 1  EXISTS 1
           ¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤ */
-          console.log (' sql UPDATE', recId, filePath)
+          //console.log (' sql UPDATE', recId, filePath)
           // update the table row with id = recId
           getSqlParams ()
           await db.run ('UPDATE imginfo SET (filepath,name,album,description,creator,source,subject,tcreated,tchanged) = ($filepath,$name,$album,$description,$creator,$source,$subject,$tcreated,$tchanged) WHERE id=' + recId, values = dbValues)
@@ -829,7 +830,7 @@ console.log("SEARCH3", columns)
         } else {
           /* RECORD 1  EXISTS 0
           ¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤ */
-          console.log (' sql DELETE', recId, filePath)
+          //console.log (' sql DELETE', recId, filePath)
           let sqlDelete = "DELETE FROM imginfo WHERE id=" + recId
           await db.run (sqlDelete)
         }
@@ -839,7 +840,7 @@ console.log("SEARCH3", columns)
         if (fileExists) {
           /* RECORD 0  EXISTS 1
           ¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤ */
-          console.log (' sql INSERT', filePath)
+          //console.log (' sql INSERT', filePath)
           // insert a table row with filepath = filePath
           getSqlParams ()
           await db.run ('INSERT INTO imginfo (filepath,name,album,description,creator,source,subject,tcreated,tchanged) VALUES ($filepath,$name,$album,$description,$creator,$source,$subject,$tcreated,$tchanged)', values = dbValues)
@@ -847,7 +848,7 @@ console.log("SEARCH3", columns)
         } else {
           /* RECORD 0  EXISTS 0
           ¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤ */
-          console.log (' sql NOOP', filePath)
+          //console.log (' sql NOOP', filePath)
           // do nothing
         } // if else
       } // if else
