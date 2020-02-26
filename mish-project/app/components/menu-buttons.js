@@ -64,10 +64,10 @@ export default Component.extend (contextMenuMixin, {
 
     if (this.get ("albumData").length === 0) {
       // Regenerate the picFound album: the shell commands must execute in sequence
-      let lpath = $ ("#imdbLink").text () + "/" + $ ("#picFound").text ();
+      /*let lpath = $ ("#imdbLink").text () + "/" + $ ("#picFound").text ();
       execute ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb").then (async () => {
         await new Promise (z => setTimeout (z, 2000)); //////// Funkar inte alls
-      });
+      });*/
       yield reqDirs (imdbroot); // Then request subdirectories recursively ((2))
     }
 
@@ -1400,6 +1400,10 @@ export default Component.extend (contextMenuMixin, {
           if (tmpName === that.get ("imdbRoot")) {
             document.title = 'Mish: ' + removeUnderscore (that.get ("imdbRoot"), true);
           } else {
+            // Do not display the random suffix if this is the search result album
+            if (tmpName.indexOf (picFound) === 0) {
+              tmpName = tmpName.replace (/\.[^.]{4}$/, "");
+            }
             document.title = 'Mish: ' + removeUnderscore (that.get ("imdbRoot") + " — " + tmpName, true);
           }
           tmpName = removeUnderscore (tmpName); // Improve readability
@@ -2263,8 +2267,8 @@ export default Component.extend (contextMenuMixin, {
       $ (".img_show .img_name").text (namepic); // Should be plain text
       $ (".img_show .img_txt1").html ($ ('#i' + escapeDots (namepic) + ' .img_txt1').html ());
       $ (".img_show .img_txt2").html ($ ('#i' + escapeDots (namepic) + ' .img_txt2').html ());
-      // In search result view, show original path:
-      if ($ ("#imdbDir").text ().replace (/^[^/]*\//, "") === $ ("#picFound").text ()) {
+      // In search result view, show original path for editors:
+      if ($ ("#imdbDir").text ().replace (/^[^/]*\//, "") === $ ("#picFound").text () && (allow.textEdit || allow.adminAll)) {
         execute ("readlink -n " + origpic).then (res => {
           res = res.replace (/^[^/]+\//, "./");
           $ ("#pathOrig").html ("&nbsp;Original: " + res);
@@ -2321,15 +2325,12 @@ export default Component.extend (contextMenuMixin, {
       $ (".shortMessage").hide ();
       if (Number ($ (".numShown:first").text ()) < 2) {
         $ ("#link_show a").blur ();
-console.log("showNext", "A");
         return;
       }
-console.log("showNext", "B");
 
       if ($ ("#navAuto").text () !== "true") {
       //if ($ ("div[aria-describedby='textareas']").css ("display") === "none") {
         $ ("#dialog").dialog ("close");
-console.log("showNext", "C");
       }
       $ ("#link_show a").css ('opacity', 0 );
 
@@ -2829,7 +2830,7 @@ console.log("showNext", "C");
       var usr = "", status = "";
       $ ("#title span.eraseCheck").css ("display", "none");
       $ ("div[aria-describedby='textareas']").css ("display", "none");
-      $ ("#dialog").dialog ("close");
+      //$ ("#dialog").dialog ("close");
       $ ("#searcharea").dialog ("close");
       document.getElementById ("divDropbox").className = "hide-all";
       ediTextClosed ();
@@ -2870,10 +2871,6 @@ console.log("showNext", "C");
         //$ ("#title button.viewSettings").hide ();
         userLog ("LOGOUT");
         $ ("#title a.finish").focus ();
-        //that.set ("albumName", "");
-        //that.set ("albumText", "");
-        //$ ("#imdbDirs").text ("");
-        //$ ("#imdbDir").text ("");
         zeroSet (); // #allowValue = '000... etc.
         that.actions.setAllow ();
         //later ( ( () => {
@@ -2886,6 +2883,30 @@ console.log("showNext", "C");
           let lpath = $ ("#imdbLink").text () + "/" + $ ("#picFound").text ();
           execute ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb").then ();
         }
+        // Inform about login/logout
+        let text = "Du kan fortsätta att se på bilder utan att logga in, ";
+        text += "men med <b style='font-family:monospace'>gästinloggning*</b> kan du:<br><br>";
+        text += "1. Tillfälligt gömma vissa bilder (bra att ha om du vill visa en ";
+        text += "bildserie men hoppa över en del)<br>";
+        text += "2. Byta ordningsföljden mellan bilderna (dra/släpp; bra att ha ";
+        text += "om du vill visa en viss följd av bilder)<br>";
+        text += "3. Se bilder i större förstoring (förbehåll för vissa bilder där ";
+        text += "vi inte har tillstånd av copyright-innehavaren)<br><br>";
+
+        text += "Logga in som <b style='font-family:monospace'>*gäst</b> genom att ";
+        text += "(1) klicka på <b style='font-family:monospace'>Logga in</b>, (2) skriva <b style='font-family:monospace'>gäst</b> (eller <b style='font-family:monospace'>guest</b>) i <b style='font-family:monospace'>User name</b>-fältet ";
+        text += "(ta bort om där står något annat) och (3) klicka på <b style='font-family:monospace'>Bekräfta</b> (inget Password!). ";
+        text += "Du är nu användaren <b style='font-family:monospace'>gäst</b> med <b style='font-family:monospace'>guest</b>-rättigheter – andra användare ";
+        text += "måste logga in med lösenord (password) och kan ha andra rättigheter ";
+        text += "utöver 1. 2. 3. ovan.<br><br>";
+
+        text += "Om du misslyckas med inloggningen (alltså gör fel, visas ej här!) blir ";
+        text += "du inloggad som <b style='font-family:monospace'>anonym</b> som är likvärdigt med att vara utloggad. ";
+        text += "Börja om med att logga ut och så vidare.";
+
+        infoDia ("", "", '<b style="background:transparent">ÄR DU UTLOGGAD?</b>', text , "Jag förstår!", false, false);
+        //(dialogId, picName, title, text, yes, modal, flag)";
+
         // Assure that the album tree is properly shown after LOGOUT
         that.set ("albumData", []); // Triggers jstree rebuild in requestDirs
         setTimeout (function () { // NOTE: Normally, later replaces setTimeout
@@ -2909,10 +2930,6 @@ console.log("showNext", "C");
         $ ("#title input.cred.password").val ("");
         $ ("#title input.cred").hide ();
         that.set ("albumData", []); // Triggers jstree rebuild in requestDirs
-        //that.set ("albumName", "");
-        //that.set ("albumText", "");
-        //$ ("#imdbDirs").text ("");
-        //$ ("#imdbDir").text ("");
         zeroSet (); // #allowValue = '000... etc.
         var picLink = getCookie ("find"); // Detects external "/find/..."
         loginError ().then (isLoginError => {

@@ -671,18 +671,17 @@ module.exports = function (app) {
     // The removeDiacritics funtion may bypass some characters (e.g. Sw. åäöÅÄÖ)
     let like = removeDiacritics (req.body.like).toLowerCase ()
     let cols = eval ("[" + req.body.cols + "]")
-console.log("SEARCH1", like)
-console.log("SEARCH2", cols)
-    //console.log(like,cols)
+    //console.log ("SEARCH1", like) // SQL search items
+    //console.log ("SEARCH2", cols) // Search colunns checkboxes
     let taco = ["description", "creator", "source", "album", "name"]
     let columns = ""
     for (let i=0; i<cols.length; i++) {
       if (cols [i]) {columns += "||" + taco [i]}
     }
     columns = columns.slice (2)
-console.log("SEARCH3", columns)
-//---------
-    try {
+    //console.log ("SEARCH3", columns) // Search colunns names logic
+
+    try { // Start try ----------
       let db = new sqlite3.Database (IMDB_LINK + '/_imdb_images.sqlite', function (err) {
         if (err) {
           console.error (err.message)
@@ -692,9 +691,7 @@ console.log("SEARCH3", columns)
       })
       db.serialize ( () => {
         let sql = 'SELECT id, filepath, ' + columns + ' AS txtstr FROM imginfo WHERE ' + like
-//console.log(sql)
         db.all (sql, [], function (err, rows) {
-//console.log(JSON.stringify (rows))
           foundpath = ""
           if (rows) {
             tempstore = rows
@@ -702,7 +699,6 @@ console.log("SEARCH3", columns)
               tempstore.forEach( (row) => {
                 foundpath += row.filepath.trim () + "\n"
               })
-//console.log(" Found:\n" + foundpath.trim ())
               res.send (foundpath.trim ())
               res.end ()
             }, 1000)
@@ -712,8 +708,8 @@ console.log("SEARCH3", columns)
       })
     } catch (err) {
       console.error ("€RR", err.message)
-    }
-//---------
+    } // End try ----------
+
   })
 
   // ===== UNHANDLED REJECTIONS Express unhandledRejection
@@ -1189,7 +1185,7 @@ function pause (ms) { // or use 'await new Promise (z => setTimeout (z, 2000))'
 // Eller enklare: SELECT name, COUNT(*) FROM imginfo GROUP BY name HAVING COUNT(*) > 1 ORDER BY name;
 // ===== GLOBALS
 
-// Data for the removeDiacritics function (se below)
+// Data for the removeDiacritics function (see below)
 // modified to not affect 'removed' characters:
 const defaultDiacriticsRemovalMap = [
   {'base':'A', 'letters':'\u0041\u24B6\uFF21\u00C0\u00C1\u00C2\u1EA6\u1EA4\u1EAA\u1EA8\u00C3\u0100\u0102\u1EB0\u1EAE\u1EB4\u1EB2\u0226\u01E0\u01DE\u1EA2\u01FA\u01CD\u0200\u0202\u1EA0\u1EAC\u1EB6\u1E00\u0104\u023A\u2C6F'}, // removed Ä \u00C4, Å \u00C5
