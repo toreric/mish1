@@ -4018,7 +4018,7 @@ function removeUnderscore (textString, noHTML) {
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function extractContent(htmlString) { // Extracts text from an HTML string
   var span= document.createElement('span');
-  span.innerHTML= htmlString;
+  span.innerHTML = htmlString;
   return span.textContent || span.innerText;
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -4176,7 +4176,7 @@ let prepSearchDialog = () => {
     <span class="glue"><input id="t3" type="checkbox" name="search3" value="source"/><label for="t3">&nbsp;anteckningar</label></span>&nbsp; \
     <span class="glue"><input id="t4" type="checkbox" name="search4" value="album"/><label for="t4">&nbsp;album</label></span>&nbsp; \
     <span class="glue"><input id="t5" type="checkbox" name="search5" value="name" checked/><label for="t5">&nbsp;namn</label></span></div> \
-    <div class="orAnd">Regel för åtskilda ord/textbitar (\' och % räknas som blank):<br><span class="glue"><input id="r1" type="radio" name="searchmode" value="AND"/><label for="r1">&nbsp;alla&nbsp;ska&nbsp;hittas&nbsp;i&nbsp;varje&nbsp;bild</label></span>&nbsp; <span class="glue"><input id="r2" type="radio" name="searchmode" value="OR" checked/><label for="r2">&nbsp;minst&nbsp;ett&nbsp;av&nbsp;dem&nbsp;ska&nbsp;hittas&nbsp;i&nbsp;någon&nbsp;bild</label></span></div> <span class="srchMsg"></span></div><textarea name="searchtext" placeholder="(minst tre tecken utöver omgivande blanka)" rows="4" style="min-width:'+tw+'px" /></div>').dialog ( {
+    <div class="orAnd">Om blank ska sökas: skriv % (åtskiljer ej)<br>\' kan aldrig sökas: räknas som vanlig blank (åtskiljer)<br>Välj regel för åtskilda ord/textbitar:<br><span class="glue"><input id="r1" type="radio" name="searchmode" value="AND"/><label for="r1">&nbsp;alla&nbsp;ska&nbsp;hittas&nbsp;i&nbsp;varje&nbsp;bild</label></span>&nbsp; <span class="glue"><input id="r2" type="radio" name="searchmode" value="OR" checked/><label for="r2">&nbsp;minst&nbsp;ett&nbsp;av&nbsp;dem&nbsp;ska&nbsp;hittas&nbsp;i&nbsp;någon&nbsp;bild</label></span></div> <span class="srchMsg"></span></div><textarea name="searchtext" placeholder="(minst tre tecken utöver omgivande blanka)" rows="4" style="min-width:'+tw+'px" /></div>').dialog ( {
       title: "Finn bilder: Sök i bildtexter",
 
       //closeText: "×", // Replaced (why needed?) below by // Close => ×
@@ -4190,8 +4190,9 @@ let prepSearchDialog = () => {
         //"id": "findBut",
         class: "findText",
         click: function () {
-          // Replace ['% \n]+ with a single space (' and % disturbes WHERE ... LIKE ...)
-          let sTxt = $ ('textarea[name="searchtext"]').val ().replace (/['% \n]+/g, " ").trim ()
+          // Replace [' \n]+ with a single space (' disturbes WHERE ... LIKE ...)
+          // Replace % == NBSP with space later in the searchText function!
+          let sTxt = $ ('textarea[name="searchtext"]').val ().replace (/[' \n]+/g, " ").trim ()
           if (sTxt.length < 3) {
             $ ('textarea[name="searchtext"]').val ("");
             $ ('textarea[name="searchtext"]').focus ();
@@ -4339,6 +4340,9 @@ function searchText (searchString, and, searchWhere) {
     arr = arr.split (" ");
 //console.log(arr);
     for (let i = 0; i<arr.length; i++) {
+      // First replace % (thus, NBSP):
+      arr[i] = arr [i].replace (/%/g, " ");
+      // Then use % the SQL way:
       arr [i] = "'%" + arr [i] + "%'";
       if (i > 0) {ao = AO + "\n"}
       str += ao + "txtstr LIKE " + arr[i].trim ();

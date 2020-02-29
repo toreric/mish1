@@ -22,8 +22,6 @@ var app = express ()
 process.env.IMDB_HOME = process.argv [2] // home
 process.env.IMDB_ROOT = process.argv [3] // album root
 process.env.PORT = process.argv [4]      // server port
-process.env.FINDIT = ""                  // Search string
-if (process.argv [5]) process.env.FINDIT = process.argv [5]
 // set our port
 var port = process.env.PORT || 3000
 

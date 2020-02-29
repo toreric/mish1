@@ -17,7 +17,7 @@ module.exports = function (app) {
   const TransactionDatabase = require ("sqlite3-transactions").TransactionDatabase
   var setdb = new sqlite3.Database('_imdb_settings.sqlite')
 
-  var sqlite = require ('sqlite') // Tis is sqlite3 'with await', 2019!
+  var sqlite = require ('sqlite') // This is sqlite3 'with await', 2019!
 
   //var jsdom = require('jsdom')
   //var dialog = require('nw-dialog')
@@ -26,7 +26,7 @@ module.exports = function (app) {
   // ----- C O M M O N S
   // ----- Upload counter
   let n_upl = 0
-  // ----- Present directory
+  // ----- Present work directory
   let PWD_PATH = path.resolve ('.')
   // ----- Image data(base) root directory
   let IMDB_ROOT = null // Must be set in route
@@ -659,7 +659,7 @@ module.exports = function (app) {
     //res.sendFile ('index.html', {root: PWD_PATH + '/public/'}) // stay at the index.html file
   })
 
-  // ##### #10. Search text case insensitively in _imdb_images.sqlite
+  // ##### #10. Search text, case insensitively, in _imdb_images.sqlite
   app.post ('/search/:imdbroot', upload.none (), function (req, res, next) {
 
     var homeDir = imdbHome () // From env.var. $IMDB_HOME or $HOME
