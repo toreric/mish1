@@ -64,7 +64,7 @@ function copyToClipboard (str) {
     </div>
   </form>
   <!-- Erase link+source choice -->
-  <div style="display:inline-block" totip="Markera här (MEN BARA OM DU FÖRSTÅR VAD DU SKA GÖRA!) då du vill radera även ORIGINAL-bildfilen då du raderar en LÄNKAD bild (bra för till exempel bortrensning av funna dubletter)">
+  <div style="display:inline-block" totip="Markera här (MEN BARA OM DU FÖRSTÅR VAD DU SKA GÖRA!) då du vill radera även ORIGINAL-bildfilen samtidigt med en LÄNKAD bild (bra för till exempel bortrensning av funna dubletter)">
     <span class="eraseCheck" style="display:none">
       RADERA ÄVEN LÄNKORIGINAL
       <input id="eraOrig" type="checkbox">
@@ -203,7 +203,7 @@ storlek">↕↔↕</a> &nbsp; <br>
     <p onclick="return false" draggable="false" ondragstart="return false" title="Ta bort eller gör nytt album ...">
       <a {{action 'albumEdit'}}>{{{albumText}}}</a>{{{albumName}}}
     </p>
-    <p onclick="return false" draggable="false" ondragstart="return false" title="Visa alla album (hela albumträdet)">
+    <p onclick="return false" draggable="false" ondragstart="return false" title="Visa alla album = hela albumträdet">
       <a id ="jstreeHdr" {{action 'toggleJstreeAlbumSelect'}}>{{jstreeHdr}}</a>
     </p>
     <div class="jstreeAlbumSelect" style="display:none">
@@ -212,6 +212,9 @@ storlek">↕↔↕</a> &nbsp; <br>
         eventDidSelectNode=(action "selectAlbum")
       }}
     </div>
+    <p onclick="return false" draggable="false" ondragstart="return false" title="Favoritskötsel  ">
+      <a id ="favorites" {{action 'seeFavorites'}}>Favoriter</a>
+    </p>
   </div>
 
   <a id="questionMark" class="smBu" title="Användarhandledning" draggable="false" ondragstart="return false" {{action 'toggleHelp'}}>?</a>

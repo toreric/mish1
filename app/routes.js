@@ -380,7 +380,6 @@ module.exports = function (app) {
   })
 
   // ##### #1. Image list section using 'findFiles' with readdirAsync, Bluebird support
-  //           Called from menu-buttons.js component
   app.get ('/imagelist/:imagedir', function (req, res) {
     // NOTE: Reset allfiles here, since it isn't refreshed by an empty album!
     allfiles = undefined
@@ -457,7 +456,25 @@ module.exports = function (app) {
       res.send (names) // Sent buffer arrives as text
       res.end ()
       //console.log ('\n'+names.toString ()+'\n')
-    }).then (console.log ('File order sent from server'))
+    }).then (console.info ('File order sent from server'))
+  })
+
+  // ##### #2.1 Get favorite images name list
+  app.get ('/favorites/:imdbroot', function (req, res) {
+    let favPath = imdbHome () + "/" + req.params.imdbroot.trim () + "/.imdb_favorites"
+    try {
+      execSync ('touch ' + favPath) // In case not yet created
+    } catch (err) {
+      res.location ('/')
+      res.send ("Error!") // Keyword!
+      res.end ()
+      console.error ('Found no favorites')
+    }
+    fs.readFileAsync (favPath)
+    .then (names => {
+      res.send (names) // Sent buffer arrives as text
+      res.end ()
+    }).then (console.info ('Favorites list sent from server'))
   })
 
   // ##### #3. Get full-size (djvu?) file

@@ -3142,6 +3142,42 @@ export default Component.extend (contextMenuMixin, {
       }
     },
     //============================================================================================
+    seeFavorites () {
+      console.info ("seeFavorites function called");
+      return new Promise ( (resolve, reject) => {
+        var xhr = new XMLHttpRequest ();
+        xhr.open ('GET', 'favorites/' + $ ("#imdbRoot").text (), true, null, null);
+        xhr.onload = function () {
+          if (this.status >= 200 && this.status < 300) {
+            var dirList = xhr.responseText;
+            resolve (dirList);
+          } else {
+            reject ({
+              status: this.status,
+              statusText: xhr.statusText
+            });
+          }
+        };
+        xhr.onerror = function () {
+          reject ({
+            status: this.status,
+            statusText: xhr.statusText
+          });
+        };
+        xhr.send ();
+      }).then (favList => {
+        console.info (" favList:\n", favList);
+        $ (".mainMenu").hide ();
+        favDia (favList, "Lägg till markerade", "Spara", "Visa", "Stäng");
+      }).catch (error => {
+        if (error.status !== 404) {
+          console.error (error.message);
+        } else {
+          console.warn ("reqRoot: No NodeJS server");
+        }
+      });
+    },
+    //============================================================================================
     goTop () {
       scrollTo (0, 0);
       $ (".mainMenu").hide ();
@@ -3471,6 +3507,75 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) { // ===== I
   }), 222);
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function favDia (text, add, save, show, close) { // ===== Favorites dialog
+  $ ("#dialog").dialog ('destroy').remove ();
+  let favs = "Favoriter";
+  $ ('<div id="dialog"><textarea class="favorites" name="favorites" placeholder="För favoriter = sparade bildnamn" rows="16" cols="32"></textarea></div>').dialog ( { // Initiate dialog
+    title: favs,
+    closeText: "×",
+    autoOpen: false,
+    draggable: true,
+    modal: true,
+    closeOnEscape: true,
+    resizable: false
+  });
+  // Improve 'dialog title':
+  $ ("div[aria-describedby='dialog'] span.ui-dialog-title").html (" <span class='blue'>" + favs + "</span>");
+  later ( ( () => {
+
+  // Define button array
+  $ ("#dialog").dialog ("option", "buttons", [
+    {
+      text: add,
+      //"id": "saveBut",
+      class: "saveNotes",
+      click: function () { //
+      }
+    },
+    {
+      text: save,
+      class: "saveNotes",
+      click: function () { //
+        //favoritesSave ();
+      }
+    },
+    {
+      text: show,
+      class: "saveNotes",
+      click: function () { //
+        $ (this).dialog ("show");
+      }
+    },
+    {
+      text: close,
+      class: "closeNotes",
+      click: function () {
+        $ (this).dialog ("close");
+      }
+    }
+  ]);
+  $ ("#dialog").dialog ("open");
+  var tmp = $ ("#dialog").prev ().html ();
+  //tmp = tmp.replace (/<span([^>]*)>/, "<span$1><span>" + picName + "</span> &nbsp ");
+  // Why doesn't the close button work? Had to add next line to get it function:
+  tmp = tmp.replace (/<button/,'<button onclick="$(\'#dialog\').dialog(\'close\');"');
+  $ ("#dialog").prev ().html (tmp);
+  $ ('textarea[name="favorites"]').html ("");
+  niceDialogOpen ("dialog");
+  later ( ( () => {
+    $ ("#dialog").dialog ("open"); // Reopen
+    $ ('textarea[name="favorites"]').focus (); // Positions to top *
+    $ ('textarea[name="favorites"]').html (text.replace (/<br>/g, "\n"));
+  }), 40);
+  // Why doesn't the 'close-outside' work? Had to add this to get it function:
+  $ ('.ui-widget-overlay').bind ('click', function () {
+    $ ('#dialog').dialog ("close");
+  });
+  $ ("#dialog").css ("padding", "0");
+
+  }), 222)
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function notesDia (picName, filePath, title, text, save, saveClose, close) { // ===== Text dialog
   $ ("#notes").dialog ('destroy').remove ();
   if (picName) { //
@@ -3784,7 +3889,7 @@ function reqRoot () { // Propose root directory (requestDirs)
     if (error.status !== 404) {
       console.error (error.message);
     } else {
-      console.log ("reqRoot: No NodeJS server");
+      console.warn ("reqRoot: No NodeJS server");
     }
   });
 }
@@ -4024,13 +4129,14 @@ function extractContent(htmlString) { // Extracts text from an HTML string
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function devSpec () { // Device specific features/settings
   // How do we make context menus with iPad/iOS?
-  /*if ( (navigator.userAgent).includes ("iPad")) {
-    $ ("#full_size").hide (); // the central full size image link
+  if ( (navigator.userAgent).includes ("iPad")) {
+    $ ("#full_size").hide (); // the full size image link
+    $ (".nav_.pnav_").hide (); // the print link
   }
   if (window.screen.width < 500) {
-    $ ("#full_size").hide (); // the central full size image link
+    $ ("#full_size").hide (); // the full size image link
     $ ("a.toggleAuto").hide (); // slide show button
-  }*/
+  }
   return false;
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -4213,6 +4319,8 @@ let prepSearchDialog = () => {
             }
             //spinnerWait (true);
             searchText (sTxt, and, sWhr).then (result => {
+              // replace '<' and '>' for presentation in the header below
+              sTxt = sTxt.replace (/</g, "&lt;").replace (/>/g, "&gt;");
               $ ("#temporary_1").text ("");
               let cmd = [];
               // Insert links of found pictures into picFound:
@@ -4452,7 +4560,7 @@ $ ( () => {
     {
       text: "Nyckelord",
       click: () => { // "Non-trivial" dialog button, to a new level
-        infoDia (null, "","Nyckelord", "Ord lagrade som metadata<br>som kan användas som särskilda sökbegrepp<br><br>UNDER UTVECKLING", "Ok", true);
+        infoDia (null, "","Nyckelord", "Ord lagrade som metadata<br>som kan användas som särskilda sökbegrepp<br><br>UNDER UTVECKLING? Vänta och se!", "Ok", true);
       }
     }
   ]);
@@ -4480,6 +4588,7 @@ $ ( () => {
     $ ("#i" + ednp + " .img_txt2" ).attr ("totip", text2.replace(/<[^>]+>/gm, " "));
     if ($ (".img_show .img_name").text () === namepic) {
       $ ("#wrap_show .img_txt1").html (text1);
+      //document.querySelector ("#wrap_show .img_txt1").innerHTML = text1;
       $ ("#wrap_show .img_txt2").html (text2);
     }
     // Cannot save metadata in GIFs:
