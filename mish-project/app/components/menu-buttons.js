@@ -1286,6 +1286,7 @@ export default Component.extend (contextMenuMixin, {
       if (event.keyCode === 37 && $ ("#navKeys").text () === "true" &&
       $ ("div[aria-describedby='searcharea']").css ("display") === "none" &&
       $ ("div[aria-describedby='textareas']").css ("display") === "none" &&
+      !$ ("textarea.favorites").is (":focus") &&
       !$ ("input.cred.user").is (":focus") &&
       !$ ("input.cred.password").is (":focus")) { // Left key <
         event.preventDefault(); // Important!
@@ -1295,6 +1296,7 @@ export default Component.extend (contextMenuMixin, {
       if (event.keyCode === 39 && $ ("#navKeys").text () === "true" &&
       $ ("div[aria-describedby='searcharea']").css ("display") === "none" &&
       $ ("div[aria-describedby='textareas']").css ("display") === "none" &&
+      !$ ("textarea.favorites").is (":focus") &&
       !$ ("input.cred.user").is (":focus") &&
       !$ ("input.cred.password").is (":focus")) { // Right key >
         event.preventDefault(); // Important!
@@ -1304,6 +1306,7 @@ export default Component.extend (contextMenuMixin, {
       if (that.savekey !== 17 && event.keyCode === 65 && $ ("#navAuto").text () !== "true" &&
       $ ("div[aria-describedby='searcharea']").css ("display") === "none" &&
       $ ("div[aria-describedby='textareas']").css ("display") === "none" &&
+      !$ ("textarea.favorites").is (":focus") &&
       !$ ("input.cred.user").is (":focus") &&
       !$ ("input.cred.password").is (":focus")) { // A key
         if (!($ ("#imdbDir").text () === "")) {
@@ -1320,6 +1323,7 @@ export default Component.extend (contextMenuMixin, {
       if (that.savekey !== 17 && event.keyCode === 70 && $ ("#navAuto").text () !== "true" &&
       $ ("div[aria-describedby='searcharea']").css ("display") === "none" &&
       $ ("div[aria-describedby='textareas']").css ("display") === "none" &&
+      !$ ("textarea.favorites").is (":focus") &&
       !$ ("input.cred.user").is (":focus") &&
       !$ ("input.cred.password").is (":focus")) { // F key
         if (!($ ("#imdbDir").text () === "")) {
@@ -2328,10 +2332,10 @@ export default Component.extend (contextMenuMixin, {
         return;
       }
 
-      if ($ ("#navAuto").text () !== "true") {
+      /*if ($ ("#navAuto").text () !== "true") {
       //if ($ ("div[aria-describedby='textareas']").css ("display") === "none") {
         $ ("#dialog").dialog ("close");
-      }
+      }*/
       $ ("#link_show a").css ('opacity', 0 );
 
       var namehere = $ (".img_show .img_name").text ();
@@ -3143,7 +3147,7 @@ export default Component.extend (contextMenuMixin, {
     },
     //============================================================================================
     seeFavorites () {
-      console.info ("seeFavorites function called");
+      //console.info ("seeFavorites function called");
       return new Promise ( (resolve, reject) => {
         var xhr = new XMLHttpRequest ();
         xhr.open ('GET', 'favorites/' + $ ("#imdbRoot").text (), true, null, null);
@@ -3166,7 +3170,7 @@ export default Component.extend (contextMenuMixin, {
         };
         xhr.send ();
       }).then (favList => {
-        console.info (" favList:\n", favList);
+        //console.info (" favList:\n", favList);
         $ (".mainMenu").hide ();
         favDia (favList, "Lägg till markerade", "Spara", "Visa", "Stäng");
       }).catch (error => {
@@ -3509,13 +3513,13 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) { // ===== I
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function favDia (text, add, save, show, close) { // ===== Favorites dialog
   $ ("#dialog").dialog ('destroy').remove ();
-  let favs = "Favoriter";
+  let favs = "Favoriter"; // i18n
   $ ('<div id="dialog"><textarea class="favorites" name="favorites" placeholder="För favoriter = sparade bildnamn" rows="16" cols="32"></textarea></div>').dialog ( { // Initiate dialog
     title: favs,
     closeText: "×",
     autoOpen: false,
     draggable: true,
-    modal: true,
+    modal: false,
     closeOnEscape: true,
     resizable: false
   });
@@ -3527,28 +3531,32 @@ function favDia (text, add, save, show, close) { // ===== Favorites dialog
   $ ("#dialog").dialog ("option", "buttons", [
     {
       text: add,
-      //"id": "saveBut",
-      class: "saveNotes",
-      click: function () { //
+      class: "addFavs",
+      click: function () {
       }
     },
     {
       text: save,
-      class: "saveNotes",
-      click: function () { //
-        //favoritesSave ();
+      class: "saveFavs",
+      click: function () {
+        let text = $ ('textarea[name="favorites"]').val ();
+        saveFavorites (text);
       }
     },
     {
       text: show,
-      class: "saveNotes",
-      click: function () { //
-        $ (this).dialog ("show");
+      class: "showFavs",
+      click: function () {
+        let text = $ ('textarea[name="favorites"]').val ().trim (); // Important!
+        text = text.replace (/\n/g, " ").trim ();
+        text = text.replace (/[ ]+/g, " ");
+        $ (this).dialog ("close");
+        doFindText (text, false, [false, false, false, false, true]);
       }
     },
     {
       text: close,
-      class: "closeNotes",
+      class: "closeFavs",
       click: function () {
         $ (this).dialog ("close");
       }
@@ -3562,18 +3570,15 @@ function favDia (text, add, save, show, close) { // ===== Favorites dialog
   $ ("#dialog").prev ().html (tmp);
   $ ('textarea[name="favorites"]').html ("");
   niceDialogOpen ("dialog");
+  $ ('textarea[name="favorites"]').focus ();
   later ( ( () => {
-    $ ("#dialog").dialog ("open"); // Reopen
-    $ ('textarea[name="favorites"]').focus (); // Positions to top *
-    $ ('textarea[name="favorites"]').html (text.replace (/<br>/g, "\n"));
+    //$ ("#dialog").dialog ("open"); // Reopen
+    //$ ('textarea[name="favorites"]').html (text.replace (/<br>/g, "\n"));
+    $ ('textarea[name="favorites"]').html (text);
   }), 40);
-  // Why doesn't the 'close-outside' work? Had to add this to get it function:
-  $ ('.ui-widget-overlay').bind ('click', function () {
-    $ ('#dialog').dialog ("close");
-  });
   $ ("#dialog").css ("padding", "0");
 
-  }), 222)
+}), 0);
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function notesDia (picName, filePath, title, text, save, saveClose, close) { // ===== Text dialog
@@ -3841,6 +3846,28 @@ function saveOrderFunction (namelist) { // ===== XMLHttpRequest saving the thumb
       }
     };
     xhr.send (namelist);
+  }).catch (error => {
+    console.error (error.message);
+  });
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function saveFavorites (favList) {
+  return new Promise ( (resolve, reject) => {
+    var xhr = new XMLHttpRequest ();
+    xhr.open ('POST', 'savefavor/' + $ ("#imdbRoot").text ());
+    xhr.onload = function () {
+      if (this.status >= 200 && this.status < 300) {
+        userLog ("SAVE");
+        resolve (true); // Can we forget 'resolve'?
+      } else {
+        userLog ("SAVE error");
+        reject ({
+          status: this.status,
+          statusText: xhr.statusText
+        });
+      }
+    };
+    xhr.send (favList);
   }).catch (error => {
     console.error (error.message);
   });
@@ -4318,73 +4345,9 @@ let prepSearchDialog = () => {
               boxes [0].checked = true;
             }
             //spinnerWait (true);
-            searchText (sTxt, and, sWhr).then (result => {
-              // replace '<' and '>' for presentation in the header below
-              sTxt = sTxt.replace (/</g, "&lt;").replace (/>/g, "&gt;");
-              $ ("#temporary_1").text ("");
-              let cmd = [];
-              // Insert links of found pictures into picFound:
-              let n = 0, paths = [], albs = [];
-              // Maximum number of pictures from the search results to show:
-              let nLimit = 100;
-              if (result) {
-                paths = result.split ("\n").sort ();
-                let chalbs = $ ("#imdbDirs").text ().split ("\n");
-                n = paths.length;
-                let lpath = $ ("#imdbLink").text () + "/" + $ ("#picFound").text ();
-                for (let i=0; i<n; i++) {
-                  let chalb = paths [i].replace (/^[^/]+(.*)\/[^/]+$/, "$1");
-                  if (!(chalbs.indexOf (chalb) < 0)) {
-                    let fname = paths [i].replace (/^.*\/([^/]+$)/, "$1");
-                    let linkfrom = paths [i];
-                    linkfrom = "../".repeat (lpath.split ("/").length - 1) + linkfrom.replace (/^[^/]*\//, "");
 
-                    // In order to show duplicates make the link names unique
-                    // by adding four random characters (r4) to the basename (n1)
-                    let n1 = fname.replace (/\.[^.]*$/, "");
-                    let n2 = fname.replace (/(.+)(\.[^.]*$)/, "$2");
-                    if (n2 [0] !== ".") {n2 = "";}
-                    let r4 = Math.random().toString(36).substr(2,4);
-                    fname = n1 + "." + r4 + n2;
+            doFindText (sTxt, and, sWhr);
 
-                    let linkto = lpath + "/" + fname;
-                    if (albs.length < nLimit) {
-                      cmd.push ("ln -sf " + linkfrom + " " + linkto);
-                    }
-                    albs.push (paths [i]);
-                  }
-                }
-                paths = albs;
-              }
-              n = paths.length;
-              // Regenerate the picFound album: the shell commands must execute in sequence
-              let lpath = $ ("#imdbLink").text () + "/" + $ ("#picFound").text ();
-              execute ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb").then ();
-              userLog (n + " FOUND");
-              $ ("#temporary_1").text (cmd.join ("\n"));
-              let yes ="Visa i <b>" + removeUnderscore ($ ("#picFound").text (), true) + "</b>";
-              let modal = false;
-              let p3 =  "<p style='margin:-0.3em 1.6em 0.2em 0;background:transparent'>" + sTxt + "</p>Funna i <span style='font-weight:bold'>" + $ ("#imdbRoot").text () + "</span>:&nbsp; " + n + (n>nLimit?" (i listan, bara " + nLimit + " kan visas)":"");
-              later ( ( () => {
-                // Run `serverShell ("temporary_1")`, symlink creation, via `infoDia (null, "", ...
-                let imdbx = new RegExp ($ ("#imdbLink").text () + "/", "g");
-                infoDia (null, "", p3, "<div style='text-align:left;margin:0.3em 0 0 2em'>" + paths.join ("<br>").replace (imdbx, "./") + "</div>", yes, modal);
-                later ( ( () => {
-                  if (n === 0) {
-                    document.getElementById("yesBut").disabled = true;
-                  }
-                }), 40);
-                $ ("button.findText").show ();
-                $ ("button.updText").css ("float", "right");
-                selectPicFound ();
-                spinnerWait (false);
-                if (n && n <= 100 && loginStatus === "guest") { // Simply show the search result at once...
-                  later ( ( () => {
-                    $ ("div[aria-describedby='dialog'] button#yesBut").click ();
-                  }), 20);
-                } // ...else inspect and decide whether to click the show button
-              }), 200);
-            });
           }
         }
       },
@@ -4421,6 +4384,82 @@ let prepSearchDialog = () => {
       .html ('Finn bilder <span style="color:green">(ej länkar)</span>: Sök i bildtexter');
   });
 } // end prepSearchDialog
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// Find texts in the database (file _imdb_images.sqlite) and
+// populate the #picFound album with the corresponding images
+// 'sTxt' = whitespace separated search text words/items
+// 'and' and 'sWhr' (searchWhere) are search dialog logical settings
+// Example. Find pictures by image names (file basename):
+// doFindText ("img_0012 img_0123", false, [false, false, false, false, true])
+let doFindText = (sTxt, and, sWhr) => {
+  searchText (sTxt, and, sWhr).then (result => {
+    // replace '<' and '>' for presentation in the header below
+    sTxt = sTxt.replace (/</g, "&lt;").replace (/>/g, "&gt;");
+    $ ("#temporary_1").text ("");
+    let cmd = [];
+    // Insert links of found pictures into picFound:
+    let n = 0, paths = [], albs = [];
+    // Maximum number of pictures from the search results to show:
+    let nLimit = 100;
+    if (result) {
+      paths = result.split ("\n").sort ();
+      let chalbs = $ ("#imdbDirs").text ().split ("\n");
+      n = paths.length;
+      let lpath = $ ("#imdbLink").text () + "/" + $ ("#picFound").text ();
+      for (let i=0; i<n; i++) {
+        let chalb = paths [i].replace (/^[^/]+(.*)\/[^/]+$/, "$1");
+        if (!(chalbs.indexOf (chalb) < 0)) {
+          let fname = paths [i].replace (/^.*\/([^/]+$)/, "$1");
+          let linkfrom = paths [i];
+          linkfrom = "../".repeat (lpath.split ("/").length - 1) + linkfrom.replace (/^[^/]*\//, "");
+
+          // In order to show duplicates make the link names unique
+          // by adding four random characters (r4) to the basename (n1)
+          let n1 = fname.replace (/\.[^.]*$/, "");
+          let n2 = fname.replace (/(.+)(\.[^.]*$)/, "$2");
+          if (n2 [0] !== ".") {n2 = "";}
+          let r4 = Math.random().toString(36).substr(2,4);
+          fname = n1 + "." + r4 + n2;
+
+          let linkto = lpath + "/" + fname;
+          if (albs.length < nLimit) {
+            cmd.push ("ln -sf " + linkfrom + " " + linkto);
+          }
+          albs.push (paths [i]);
+        }
+      }
+      paths = albs;
+    }
+    n = paths.length;
+    // Regenerate the picFound album: the shell commands must execute in sequence
+    let lpath = $ ("#imdbLink").text () + "/" + $ ("#picFound").text ();
+    execute ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb").then ();
+    userLog (n + " FOUND");
+    $ ("#temporary_1").text (cmd.join ("\n"));
+    let yes ="Visa i <b>" + removeUnderscore ($ ("#picFound").text (), true) + "</b>";
+    let modal = false;
+    let p3 =  "<p style='margin:-0.3em 1.6em 0.2em 0;background:transparent'>" + sTxt + "</p>Funna i <span style='font-weight:bold'>" + $ ("#imdbRoot").text () + "</span>:&nbsp; " + n + (n>nLimit?" (i listan, bara " + nLimit + " kan visas)":"");
+    later ( ( () => {
+      // Run `serverShell ("temporary_1")`, symlink creation, via `infoDia (null, "", ...
+      let imdbx = new RegExp ($ ("#imdbLink").text () + "/", "g");
+      infoDia (null, "", p3, "<div style='text-align:left;margin:0.3em 0 0 2em'>" + paths.join ("<br>").replace (imdbx, "./") + "</div>", yes, modal);
+      later ( ( () => {
+        if (n === 0) {
+          document.getElementById("yesBut").disabled = true;
+        }
+      }), 40);
+      $ ("button.findText").show ();
+      $ ("button.updText").css ("float", "right");
+      selectPicFound ();
+      spinnerWait (false);
+      if (n && n <= 100 && loginStatus === "guest") { // Simply show the search result at once...
+        later ( ( () => {
+          $ ("div[aria-describedby='dialog'] button#yesBut").click ();
+        }), 20);
+      } // ...else inspect and decide whether to click the show button
+    }), 200);
+  });
+}
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Display found-pictures album link in jstree
 function selectPicFound () {

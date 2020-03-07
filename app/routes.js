@@ -626,6 +626,30 @@ module.exports = function (app) {
     })
   })
 
+  // ##### #8.1 Save the .imdb_favorites file
+  //            Called from the menu-buttons component's favorite dialog
+  app.post ('/savefavor/:rootdir', function (req, res, next) {
+    let file = imdbHome () + "/" + req.params.rootdir.trim () + "/.imdb_favorites"
+    //console.log(8.1, file);
+    var body = []
+    req.on ('data', (chunk) => {
+      body.push (chunk) // body will be a Buffer array: <buffer 39 35 33 2c 30 ... >, <buf... etc.
+    }).on ('end', () => {
+      //console.log(8.1, body);
+      body = Buffer.concat (body).toString () // Concatenate; then change the Buffer into String
+      //console.log(8.1, body);
+      fs.writeFileAsync (file, body).then (function () {
+        console.log ("Saved favorites ")
+      })
+      res.on('error', (err) => {
+        console.error(err.message)
+      })
+      setTimeout (function () {
+        res.sendFile ('index.html', {root: PWD_PATH + '/public/'}) // stay at the index.html file
+      }, 200)
+    })
+  })
+
   // ##### #9. Save Xmp.dc.description and Xmp.dc.creator using exiv2
   app.post ('/savetext/:imagedir', function (req, res, next) {
     //console.log("Accessing 'app.post, savetext'")
@@ -814,7 +838,7 @@ module.exports = function (app) {
         }
         dbValues =
         { $filepath:  filePath,
-          $name:      pathArr [pathArr.length - 1].replace (/\.[^.]+$/, ""),
+          $name:      pathArr [pathArr.length - 1].replace (/\.[^.]+$/, "") + " ",
           $album:     removeDiacritics (filePath.replace (/^[^/]+(\/(.*\/)*)[^/]+$/, "$1")).toLowerCase (),
           $description: xmpParams [0],
           $creator:   xmpParams [1],
