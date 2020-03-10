@@ -201,15 +201,15 @@ module.exports = function (app) {
             //let pics = execSync (cmd)
             let pics = await execP (cmd)
             pics = pics.toString ().trim ().split (" ")
-            if (!pics [0]) {pics = [];} // Remove a "" element
+            if (!pics [0]) {pics = []} // Remove a "" element
             let npics = pics.length
             if (npics > 0) {
               let f = () => {let d = new Date; return Number (d.getTime ().toString ().slice (-1))}
-              let n = f () + 1;
-              let k = 0;
-              // Instead of seeding, loop 1 to 10 times to get some variation:
+              let n = f () + 1
+              let k = 0
+              // Instead of seeding, loop n (1 to 10) times to get some variation:
               for (let i=0; i<n; i++) {
-                k = (Math.random ()*npics);
+                k = (Math.random ()*npics)
               }
               var albumLabel = pics [Number (k.toString ().replace (/\..*/, ""))]
             } else {albumLabel = "€" + dirlist [i]}
@@ -222,17 +222,17 @@ module.exports = function (app) {
           }
           for (let i=0; i<dirlist.length; i++) {
             if (dirlabel [i].slice (0, 1) === "€") {
-              var albumLabel = dirlabel [i].slice (1);
-              dirlabel [i] = "";
+              var albumLabel = dirlabel [i].slice (1)
+              dirlabel [i] = ""
               for (let j=i+1; j<dirlist.length; j++) {
                 if (albumLabel === dirlabel [j].slice (0, albumLabel.length)) {
-                  dirlabel [i] = dirlabel [j];
-                  break;
+                  dirlabel [i] = dirlabel [j]
+                  break
                 }
               }
             }
           }
-          let fd, ignorePaths = homeDir +"/"+ IMDB_ROOT + "/_imdb_ignore.txt";
+          let fd, ignorePaths = homeDir +"/"+ IMDB_ROOT + "/_imdb_ignore.txt"
           try { // Create _imdb_ignore.txt if missing
             fd = await fs.openAsync (ignorePaths, 'r')
             await fs.closeAsync (fd)
@@ -328,7 +328,7 @@ module.exports = function (app) {
       res.end ()
     } catch (err) {
       console.error ("`" + cmd + "`")
-      console.error (err.message);
+      console.error (err.message)
       res.location ('/')
       res.send (err.message)
     }
@@ -517,7 +517,7 @@ module.exports = function (app) {
 
   // ##### #6.5 Update one or more database entries
   app.post ('/sqlupdate', upload.none (), async function (req, res, next) {
-    console.log(req.body);
+    console.logv (req.body)
     let filepaths = req.body.filepaths
     console.log ('SQLUPDATE', filepaths)
     let files = filepaths.trim ().split ('\n')
@@ -602,7 +602,6 @@ module.exports = function (app) {
       console.log ("saveorder", req.params.imagedir, "=>", IMDB_DIR)
     }
     var file = IMDB_DIR + "_imdb_order.txt"
-    //console.log (file)
     execSync ('touch ' + file) // In case not yet created
     var body = []
     req.on ('data', (chunk) => {
@@ -983,8 +982,8 @@ module.exports = function (app) {
   // Replaces findDirectories (), NOTE: Includes imdbLink in the list!
   let allDirs = async imdbLink => {
     let IMDB_PATH = PWD_PATH + '/' + imdbLink
-console.log("PWD_PATH:", PWD_PATH);
-console.log("IMDB_PATH:", IMDB_PATH);
+console.log("PWD_PATH:", PWD_PATH)
+console.log("IMDB_PATH:", IMDB_PATH)
     let dirlist = await cmdasync ('find -L ' + IMDB_PATH + ' -type d|sort')
     dirlist = dirlist.toString ().trim () // Formalise string
     dirlist = dirlist.split ('\n')
@@ -1206,7 +1205,7 @@ console.log("IMDB_PATH:", IMDB_PATH);
   function setRootLink (homeDir, IMDB_ROOT, imdbLink) {
     //console.log ("\nIMDB_HOME:", homeDir)
     if (!IMDB_ROOT || IMDB_ROOT === "") {IMDB_ROOT = execSync ("echo $IMDB_ROOT").toString ().trim ()}
-    if (IMDB_ROOT === "undefined") {IMDB_ROOT = "/";}
+    if (IMDB_ROOT === "undefined") {IMDB_ROOT = "/"}
     //console.log ("IMDB_ROOT:", IMDB_ROOT)
     // Establish the symlink to the chosen album root directory
     execSync ("ln -sfn " + homeDir + "/" + IMDB_ROOT + " " + imdbLink)

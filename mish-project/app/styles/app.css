@@ -277,6 +277,10 @@ button.updText {
   font-size: 90%;
   color: #df1837 !important; /* deeppink replaced */
 }
+textarea.favorites {
+  background: #ffc;
+  width: 20em;
+}
 .ui-widget textarea {
   font-family: inherit;
   color: black;
@@ -1242,7 +1246,7 @@ select option {
   left: 2px;
   margin: 0 3px;
   padding: 0 2px 2px 2px;
-  border: 1.5px solid gray;
+  border: 1px solid gray;
   border-radius: 2px;
   vertical-align: middle;
   text-align: left;
@@ -1256,11 +1260,11 @@ select option {
 .mainMenu p a {
   text-decoration: none;
   font-weight: bold;
-  opacity: 0.8;
+  opacity: 0.9;
   font-size: 90%;
-  border: solid 1px gray;
+  border: 0.5px solid lightgray;
   border-radius: 0 4px 4px 0;
-  background: #666;
+  background: #555;
   line-height: 2.2em;
   margin: -0.4em 0 0 0;
   padding: 0.6em 0.4em 0.6em 0.4em;
