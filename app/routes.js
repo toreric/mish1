@@ -400,6 +400,7 @@ module.exports = function (app) {
         }
       }
       origlist = origlist.trim ()
+      //console.log (" origlist=\n" + origlist);
       ////////////////////////////////////////////////////////
       // Get, check and package quadruple file names:
       //    [ 3 x relative-path, and simple-name ]   of
@@ -731,6 +732,7 @@ module.exports = function (app) {
       })
       db.serialize ( () => {
         let sql = 'SELECT id, filepath, ' + columns + ' AS txtstr FROM imginfo WHERE ' + like
+console.log(sql);
         db.all (sql, [], function (err, rows) {
           foundpath = ""
           if (rows) {
@@ -837,7 +839,7 @@ module.exports = function (app) {
         }
         dbValues =
         { $filepath:  filePath,
-          $name:      pathArr [pathArr.length - 1].replace (/\.[^.]+$/, "") + " ",
+          $name:      pathArr [pathArr.length - 1].replace (/\.[^.]+$/, ""),
           $album:     removeDiacritics (filePath.replace (/^[^/]+(\/(.*\/)*)[^/]+$/, "$1")).toLowerCase (),
           $description: xmpParams [0],
           $creator:   xmpParams [1],
@@ -1221,6 +1223,7 @@ function pause (ms) { // or use 'await new Promise (z => setTimeout (z, 2000))'
   return new Promise (done => setTimeout (done, ms))
 }
 // SQL för att göra lista på dubletter, kanske för att göra PDF med Pdfkit?
+// Ska kanske läggas till: ... + " ESCAPE '\'" ?
 //SELECT a.name, a.filepath FROM imginfo a JOIN (SELECT name, COUNT(*), filepath FROM imginfo GROUP BY name HAVING COUNT(*) > 1) b ON a.name = b.name ORDER BY a.name;
 // Eller enklare: SELECT name, COUNT(*) FROM imginfo GROUP BY name HAVING COUNT(*) > 1 ORDER BY name;
 // ===== GLOBALS

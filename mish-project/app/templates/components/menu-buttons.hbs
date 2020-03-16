@@ -64,7 +64,7 @@ function copyToClipboard (str) {
     </div>
   </form>
   <!-- Erase link+source choice -->
-  <div style="display:inline-block" totip="Markera här (MEN BARA OM DU FÖRSTÅR VAD DU SKA GÖRA!) då du vill radera även ORIGINAL-bildfilen samtidigt med en LÄNKAD bild (bra för till exempel bortrensning av funna dubletter)">
+  <div style="display:inline-block" totip="Markera här (MEN BARA OM DU FÖRSTÅR VAD DU SKA GÖRA!) ifall du vill radera även ORIGINAL-bildfilen samtidigt med en LÄNKAD bild (bra för till exempel radering av funna dubletter)">
     <span class="eraseCheck" style="display:none">
       RADERA ÄVEN LÄNKORIGINAL
       <input id="eraOrig" type="checkbox">
@@ -197,6 +197,9 @@ storlek">↕↔↕</a> &nbsp; <br>
       </span>
       <button class="ui-button mainMenuClose ui-dialog-titlebar-close" title="Close" {{action 'toggleMainMenu' imdbRoot}}>×</button>
     </p>
+    <p onclick="return false" draggable="false" ondragstart="return false" title="Favoritskötsel  ">
+      <a id ="favorites" {{action 'seeFavorites'}}>Favoritbilder</a>
+    </p>
     <p onclick="return false" draggable="false" ondragstart="return false">
       <a {{action 'toggleBackg'}}>Byt till mörk eller ljus bakgrund</a><span style="float:right;font:normal 1em monospace!important">&nbsp;[F11]=fullskärm!</span>
     </p>
@@ -212,9 +215,6 @@ storlek">↕↔↕</a> &nbsp; <br>
         eventDidSelectNode=(action "selectAlbum")
       }}
     </div>
-    <p onclick="return false" draggable="false" ondragstart="return false" title="Favoritskötsel  ">
-      <a id ="favorites" {{action 'seeFavorites'}}>Favoritbilder</a>
-    </p>
   </div>
 
   <a id="questionMark" class="smBu" title="Användarhandledning" draggable="false" ondragstart="return false" {{action 'toggleHelp'}}>?</a>

@@ -2923,7 +2923,11 @@ export default Component.extend (contextMenuMixin, {
         $ ("#title input.cred").hide ();
         that.set ("albumData", []); // Triggers jstree rebuild in requestDirs
         zeroSet (); // #allowValue = '000... etc.
-        var picLink = getCookie ("find"); // Detects external "/find/..."
+
+        // NOTE: The find (picFind) cookie is set by the server when a search
+        // is initiated from the browser by .../find/<album>/<text items>
+        // and <album> is found in the present album root directory (IMDB_ROOT)
+        var picFind = getCookie ("find");
         loginError ().then (isLoginError => {
           if (isLoginError) {
             // Update aug 2017: will not happen
@@ -2946,13 +2950,13 @@ export default Component.extend (contextMenuMixin, {
             status = status.slice(1,status.length-1); // <status>
             that.actions.setAllow ();
             // The getCookie result is used here, detects external "/find/..."
-            if (picLink) picLink = picLink.split ("/");
-            else picLink = ["", ""];
-            if ($ ("#imdbRoots").text ().split ("\n").indexOf (picLink [0]) < 1) picLink = ["", ""];
+            if (picFind) picFind = picFind.split ("/");
+            else picFind = ["", ""];
+            if ($ ("#imdbRoots").text ().split ("\n").indexOf (picFind [0]) < 1) picFind = ["", ""];
             else {
-              if ($ ("#imdbRoot").text () !== picLink [0]) { // Change album root
+              if ($ ("#imdbRoot").text () !== picFind [0]) { // Change album root
                 //pause (4000);
-                that.actions.selectRoot (picLink [0], that);
+                that.actions.selectRoot (picFind [0], that);
               }
             }
             if ($ ("#imdbRoot").text ()) { // If imdbLink is initiated
@@ -2984,9 +2988,9 @@ export default Component.extend (contextMenuMixin, {
           // At this point, we are always logged in with at least 'viewer' status
 
           later ( () => {
-            if (picLink [1] && status !== "viewer") {
+            if (picFind [1] && status !== "viewer") {
               later ( () => {
-                console.log ("Find", picLink [1]);
+                console.log ("Find", picFind [1]);
                 this.actions.findText ();
                 /*let boxes = $ ('.srchIn input[type="checkbox"]');
                 for (let i=0; i<boxes.length; i++) {
@@ -2995,7 +2999,7 @@ export default Component.extend (contextMenuMixin, {
                 } USING changed DEFAULT INSTEAD
                 document.querySelector ('.orAnd input[type="radio"]').checked = false;
                 document.querySelectorAll ('.orAnd input[type="radio"]') [1].checked = true;*/
-                $ ("#searcharea textarea").val (picLink [1]);
+                $ ("#searcharea textarea").val (picFind [1]);
                 later ( () => {
                   $ ("button.findText").click ();
                   //$ ("img.left-click") [0].click ();
@@ -3131,7 +3135,16 @@ export default Component.extend (contextMenuMixin, {
     //============================================================================================
     seeFavorites () {
       //console.info ("seeFavorites function called");
-      return new Promise ( (resolve, reject) => {
+      if ($ ("textarea.favorites").is (":visible")) {
+        $ ("#dialog").dialog ("close");
+        $ (".mainMenu").hide ();
+        return;
+      }
+      let favList = getCookie ("favorites").replace (/[ ]+/g, "\n");
+      favDia (favList, "Lägg till markerade", "Spara", "Visa", "Stäng");
+      $ (".mainMenu").hide ();
+
+      /*return new Promise ( (resolve, reject) => {
         var xhr = new XMLHttpRequest ();
         xhr.open ('GET', 'favorites/' + $ ("#imdbRoot").text (), true, null, null);
         xhr.onload = function () {
@@ -3162,7 +3175,7 @@ export default Component.extend (contextMenuMixin, {
         } else {
           console.warn ("seeFavorites: No NodeJS server");
         }
-      });
+      });*/
     },
     //============================================================================================
     goTop () {
@@ -3204,7 +3217,7 @@ function setCookie(cname, cvalue, exminutes) {
     var expires = "expires="+ d.toUTCString();
     document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
   } else {
-    document.cookie = cname + "=" + cvalue + ";";
+    document.cookie = cname + "=" + cvalue + ";path=/";
   }
   }
 function getCookie(cname) {
@@ -3553,7 +3566,7 @@ function favDia (text, add, save, show, close) { // ===== Show favorites dialog
         // Preset imdbDir 'in order to cheat' saveOrderFunc
         $ ("#imdbDir").text ($ ("#imdbLink").text () +"/"+ $ ("#picFound").text ());
         // Populate the picFound album with favorites in namelist order:
-        doFindText (text, false, [false, false, false, false, true]);
+        doFindText (text, false, [false, false, false, false, true], true);
       }
     },
     {
@@ -3847,7 +3860,11 @@ const saveOrderFunc = namelist => { // ===== XMLHttpRequest saving the thumbnail
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function saveFavorites (favList) {
-  return new Promise ( (resolve, reject) => {
+  favList = favList.trim ();
+  let txt = "\nString_too_long,_thruncated\n";
+  if (favList.length > 4000) favList = (txt + favList.slice (0, 4000)).trim () + txt;
+  setCookie ("favorites", favList.replace (/\n/g, " "), 0);
+  /*return new Promise ( (resolve, reject) => {
     var xhr = new XMLHttpRequest ();
     xhr.open ('POST', 'savefavor/' + $ ("#imdbRoot").text ());
     xhr.onload = function () {
@@ -3865,7 +3882,7 @@ function saveFavorites (favList) {
     xhr.send (favList);
   }).catch (error => {
     console.error (error.message);
-  });
+  });*/
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function userLog (message, flashOnly) { // ===== Message to the log file and flash the user
@@ -4333,6 +4350,7 @@ let prepSearchDialog = () => {
             let sWhr = [];
             let n = 0;
             for (let i=0; i<boxes.length; i++) {
+              // sWhr: Search where checkboxes
               sWhr [i] = boxes [i].checked;
               if (sWhr [i]) {n++}
             } // If no search alternative is checked, check at least the first
@@ -4384,11 +4402,12 @@ let prepSearchDialog = () => {
 // populate the #picFound album with the corresponding images
 // 'sTxt' = whitespace separated search text words/items
 // 'and' and 'sWhr' (searchWhere) are search dialog logical settings
+// When 'exact' is true, the LIKE searched items will not be '%' surrounded
 // Example. Find pictures by image names (file basename):
-// doFindText ("img_0012 img_0123", false, [false, false, false, false, true])
-let doFindText = (sTxt, and, sWhr) => {
-  let fnameOrder = [];
-  searchText (sTxt, and, sWhr).then (result => {
+// doFindText ("img_0012 img_0123", false, [false, false, false, false, true], true)
+let doFindText = (sTxt, and, sWhr, exact) => {
+  let nameOrder = [];
+  searchText (sTxt, and, sWhr, exact).then (result => {
     // replace '<' and '>' for presentation in the header below
     sTxt = sTxt.replace (/</g, "&lt;").replace (/>/g, "&gt;");
     $ ("#temporary_1").text ("");
@@ -4402,8 +4421,10 @@ let doFindText = (sTxt, and, sWhr) => {
       let chalbs = $ ("#imdbDirs").text ().split ("\n");
       n = paths.length;
       let lpath = $ ("#imdbLink").text () + "/" + $ ("#picFound").text ();
+console.log(chalbs);
       for (let i=0; i<n; i++) {
         let chalb = paths [i].replace (/^[^/]+(.*)\/[^/]+$/, "$1");
+console.log(chalb);
         if (!(chalbs.indexOf (chalb) < 0)) {
           let fname = paths [i].replace (/^.*\/([^/]+$)/, "$1");
           let linkfrom = paths [i];
@@ -4416,55 +4437,57 @@ let doFindText = (sTxt, and, sWhr) => {
           if (n2 [0] !== ".") {n2 = "";}
           let r4 = Math.random().toString(36).substr(2,4);
           fname = n1 + "." + r4 + n2;
-          fnameOrder.push (n1 + "." + r4 + ",0,0");
+          nameOrder.push (n1 + "." + r4 + ",0,0");
 
           let linkto = lpath + "/" + fname;
-          if (albs.length < nLimit) {
-            cmd.push ("ln -sf " + linkfrom + " " + linkto);
-          }
+          cmd.push ("ln -sf " + linkfrom + " " + linkto);
+          //if (albs.length < nLimit) {
+          //}
           albs.push (paths [i]);
         }
       }
     }
     paths = albs;
     n = paths.length;
-    let pix = [];
     let obj = [];
     let srchTxt = sTxt.split (" ");
     for (let i=0; i<n; i++) {
-//console.log(i);
+      //console.log(i);
+      obj [i] = ({"path": paths [i], "name": "_NA_", "cmd": cmd [i], "sortIndex": 9999});
       for (let j=0; j<srchTxt.length; j++) {
-        pix [i] = 0;
-        obj [i] = ({"path": paths [i], "name": "_NA_", "pix": pix [i]});
+console.log(paths [i].replace (/^.*\/([^/]+)$/, "$1"),srchTxt [j]);
         if (paths [i].replace (/^.*\/([^/]+)$/, "$1").indexOf (srchTxt [j]) > -1) {
-//console.log(paths [i].replace (/^.*\/([^/]+)$/, "$1"),srchTxt [j]);
-          pix [i] = j + 1;
-          obj [i] = ({"path": paths [i], "name": fnameOrder [i], "pix": pix [i]});
+          obj [i] = ({"path": paths [i], "name": nameOrder [i], "cmd": cmd [i], "sortIndex": j + 1});
           break;
         }
       }
+console.log("cmd [i]=",cmd[i]);
     }
-//console.log("srchTxt",srchTxt);
-//console.log("pix",pix);
 //console.log("obj",obj);
-    let sobj = obj.sort ( (a, b) => {return a.pix - b.pix})
+    let sobj = obj.sort ( (a, b) => {return a.sortIndex - b.sortIndex})
+    obj = null;
 //console.log("sobj",sobj);
 //console.log("paths",paths);
-    let nameOrder = [];
+    paths = [];
+    nameOrder = [];
+    cmd = [];
     for (let i=0; i<n; i++) {
-        paths [i] = sobj [i].path;
-        nameOrder.push (sobj [i].name);
+      paths.push (sobj [i].path);
+      nameOrder.push (sobj [i].name);
+      if (i < nLimit) cmd.push (sobj [i].cmd);
     }
+    sobj = null;
+//console.log("cmd=",cmd);
 //console.log("spaths",paths);
 //console.log("nameOrder",nameOrder);
 
     nameOrder = nameOrder.join ("\n");
+    $ ("#temporary_1").text (cmd.join ("\n"));
 
     // Regenerate the picFound album: the shell commands must execute in sequence
     let lpath = $ ("#imdbLink").text () + "/" + $ ("#picFound").text ();
     execute ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb").then ();
     userLog (n + " FOUND");
-    $ ("#temporary_1").text (cmd.join ("\n"));
     let yes ="Visa i <b>" + removeUnderscore ($ ("#picFound").text (), true) + "</b>";
     let modal = false;
     let p3 =  "<p style='margin:-0.3em 1.6em 0.2em 0;background:transparent'>" + sTxt + "</p>Funna i <span style='font-weight:bold'>" + $ ("#imdbRoot").text () + "</span>:&nbsp; " + n + (n>nLimit?" (i listan, bara " + nLimit + " kan visas)":"");
@@ -4508,7 +4531,7 @@ function selectPicFound () {
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Search the image texts in the current imdbRoot
-function searchText (searchString, and, searchWhere) {
+function searchText (searchString, and, searchWhere, exact) {
   hideShow_g ();
   ediTextClosed ();
   let ao = "", AO;
@@ -4519,10 +4542,16 @@ function searchText (searchString, and, searchWhere) {
   if (arr) {
     arr = arr.split (" ");
     for (let i = 0; i<arr.length; i++) {
+      // Replace underscore to be taken literally, needs `ESCAPE '\'`
+      arr[i] = arr [i].replace (/_/g, "\\_") + "";
       // First replace % (thus, NBSP):
       arr[i] = arr [i].replace (/%/g, " ");
-      // Then use % the SQL way:
-      arr [i] = "'%" + arr [i] + "%'";
+      // Then use % the SQL way if applicable, and add `ESCAPE '\'`:
+      if (exact) { // Exact match for e.g. file (base) names
+        arr [i] = "'" + arr [i] + "' ESCAPE '\\'";
+      } else {
+        arr [i] = "'%" + arr [i] + "%' ESCAPE '\\'";
+      }
       if (i > 0) {ao = AO + "\n"}
       str += ao + "txtstr LIKE " + arr[i].trim ();
     }
@@ -4542,6 +4571,7 @@ function searchText (searchString, and, searchWhere) {
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {
         let data = xhr.responseText.trim ();
+        //data.sort
         resolve (data);
       } else {
         reject ({

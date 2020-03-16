@@ -715,12 +715,8 @@ button[disabled] {
 }
 .showCount {
   display: none;
-  margin-left: 1em;
+  margin-left: -1em;
 }
-/*.showCount, .imDir, .numShown, .numHidden, .numMarked {
-  background-color: #b0b0b0;
-  background-color: #000;
-}*/
 .albumsHdr {
   background-color: transparent;
   text-align: left;

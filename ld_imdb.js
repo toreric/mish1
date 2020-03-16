@@ -149,7 +149,7 @@ if (process.argv [2] == "-e") {
         }
         db.run ('INSERT INTO imginfo (filepath,name,album,description,creator,source,subject,tcreated,tchanged) VALUES ($filepath,$name,$album,$description,$creator,$source,$subject,$tcreated,$tchanged)', {
           $filepath:  pathlist [i],
-          $name:      tmp [tmp.length -1].replace (/\.[^.]+$/, "") + " ",
+          $name:      tmp [tmp.length -1].replace (/\.[^.]+$/, ""),
           $album:     removeDiacritics (pathlist [i].replace (/^[^/]+(\/(.*\/)*)[^/]+$/, "$1")).toLowerCase (),
           $description: param [0],
           $creator:   param [1],
