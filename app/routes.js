@@ -732,7 +732,6 @@ module.exports = function (app) {
       })
       db.serialize ( () => {
         let sql = 'SELECT id, filepath, ' + columns + ' AS txtstr FROM imginfo WHERE ' + like
-console.log(sql);
         db.all (sql, [], function (err, rows) {
           foundpath = ""
           if (rows) {
@@ -984,8 +983,6 @@ console.log(sql);
   // Replaces findDirectories (), NOTE: Includes imdbLink in the list!
   let allDirs = async imdbLink => {
     let IMDB_PATH = PWD_PATH + '/' + imdbLink
-console.log("PWD_PATH:", PWD_PATH)
-console.log("IMDB_PATH:", IMDB_PATH)
     let dirlist = await cmdasync ('find -L ' + IMDB_PATH + ' -type d|sort')
     dirlist = dirlist.toString ().trim () // Formalise string
     dirlist = dirlist.split ('\n')

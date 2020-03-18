@@ -210,6 +210,11 @@ button {
   background: transparent;
   height: auto;
 }
+.ui-dialog-title p {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis!important;
+}
 .ui-dialog .ui-dialog-buttonpane {
   display: inline-block;
   text-align: center;

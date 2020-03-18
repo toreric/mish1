@@ -121,22 +121,7 @@ export default Component.extend (contextMenuMixin, {
     { label: 'Information',
       disabled: false,
       action () {
-        var picName = $ ("#picName").text ();
-        var picOrig = $ ("#picOrig").text ();
-        var title = "Information";
-        var yes = "Ok";
-        getFilestat (picOrig).then (result => {
-          $ ("#temporary").text (result);
-        }).then ( () => {
-            var txt = '<i>Namn</i>: <span style="color:deeppink">' + picName + '</span><br>';
-            txt += $ ("#temporary").text ();
-            var tmp = $ ("#download").attr ("href");
-            if (tmp && tmp.toString () != "null") {
-              txt += '<br><span class="lastDownload"><i>Senast startad nedladdning</i>:<br>' + tmp + "</span>";
-            }
-            infoDia (null, picName, title, txt, yes, false);
-            $ ("#temporary").text ("");
-        });
+        showFileInfo ();
       }
     },
     { label: 'Redigera text...',
@@ -295,7 +280,7 @@ export default Component.extend (contextMenuMixin, {
     },
     { label: 'Placera först',
       disabled: () => {
-        return !((allow.imgReorder && allow.saveChanges) || allow.adminAll);
+        return !( (allow.imgReorder && allow.saveChanges) || allow.adminAll);
       },
       action () {
         var picName;
@@ -318,8 +303,8 @@ export default Component.extend (contextMenuMixin, {
     },
     { label: 'Placera sist',
       disabled: () => {
-        return !((allow.imgReorder && allow.saveChanges) || allow.adminAll);
-        //return !((allow.imgReorder && allow.saveChanges && $ ("#saveOrder").css ("display") !== "none") || allow.adminAll);
+        return !( (allow.imgReorder && allow.saveChanges) || allow.adminAll);
+        //return !( (allow.imgReorder && allow.saveChanges && $ ("#saveOrder").css ("display") !== "none") || allow.adminAll);
       },
       action () {
         var picName;
@@ -1079,7 +1064,7 @@ export default Component.extend (contextMenuMixin, {
             preloadShowImg [i] = new Image();
             preloadShowImg [i].src = newdata [i].show;
           }
-          if ((n > nWarn) && (allow.imgUpload || allow.adminAll)) {
+          if ( (n > nWarn) && (allow.imgUpload || allow.adminAll)) {
             infoDia (null, null, "M Ä N G D V A R N I N G", "<b>Ett album bör av alla möjliga <br>praktiska och tekniska skäl inte ha <br>särskilt många fler än etthundra bilder. <br>Försök att dela på det här albumet ...</b>", "... uppfattat!", true);
           }
           if (n > 0) {
@@ -1171,7 +1156,7 @@ export default Component.extend (contextMenuMixin, {
       }
       if (tgt.tagName !=="IMG") return;
       if ($ (tgt).hasClass ("mark")) {
-        if ((allow.imgHidden || allow.adminAll) && evnt.button === 2) {
+        if ( (allow.imgHidden || allow.adminAll) && evnt.button === 2) {
           // Right click on the marker area of a thumbnail...
           let classes = $ (tgt).parent ("div").parent ("div").attr("class");
           let albumDir, file, tmp;
@@ -1648,7 +1633,7 @@ export default Component.extend (contextMenuMixin, {
       // Extract the album name and replace &nbsp; with space:
       var album = $ (this.get ("albumName")).text ().replace (/\s/g, " ");
       var album1 = $ ("#picFound").text ().replace (/_/g, " ");
-      if ((!(allow.albumEdit || allow.adminAll)) || album === album1) {
+      if ( (!(allow.albumEdit || allow.adminAll)) || album === album1) {
         userLog ("ALBUM protected");
         return;
       }
@@ -2252,8 +2237,10 @@ export default Component.extend (contextMenuMixin, {
       $ (".mainMenu").hide ();
       $ ("div.settings, div.settings div.check").hide ();
       $ ("ul.context-menu").hide ();
-      $ ("#" + escapeDots (namepic) + " a img").blur ();
+      $ ("#i" + escapeDots (namepic) + " a img").blur ();
       $ ("#picName").text (namepic);
+      $ ("#picOrig").text (origpic);
+      //$ ("#picOrig").text ($ ("#imdbLink").text () +"/"+ $ ("#i" + escapeDots (namepic) + " a img").attr ("title"));
       resetBorders (); // Reset all borders
       markBorders (namepic); // Mark this one
       $ ("#wrap_show").removeClass ("symlink");
@@ -2305,6 +2292,7 @@ export default Component.extend (contextMenuMixin, {
           $ (".img_show .img_name").toggle ();
         }*/
       }
+      if ($ ("div[aria-describedby='dialog']").is (":visible") && $ ("div[aria-describedby='dialog'] div span").html () === "Information") {showFileInfo ();}
     },
     //============================================================================================
     hideShow () { // ##### Hide the show image element
@@ -2576,8 +2564,8 @@ export default Component.extend (contextMenuMixin, {
         $ ("#searcharea").dialog ("open");
         $ ("#searcharea div.diaMess div.edWarn").html ("Sökdata...");
         age_imdb_images ();
-        let sw = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
-        let diaSrchLeft = parseInt ((sw - ediTextSelWidth ())/2) + "px";
+        let sw = parseInt ( (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth)*0.95);
+        let diaSrchLeft = parseInt ( (sw - ediTextSelWidth ())/2) + "px";
         $ (diaSrch).css ("left", diaSrchLeft);
         $ (diaSrch).css ("max-width", sw+"px");
         $ (diaSrch).css ("width", "");
@@ -2674,8 +2662,8 @@ export default Component.extend (contextMenuMixin, {
         $ ("div[aria-describedby='textareas'] .ui-dialog-buttonset button:last-child").attr ("title", "Extra sökbegrepp");
         // Resize and position the dialog
         var diaDiv = "div[aria-describedby='textareas']"
-        var sw = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
-        var diaDivLeft = parseInt ((sw - ediTextSelWidth ())/2) + "px";
+        var sw = parseInt ( (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth)*0.95);
+        var diaDivLeft = parseInt ( (sw - ediTextSelWidth ())/2) + "px";
         $ (diaDiv).css ("top", "0px");
         $ (diaDiv).css ("left", diaDivLeft);
         $ (diaDiv).css ("max-width", sw+"px");
@@ -2703,7 +2691,7 @@ export default Component.extend (contextMenuMixin, {
       if (!(allow.imgOriginal || allow.adminAll)) return;
       var name = $ ("#picName").text ();
       // Only selected user classes may view or download protected images
-      if ((name.startsWith ("Vbm") || name.startsWith ("CPR")) && ["admin", "editall", "edit"].indexOf (loginStatus) < 0) {
+      if ( (name.startsWith ("Vbm") || name.startsWith ("CPR")) && ["admin", "editall", "edit"].indexOf (loginStatus) < 0) {
         userLog ("COPYRIGHT©protected", true);
         return;
       }
@@ -2749,7 +2737,7 @@ export default Component.extend (contextMenuMixin, {
       if (!(allow.imgOriginal || allow.adminAll)) return;
       let name = $ ("#picName").text ();
       // Only selected user classes may view or download protected images
-      if ((name.startsWith ("Vbm") || name.startsWith ("CPR")) && ["admin", "editall", "edit"].indexOf (loginStatus) < 0) {
+      if ( (name.startsWith ("Vbm") || name.startsWith ("CPR")) && ["admin", "editall", "edit"].indexOf (loginStatus) < 0) {
         userLog ("COPYRIGHT©protected", true);
         return;
       }
@@ -3052,7 +3040,7 @@ export default Component.extend (contextMenuMixin, {
                   $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_1"));
                   // Show the unchecked erase-link&&source checkbox if relevant
                   eraseOriginals = false;
-                  if ((allow.deleteImg || allow.adminAll) && ["admin", "editall"].indexOf (loginStatus) > -1) {
+                  if ( (allow.deleteImg || allow.adminAll) && ["admin", "editall"].indexOf (loginStatus) > -1) {
                     $ ("#title span.eraseCheck").css ("display", "inline");
                     $ ("#eraOrig") [0].checked = false;
                   } else {
@@ -3143,39 +3131,6 @@ export default Component.extend (contextMenuMixin, {
       let favList = getCookie ("favorites").replace (/[ ]+/g, "\n");
       favDia (favList, "Lägg till markerade", "Spara", "Visa", "Stäng");
       $ (".mainMenu").hide ();
-
-      /*return new Promise ( (resolve, reject) => {
-        var xhr = new XMLHttpRequest ();
-        xhr.open ('GET', 'favorites/' + $ ("#imdbRoot").text (), true, null, null);
-        xhr.onload = function () {
-          if (this.status >= 200 && this.status < 300) {
-            var dirList = xhr.responseText;
-            resolve (dirList);
-          } else {
-            reject ({
-              status: this.status,
-              statusText: xhr.statusText
-            });
-          }
-        };
-        xhr.onerror = function () {
-          reject ({
-            status: this.status,
-            statusText: xhr.statusText
-          });
-        };
-        xhr.send ();
-      }).then (favList => {
-        //console.info (" favList:\n", favList);
-        $ (".mainMenu").hide ();
-        favDia (favList, "Lägg till markerade", "Spara", "Visa", "Stäng");
-      }).catch (error => {
-        if (error.status !== 404) {
-          console.error (error.message);
-        } else {
-          console.warn ("seeFavorites: No NodeJS server");
-        }
-      });*/
     },
     //============================================================================================
     goTop () {
@@ -3501,8 +3456,8 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) { // ===== I
         return true;
       }
     }]);
-    niceDialogOpen (dialogId);
     $ ("div[aria-describedby='" + dialogId + "'] span.ui-dialog-title").html (title); //#
+    niceDialogOpen (dialogId);
   }), 22);
   later ( ( () => {
     $ ("#yesBut").focus ();
@@ -3541,8 +3496,11 @@ function favDia (text, add, save, show, close) { // ===== Show favorites dialog
           newfav += str + "\n";
         }
         let text = $ ('textarea[name="favorites"]').val ().trim ();
-        $ ('textarea[name="favorites"]').val ((text + "\n" + newfav).trim ());
-        $ ('textarea[name="favorites"]').focus ();
+        var texar = $ ('textarea[name="favorites"]') [0];
+        //var texar = document.querySelector('textarea[name="favorites"]');
+        $ ('textarea[name="favorites"]').val ( (text + "\n" + newfav).trim ());
+        texar.scrollTop = texar.scrollHeight;
+        texar.focus ();
       }
     },
     {
@@ -3693,16 +3651,20 @@ function niceDialogOpen (dialogId) {
   $ (id).css ("max-height","");
   $ (id).dialog ("open");
   var esw = ediTextSelWidth () - 100;
-  var sw = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+  let sw = parseInt ( (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth)*0.95);
   $ (id).parent ().css ("min-width", "300px");
   $ (id).parent ().css ("max-width", sw+"px");
   $ (id).parent ().width ("auto");
   $ (id).width ("auto");
-  if (id === "#notes") {
+
+  let tmp = $ (id).parent ().outerWidth ();
+  let pos = $ (id).parent ().position ();
+  if (tmp < esw) esw = tmp;
+  if (pos.left < 2 || pos.left + esw > sw/0.95 + 10) {
     var diaDivLeft = parseInt ( (sw - esw)/2) + "px";
     $ (id).parent ().css ("left", diaDivLeft);
-    $ (id).parent ().width (esw + "px");
   }
+  $ (id).parent ().width (esw + "px");
   var up = 128;
   let hs = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
   $ (id).parent ().css ("max-height", hs + "px");
@@ -4290,7 +4252,7 @@ function execute (command) { // Execute on the server, return a promise
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function ediTextSelWidth () { // Selects a useful edit dialog width within available screen (px)
-  var sw = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+  var sw = parseInt ( (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth)*0.95);
   if (sw > 750) {sw = 750;}
   return sw;
 }
@@ -4849,4 +4811,23 @@ function allowFunc () { // Called from setAllow (which is called from init(), lo
 history.pushState (null, null, location.href);
 window.onpopstate = function () {
     history.go(1);
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function showFileInfo () {
+  var picName = $ ("#picName").text ();
+  var picOrig = $ ("#picOrig").text ();
+  var title = "Information";
+  var yes = "Ok";
+  getFilestat (picOrig).then (result => {
+    $ ("#temporary").text (result);
+  }).then ( () => {
+    var txt = '<i>Namn</i>: <span style="color:deeppink">' + picName + '</span><br>';
+    txt += $ ("#temporary").text ();
+    var tmp = $ ("#download").attr ("href");
+    if (tmp && tmp.toString () != "null") {
+      txt += '<br><span class="lastDownload"><i>Senast startad nedladdning</i>:<br>' + tmp + "</span>";
+    }
+    infoDia (null, picName, title, txt, yes, false);
+    $ ("#temporary").text ("");
+  });
 }
