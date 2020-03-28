@@ -6,17 +6,18 @@
     margin: 11mm 0mm 6mm 6mm;
     text-align: center;
   }
+  #wrap_show.symlink {
+    border: none;
+  }
   img:first-of-type {
-    width: 988px;
+    width: 1197px!important;
     height: auto;
-    max-height: 1333px;
-    margin: 0 0 0 10mm;
+    max-height: 1500px;
+    margin: 0 0 0 -4mm;
   }
   .img_txt1, .img_txt2 {
     font-size: 165%;
-    margin: 0 0 0 9mm;
-  }
-  #pathOrig {
-    margin: 0 0 0 10mm;
+    color: #000;
+    margin: 0 0 0 -5mm;
   }
 }

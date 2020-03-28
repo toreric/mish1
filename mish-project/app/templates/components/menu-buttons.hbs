@@ -63,6 +63,10 @@ function copyToClipboard (str) {
       <button type="submit" class="viewSettings" title="" {{action "infStatus"}}>settings</button>
     </div>
   </form>
+  <!-- Get webblink to non-hidden pictures -->
+  <div style="display:inline-block" totip="Information om direktlänk till bilder">
+    <span class="picLinker eraseCheck" style="" {{action "webLinker"}}>WEBBLÄNK</span>
+  </div>
   <!-- Erase link+source choice -->
   <div style="display:inline-block" totip="Markera här (MEN BARA OM DU FÖRSTÅR VAD DU SKA GÖRA!) ifall du vill radera även ORIGINAL-bildfilen samtidigt med en LÄNKAD bild (bra för till exempel radering av funna dubletter)">
     <span class="eraseCheck" style="display:none">
@@ -142,7 +146,7 @@ storlek">↕↔↕</a> &nbsp; <br>
 </div>
 
 <!-- ///// DISPLAY THE (SLIDE) SHOW IMAGE ///// -->
-<div class="img_show" style="display:none" draggable="false">
+<div class="img_show" style="display:none" draggable="false"><br>
   <span class="imDir path BACKG">{{{albumName}}}</span>
   <div id="wrap_pad" class="BACKG" draggable="false">
 
@@ -298,8 +302,7 @@ storlek">↕↔↕</a> &nbsp; <br>
 <!-- ///// SHOW MINI IMAGES (thumbnails) ///// -->
 <!-- Uses subaList and allNames from menu-buttons.js -->
 <p class='albumsHdr' draggable="false" ondragstart="return false">
-  <span class="imDir path BACKG">{{{albumName}}}</span>
-  <br><!-- Links to SubAlbums -->
+  <!-- Links to SubAlbums -->
   <div class="miniImgs">
     {{#each subaList as |suba|}}
       <div class="subAlbum" {{action 'subaSelect' suba.album}}>

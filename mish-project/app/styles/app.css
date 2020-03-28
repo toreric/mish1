@@ -14,7 +14,15 @@ body {
     display: none;
   }
 }
-/* Correction these tags against the introduced
+#wrap_pad {
+  position: relative;
+  text-align: center;
+  margin: 0.95em 0 auto 2.15em;
+  padding-top: 1em;     /* click-back area above .img_show */
+  padding-bottom: 20em; /* and below .img_txt2             */
+  z-index: 8;
+}
+/* Correcting these tags against the introduced
 spacing when they occur in inserted picture texts! */
 .img_txt1 a, .img_txt1 b, .img_txt1 strong, .img_txt1 i, .img_txt1 em, .img_txt1 u {
   margin: 0 -0.18em!important;
@@ -465,6 +473,10 @@ button.mainMenuClose.ui-dialog-titlebar-close:hover {
   border-radius: 2px;
   background: transparent;
 }
+#title span.picLinker {
+  display: inline!important;
+  cursor: pointer!important;
+}
 #title button {
   font-family: Verdana, Geneva, Tahoma, sans-serif!important;
   font-size: 0.8em;
@@ -601,8 +613,8 @@ div[aria-describedby='textareas'] {
 }
 #smallButtons a.smBu {
   display: inline-block;
-  width: 1em;
-  height: 1em;
+  width: 1.2em;
+  height: 1.1em;
   vertical-align: middle;
   text-align: center;
   background: #444;
@@ -658,9 +670,9 @@ div[aria-describedby='textareas'] {
 }
 #smallButtons a#menuButton {
   background-color: #0085ff;
-  height: 0.7em;
+  /*height: 0.7em;
   line-height: 0.7em;
-  z-index: 13;
+  z-index: 13;*/
 }
 #smallButtons.mainMenu p * {
   display: inline;
@@ -741,21 +753,21 @@ button[disabled] {
 }
 strong.albumName {
   font-style: normal;
-  margin: 0.5em 0.25em 0.5em 0.2em;
+  margin: 0.5em 0 0.5em 0.2em;
 }
 .BUT_1 {
-  width: 1em;
+  width: 1.1em;
   border: 1px solid #aaa;
   border-radius: 4px;
   padding: 0 0.1em 0.2em 0.4em;
-  margin: 0 0 0 0;
+  margin: 0 0.7em 0 0;
   cursor: pointer;
-  font-size: 1.1em;
+  font-size: 1.4em;
 }
 .BUT_2 {
   background:transparent;
   display:inline-block;
-  padding: 0.2em 0.1em 0.2em 0.4em;
+  padding: 0.4em 0.1em 0.2em 0em;
 }
 a.imDir span{
   background: transparent;
@@ -1012,14 +1024,6 @@ div.img_mini.symlink div.markTrue, div.img_mini.symlink div.markFalse {
   background-color: transparent;
   cursor: pointer;
 }
-#wrap_pad {
-  position: relative;
-  text-align: center;
-  margin: 0.95em 0 auto 2.15em;
-  padding-top: 3em;     /* click-back area above .img_show */
-  padding-bottom: 20em; /* and below .img_txt2             */
-  z-index: 8;
-}
 .nav_links {
   display: none;
   position: fixed;
@@ -1180,7 +1184,8 @@ select option {
 #wrap_show {
   display: inline-table;
   width: 20%;
-  margin: 0 50px 0 -4px;
+  /* regulate distance from border here, not with #wrap_pad */
+  margin: 0 55px 0 8px;
 }
 #wrap_show.symlink {
   border-bottom: 1.5px solid #0b0;

@@ -2003,7 +2003,9 @@ export default Component.extend (contextMenuMixin, {
           $ ("a.imDir").attr ("title", "Album");
           let n = $ ("a.imDir").length/2; // there is also a bottom link line...
           let nsub = n;
-          let z, iz;
+          let z, iz, obj;
+          let fullAlbumName= $ ("#imdbRoot").text () + $ ("#imdbDir").text ().replace (/^[^/]*/, "");
+          fullAlbumName = '<span title-1="' + fullAlbumName+ '">' + that.get ("albumName") + ": </span>"
           if (tmp [0] === "|«") {
             $ ("a.imDir").each (function (index, element) {
               if (index < n) {z = 0;} else {z = n;}
@@ -2013,7 +2015,7 @@ export default Component.extend (contextMenuMixin, {
                 $ (element).closest ("div.subAlbum").attr ("title", returnTitles [iz]);
                 if (!z) {
                   nsub--;
-                  let obj = $ (element).closest ("div.subAlbum");
+                  obj = $ (element).closest ("div.subAlbum");
                   obj.addClass ("BUT_1");
                   if (iz === 2) {
                     if (nsub < 1) {
@@ -2023,6 +2025,7 @@ export default Component.extend (contextMenuMixin, {
                     } else {
                       obj.after ("<div class=\"BUT_2\"> " + nsub + " underalbum</div><br>"); // i18n
                     }
+                    obj.after (fullAlbumName);
                   }
                 }
               }
@@ -2036,7 +2039,7 @@ export default Component.extend (contextMenuMixin, {
                 $ (element).closest ("div.subAlbum").attr ("title", returnTitles [index + 2]);
                 if (!z) {
                   nsub--;
-                  let obj = $ (element).closest ("div.subAlbum");
+                  obj = $ (element).closest ("div.subAlbum");
                   obj.addClass ("BUT_1");
                   if (nsub < 1) {
                     obj.after ("<div class=\"BUT_2\"> Inga underalbum</div><br>"); // i18n
@@ -2045,11 +2048,13 @@ export default Component.extend (contextMenuMixin, {
                   } else {
                     obj.after ("<div class=\"BUT_2\"> " + nsub + " underalbum</div><br>"); // i18n
                   }
+                  obj.after (fullAlbumName);
                 }
               }
             });
           } else {
-            let obj = $ ("div.subAlbum").first ();
+            obj = $ ("div.subAlbum").first ();
+            obj.before (fullAlbumName);
             if (nsub < 1) {
               obj.before ("<div class=\"BUT_2\"> Inga underalbum</div><br>"); // i18n
             } else if (nsub === 1) {
@@ -2863,9 +2868,10 @@ export default Component.extend (contextMenuMixin, {
           let lpath = $ ("#imdbLink").text () + "/" + $ ("#picFound").text ();
           execute ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb").then ();
         }
-        // Inform about login/logout
+        // Inform about login/logout i18n
         let text = "Du kan fortsätta att se på bilder utan att logga in, ";
-        text += "men med <b style='font-family:monospace'>gästinloggning*</b> kan du:<br><br>";
+        text += "men med <b style='font-family:monospace'>gästinloggning</b>* kan du:<br><br>";
+        text += '<div style="text-align:left">'
         text += "1. Tillfälligt gömma vissa bilder (bra att ha om du vill visa en ";
         text += "bildserie men hoppa över en del)<br>";
         text += "2. Byta ordningsföljden mellan bilderna (dra/släpp; bra att ha ";
@@ -2873,12 +2879,13 @@ export default Component.extend (contextMenuMixin, {
         text += "3. Se bilder i större förstoring (förbehåll för vissa bilder där ";
         text += "vi inte har tillstånd av copyright-innehavaren)<br><br>";
 
-        text += "Logga in som <b style='font-family:monospace'>*gäst</b> genom att ";
+        text += "Logga in som *<b style='font-family:monospace'>gäst</b> genom att ";
         text += "(1) klicka på <b style='font-family:monospace'>Logga in</b>, (2) skriva <b style='font-family:monospace'>gäst</b> (eller <b style='font-family:monospace'>guest</b>) i <b style='font-family:monospace'>User name</b>-fältet ";
         text += "(ta bort om där står något annat) och (3) klicka på <b style='font-family:monospace'>Bekräfta</b> (inget Password!). ";
         text += "Du är nu användaren <b style='font-family:monospace'>gäst</b> med <b style='font-family:monospace'>guest</b>-rättigheter – andra användare ";
         text += "måste logga in med lösenord (password) och kan ha andra rättigheter ";
         text += "utöver 1. 2. 3. ovan.<br><br>";
+        text += "</div>"
 
         text += "Om du misslyckas med inloggningen (alltså gör fel, visas ej här!) blir ";
         text += "du inloggad som <b style='font-family:monospace'>anonym</b> som är likvärdigt med att vara utloggad. ";
@@ -3121,6 +3128,58 @@ export default Component.extend (contextMenuMixin, {
       }
     },
     //============================================================================================
+    webLinker () {
+      if ($ ("div[aria-describedby='dialog']").is (":visible")) {
+        $ ("#dialog").dialog ("close");
+        return;
+      }
+      let linktext = window.location.hostname
+      if (linktext === "localhost") {
+        linktext = "http://localhost:3000";
+      } else {
+        linktext = "https://" + linktext;
+      }
+      linktext += "/find/" + $ ("#imdbRoot").text () + "/";
+      let names = $ (".img_mini .img_name").text ();
+      names = names.toString ().trim ().replace (/\s+/g, " ");
+      names = names.split (" ");
+      let tmp = document.getElementsByClassName ("img_mini");
+      let numTotal = tmp.length;
+      let linkarr = [];
+      for (let i=0; i<numTotal; i++) {
+        if (tmp [i].style.backgroundColor !== $ ("#hideColor").text ()) {
+          if ($ ("#imdbDir").text () === $ ("#imdbLink").text () + "/" + $ ("#picFound").text ()) {
+            names [i] = names [i].replace (/\.[^.]{4}$/, "");
+          }
+          //linktext += names [i] + "%20";
+          linkarr.push (names [i]);
+        }
+      }
+      let pixt = "bilden"; // i18n
+      if (linkarr.length > 1) pixt = "bilderna";
+      linktext += linkarr.join ("%20");
+      console.log(linktext);
+      let lite = "<br>Inga bilder";
+      if (linktext.replace (/^([^/]*\/)*(.*)/, "$2")) {
+        lite = "Webblänk till " + pixt + ":<br><br>";
+        lite += '<div style="text-align:left;word-break:break-all">';
+        lite += '<a href="' + linktext + '" target="_blank">';
+        lite += '<b style="font-size:90%">' + linktext + "</b></a><br><br>";
+        lite += '</div><div style="text-align:left">';
+        lite += "Kopiera länktexten – den kan användas som ”klicklänk” i mejl "
+        lite += "eller i en webbläsares adressfält ";
+        lite += "(du kan testa med att klicka på länken)<br><br>";
+        lite += "Kontrollera resultatet innan du skickar länken vidare till någon annan; ";
+        lite += "det kan eventuellt visas fler eller färre bilder än man tänkt sig ";
+        lite += "– orsakat av namnlikhet, dolt album eller annat</div>";
+        if (loginStatus !== "guest") {
+          lite += "<br>Tänk på att vissa bilder kan kräva mer än gästinloggning för att kunna ";
+          lite += "ses. Var därför gärna inloggad som ”gäst” när du gör en webblänk till andra!";
+        }
+      }
+      infoDia (null, null, "Länk för webbläsare", lite, "OK");
+    },
+    //============================================================================================
     seeFavorites () {
       //console.info ("seeFavorites function called");
       if ($ ("textarea.favorites").is (":visible")) {
@@ -3136,6 +3195,7 @@ export default Component.extend (contextMenuMixin, {
     goTop () {
       scrollTo (0, 0);
       $ (".mainMenu").hide ();
+      $ ("#dialog").dialog ("close");
     }
   }
 });
@@ -3656,6 +3716,7 @@ function niceDialogOpen (dialogId) {
   $ (id).parent ().css ("max-width", sw+"px");
   $ (id).parent ().width ("auto");
   $ (id).width ("auto");
+  $ (id).parent ().css ("top", "28px"); // added
 
   let tmp = $ (id).parent ().outerWidth ();
   let pos = $ (id).parent ().position ();
@@ -4283,7 +4344,7 @@ let prepSearchDialog = () => {
     <span class="glue"><input id="t3" type="checkbox" name="search3" value="source"/><label for="t3">&nbsp;anteckningar</label></span>&nbsp; \
     <span class="glue"><input id="t4" type="checkbox" name="search4" value="album"/><label for="t4">&nbsp;album</label></span>&nbsp; \
     <span class="glue"><input id="t5" type="checkbox" name="search5" value="name" checked/><label for="t5">&nbsp;namn</label></span></div> \
-    <div class="orAnd">Om blank ska sökas: skriv % (åtskiljer ej)<br>\' kan aldrig sökas: räknas som vanlig blank (åtskiljer)<br>Välj regel för åtskilda ord/textbitar:<br><span class="glue"><input id="r1" type="radio" name="searchmode" value="AND"/><label for="r1">&nbsp;alla&nbsp;ska&nbsp;hittas&nbsp;i&nbsp;varje&nbsp;bild</label></span>&nbsp; <span class="glue"><input id="r2" type="radio" name="searchmode" value="OR" checked/><label for="r2">&nbsp;minst&nbsp;ett&nbsp;av&nbsp;dem&nbsp;ska&nbsp;hittas&nbsp;i&nbsp;någon&nbsp;bild</label></span></div> <span class="srchMsg"></span></div><textarea name="searchtext" placeholder="(minst tre tecken utöver omgivande blanka)" rows="4" style="min-width:'+tw+'px" /></div>').dialog ( {
+    <div class="orAnd">Om blank ska sökas: skriv % (åtskiljer ej)<br>Välj regel för åtskilda ord/textbitar:<br><span class="glue"><input id="r1" type="radio" name="searchmode" value="AND"/><label for="r1">&nbsp;alla&nbsp;ska&nbsp;hittas&nbsp;i&nbsp;varje&nbsp;bild</label></span>&nbsp; <span class="glue"><input id="r2" type="radio" name="searchmode" value="OR" checked/><label for="r2">&nbsp;minst&nbsp;ett&nbsp;av&nbsp;dem&nbsp;ska&nbsp;hittas&nbsp;i&nbsp;någon&nbsp;bild</label></span></div> <span class="srchMsg"></span></div><textarea name="searchtext" placeholder="(minst tre tecken utöver omgivande blanka)" rows="4" style="min-width:'+tw+'px" /></div>').dialog ( {
       title: "Finn bilder: Sök i bildtexter",
 
       //closeText: "×", // Replaced (why needed?) below by // Close => ×
@@ -4297,9 +4358,9 @@ let prepSearchDialog = () => {
         //"id": "findBut",
         class: "findText",
         click: function () {
-          // Replace [' \n]+ with a single space (' disturbes WHERE ... LIKE ...)
+          // Replace [ \n]+ with a single space
           // Replace % == NBSP with space later in the searchText function!
-          let sTxt = $ ('textarea[name="searchtext"]').val ().replace (/[' \n]+/g, " ").trim ()
+          let sTxt = $ ('textarea[name="searchtext"]').val ().replace (/[ \n]+/g, " ").trim ()
           if (sTxt.length < 3) {
             $ ('textarea[name="searchtext"]').val ("");
             $ ('textarea[name="searchtext"]').focus ();
@@ -4383,10 +4444,10 @@ let doFindText = (sTxt, and, sWhr, exact) => {
       let chalbs = $ ("#imdbDirs").text ().split ("\n");
       n = paths.length;
       let lpath = $ ("#imdbLink").text () + "/" + $ ("#picFound").text ();
-console.log(chalbs);
+//console.log(chalbs);
       for (let i=0; i<n; i++) {
         let chalb = paths [i].replace (/^[^/]+(.*)\/[^/]+$/, "$1");
-console.log(chalb);
+//console.log(chalb);
         if (!(chalbs.indexOf (chalb) < 0)) {
           let fname = paths [i].replace (/^.*\/([^/]+$)/, "$1");
           let linkfrom = paths [i];
@@ -4417,13 +4478,13 @@ console.log(chalb);
       //console.log(i);
       obj [i] = ({"path": paths [i], "name": "_NA_", "cmd": cmd [i], "sortIndex": 9999});
       for (let j=0; j<srchTxt.length; j++) {
-console.log(paths [i].replace (/^.*\/([^/]+)$/, "$1"),srchTxt [j]);
+//console.log(paths [i].replace (/^.*\/([^/]+)$/, "$1"),srchTxt [j]);
         if (paths [i].replace (/^.*\/([^/]+)$/, "$1").indexOf (srchTxt [j]) > -1) {
           obj [i] = ({"path": paths [i], "name": nameOrder [i], "cmd": cmd [i], "sortIndex": j + 1});
           break;
         }
       }
-console.log("cmd [i]=",cmd[i]);
+//console.log("cmd [i]=",cmd[i]);
     }
 //console.log("obj",obj);
     let sobj = obj.sort ( (a, b) => {return a.sortIndex - b.sortIndex})
@@ -4450,7 +4511,7 @@ console.log("cmd [i]=",cmd[i]);
     let lpath = $ ("#imdbLink").text () + "/" + $ ("#picFound").text ();
     execute ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb").then ();
     userLog (n + " FOUND");
-    let yes ="Visa i <b>" + removeUnderscore ($ ("#picFound").text (), true) + "</b>";
+    let yes ="Visa i <b>" + removeUnderscore ($ ("#picFound").text ().replace (/\.[^.]{4}$/, ""), true) + "</b>";
     let modal = false;
     let p3 =  "<p style='margin:-0.3em 1.6em 0.2em 0;background:transparent'>" + sTxt + "</p>Funna i <span style='font-weight:bold'>" + $ ("#imdbRoot").text () + "</span>:&nbsp; " + n + (n>nLimit?" (i listan, bara " + nLimit + " kan visas)":"");
     later ( ( () => {
@@ -4504,6 +4565,8 @@ function searchText (searchString, and, searchWhere, exact) {
   if (arr) {
     arr = arr.split (" ");
     for (let i = 0; i<arr.length; i++) {
+      // Replace any `'` with `''`, will be enclosed with `'`s in SQL
+      arr[i] = arr [i].replace (/'/g, "''") + "";
       // Replace underscore to be taken literally, needs `ESCAPE '\'`
       arr[i] = arr [i].replace (/_/g, "\\_") + "";
       // First replace % (thus, NBSP):
@@ -4769,7 +4832,7 @@ var allowSV = [ // Ordered as 'allow', IMPORTANT!
   "se anteckningar",
   "spara ändringar utöver text",
   "ändra inställningar",
-  "redigera/spara bildtexter"
+  "redigera/spara bildtexter, gömda album"
 ];
 var allowvalue = "0".repeat (allowance.length);
 $ ("#allowValue").text (allowvalue);
