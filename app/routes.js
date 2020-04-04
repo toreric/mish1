@@ -157,7 +157,7 @@ module.exports = function (app) {
     IMDB_ROOT = p [0]
     picFound = p [1]
     //console.log("0.1.9", homeDir, IMDB_ROOT, IMDB_LINK, picFound);
-    // IMDB_LINK = symlink pointing to current album
+    // IMDB_LINK = symlink pointing to current album root
     setRootLink (homeDir, IMDB_ROOT, IMDB_LINK)
     await new Promise (z => setTimeout (z, 400))
     // Remove all too old picFound files

@@ -1,9 +1,27 @@
-body {
-  display: inline-block;
-  text-align: center;
-  width: 100%;
+* {
+  font-family: Georgia, 'Times New Roman', Times, serif;
+  font-size: 1em;
 }
-body::after {
+body {
+  text-align: center;
+  color: white;
+}
+#dzclose { /* NEARLY like in app.css */
+  position: fixed;
+  top: 0.1em;
+  right: 0.1em;
+  cursor: pointer;
+  font-size: 2em;
+  line-height: 0.7em;
+  margin: 0;
+  padding: 2px 4px 6px 4px;
+  border-radius: 4px;
+}
+#dzclose:hover {
+  color: black;
+  background-color: deeppink;
+}
+/*body::after {
   content: "";
   background: url("images/bg034030hq.jpeg");
   opacity: 0.7;
@@ -13,19 +31,21 @@ body::after {
   right: 0;
   position: absolute;
   z-index: -1;
-}
+}*/
 h3, p {
   display: inline;
 }
 a {
-  color: #111;
+  color: rgb(188, 242, 255);
   display: inline;
-  padding-left: 0.2em;
-  text-decoration: underline;
+  padding: 0.3em 0.5em;
+  text-decoration: none;
   white-space: nowrap;
+  border: 1.5px solid #ddd;
+  border-radius: 5px;
 }
 a:hover {
-  color: #888;
+  color: rgb(17, 68, 102);
   cursor: pointer;
 }
 #wrap {
@@ -33,19 +53,19 @@ a:hover {
 #lef {
   display: inline-block;
   vertical-align: top;
-  width: 16em;
+  width: 6em;
 }
 #lef img {
-  width: 16em;
+  width: 6em;
 }
 #mid {
   display: inline-block;
   vertical-align: top;
-  width: 6em;
+  width: 12em;
   text-align: center;
 }
 #mid img {
-  width: 6em;
+  width: 12em;
 }
 #rig {
   display: inline-block;

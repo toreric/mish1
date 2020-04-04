@@ -31,10 +31,7 @@ function copyToClipboard (str) {
 
 <!-- ///// HEADER AND ALSO THE LOGIN AND SETTINGS BUTTON ///// -->
 <div id="title" class="BACKG BLUET" draggable="false" ondragstart="return false" display="">
-  <span class="proid" title=""> Mish</span>
-  <div style="display: inline-block">
-    <a class="finish" title="Tillbaka till startsidan" totip="Tillbaka till startsidan" href="start.html">AVSLUTA</a>
-  </div>
+  <span class="proid" title="" onclick="window.scrollTo(0,0);$('iframe').toggle()"> Mish</span>
   <form action="">
     <div style="display:inline-block;vertical-align:top;">
       <button type="submit" class="cred login" title="" {{action "logIn"}}>Logga in</button>
@@ -64,7 +61,7 @@ function copyToClipboard (str) {
     </div>
   </form>
   <!-- Get webblink to non-hidden pictures -->
-  <div style="display:inline-block" totip="Information om direktlänk till bilder">
+  <div style="display:inline-block" totip="Information om direktlänk till bilder som visas">
     <span class="picLinker eraseCheck" style="" {{action "webLinker"}}>WEBBLÄNK</span>
   </div>
   <!-- Erase link+source choice -->
@@ -76,9 +73,12 @@ function copyToClipboard (str) {
     </span>
   </div>
   <!-- TEST BUTTON -->
-  <button class="testerButton" title="Dummy button" {{action "doPrint"}} style="top:0;right:0;position:absolute" style="display:none">print</button>
+  <button class="testerButton" title="Dummy button" {{action ""}} style="top:0;right:0;position:absolute" style="display:none">print</button>
   <br><span class="usrlg"></span><!-- User information log -->
 </div>
+
+<iframe src="start.html" name=""></iframe>
+
 <!-- ///// JQUERY DIALOGS ///// -->
 <div id="dialog" style="display:none">DIALOG</div>
 <div id="helpText" style="display:none">HELP</div>
@@ -142,7 +142,7 @@ eller bildtextrad">&nbsp;per<br>&nbsp;text-&nbsp;<br>&nbsp;rad</a>
   <!-- FULL SIZE -->
   <a class="nav_" id="full_size" draggable="false" {{action 'fullSize'}} title="Full
 storlek">↕↔↕</a> &nbsp; <br>
-  <a class="nav_ pnav_" title="Skriv ut" {{action 'doPrint'}}>■</a> &nbsp;
+  <a class="nav_ pnav_" id="do_print" title="Skriv ut" {{action 'doPrint'}}>■</a> &nbsp;
 </div>
 
 <!-- ///// DISPLAY THE (SLIDE) SHOW IMAGE ///// -->
@@ -228,7 +228,7 @@ storlek">↕↔↕</a> &nbsp; <br>
   <a id="toggleHide" class="smBu" title="Visa/dölj gömda bilder" draggable="false" ondragstart="return false" {{action 'toggleHideFlagged'}}></a>
   <a id ="showDropbox" class="smBu" title="Ladda upp..." draggable="false" ondragstart="return false" {{action 'showDropbox'}} style="display:none">U</a>
   <a id="saveOrder" class="smBu" title="Spara ändringar" draggable="false" ondragstart="return false" {{action 'saveOrder'}}>S</a>
-  <a class="nav_" class="smBu" draggable="false" ondragstart="return false" title="Gå upp, visa login" style="position:fixed;left:-2px;bottom:0;margin:0;text-align:center:" {{action 'goTop'}}>&uarr;</a>
+  <a class="nav_ smBu" draggable="false" ondragstart="return false" title="Gå upp, visa login" style="position:fixed;left:-2px;bottom:0;margin:0;text-align:center:" {{action 'goTop'}}>&uarr;</a>
 </div>
 
 <img src="/images/snurra.svg" width="75%" class="spinner" draggable="false" ondragstart="return false" {{action 'hideSpinner'}} style="display:none">

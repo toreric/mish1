@@ -9,7 +9,7 @@ ember b -prod --output-path=$prodcat
 echo "Inserting build timestamp ..."
 mestxt='BUILD '`date +%y%m%d-%H%M`
 echo $mestxt
-hint=' · NOTE: Avoid MS IE!'
+hint=' · NOTE: Not for MS IE'
 cat ${prodcat}index.html | sed "s&\ *<body>\$&<body><div id=\"timeStamp\">$mestxt$hint</div>&" > /tmp/index.html
 cp -v /tmp/index.html ${prodcat}index.html
 echo -n "Done. "

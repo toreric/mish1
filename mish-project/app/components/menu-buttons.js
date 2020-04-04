@@ -63,11 +63,6 @@ export default Component.extend (contextMenuMixin, {
     // MUST BE POSTPONED UNTIL imdLink is server-established!
 
     if (this.get ("albumData").length === 0) {
-      // Regenerate the picFound album: the shell commands must execute in sequence
-      /*let lpath = $ ("#imdbLink").text () + "/" + $ ("#picFound").text ();
-      execute ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb").then (async () => {
-        await new Promise (z => setTimeout (z, 2000)); //////// Funkar inte alls
-      });*/
       yield reqDirs (imdbroot); // Then request subdirectories recursively ((2))
     }
 
@@ -2252,11 +2247,16 @@ export default Component.extend (contextMenuMixin, {
       if ($ ("#i" + escapeDots (namepic)).hasClass ("symlink")) {$ ("#wrap_show").addClass ("symlink");}
        $ ("#full_size").hide (); // button
       if (allow.imgOriginal || allow.adminAll) {$ ("#full_size").show ();}
-      $ (".img_show").hide (); // Hide in case a previous is not already hidden
+      $ (".img_show .img_name").text ("");
+      $ (".img_show .img_txt1").html ("");
+      $ (".img_show .img_txt2").html ("");
+///      $ (".img_show").hide (); // Hide in case a previous is not already hidden
       $ (".nav_links").hide ();
       $ ("#link_show a").css ('opacity', 0 );
       $ (".img_show img:first").attr ('src', showpic);
       $ (".img_show img:first").attr ("title", origpic.replace (/^[^/]+\//, ""));
+///      later ( ( () => {
+///      }), 100);
       $ (".img_show .img_name").text (namepic); // Should be plain text
       $ (".img_show .img_txt1").html ($ ('#i' + escapeDots (namepic) + ' .img_txt1').html ());
       $ (".img_show .img_txt2").html ($ ('#i' + escapeDots (namepic) + ' .img_txt2').html ());
@@ -2566,8 +2566,10 @@ export default Component.extend (contextMenuMixin, {
         $ (".mainMenu").hide ();
         ediTextClosed ();
         $ (diaSrch).show ();
-        $ ("#searcharea").dialog ("open");
+        //$ ("#searcharea").dialog ("open");
+        niceDialogOpen ("searcharea");
         $ ("#searcharea div.diaMess div.edWarn").html ("Sökdata...");
+        //$ (".ui-dialog").attr ("draggable", "true"); // for jquery-ui-touch-punch, here useless?
         age_imdb_images ();
         let sw = parseInt ( (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth)*0.95);
         let diaSrchLeft = parseInt ( (sw - ediTextSelWidth ())/2) + "px";
@@ -2628,12 +2630,13 @@ export default Component.extend (contextMenuMixin, {
         origpic = $ (".img_show img:first").attr ("title"); // With path
         origpic = $ ("#imdbLink").text () + "/" + origpic;
       }
-
+      var sw = ediTextSelWidth (); // Selected dialog width
+      var tw = sw - 25; // Text width (updates prepTextEditDialog)
+      $ ("#textareas textarea").css ("min-width", tw + "px");
       fileWR (origpic).then (acc => {
         //console.log("> acc:",acc);
         if (acc !== "WR") {
           infoDia (null, null,"Bildtexterna kan inte redigeras", "<br><span class='pink'>" + namepic + "</span> ändringsskyddad, försök igen<br><br>Om felet kvarstår:<br>Kontrollera filen!", "Stäng", true);
-          //$ ("#textareas").dialog ("open");
           $ ("div[aria-describedby='textareas']").hide ();
           return;
         }
@@ -2661,15 +2664,15 @@ export default Component.extend (contextMenuMixin, {
       resetBorders ();
       if (displ === "none") {
         // Prepare the extra "non-trivial" dialog buttons
-        $ ("div[aria-describedby='textareas'] .ui-dialog-buttonset button:first-child").css ("float", "left");
-        $ ("div[aria-describedby='textareas'] .ui-dialog-buttonset button:last-child").css ("float", "right");
-        $ ("div[aria-describedby='textareas'] .ui-dialog-buttonset button:first-child").attr ("title", "... som inte visas");
-        $ ("div[aria-describedby='textareas'] .ui-dialog-buttonset button:last-child").attr ("title", "Extra sökbegrepp");
+        $ ("div[aria-describedby='textareas'] .ui-dialog-buttonset button.notes").css ("float", "left");
+        $ ("div[aria-describedby='textareas'] .ui-dialog-buttonset button.notes").attr ("title", "... som inte visas");
+        $ ("div[aria-describedby='textareas'] .ui-dialog-buttonset button.keys").css ("float", "right");
+        $ ("div[aria-describedby='textareas'] .ui-dialog-buttonset button.keys").attr ("title", "Extra sökbegrepp");
         // Resize and position the dialog
         var diaDiv = "div[aria-describedby='textareas']"
-        var sw = parseInt ( (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth)*0.95);
+        sw = parseInt ( (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth)*0.95);
         var diaDivLeft = parseInt ( (sw - ediTextSelWidth ())/2) + "px";
-        $ (diaDiv).css ("top", "0px");
+        $ (diaDiv).css ("top", "28px");
         $ (diaDiv).css ("left", diaDivLeft);
         $ (diaDiv).css ("max-width", sw+"px");
         $ (diaDiv).css ("width", "");
@@ -2683,7 +2686,7 @@ export default Component.extend (contextMenuMixin, {
         ui.css ("height", "auto");
         uy.css ("max-height", hs + "px");
         ui.css ("max-height", hs - up + "px");
-        uy.css ("top", hs - uy.height () - 13 + "px")
+        //uy.css ("top", hs - uy.height () - 13 + "px"); // Lower down...
       }
       $ (".mainMenu").hide ();
       markBorders (namepic);
@@ -2937,6 +2940,7 @@ export default Component.extend (contextMenuMixin, {
               //console.log ("Err, allowValue", $ ("#allowValue").text ());
             //}), 200);
           } else {
+            if (usr !== "anonym") {$ ("#dialog").dialog ("close");}
             $ ("#title button.cred").text ("Logga ut");
             //$ ("#title button.cred").attr ("title", "Du är inloggad ..."); // more below
             this.set ("loggedIn", true);
@@ -3158,7 +3162,7 @@ export default Component.extend (contextMenuMixin, {
       let pixt = "bilden"; // i18n
       if (linkarr.length > 1) pixt = "bilderna";
       linktext += linkarr.join ("%20");
-      console.log(linktext);
+      //console.log(linktext);
       let lite = "<br>Inga bilder";
       if (linktext.replace (/^([^/]*\/)*(.*)/, "$2")) {
         lite = "Webblänk till " + pixt + ":<br><br>";
@@ -3200,7 +3204,7 @@ export default Component.extend (contextMenuMixin, {
   }
 });
 // G L O B A L S, that is, 'outside' (global) variables and functions (globals)
-/////////////////////////////////////////////////////////////////////////////////////////
+   //////////////////////////////////////////////////////////////////////////////////////
 var BLINK; // setInterval return handle
 var BLINK_TAG; // DOM reference for the function blink_text
 // Set BLINK_TAG and start with: BLINK = setInterval (blink_text, 600);
@@ -3214,7 +3218,7 @@ let TEXTC = "#000";
 let BLUET = "#146";
 let eraseOriginals = false;
 let logAdv = "Logga in för att kunna se inställningar: Anonymt utan namn och lösenord, eller med namnet ’gäst’ utan lösenord som ger vissa redigeringsrättigheter"; // i18n
-let nosObs = "Skriv/kopiera gärna (text kan ej sparas, rättighet saknas)"; // i18n
+let nosObs = "Du får skriva men kan ej spara text utan annan inloggning"; // i18n
 let nopsGif = "GIF-fil kan bara ha tillfällig text"; // i18n
 let picFound = "Funna_bilder"; // i18n
 let preloadShowImg = [];
@@ -3595,7 +3599,8 @@ function favDia (text, add, save, show, close) { // ===== Show favorites dialog
       }
     }
   ]);
-  $ ("#dialog").dialog ("open");
+  //$ ("#dialog").dialog ("open");
+  niceDialogOpen ();
   var tmp = $ ("#dialog").prev ().html ();
   //tmp = tmp.replace (/<span([^>]*)>/, "<span$1><span>" + picName + "</span> &nbsp ");
   // Why doesn't the close button work? Had to add next line to get it function:
@@ -3605,8 +3610,6 @@ function favDia (text, add, save, show, close) { // ===== Show favorites dialog
   niceDialogOpen ("dialog");
   $ ('textarea[name="favorites"]').focus ();
   later ( ( () => {
-    //$ ("#dialog").dialog ("open"); // Reopen
-    //$ ('textarea[name="favorites"]').html (text.replace (/<br>/g, "\n"));
     $ ('textarea[name="favorites"]').html (text);
   }), 40);
   $ ("#dialog").css ("padding", "0");
@@ -3674,7 +3677,8 @@ function notesDia (picName, filePath, title, text, save, saveClose, close) { // 
       }
     }
   ]);
-  $ ("#notes").dialog ("open");
+  //$ ("#notes").dialog ("open");
+  niceDialogOpen ("notes");
   var tmp = $ ("#notes").prev ().html ();
   //tmp = tmp.replace (/<span([^>]*)>/, "<span$1><span>" + picName + "</span> &nbsp ");
   // Why doesn't the close button work? Had to add next line to get it function:
@@ -3683,7 +3687,8 @@ function notesDia (picName, filePath, title, text, save, saveClose, close) { // 
   $ ('textarea[name="notes"]').html ("");
   niceDialogOpen ("notes");
   later ( ( () => {
-    $ ("#notes").dialog ("open"); // Reopen
+    //$ ("#notes").dialog ("open"); // Reopen
+    niceDialogOpen ("notes");
     $ ('textarea[name="notes"]').focus (); // Positions to top *
     if (!(allow.notesEdit || allow.adminAll)) {
       $ ('textarea[name="notes"]').attr ("disabled", true);
@@ -3703,18 +3708,24 @@ function notesDia (picName, filePath, title, text, save, saveClose, close) { // 
 function niceDialogOpen (dialogId) {
   if (!dialogId) {dialogId = "dialog";}
   var id = "#" + dialogId;
-  $ (id).parent ().width ("auto");
   $ (id).width ("auto");
   $ (id).parent ().height ("auto");
   $ (id).height ("auto");
   $ (id).parent ().css ("max-height", "");
   $ (id).css ("max-height","");
   $ (id).dialog ("open");
+  // For jquery-ui-touch-punch, here maybe useful, may make some dialogs opened here
+  // draggable on smartphones. Less useful in other cases (search for them),
+  // and it does prohibit data entry in textareas
+  // Well, bad idea, since it prohibits text copy with computer!
+  //if (id === "#dialog") {
+  //  $ (id).parent ().attr ({draggable: "true"});
+  //}
   var esw = ediTextSelWidth () - 100;
   let sw = parseInt ( (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth)*0.95);
   $ (id).parent ().css ("min-width", "300px");
   $ (id).parent ().css ("max-width", sw+"px");
-  $ (id).parent ().width ("auto");
+  //$ (id).parent ().width ("auto");
   $ (id).width ("auto");
   $ (id).parent ().css ("top", "28px"); // added
 
@@ -3725,7 +3736,11 @@ function niceDialogOpen (dialogId) {
     var diaDivLeft = parseInt ( (sw - esw)/2) + "px";
     $ (id).parent ().css ("left", diaDivLeft);
   }
+
+//console.log($ (id + " textarea"));
   $ (id).parent ().width (esw + "px");
+  $ (id + " textarea").width ((esw - 15) + "px");
+  //$ (id).parent ().width ("auto");
   var up = 128;
   let hs = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
   $ (id).parent ().css ("max-height", hs + "px");
@@ -3737,9 +3752,9 @@ function niceDialogOpen (dialogId) {
 function ediTextClosed () {
   $ ("div[aria-describedby='textareas'] span.ui-dialog-title span").html ("");
   $ (".ui-dialog-buttonset button:first-child").css ("float", "none");
-  $ (".ui-dialog-buttonset button:last-child").css ("float", "none");
+  $ (".ui-dialog-buttonset button.keys").css ("float", "none");
   $ (".ui-dialog-buttonset button:first-child").attr ("title", "");
-  $ (".ui-dialog-buttonset button:last-child").attr ("title", "");
+  $ (".ui-dialog-buttonset button.keys").attr ("title", "");
   if ($ ("div[aria-describedby='textareas']").css ("display") === "none") {
     return true; // It is closed
   } else {
@@ -4197,6 +4212,7 @@ function devSpec () { // Device specific features/settings
   }
   if (window.screen.width < 500) {
     $ ("#full_size").hide (); // the full size image link
+    $ ("#do_print").hide (); // the printout link
     $ ("a.toggleAuto").hide (); // slide show button
   }
   return false;
@@ -4627,6 +4643,7 @@ $ ( () => {
   $ ("#textareas").dialog ('option', 'buttons', [
     {
       text: "Anteckningar",
+      class: "notes",
       click: () => { // 'Non-trivial' dialog button, to the 'notes' new level
         var namepic = $ ("div[aria-describedby='textareas'] span.ui-dialog-title span").html ();
         var ednp = escapeDots (namepic);
@@ -4656,7 +4673,7 @@ $ ( () => {
     {
       text: " Spara ",
       //"id": "saveBut",
-      class: "saveTexts",
+      class: "saveTexts block",
       click: function () {
         var namepic = $ ("div[aria-describedby='textareas'] span.ui-dialog-title span").html ();
         var text1 = $ ('textarea[name="description"]').val ();
@@ -4666,7 +4683,7 @@ $ ( () => {
     },
     {
       text: " Spara och stäng ",
-      class: "saveTexts",
+      class: "saveTexts block",
       click: () => {
         var namepic = $ ("div[aria-describedby='textareas'] span.ui-dialog-title span").html ();
         var text1 = $ ('textarea[name="description"]').val ();
@@ -4677,12 +4694,14 @@ $ ( () => {
     },
     {
       text: " Stäng ",
+      class: "block",
       click: () => {
         ediTextClosed ();
       }
     },
     {
       text: "Nyckelord",
+      class: "keys",
       click: () => { // "Non-trivial" dialog button, to a new level
         infoDia (null, "","Nyckelord", "Ord lagrade som metadata<br>som kan användas som särskilda sökbegrepp<br><br>UNDER UTVECKLING? Vänta och se!", "Ok", true);
       }
@@ -4694,6 +4713,8 @@ $ ( () => {
   $ ("div.ui-dialog-titlebar button.ui-dialog-titlebar-close").html (txt);        // Close => ×
   // NOTE this clumpsy direct reference to jquery (how directly trigger ediTextClosed?):
   $ ("div.ui-dialog-titlebar button.ui-dialog-titlebar-close").attr ("onclick",'$("div[aria-describedby=\'textareas\'] span.ui-dialog-title span").html("");$("div[aria-describedby=\'textareas\']").hide();$("#navKeys").text("true");$("#smallButtons").show();');
+
+  $ ("button.block").wrapAll ('<div id="glued" style="display:inline-block;white-space:nowrap;"></div>');
 
   function storeText (namepic, text1, text2) {
     text1 = text1.replace (/ +/g, " ").replace (/\n /g, "<br>").replace (/\n/g, "<br>").trim ();
@@ -4762,11 +4783,11 @@ function refreshEditor (namepic, origpic) {
   $ ("div[aria-describedby='textareas'] span.ui-dialog-title").html ("Bildtexter till <span class='blue'>" + namepic + "</span>");
   // Take care of the notes etc. buttons:
   if (!(allow.notesView || allow.adminAll)) {
-    $ ("div[aria-describedby='textareas'] .ui-dialog-buttonset button:first-child").css ("display", "none");
-    $ ("div[aria-describedby='textareas'] .ui-dialog-buttonset button:last-child").css ("display", "none");
+    $ ("div[aria-describedby='textareas'] .ui-dialog-buttonset button.notes").css ("display", "none");
+    $ ("div[aria-describedby='textareas'] .ui-dialog-buttonset button.keys").css ("display", "none");
   } else {
-    $ ("div[aria-describedby='textareas'] .ui-dialog-buttonset button:first-child").css ("display", "inline");
-    $ ("div[aria-describedby='textareas'] .ui-dialog-buttonset button:last-child").css ("display", "inline");
+    $ ("div[aria-describedby='textareas'] .ui-dialog-buttonset button.notes").css ("display", "inline");
+    $ ("div[aria-describedby='textareas'] .ui-dialog-buttonset button.keys").css ("display", "inline");
   }
   $ ("#textareas .edWarn").html ("");
   let warnText = "";
@@ -4777,8 +4798,8 @@ function refreshEditor (namepic, origpic) {
   if (origpic.search (/\.gif$/i) > 0) {
     // Don't display the notes etc. buttons:
     warnText += (warnText?"<br>":"") + nopsGif;
-    $ (".ui-dialog-buttonset button:first-child").css ("display", "none");
-    $ (".ui-dialog-buttonset button:last-child").css ("display", "none");
+    $ (".ui-dialog-buttonset button.notes").css ("display", "none");
+    $ (".ui-dialog-buttonset button.keys").css ("display", "none");
   }
   warnText = "<b style='float:left;cursor:text'> &nbsp; ’ – × ° — ” &nbsp; </b>" + warnText;
 
@@ -4894,3 +4915,192 @@ function showFileInfo () {
     $ ("#temporary").text ("");
   });
 }
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+//  github.com/furf/jquery-ui-touch-punch (for touch-pads)
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+later ( ( () => {
+/*!
+ * jQuery UI Touch Punch 0.2.3
+ *
+ * Copyright 2011–2014, Dave Furfero
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ *
+ * Depends:
+ *  jquery.ui.widget.js
+ *  jquery.ui.mouse.js
+ */
+(function ($) {
+
+  // Detect touch support
+  // console.log('ontouchend' in document);
+  $.support.touch = 'ontouchend' in document;
+  if ($.support.touch) {
+    $ (".nav_.smBu").hide ();
+  }
+  // Ignore browsers without touch support
+  if (!$.support.touch) {
+    return;
+  }
+
+  var mouseProto = $.ui.mouse.prototype,
+      _mouseInit = mouseProto._mouseInit,
+      _mouseDestroy = mouseProto._mouseDestroy,
+      touchHandled;
+
+  /**
+   * Simulate a mouse event based on a corresponding touch event
+   * @param {Object} event A touch event
+   * @param {String} simulatedType The corresponding mouse event
+   */
+  function simulateMouseEvent (event, simulatedType) {
+
+    // Ignore multi-touch events
+    if (event.originalEvent.touches.length > 1) {
+      return;
+    }
+
+    event.preventDefault();
+
+    var touch = event.originalEvent.changedTouches[0],
+        simulatedEvent = document.createEvent('MouseEvents');
+
+    // Initialize the simulated mouse event using the touch event's coordinates
+    simulatedEvent.initMouseEvent(
+      simulatedType,    // type
+      true,             // bubbles
+      true,             // cancelable
+      window,           // view
+      1,                // detail
+      touch.screenX,    // screenX
+      touch.screenY,    // screenY
+      touch.clientX,    // clientX
+      touch.clientY,    // clientY
+      false,            // ctrlKey
+      false,            // altKey
+      false,            // shiftKey
+      false,            // metaKey
+      0,                // button
+      null              // relatedTarget
+    );
+
+    // Dispatch the simulated event to the target element
+    event.target.dispatchEvent(simulatedEvent);
+  }
+
+  /**
+   * Handle the jQuery UI widget's touchstart events
+   * @param {Object} event The widget element's touchstart event
+   */
+  mouseProto._touchStart = function (event) {
+
+    var self = this;
+
+    // Ignore the event if another widget is already being handled
+    if (touchHandled || !self._mouseCapture(event.originalEvent.changedTouches[0])) {
+      return;
+    }
+
+    // Set the flag to prevent other widgets from inheriting the touch event
+    touchHandled = true;
+
+    // Track movement to determine if interaction was a click
+    self._touchMoved = false;
+
+    // Simulate the mouseover event
+    simulateMouseEvent(event, 'mouseover');
+
+    // Simulate the mousemove event
+    simulateMouseEvent(event, 'mousemove');
+
+    // Simulate the mousedown event
+    simulateMouseEvent(event, 'mousedown');
+  };
+
+  /**
+   * Handle the jQuery UI widget's touchmove events
+   * @param {Object} event The document's touchmove event
+   */
+  mouseProto._touchMove = function (event) {
+
+    // Ignore event if not handled
+    if (!touchHandled) {
+      return;
+    }
+
+    // Interaction was not a click
+    this._touchMoved = true;
+
+    // Simulate the mousemove event
+    simulateMouseEvent(event, 'mousemove');
+  };
+
+  /**
+   * Handle the jQuery UI widget's touchend events
+   * @param {Object} event The document's touchend event
+   */
+  mouseProto._touchEnd = function (event) {
+
+    // Ignore event if not handled
+    if (!touchHandled) {
+      return;
+    }
+
+    // Simulate the mouseup event
+    simulateMouseEvent(event, 'mouseup');
+
+    // Simulate the mouseout event
+    simulateMouseEvent(event, 'mouseout');
+
+    // If the touch interaction did not move, it should trigger a click
+    if (!this._touchMoved) {
+
+      // Simulate the click event
+      simulateMouseEvent(event, 'click');
+    }
+
+    // Unset the flag to allow other widgets to inherit the touch event
+    touchHandled = false;
+  };
+
+  /**
+   * A duck punch of the $.ui.mouse _mouseInit method to support touch events.
+   * This method extends the widget with bound touch event handlers that
+   * translate touch events to mouse events and pass them to the widget's
+   * original mouse event handling methods.
+   */
+  mouseProto._mouseInit = function () {
+
+    var self = this;
+
+    // Delegate the touch handlers to the widget's element
+    self.element.bind({
+      touchstart: $.proxy(self, '_touchStart'),
+      touchmove: $.proxy(self, '_touchMove'),
+      touchend: $.proxy(self, '_touchEnd')
+    });
+
+    // Call the original $.ui.mouse init method
+    _mouseInit.call(self);
+  };
+
+  /**
+   * Remove the touch event handlers
+   */
+  mouseProto._mouseDestroy = function () {
+
+    var self = this;
+
+    // Delegate the touch handlers to the widget's element
+    self.element.unbind({
+      touchstart: $.proxy(self, '_touchStart'),
+      touchmove: $.proxy(self, '_touchMove'),
+      touchend: $.proxy(self, '_touchEnd')
+    });
+
+    // Call the original $.ui.mouse destroy method
+    _mouseDestroy.call(self);
+  };
+
+})($);
+}), 4000);
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
