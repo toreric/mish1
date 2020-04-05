@@ -31,8 +31,8 @@ function copyToClipboard (str) {
 
 <!-- ///// HEADER AND ALSO THE LOGIN AND SETTINGS BUTTON ///// -->
 <div id="title" class="BACKG BLUET" draggable="false" ondragstart="return false" display="">
-  <span class="proid" title="" onclick="window.scrollTo(0,0);$('iframe').toggle()"> Mish</span>
   <form action="">
+    <span class="proid" title="" onclick="window.scrollTo(0,0);$('iframe').toggle()"> Mish</span>
     <div style="display:inline-block;vertical-align:top;">
       <button type="submit" class="cred login" title="" {{action "logIn"}}>Logga in</button>
       <input type="text" class="cred user" size="10" title="Användare" placeholder="User name" value="">
@@ -76,8 +76,6 @@ function copyToClipboard (str) {
   <button class="testerButton" title="Dummy button" {{action ""}} style="top:0;right:0;position:absolute" style="display:none">print</button>
   <br><span class="usrlg"></span><!-- User information log -->
 </div>
-
-<iframe src="start.html" name=""></iframe>
 
 <!-- ///// JQUERY DIALOGS ///// -->
 <div id="dialog" style="display:none">DIALOG</div>
@@ -191,7 +189,7 @@ storlek">↕↔↕</a> &nbsp; <br>
   <div class="mainMenu BACKG" onclick="return false" draggable="false" ondragstart="return false" style="display:none">
 
     <p onclick="return false" draggable="false" ondragstart="return false">
-      <a {{action 'findText'}} style="padding-top:1.1em">Finn bilder <span style="font:normal 1em monospace!important">[F]</span>:</a> Sök i
+      <a {{action 'findText'}}>Finn bilder <span style="font:normal 1em monospace!important">[F]</span>:</a> Sök i
       <span class="root">
         <select id="rootSel" title="Välj albumkatalog här" totip="Välj albumkatalog här" onchange={{action 'selectRoot' value='target.value'}}>
           {{#each imdbRoots as |rootChoice|}}
@@ -200,16 +198,16 @@ storlek">↕↔↕</a> &nbsp; <br>
         </select>
       </span>
       <button class="ui-button mainMenuClose ui-dialog-titlebar-close" title="Close" {{action 'toggleMainMenu' imdbRoot}}>×</button>
-    </p>
+    </p><br>
     <p onclick="return false" draggable="false" ondragstart="return false" title="Favoritskötsel  ">
       <a id ="favorites" {{action 'seeFavorites'}}>Favoritbilder</a>
-    </p>
+    </p><br>
     <p onclick="return false" draggable="false" ondragstart="return false">
       <a {{action 'toggleBackg'}}>Byt till mörk eller ljus bakgrund</a><span style="float:right;font:normal 1em monospace!important">&nbsp;[F11]=fullskärm!</span>
-    </p>
+    </p><br>
     <p onclick="return false" draggable="false" ondragstart="return false" title="Ta bort eller gör nytt album ...">
       <a {{action 'albumEdit'}}>{{{albumText}}}</a>{{{albumName}}}
-    </p>
+    </p><br>
     <p onclick="return false" draggable="false" ondragstart="return false" title="Visa alla album = hela albumträdet">
       <a id ="jstreeHdr" {{action 'toggleJstreeAlbumSelect'}}>{{jstreeHdr}}</a>
     </p>
@@ -221,6 +219,9 @@ storlek">↕↔↕</a> &nbsp; <br>
     </div>
   </div>
 
+  <!-- Start "home" page -->
+  <iframe src="start.html" name=""></iframe>
+
   <a id="questionMark" class="smBu" title="Användarhandledning" draggable="false" ondragstart="return false" {{action 'toggleHelp'}}>?</a>
   <a id="reLd" class="smBu" title="Ladda om albumet (återställ
   osparade ändringar)" draggable="false" ondragstart="return false" {{action 'refresh'}} src="/images/reload.png"></a>
@@ -228,7 +229,7 @@ storlek">↕↔↕</a> &nbsp; <br>
   <a id="toggleHide" class="smBu" title="Visa/dölj gömda bilder" draggable="false" ondragstart="return false" {{action 'toggleHideFlagged'}}></a>
   <a id ="showDropbox" class="smBu" title="Ladda upp..." draggable="false" ondragstart="return false" {{action 'showDropbox'}} style="display:none">U</a>
   <a id="saveOrder" class="smBu" title="Spara ändringar" draggable="false" ondragstart="return false" {{action 'saveOrder'}}>S</a>
-  <a class="nav_ smBu" draggable="false" ondragstart="return false" title="Gå upp, visa login" style="position:fixed;left:-2px;bottom:0;margin:0;text-align:center:" {{action 'goTop'}}>&uarr;</a>
+  <a class="nav_ smBu" draggable="false" ondragstart="return false" title="Gå upp, visa login" style="position:fixed;left:-2px;bottom:0;margin:0;text-align:center" {{action 'goTop'}}>&uarr;</a>
 </div>
 
 <img src="/images/snurra.svg" width="75%" class="spinner" draggable="false" ondragstart="return false" {{action 'hideSpinner'}} style="display:none">

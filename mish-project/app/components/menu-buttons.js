@@ -832,7 +832,8 @@ export default Component.extend (contextMenuMixin, {
         // The time stamp is produced with the Bash 'ember-b-script'
         userLog ($ ("#timeStamp").text (), true);
         // Login advice:
-        $ ("#title span.proid").attr ("title", "Most is safe here!");
+        $ ("#title span.proid").attr ("title", homeTip);
+        $ ("#title span.proid").attr ("totip", homeTip);
         $ ("#title button.cred").attr ("title", logAdv);
         $ ("#title button.cred").attr ("totip", logAdv);
         // Initialize settings:
@@ -1216,6 +1217,7 @@ export default Component.extend (contextMenuMixin, {
       } else
       if (event.keyCode === 27) { // ESC key
         $ (".mainMenu").hide ();
+        $ ("iframe").hide ();
         $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
         if ($ ("div.settings").is (":visible")) { // Hide settings
           $ ("div.settings, div.settings div.check").hide ();
@@ -1632,6 +1634,7 @@ export default Component.extend (contextMenuMixin, {
         userLog ("ALBUM protected");
         return;
       }
+      $ ("iframe").hide ();
       $ (".img_show").hide ();
       $ (".nav_links").hide ();
       var imdbRoot = $ ("#imdbRoot").text ();
@@ -1864,6 +1867,7 @@ export default Component.extend (contextMenuMixin, {
       //$ (".mainMenu p:gt(1)").show ();
       // Close all dialogs/windows
       ediTextClosed ();
+      //$ ("iframe").hide ();
       $ (".img_show").hide ();
       $ (".nav_links").hide ();
       document.getElementById ("imageList").className = "hide-all";
@@ -2250,13 +2254,10 @@ export default Component.extend (contextMenuMixin, {
       $ (".img_show .img_name").text ("");
       $ (".img_show .img_txt1").html ("");
       $ (".img_show .img_txt2").html ("");
-///      $ (".img_show").hide (); // Hide in case a previous is not already hidden
       $ (".nav_links").hide ();
       $ ("#link_show a").css ('opacity', 0 );
       $ (".img_show img:first").attr ('src', showpic);
       $ (".img_show img:first").attr ("title", origpic.replace (/^[^/]+\//, ""));
-///      later ( ( () => {
-///      }), 100);
       $ (".img_show .img_name").text (namepic); // Should be plain text
       $ (".img_show .img_txt1").html ($ ('#i' + escapeDots (namepic) + ' .img_txt1').html ());
       $ (".img_show .img_txt2").html ($ ('#i' + escapeDots (namepic) + ' .img_txt2').html ());
@@ -2409,6 +2410,7 @@ export default Component.extend (contextMenuMixin, {
         spinnerWait (true);
       }
       $ ("#link_show a").css ('opacity', 0 );
+      //$ ("iframe").hide ();
       $ (".img_show").hide ();
       $ (".nav_links").hide ();
       this.refreshAll ().then ( () => {
@@ -2563,6 +2565,7 @@ export default Component.extend (contextMenuMixin, {
           userLog ("VÄLJ ALBUMKATALOG", true); //i18n
           return;
         }
+        $ ("iframe").hide ();
         $ (".mainMenu").hide ();
         ediTextClosed ();
         $ (diaSrch).show ();
@@ -2977,7 +2980,7 @@ export default Component.extend (contextMenuMixin, {
                 }), 1000);
               }), 500);
             }
-            $ ("#title a.finish").focus ();
+            $ ("#title .proid").focus ();
           }
           spinnerWait (false);
         });
@@ -3191,6 +3194,7 @@ export default Component.extend (contextMenuMixin, {
         $ (".mainMenu").hide ();
         return;
       }
+      $ ("iframe").hide ();
       let favList = getCookie ("favorites").replace (/[ ]+/g, "\n");
       favDia (favList, "Lägg till markerade", "Spara", "Visa", "Stäng");
       $ (".mainMenu").hide ();
@@ -3217,6 +3221,7 @@ let BACKG = "#cbcbcb";
 let TEXTC = "#000";
 let BLUET = "#146";
 let eraseOriginals = false;
+let homeTip = "HEM start/stäng – börja här!";
 let logAdv = "Logga in för att kunna se inställningar: Anonymt utan namn och lösenord, eller med namnet ’gäst’ utan lösenord som ger vissa redigeringsrättigheter"; // i18n
 let nosObs = "Du får skriva men kan ej spara text utan annan inloggning"; // i18n
 let nopsGif = "GIF-fil kan bara ha tillfällig text"; // i18n

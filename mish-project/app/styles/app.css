@@ -4,11 +4,13 @@
 }
 body {
  width: 99%!important;
+ height: 95%;
 }
 @media print {
   html, #wrap_pad {
     page-break-after: avoid!important;
     height: 99%!important;
+    margin-left: 8px;
   }
   #markShow {
     display: none;
@@ -16,20 +18,26 @@ body {
 }
 iframe {
   display: block;
-  height: 16em;
-  width: 90%;
-  margin: 0 0 0 3em;
-  background: #5b5f5f;
+  top: 3.34em;
+  left: 0;
+  height: 100%;
+  width: 99.55%;
+  margin: 0;
+  background: #5b5f5f!important;
+  opacity: 0.95;
   border: 2px solid gray;
-  border-radius: 3px;
+  border-radius: 6px;
+  position: fixed;
+  z-index: 0;
 }
 #wrap_pad {
   position: relative;
   text-align: center;
-  margin: 0.95em 0 auto 2.15em;
+  margin: 0.95em 0 auto 2.6em;
   padding-top: 1em;     /* click-back area above .img_show */
   padding-bottom: 20em; /* and below .img_txt2             */
-  z-index: 8;
+  background: transparent!important;
+  z-index: 0;
 }
 /* Correcting these tags against the introduced
 spacing when they occur in inserted picture texts! */
@@ -349,7 +357,7 @@ button.ui-dialog-titlebar-close span {
 button.mainMenuClose.ui-dialog-titlebar-close {
   position:  static!important;
   float: right;
-  margin: -0.15em 0 0 0.3em!important;
+  margin: 0.25em 0.2em 0 0!important;
   background: #aaa;
 }
 button.mainMenuClose.ui-dialog-titlebar-close:hover {
@@ -452,7 +460,7 @@ button.mainMenuClose.ui-dialog-titlebar-close:hover {
   font-size: 1em!important;
   font-weight: bold;
   padding: 0.2em 0.2em 0.3em 0.2em;
-  margin: 0 0.2em 0 1em;
+  margin: 0 0.3em 0 1em;
   display: inline-block;
   border: 2px solid #888;
   border-radius: 4px;
@@ -619,7 +627,10 @@ div[aria-describedby='textareas'] {
   left: 5px;
   width: 20px;
   background: transparent;
-  z-index: 8;
+  z-index: 2;
+}
+#questionMark {
+  position: relative;
 }
 #smallButtons a.smBu {
   display: inline-block;
@@ -829,6 +840,8 @@ The jquery ui-tooltip is used elsewere (totip in *.js) */
   margin: 0 10px 0 30px;
   padding: 0.5em 0;
   border-radius: 4px;
+  position: relative;
+  z-index: 0;
 }
 /* ##### Image size is also controlled at Imagemagick resizing in routes.js */
 .img_mini {
@@ -1042,7 +1055,7 @@ div.img_mini.symlink div.markTrue, div.img_mini.symlink div.markFalse {
   display: inline;
   background-color: transparent;
   text-align: right;
-  z-index: 12;
+  z-index: 2;
 }
 .nav_links .nav_, .nav_ {
   display: inline-block;
@@ -1195,7 +1208,7 @@ select option {
   display: inline-table;
   width: 20%;
   /* regulate distance from border here, not with #wrap_pad */
-  margin: 0 55px 0 8px;
+  margin: 0 5em 0 0;
 }
 #wrap_show.symlink {
   border-bottom: 1.5px solid #0b0;
@@ -1258,13 +1271,12 @@ select option {
 }
 .mainMenu {
   position: fixed;
-  top: 36px;
+  top: 39px;
   left: 2px;
-  margin: 0 3px;
-  padding: 0 2px 2px 2px;
+  margin: 0 0 0 4px;
+  padding: 0 2px 0 2px;
   border: 1px solid gray;
   border-radius: 2px;
-  vertical-align: middle;
   text-align: left;
   background: inherit;
   opacity: 0.9;
@@ -1272,6 +1284,10 @@ select option {
 }
 .mainMenu p {
   margin:0.5em 0.2em 0.3em -0.2em;
+}
+.mainMenu p, .mainMenu p a {
+  display:inline;
+  white-space:nowrap;
 }
 .mainMenu p a {
   text-decoration: none;
@@ -1281,7 +1297,7 @@ select option {
   border: 0.5px solid lightgray;
   border-radius: 0 4px 4px 0;
   background: #555;
-  line-height: 2.2em;
+  line-height: 2.4em;
   margin: -0.4em 0 0 0;
   padding: 0.6em 0.4em 0.6em 0.4em;
   color: white;
@@ -1292,11 +1308,11 @@ select option {
 .jstreeAlbumSelect {
   border: 1px solid gray;
   border-radius: 2px;
-  margin: -3px;
-  padding: 3px;
+  margin: 0 -2.5  px;
+  padding: 0;
 }
 .jstree-container-ul {
-  margin-left: 0; /*was 1.1em*/
+  margin: 0;
   max-height: 20em;
   overflow-y: auto;
   scrollbar-color: #07e #999 !important;
