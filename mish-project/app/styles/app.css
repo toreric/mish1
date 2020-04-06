@@ -450,6 +450,7 @@ button.mainMenuClose.ui-dialog-titlebar-close:hover {
 #title {
   display: inline-block;
   margin: 1em 0 0.75em 2em;
+  white-space:nowrap;
 }
 #title * {
   color: inherit;

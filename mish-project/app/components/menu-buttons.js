@@ -136,7 +136,7 @@ export default Component.extend (contextMenuMixin, {
       // to be completed ...
       action () {
         var title = "Information";
-        var text = "<br>”Redigera bild...” är fortfarande<br>UNDER UTVECKLING"; // i18n
+        var text = "<br>”Redigera bild...” är en planerad framtida länk<br>till något bildredigeringsprogram"; // i18n
         var yes = "Ok" // i18n
         infoDia (null, null, title, text, yes, true);
         return;
@@ -3527,11 +3527,11 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) { // ===== I
     }]);
     $ ("div[aria-describedby='" + dialogId + "'] span.ui-dialog-title").html (title); //#
     niceDialogOpen (dialogId);
-  }), 22);
+  }), 33);
   later ( ( () => {
     $ ("#yesBut").focus ();
     $ ("#yesBut").html (yes);
-  }), 222);
+  }), 333);
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function favDia (text, add, save, show, close) { // ===== Show favorites dialog
@@ -4708,7 +4708,7 @@ $ ( () => {
       text: "Nyckelord",
       class: "keys",
       click: () => { // "Non-trivial" dialog button, to a new level
-        infoDia (null, "","Nyckelord", "Ord lagrade som metadata<br>som kan användas som särskilda sökbegrepp<br><br>UNDER UTVECKLING? Vänta och se!", "Ok", true);
+        infoDia (null, "","Nyckelord", "Ord lagrade som metadata<br>som kan användas som särskilda sökbegrepp:<br><br>Planerat framtida tillägg", "Ok", true);
       }
     }
   ]);

@@ -508,6 +508,7 @@ module.exports = function (app) {
     let tmp = rmPic (fileName)
     console.log (' ' + fileName + ' deleted')
     res.send (tmp) // tmp == 'DELETED'
+    //await sqlUpdate_1 (fileName) NOTE: done from refreshing via #6.5 sqlupdate
   })
 
   // ##### #6. START PAGE start page
@@ -518,7 +519,7 @@ module.exports = function (app) {
 
   // ##### #6.5 Update one or more database entries
   app.post ('/sqlupdate', upload.none (), async function (req, res, next) {
-    console.logv (req.body)
+    console.log (req.body)
     let filepaths = req.body.filepaths
     console.log ('SQLUPDATE', filepaths)
     let files = filepaths.trim ().split ('\n')
