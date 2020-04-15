@@ -30,10 +30,10 @@ function copyToClipboard (str) {
 </script>
 
 <!-- ///// HEADER AND ALSO THE LOGIN AND SETTINGS BUTTON ///// -->
-<div id="title" class="BACKG BLUET" draggable="false" ondragstart="return false" display="">
+<div id="title" class="BACKG BLUET" draggable="false" ondragstart="return false">
   <form action="">
     <span class="proid" title="" onclick="window.scrollTo(0,0);$('iframe').toggle()"> Mish</span>
-    <div style="display:inline-block;vertical-align:top;">
+    <div style="display:inline-block;vertical-align:top;margin:0.4em 0 0 0;">
       <button type="submit" class="cred login" title="" {{action "logIn"}}>Logga in</button>
       <input type="text" class="cred user" size="10" title="Användare" placeholder="User name" value="">
       <input type="password" class="cred password" size="10" title="Lösenord" placeholder="Password">
@@ -55,13 +55,15 @@ function copyToClipboard (str) {
           <button {{action 'toggleSettings'}}>Stäng</button>
         </div>
       </div>
-    <!-- Settings button, not visible -->
+    <!-- Settings button, not visible but used -->
     <div style="display: none">
       <button type="submit" class="viewSettings" title="" {{action "infStatus"}}>settings</button>
     </div>
   </form>
+  <div style="display:inline-block;white-space:nowrap;margin-top:0.3em">
+
   <!-- Get webblink to non-hidden pictures -->
-  <div style="display:inline-block" totip="Information om direktlänk till bilder som visas">
+  <div style="display:inline-block;margin-left:1em" totip="Information om direktlänk till de bilder som visas">
     <span class="picLinker eraseCheck" style="" {{action "webLinker"}}>WEBBLÄNK</span>
   </div>
   <!-- Erase link+source choice -->
@@ -71,6 +73,8 @@ function copyToClipboard (str) {
       <input id="eraOrig" type="checkbox">
       <label for="eraOrig"></label>
     </span>
+  </div>
+
   </div>
   <!-- TEST BUTTON -->
   <button class="testerButton" title="Dummy button" {{action ""}} style="top:0;right:0;position:absolute" style="display:none">print</button>
@@ -290,7 +294,7 @@ storlek">↕↔↕</a> &nbsp; <br>
  {{action 'checkNames'}}></button>
 </p>
 
-<div id="highUp"></div>
+<div id="highUp" style="margin-bottom:0.7em"></div>
 
 <!-- ///// START OF DROPBOX AND MINI-LIST CONTAINER ///// -->
 <div id="imageList" class="hide-all" onclick={{perform rstBrdrs}}><!-- THUMBNAIL CONTAINER -->

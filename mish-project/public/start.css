@@ -31,47 +31,47 @@ h3, b {
   letter-spacing: 1px;
 }
 a {
-  color: rgb(188, 242, 255);
+  color: rgb(176, 240, 255);
   display: inline;
   padding: 0.3em 0.5em;
   text-decoration: none;
   white-space: nowrap;
-  border: 1.5px solid #ddd;
+  border: 1.2px solid white;
   border-radius: 5px;
 }
 a:hover {
-  color: rgb(17, 68, 102);
+  color: white;
   cursor: pointer;
 }
-div.wrap {
+.wrap {
   display: inline-block;
   vertical-align: top;
   margin: 0 1em 0 0;
 }
-#lef {
+a.border0 {
+  border: 0;
+  padding: 0;
+}
+.wrap div {
   display: inline-block;
   vertical-align: top;
   width: 8em;
   text-align: left;
 }
-#lef img {
+.wrap img {
   width: 8em;
+  border: 1.2px solid white;
+  border-radius: 4px;
 }
-#mid {
-  display: inline-block;
-  vertical-align: top;
-  width: 8em;
+.wrap .lef img {
+}
+.wrap div.mid {
   text-align: center;
 }
-#mid img {
-  width: 8em;
+.wrap .mid img {
 }
-#rig {
-  display: inline-block;
-  vertical-align: top;
-  width: 8em;
+.wrap .rig {
   text-align: right;
 }
-#rig img {
-  width: 8em;
+.wrap .rig img {
 }

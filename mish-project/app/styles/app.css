@@ -450,7 +450,6 @@ button.mainMenuClose.ui-dialog-titlebar-close:hover {
 #title {
   display: inline-block;
   margin: 1em 0 0.75em 2em;
-  white-space:nowrap;
 }
 #title * {
   color: inherit;
@@ -461,12 +460,15 @@ button.mainMenuClose.ui-dialog-titlebar-close:hover {
   font-size: 1em!important;
   font-weight: bold;
   padding: 0.2em 0.2em 0.3em 0.2em;
-  margin: 0 0.3em 0 1em;
+  margin: 0.5em 0.7em 0 1em;
   display: inline-block;
-  border: 2px solid #888;
+  border: 1.6px solid #888;
   border-radius: 4px;
   vertical-align: top;
   cursor: pointer;
+}
+#title .proid:hover {
+  background: #0085ff;
 }
 #title form {
   display: inline-block;
@@ -624,7 +626,7 @@ div[aria-describedby='textareas'] {
 }
 #smallButtons {
   position: fixed;
-  top: 15px;
+  top: 1.2em;
   left: 5px;
   width: 20px;
   background: transparent;
@@ -692,9 +694,6 @@ div[aria-describedby='textareas'] {
 }
 #smallButtons a#menuButton {
   background-color: #0085ff;
-  /*height: 0.7em;
-  line-height: 0.7em;
-  z-index: 13;*/
 }
 #smallButtons.mainMenu p * {
   display: inline;
@@ -1272,7 +1271,7 @@ select option {
 }
 .mainMenu {
   position: fixed;
-  top: 39px;
+  top: 3.2em;
   left: 2px;
   margin: 0 0 0 4px;
   padding: 0 2px 0 2px;

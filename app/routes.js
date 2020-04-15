@@ -195,9 +195,12 @@ module.exports = function (app) {
           let dirtext = dirlist.join ("€")
           let dircoco = [] // directory content counter
           let dirlabel = [] // Album label thumbnail paths
+
+          // Get all thumbnails and select
+          // randomly one to be used as "subdirectory label"
           for (let i=0; i<dirlist.length; i++) {
-            // Get all thumbnails and select randomly one to be used as "subdirectory label"
             cmd = "echo -n `ls " + dirlist [i] + "/_mini_* 2>/dev/null`"
+            //cmd = "echo -n `find " + dirlist [i] + ' -maxdepth 1 -type f,l -name "_mini_*" 2>/dev/null`'
             //let pics = execSync (cmd)
             let pics = await execP (cmd)
             pics = pics.toString ().trim ().split (" ")
@@ -220,9 +223,11 @@ module.exports = function (app) {
             dircoco.push (npics)
             dirlabel.push (albumLabel)
           }
+console.log("  dirlabel prel.:", dirlabel)
           for (let i=0; i<dirlist.length; i++) {
+            var albumLabel
             if (dirlabel [i].slice (0, 1) === "€") {
-              var albumLabel = dirlabel [i].slice (1)
+              albumLabel = dirlabel [i].slice (1)
               dirlabel [i] = ""
               for (let j=i+1; j<dirlist.length; j++) {
                 if (albumLabel === dirlabel [j].slice (0, albumLabel.length)) {
@@ -231,7 +236,9 @@ module.exports = function (app) {
                 }
               }
             }
+console.log(i,albumLabel,dirlabel[i])
           }
+
           let fd, ignorePaths = homeDir +"/"+ IMDB_ROOT + "/_imdb_ignore.txt"
           try { // Create _imdb_ignore.txt if missing
             fd = await fs.openAsync (ignorePaths, 'r')
@@ -250,6 +257,9 @@ module.exports = function (app) {
               }
             }
           }
+//console.log("  dirtext:", dirtext)
+//console.log("  dircoco:", dircoco)
+console.log("  dirlabel:", dirlabel) // empty
           dirtext = dirtext.replace (/€/g, "\n")
           dircoco = dircoco.join ("\n")
           dirlabel = dirlabel.join ("\n")
