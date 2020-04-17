@@ -223,7 +223,7 @@ module.exports = function (app) {
             dircoco.push (npics)
             dirlabel.push (albumLabel)
           }
-console.log("  dirlabel prel.:", dirlabel)
+//console.log("  dirlabel prel.:", dirlabel)
           for (let i=0; i<dirlist.length; i++) {
             var albumLabel
             if (dirlabel [i].slice (0, 1) === "€") {
@@ -236,7 +236,7 @@ console.log("  dirlabel prel.:", dirlabel)
                 }
               }
             }
-console.log(i,albumLabel,dirlabel[i])
+//console.log(i,albumLabel,dirlabel[i])
           }
 
           let fd, ignorePaths = homeDir +"/"+ IMDB_ROOT + "/_imdb_ignore.txt"
@@ -259,7 +259,7 @@ console.log(i,albumLabel,dirlabel[i])
           }
 //console.log("  dirtext:", dirtext)
 //console.log("  dircoco:", dircoco)
-console.log("  dirlabel:", dirlabel) // empty
+//console.log("  dirlabel:", dirlabel)
           dirtext = dirtext.replace (/€/g, "\n")
           dircoco = dircoco.join ("\n")
           dirlabel = dirlabel.join ("\n")

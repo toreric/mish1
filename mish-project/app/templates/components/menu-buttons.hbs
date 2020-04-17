@@ -107,6 +107,7 @@ function copyToClipboard (str) {
 <div id="picOrig" style="display:none"></div>
 <div id="showFactor" title="initial seconds/picture" style="display:none">2</div>
 <div id="sortOrder" style="display:none"></div>
+<div id="stopSpin" style="display:none" title="spinner stop flag"></div>
 <div id="temporary" style="display:none"></div>
 <div id="temporary_1" style="display:none"></div>
 <div id="topMargin" title="pixels above slide shown" style="display:none">15</div>
@@ -350,6 +351,11 @@ storlek">↕↔↕</a> &nbsp; <br>
         <div class="img_txt2" title="{{file.txt2}}" totip="{{file.txt2}}" {{action 'ediText' file.name}}>
           {{file.txt2}}
         </div>
+        {{#if (eq file allNames.lastObject)}}
+          <script>
+            document.getElementById ("stopSpin").innerHTML = "SPIN-END";
+          </script>
+        {{/if}}
       </div>
       {{/draggable-object}}
     {{else}}
@@ -357,6 +363,7 @@ storlek">↕↔↕</a> &nbsp; <br>
         <!-- nothing -->
       </div>
     {{/each}}
+    <!--div style="display:none"></div-->
   {{/sortable-objects}}
 </div>
 
@@ -372,6 +379,11 @@ storlek">↕↔↕</a> &nbsp; <br>
   {{#each subaList as |suba|}}
   <a class="imDir BACKG BLUET" {{action 'subaSelect' suba.album}}>
     <span> {{{suba.name}}} &nbsp;</span>
+    {{#if (eq suba subaList.lastObject)}}
+      <script>
+        document.getElementById ("stopSpin").innerHTML = "SPIN-END";
+      </script>
+    {{/if}}
   </a>
   {{else}}
   {{/each}}
