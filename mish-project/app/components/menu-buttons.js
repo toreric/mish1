@@ -815,11 +815,11 @@ export default Component.extend (contextMenuMixin, {
     $ (document).ready ( () => {
       spinnerWait (true); //== testing
       $ ("#imdbLink").text ("imdb"); // <<<<<<<<<< === IMDB_LINK in routes.js
-      $ ("#menuButton").attr ("title", "Öppna menyn"); // i18n
+      $ ("#menuButton").attr ("title", htmlSafe ("Öppna\nmenyn")); // i18n
       // Remember update *.hbs
       $ ("#bkgrColor").text ("rgb(59, 59, 59)"); // #333
       // Set the hidden-picture text background color:
-      $ ("#hideColor").text ("rgb(92, 98, 102)");
+      $ ("#hideColor").text ("rgb(0, 50, 100)");
       // Set body class BACKG:
       $ ("body").addClass ("BACKG TEXTC");
       $ ("body").css ("background", BACKG);
@@ -834,8 +834,8 @@ export default Component.extend (contextMenuMixin, {
         // The time stamp is produced with the Bash 'ember-b-script'
         userLog ($ ("#timeStamp").text (), true);
         // Login advice:
-        $ ("#title span.proid").attr ("title", homeTip);
-        //$ ("#title span.proid").attr ("totip", homeTip);
+        $ ("#title p.proid").attr ("title", homeTip);
+        //$ ("#title p.proid").attr ("totip", homeTip);
         $ ("#title button.cred").attr ("title", logAdv);
         $ ("#title button.cred").attr ("totip", logAdv);
         // Initialize settings:
@@ -1079,7 +1079,7 @@ export default Component.extend (contextMenuMixin, {
             later ( ( () => {
               if ($ ("strong.albumName") [0].innerHTML.replace (/&nbsp;/g, " ") === $ ("#picFound").text ().replace (/\.[^.]{4}$/, "").replace (/_/g, " ")) {
                 // The search result album
-                $ ("div.BUT_2").html ($.parseHTML ('<span style="color:#0b0";font-weight:bold>Gå till en bildens eget album med högerklick i grön ring!</span>'));
+                $ ("div.BUT_2").html ($.parseHTML ('<span style="color:#0b0";font-weight:bold>Gå till bildens eget album med högerklick i grön ring!</span>'));
               } else {
                 let ntot = $ (".img_mini").length;
                 let nlink = $ (".img_mini.symlink" ).length;
@@ -1376,7 +1376,7 @@ export default Component.extend (contextMenuMixin, {
             that.set ("albumText", " Valt album:");
             that.set ("albumName", '<strong class="albumName">' + tmpName + '</strong>');
             that.set ("jstreeHdr", "Alla album:");
-            $ ("#jstreeHdr").attr ("title", "Visa alla album (hela albumträdet"); //i18n
+            $ ("#jstreeHdr").attr ("title", htmlSafe ("Visa alla album\n(hela albumträdet)")); //i18n
             //$ ("#jstreeHdr").attr ("totip", "Visa alla album (hela albumträdet");
           }
           resolve (data); // Return file-name text lines
@@ -2411,6 +2411,7 @@ export default Component.extend (contextMenuMixin, {
       this.refreshAll ().then ( () => {
         // Do not insert this temporary search result into the sql DB table:
         if (albumFindResult ()) {
+          document.getElementById ("stopSpin").innerHTML = "SPIN-END";
           return true;
         }
         // Perform waiting DB updates
@@ -2424,7 +2425,7 @@ export default Component.extend (contextMenuMixin, {
 
         // Clear/reset places for sample images (root may have changed)
         // nIm == number of display nodes for the images (see iframe html)
-        let nIm = 12;
+        let nIm = 4;
         for (let i=0; i<nIm; i++) {
           iImages [i + 1].parentElement.style.display = "none";
         }
@@ -2466,12 +2467,13 @@ export default Component.extend (contextMenuMixin, {
 //console.log(i, tmpindex [i], tmp [tmpindex [i]]);
           iImages [i + 1].setAttribute ("src", tmp [tmpindex [i]]);
           var name = tmp [tmpindex [i]].replace (/^.+_mini_(.+)\.[^.]+$/, "$1");
+          iImages [i + 1].parentElement.setAttribute ("title", "Testbild " + name);
           iImages [i + 1].parentElement.setAttribute ("href", linktext + "/" + name);
           iImages [i + 1].parentElement.setAttribute ("target", "_blank");
           iImages [i + 1].parentElement.style.display = "";
         }
       }).then ( () => {
-        //document.getElementById ("stopSpin").innerHTML = "SPIN-END";
+        document.getElementById ("stopSpin").innerHTML = "SPIN-END";
         return true;
       });
     },
@@ -2620,7 +2622,7 @@ export default Component.extend (contextMenuMixin, {
         $ (diaSrch).show ();
         //$ ("#searcharea").dialog ("open");
         niceDialogOpen ("searcharea");
-        $ ("#searcharea div.diaMess div.edWarn").html ("Sökdata...");
+        if (allow.albumEdit || allow.adminAll) $ ("#searcharea div.diaMess div.edWarn").html ("Sökdata...");
         //$ (".ui-dialog").attr ("draggable", "true"); // for jquery-ui-touch-punch, here useless?
         age_imdb_images ();
         let sw = parseInt ( (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth)*0.95);
@@ -3270,7 +3272,7 @@ let BACKG = "#cbcbcb";
 let TEXTC = "#000";
 let BLUET = "#146";
 let eraseOriginals = false;
-let homeTip = "HEM start/stäng – börja här!";
+let homeTip = "I N T R O D U K T I O N";
 let logAdv = "Logga in för att kunna se inställningar: Anonymt utan namn och lösenord, eller med namnet ’gäst’ utan lösenord som ger vissa redigeringsrättigheter"; // i18n
 let nosObs = "Du får skriva men kan ej spara text utan annan inloggning"; // i18n
 let nopsGif = "GIF-fil kan bara ha tillfällig text"; // i18n
@@ -3344,28 +3346,30 @@ function acceptedDirName (name) { // Note that &ndash; is accepted:
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Get the age of _imdb_images databases
 function age_imdb_images () {
-  let imdbx = $ ("#imdbLink").text ();
-  execute ('echo $(($(date "+%s")-$(date -r ' + imdbx + '/_imdb_images.sqlite "+%s")))').then (s => {
-    let d = 0, h = 0, m = 0, text = "&nbsp;";
-    if (s*1) {
-      d = (s - s%86400);
-      s = s - d;
-      d = d/86400;
-      h = (s - s%3600);
-      s = s - h;
-      h = h/3600;
-      m = (s - s%60);
-      s = s - m;
-      m = m/60;
-      // Show approximate txt database age
-      text = "Söktextålder: ";
-      if (d) {text += d + " d "; s = 0; m = 0;}
-      if (h) {text += h + " h "; s = 0;}
-      if (m) {text += m + " m ";}
-      if (s) {text += s + " s ";}
-    }
-    $ ("#searcharea div.diaMess div.edWarn").html (text);
-  })
+  if (allow.albumEdit || allow.adminAll) {
+    let imdbx = $ ("#imdbLink").text ();
+    execute ('echo $(($(date "+%s")-$(date -r ' + imdbx + '/_imdb_images.sqlite "+%s")))').then (s => {
+      let d = 0, h = 0, m = 0, text = "&nbsp;";
+      if (s*1) {
+        d = (s - s%86400);
+        s = s - d;
+        d = d/86400;
+        h = (s - s%3600);
+        s = s - h;
+        h = h/3600;
+        m = (s - s%60);
+        s = s - m;
+        m = m/60;
+        // Show approximate txt database age
+        text = "Söktextålder: ";
+        if (d) {text += d + " d "; s = 0; m = 0;}
+        if (h) {text += h + " h "; s = 0;}
+        if (m) {text += m + " m ";}
+        if (s) {text += s + " s ";}
+      }
+      $ ("#searcharea div.diaMess div.edWarn").html (text);
+    })
+  }
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Load all image paths of the current imdbRoot tree into _imdb_images.sqlite
@@ -3710,6 +3714,8 @@ function favDia (text, add, save, show, close) { // ===== Show favorites dialog
         saveFavorites (text);
         $ (this).dialog ("close");
         text = text.replace (/[ \n]+/g, " ").trim ();
+        // Save this album as previous:
+        savedAlbumIndex = $ ("#imdbDirs").text ().split ("\n").indexOf ($ ("#imdbDir").text ().slice ($ ("#imdbLink").text ().length));
         // Place the namelist in the picFound album still if not yet chosen
         // Preset imdbDir 'in order to cheat' saveOrderFunc
         $ ("#imdbDir").text ($ ("#imdbLink").text () +"/"+ $ ("#picFound").text ());
@@ -3853,7 +3859,7 @@ function niceDialogOpen (dialogId) {
   $ (id).parent ().css ("max-width", sw+"px");
   //$ (id).parent ().width ("auto");
   $ (id).width ("auto");
-  $ (id).parent ().css ("top", "28px"); // added
+  $ (id).parent ().css ("top", "38px"); // added
 
   let tmp = $ (id).parent ().parent ().outerWidth (); // helpText??
   let pos = $ (id).parent ().position ();
@@ -3862,15 +3868,14 @@ function niceDialogOpen (dialogId) {
     var diaDivLeft = parseInt ( (sw - esw)/2) + "px";
     $ (id).parent ().css ("left", diaDivLeft);
   }
-
-//console.log($ (id + " textarea"));
   $ (id).parent ().width (esw + "px");
   $ (id + " textarea").width ((esw - 15) + "px");
-  //$ (id).parent ().width ("auto");
   var up = 128;
   let hs = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
   $ (id).parent ().css ("max-height", hs + "px");
   $ (id).css ("max-height", hs - up + "px");
+  $ (id).parent ().draggable ();
+  $ (id).parent ().attr ({draggable: "true"});
   // NOTE, nodes above: JQuery objects
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -4322,6 +4327,11 @@ function extractContent(htmlString) { // Extracts text from an HTML string
 function devSpec () { // Device specific features/settings
   // How do we make context menus with iPad/iOS?
   if ( (navigator.userAgent).includes ("iPad")) {
+    /*/ Disable iOS overscroll
+    document.body.addEventListener('touchmove', function(event) {
+      event.preventDefault();
+    }, false);*/
+    $ (".nav_.qnav_").hide (); // the help link, cannot use click-in-picture...
     $ ("#full_size").hide (); // the full size image link
     $ (".nav_.pnav_").hide (); // the print link
   }
@@ -5044,191 +5054,4 @@ function showFileInfo () {
   });
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-//  github.com/furf/jquery-ui-touch-punch (for touch-pads)
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-later ( ( () => {
-/*!
- * jQuery UI Touch Punch 0.2.3
- *
- * Copyright 2011–2014, Dave Furfero
- * Dual licensed under the MIT or GPL Version 2 licenses.
- *
- * Depends:
- *  jquery.ui.widget.js
- *  jquery.ui.mouse.js
- */
-(function ($) {
-
-  // Detect touch support
-  // console.log('ontouchend' in document);
-  $.support.touch = 'ontouchend' in document;
-  if ($.support.touch) {
-    //$ (".nav_.smBu").hide ();
-  }
-  // Ignore browsers without touch support
-  if (!$.support.touch) {
-    return;
-  }
-
-  var mouseProto = $.ui.mouse.prototype,
-      _mouseInit = mouseProto._mouseInit,
-      _mouseDestroy = mouseProto._mouseDestroy,
-      touchHandled;
-
-  /**
-   * Simulate a mouse event based on a corresponding touch event
-   * @param {Object} event A touch event
-   * @param {String} simulatedType The corresponding mouse event
-   */
-  function simulateMouseEvent (event, simulatedType) {
-
-    // Ignore multi-touch events
-    if (event.originalEvent.touches.length > 1) {
-      return;
-    }
-
-    event.preventDefault();
-
-    var touch = event.originalEvent.changedTouches[0],
-        simulatedEvent = document.createEvent('MouseEvents');
-
-    // Initialize the simulated mouse event using the touch event's coordinates
-    simulatedEvent.initMouseEvent(
-      simulatedType,    // type
-      true,             // bubbles
-      true,             // cancelable
-      window,           // view
-      1,                // detail
-      touch.screenX,    // screenX
-      touch.screenY,    // screenY
-      touch.clientX,    // clientX
-      touch.clientY,    // clientY
-      false,            // ctrlKey
-      false,            // altKey
-      false,            // shiftKey
-      false,            // metaKey
-      0,                // button
-      null              // relatedTarget
-    );
-
-    // Dispatch the simulated event to the target element
-    event.target.dispatchEvent(simulatedEvent);
-  }
-
-  /**
-   * Handle the jQuery UI widget's touchstart events
-   * @param {Object} event The widget element's touchstart event
-   */
-  mouseProto._touchStart = function (event) {
-
-    var self = this;
-
-    // Ignore the event if another widget is already being handled
-    if (touchHandled || !self._mouseCapture(event.originalEvent.changedTouches[0])) {
-      return;
-    }
-
-    // Set the flag to prevent other widgets from inheriting the touch event
-    touchHandled = true;
-
-    // Track movement to determine if interaction was a click
-    self._touchMoved = false;
-
-    // Simulate the mouseover event
-    simulateMouseEvent(event, 'mouseover');
-
-    // Simulate the mousemove event
-    simulateMouseEvent(event, 'mousemove');
-
-    // Simulate the mousedown event
-    simulateMouseEvent(event, 'mousedown');
-  };
-
-  /**
-   * Handle the jQuery UI widget's touchmove events
-   * @param {Object} event The document's touchmove event
-   */
-  mouseProto._touchMove = function (event) {
-
-    // Ignore event if not handled
-    if (!touchHandled) {
-      return;
-    }
-
-    // Interaction was not a click
-    this._touchMoved = true;
-
-    // Simulate the mousemove event
-    simulateMouseEvent(event, 'mousemove');
-  };
-
-  /**
-   * Handle the jQuery UI widget's touchend events
-   * @param {Object} event The document's touchend event
-   */
-  mouseProto._touchEnd = function (event) {
-
-    // Ignore event if not handled
-    if (!touchHandled) {
-      return;
-    }
-
-    // Simulate the mouseup event
-    simulateMouseEvent(event, 'mouseup');
-
-    // Simulate the mouseout event
-    simulateMouseEvent(event, 'mouseout');
-
-    // If the touch interaction did not move, it should trigger a click
-    if (!this._touchMoved) {
-
-      // Simulate the click event
-      simulateMouseEvent(event, 'click');
-    }
-
-    // Unset the flag to allow other widgets to inherit the touch event
-    touchHandled = false;
-  };
-
-  /**
-   * A duck punch of the $.ui.mouse _mouseInit method to support touch events.
-   * This method extends the widget with bound touch event handlers that
-   * translate touch events to mouse events and pass them to the widget's
-   * original mouse event handling methods.
-   */
-  mouseProto._mouseInit = function () {
-
-    var self = this;
-
-    // Delegate the touch handlers to the widget's element
-    self.element.bind({
-      touchstart: $.proxy(self, '_touchStart'),
-      touchmove: $.proxy(self, '_touchMove'),
-      touchend: $.proxy(self, '_touchEnd')
-    });
-
-    // Call the original $.ui.mouse init method
-    _mouseInit.call(self);
-  };
-
-  /**
-   * Remove the touch event handlers
-   */
-  mouseProto._mouseDestroy = function () {
-
-    var self = this;
-
-    // Delegate the touch handlers to the widget's element
-    self.element.unbind({
-      touchstart: $.proxy(self, '_touchStart'),
-      touchmove: $.proxy(self, '_touchMove'),
-      touchend: $.proxy(self, '_touchEnd')
-    });
-
-    // Call the original $.ui.mouse destroy method
-    _mouseDestroy.call(self);
-  };
-
-})($);
-}), 4000);
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

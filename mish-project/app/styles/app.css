@@ -469,7 +469,10 @@ button.mainMenuClose.ui-dialog-titlebar-close:hover {
   cursor: pointer;
 }
 #title .proid:hover {
-  background: #0085ff;
+  background: deeppink;
+}
+#title .proid:active, .proid:visited,  .proid:focus {
+  background: inherit;
 }
 #title form {
   display: inline-block;

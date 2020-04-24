@@ -22,6 +22,11 @@ body {
   color: black;
   background-color: deeppink;
 }
+h2 {
+  display: block;
+  font-family: sans, sans-serif;
+  margin-top: 0;
+}
 h3, p {
   display: inline;
 }
@@ -56,7 +61,7 @@ a.border0 {
   display: inline-block;
   vertical-align: top;
   width: 8em;
-  text-align: left;
+  text-align: center;
 }
 .wrap img {
   width: 8em;
@@ -64,8 +69,11 @@ a.border0 {
   border-radius: 4px;
 }
 .wrap .lef img {
+  display: inline-block;
 }
-.wrap div.mid {
+
+
+.wrap .mid {
   text-align: center;
 }
 .wrap .mid img {

@@ -76,6 +76,7 @@
     "ember-cli-shims": "^1.2.0",
     "ember-truth-helpers": "^2.1.0",
     "jquery-plugin-printthis": "^1.0.1",
+    "jquery-ui-touch-punch": "^0.2.3",
     "minimatch": "^3.0.4"
   }
 }
