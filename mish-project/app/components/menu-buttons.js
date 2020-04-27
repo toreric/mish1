@@ -834,8 +834,8 @@ export default Component.extend (contextMenuMixin, {
         // The time stamp is produced with the Bash 'ember-b-script'
         userLog ($ ("#timeStamp").text (), true);
         // Login advice:
-        $ ("#title p.proid").attr ("title", homeTip);
-        //$ ("#title p.proid").attr ("totip", homeTip);
+        $ ("#title a.proid").attr ("title", homeTip);
+        //$ ("#title a.proid").attr ("totip", homeTip);
         $ ("#title button.cred").attr ("title", logAdv);
         $ ("#title button.cred").attr ("totip", logAdv);
         // Initialize settings:
@@ -849,14 +849,14 @@ export default Component.extend (contextMenuMixin, {
         this.actions.setAllow (true);
         later ( ( () => { // To top of screen:
           scrollTo (0, 0);
-          $ ("#title a.finish").focus ();
+          $ ("#title a.proid").focus ();
           later ( ( () => { // Default user:
             $ (".cred.user").attr ("value", "gäst"); // i18n
             $ (".cred.login").click ();
             later ( ( () => {
               $ (".cred.login").click (); // Confirm logIn
               $ (".cred.user").click (); // Prevents FF showing link to saved passwords
-              $ (".cred.login").focus ();
+              $ ("#title a.proid").focus ();
               this.actions.selectRoot ("");
               later ( ( () => {
                 if ($ ("#imdbDir").text ()) this.actions.imageList (true);
@@ -2891,7 +2891,8 @@ export default Component.extend (contextMenuMixin, {
         $ ("#title button.cred").attr ("title", "Bekräfta inloggning");
         later ( ( () => {
           $ ("#title input.cred").blur ();
-          $ ("#title button.cred").focus (); // Prevents FF showing link to saved passwords
+          //$ ("#title button.cred").focus (); // Prevents FF showing link to saved passwords
+          $ ("#title a.proid").focus (); // Prevents FF showing link to saved passwords
         }),100);
         //spinnerWait (false);
         return;
@@ -2912,7 +2913,8 @@ export default Component.extend (contextMenuMixin, {
         $ ("div.settings, div.settings div.check").hide ();
         //$ ("#title button.viewSettings").hide ();
         userLog ("LOGOUT");
-        $ ("#title a.finish").focus ();
+        //$ ("#title a.finish").focus ();
+        $ ("#title a.proid").focus ();
         zeroSet (); // #allowValue = '000... etc.
         that.actions.setAllow ();
         //later ( ( () => {
@@ -3031,7 +3033,7 @@ export default Component.extend (contextMenuMixin, {
                 }), 1000);
               }), 500);
             }
-            $ ("#title .proid").focus ();
+            $ ("#title a.proid").focus ();
           }
 //==          spinnerWait (false);
         });
@@ -3217,11 +3219,11 @@ export default Component.extend (contextMenuMixin, {
       if (linkarr.length > 1) pixt = "bilderna";
       linktext += linkarr.join ("%20");
       //console.log(linktext);
-      let lite = "<br>Inga bilder";
+      let lite = "<br>Just nu visas inga albumbilder";
       if (linktext.replace (/^([^/]*\/)*(.*)/, "$2")) {
         lite = "Webblänk till " + pixt + ":<br><br>";
         lite += '<div style="text-align:left;word-break:break-all">';
-        lite += '<a href="' + linktext + '" target="_blank">';
+        lite += '<a href="' + linktext + '" target="_blank" draggable="false">';
         lite += '<b style="font-size:90%">' + linktext + "</b></a><br><br>";
         lite += '</div><div style="text-align:left">';
         lite += "Kopiera länktexten – den kan användas som ”klicklänk” i mejl "
@@ -3423,6 +3425,7 @@ function spinnerWait (runWait) {
       document.getElementById("reLd").disabled = false;
       document.getElementById("saveOrder").disabled = false;
       document.getElementById("showDropbox").disabled = false; // May be disabled at upload!
+      $ ("#title a.proid").focus ();
     }), 100);
   }
 }
@@ -3875,7 +3878,7 @@ function niceDialogOpen (dialogId) {
   $ (id).parent ().css ("max-height", hs + "px");
   $ (id).css ("max-height", hs - up + "px");
   $ (id).parent ().draggable ();
-  $ (id).parent ().attr ({draggable: "true"});
+  //$ (id).parent ().attr ({draggable: "true"}); // wrong draggability!
   // NOTE, nodes above: JQuery objects
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

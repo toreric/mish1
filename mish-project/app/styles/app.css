@@ -468,11 +468,13 @@ button.mainMenuClose.ui-dialog-titlebar-close:hover {
   vertical-align: top;
   cursor: pointer;
 }
-#title .proid:hover {
-  background: deeppink;
+@keyframes example {
+  from {background-color: deeppink;}
+  to {background-color: transparent;}
 }
-#title .proid:active, .proid:visited,  .proid:focus {
-  background: inherit;
+#title .proid:hover, #title .proid:focus {
+  animation-name: example;
+  animation-duration: 4s; /* for touchs */
 }
 #title form {
   display: inline-block;

@@ -754,6 +754,11 @@ module.exports = function (app) {
               res.send (foundpath.trim ())
               res.end ()
             }, 1000)
+          } else {
+            err = "Error: The images database is out of order"
+            console.error (err)
+            res.send (err)
+            res.end ()
           }
         })
         db.close ()

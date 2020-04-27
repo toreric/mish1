@@ -22,10 +22,17 @@ body {
   color: black;
   background-color: deeppink;
 }
-h2 {
+h2, h2 span {
   display: block;
   font-family: sans, sans-serif;
+  line-height: 1.2em;
   margin-top: 0;
+}
+h2 {
+  letter-spacing: 0.2em;
+}
+h2 span {
+  letter-spacing: 0.08em;
 }
 h3, p {
   display: inline;
@@ -37,6 +44,14 @@ h3, b {
 }
 a {
   color: rgb(176, 240, 255);
+  text-decoration: none;
+  outline: 0;
+}
+a:hover, a:active, a:focus, a.intro:hover, a.intro:active, a.intro:focus {
+  color: white;
+  cursor: pointer;
+}
+a.intro {
   display: inline;
   padding: 0.3em 0.5em;
   text-decoration: none;
@@ -44,42 +59,38 @@ a {
   border: 1.2px solid white;
   border-radius: 5px;
 }
-a:hover {
-  color: white;
-  cursor: pointer;
-}
-.wrap {
-  display: inline-block;
-  vertical-align: top;
-  margin: 0 1em 0 0;
-}
 a.border0 {
   border: 0;
   padding: 0;
 }
-.wrap div {
+.wrap0, .wrap1 {
+  display: inline-block;
+  vertical-align: top;
+}
+.wrap1 div {
   display: inline-block;
   vertical-align: top;
   width: 8em;
-  text-align: center;
+  text-align: left;
+  margin: 0 0.5em;
 }
-.wrap img {
-  width: 8em;
+.wrap1 img {
+  width: 7em;
   border: 1.2px solid white;
   border-radius: 4px;
 }
-.wrap .lef img {
+.wrap1 .lef img {
   display: inline-block;
 }
-
-
-.wrap .mid {
-  text-align: center;
+.wrap1 .mid {
+  text-align: left;
 }
-.wrap .mid img {
+.wrap1 .mid a {
+  display: inline-block;
+  margin: 0.5em 0;
 }
-.wrap .rig {
+.wrap1 .rig {
   text-align: right;
 }
-.wrap .rig img {
+.wrap1 .rig img {
 }
