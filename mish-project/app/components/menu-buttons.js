@@ -2949,7 +2949,8 @@ export default Component.extend (contextMenuMixin, {
         text += "Om du misslyckas med inloggningen (alltså gör fel, visas ej här!) blir ";
         text += "du inloggad som <b style='font-family:monospace'>anonym</b> som är likvärdigt med att vara utloggad. ";
         text += "Börja om med att logga ut och så vidare.";
-
+        $ ("iframe").hide ();
+        $ (".mainMenu").hide ();
         infoDia ("", "", '<b style="background:transparent">ÄR DU UTLOGGAD?</b>', text , "Jag förstår!", false, false);
         //(dialogId, picName, title, text, yes, modal, flag)";
 

@@ -85,9 +85,9 @@ a.border0 {
 .wrap1 .mid {
   text-align: left;
 }
-.wrap1 .mid a {
+.wrap0 .mid a, .wrap1 .mid a {
   display: inline-block;
-  margin: 0.5em 0;
+  margin: 0.4em 0;
 }
 .wrap1 .rig {
   text-align: right;
