@@ -4,6 +4,7 @@ display: none;
 html{
 display: block;
 background-color: #fefefe;
+background-color: #c3efff;
 }
 * {
 margin: 0;
@@ -22,32 +23,22 @@ border-color: #666666;
 border-width: 0px; /*** to show divs ***/
 }
 #sidan {
-width: auto;
-text-align: left;
+width: 100%;
 padding: 0;
 margin: 0;
 }
 #inneh {
-width: auto;
-text-align: left;
+width: 100%;
 padding: 0;
 margin: 0;
-background-color: #c3efff;
 }
 .new {
 font-variant:small-caps;
 color:green!important;
 }
 #mitten {
-text-align:left;
-width:auto;
-float:left;
-margin: 0 0 0 1em;
-}
-#mitten p {
-font-size: 120%;
-line-height: 130%;
-width:97%;
+margin: auto;
+max-width: 640px;
 }
 button {
 font-size: 77%;
@@ -64,7 +55,6 @@ float: left;
 width: 0;
 }
 #fot {
-float: left;
 width: 100%;
 text-align: center;
 margin-left: auto;
@@ -73,20 +63,24 @@ padding-left: 0;
 }
 h1, p {
 display: block;
+max-width: 640px;
 }
 h1{
-width:95%;
-font-size: 150%;
 font-size: 200%;
 line-height:100%;
 font-weight: normal;
-text-align: left;
-padding: 0.2em 0 0.2em 0.4em;
+text-align: center;
+padding: 0.2em 0.4em 0.2em 0.4em;
 background: #ccc;
-margin: 0 0 0.5em 0;
+border-radius: 10px;
+margin: 0 1em 0.5em 1em;
 }
 p {
-margin: 0 0 0.9em 0;
+text-align:justify;
+font-size: 120%;
+line-height: 130%;
+margin-bottom: 0.9em;
+margin: 0 1.7em 0.5em 1.7em;
 }
 hr {
 margin-top: 0.5em;
@@ -114,6 +108,7 @@ a {
 color: blue;
 text-decoration:none;
 font-weight: bold;
+font-size: smaller;
 }
 a:hover {
 color: #990099;
