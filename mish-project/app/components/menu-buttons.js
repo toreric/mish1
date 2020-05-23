@@ -836,6 +836,7 @@ export default Component.extend (contextMenuMixin, {
         // Login advice:
         $ ("#title a.proid").attr ("title", homeTip);
         //$ ("#title a.proid").attr ("totip", homeTip);
+        $ ("#title a.toggbkg").attr ("title", bkgTip);
         $ ("#title button.cred").attr ("title", logAdv);
         $ ("#title button.cred").attr ("totip", logAdv);
         // Initialize settings:
@@ -3274,6 +3275,7 @@ var blink_text = function () {
 let BACKG = "#cbcbcb";
 let TEXTC = "#000";
 let BLUET = "#146";
+let bkgTip = "Byt bakgrund";
 let eraseOriginals = false;
 let homeTip = "I N T R O D U K T I O N";
 let logAdv = "Logga in för att kunna se inställningar: Anonymt utan namn och lösenord, eller med namnet ’gäst’ utan lösenord som ger vissa redigeringsrättigheter"; // i18n

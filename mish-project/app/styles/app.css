@@ -581,10 +581,14 @@ div.settings a:hover {
 .spinner {
   display: none;
   position: fixed;
-  right: 3em;
+  /*left: 3em;
   top: 0.25em;
   height: 6em;
-  width: 6em;
+  width: 6em;*/
+  left: 0;
+  top: 0.75em;
+  height: 3em;
+  width: 3em;
   border-radius: 50%;
   background-color: transparent;
   z-index: 1500;
