@@ -195,7 +195,7 @@ i nytt fönster">↕↔↕</a> &nbsp; <br>
   <div class="mainMenu BACKG" onclick="return false" draggable="false" ondragstart="return false" style="display:none">
 
     <p onclick="return false" draggable="false" ondragstart="return false">
-      <a {{action 'findText'}}>Finn bilder <span style="font:normal 1em monospace!important">[F]</span>:</a> Sök i
+      <a class="search" {{action 'findText'}}>Finn bilder <span style="font:normal 1em monospace!important">[F]</span>:</a> Sök i
       <span class="root">
         <select id="rootSel" title="Välj albumkatalog här" totip="Välj albumkatalog här" onchange={{action 'selectRoot' value='target.value'}}>
           {{#each imdbRoots as |rootChoice|}}

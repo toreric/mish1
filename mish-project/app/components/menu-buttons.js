@@ -1635,6 +1635,7 @@ export default Component.extend (contextMenuMixin, {
         userLog ("ALBUM protected");
         return;
       }
+      $ (".mainMenu").hide ();
       $ ("iframe").hide ();
       $ (".img_show").hide ();
       $ (".nav_links").hide ();
@@ -3307,9 +3308,9 @@ function setCookie(cname, cvalue, exminutes) {
     var d = new Date();
     d.setTime(d.getTime() + (exminutes*60000));
     var expires = "expires="+ d.toUTCString();
-    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/;SameSite=Lax";
   } else {
-    document.cookie = cname + "=" + cvalue + ";path=/";
+    document.cookie = cname + "=" + cvalue + ";path=/;SameSite=Lax";
   }
   }
 function getCookie(cname) {
@@ -4504,8 +4505,8 @@ let prepSearchDialog = () => {
     let sw = ediTextSelWidth () - 25; // Dialog width
     let tw = sw - 25; // Text width
     $ ('<div id="searcharea" style="margin:0;padding:0;width:'+sw+'px"><div class="diaMess"> <div class="edWarn" style="font-weight:normal;text-align:right" ></div> \
-    <div class="srchIn">Sök i:&nbsp; <span class="glue"><input id="t1" type="checkbox" name="search1" value="description" checked/><label for="t1">&nbsp;bildtext</label></span>&nbsp; \
-    <span class="glue"><input id="t2" type="checkbox" name="search2" value="creator" checked/><label for="t2">&nbsp;ursprung</label></span>&nbsp; \
+    <div class="srchIn">Sök i:&nbsp; <span class="glue"><input id="t1" type="checkbox" name="search1" value="description" checked/><label for="t1">&nbsp;bildtext (övre texten)</label></span>&nbsp; \
+    <span class="glue"><input id="t2" type="checkbox" name="search2" value="creator" checked/><label for="t2">&nbsp;ursprung (nedre texten)</label></span>&nbsp; \
     <span class="glue"><input id="t3" type="checkbox" name="search3" value="source"/><label for="t3">&nbsp;anteckningar</label></span>&nbsp; \
     <span class="glue"><input id="t4" type="checkbox" name="search4" value="album"/><label for="t4">&nbsp;album</label></span>&nbsp; \
     <span class="glue"><input id="t5" type="checkbox" name="search5" value="name" checked/><label for="t5">&nbsp;namn</label></span></div> \
@@ -4693,6 +4694,9 @@ let doFindText = (sTxt, and, sWhr, exact) => {
       later ( ( () => {
         if (n === 0) {
           document.getElementById("yesBut").disabled = true;
+          let btFind ="<br><button style=\"border:solid 2px white;background:moccasin;\" onclick='$(\"#dialog\").dialog(\"close\");$(\"div.subAlbum[title=SENASTE]\").click();$(\"a.search\").click();'>TILLBAKA</button>";
+          document.getElementById("dialog").innerHTML = btFind;
+          $("#dialog button") [0].focus();
         }
       }), 40);
       $ ("button.findText").show ();
