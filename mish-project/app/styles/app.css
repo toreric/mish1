@@ -377,10 +377,6 @@ button.mainMenuClose.ui-dialog-titlebar-close:hover {
   padding: 0;
   background: transparent;
 }
-/*.sortable-objects.ember-view {
-  background-color: #b0b0b0;
-  background-color: #000;
-}*/
 #imdbError {
   color: deeppink;
   font-weight: bold;
@@ -410,7 +406,8 @@ button.mainMenuClose.ui-dialog-titlebar-close:hover {
   font-weight: bold;
   color: yellowgreen;
   top: 25%;
-  left: 25%;
+  left: 15%;
+  width: 50%;
   z-index: 130;
 }
 .selectOption {
@@ -1061,6 +1058,9 @@ div.img_mini.symlink div.markTrue, div.img_mini.symlink div.markFalse {
   background-color: transparent;
   cursor: pointer;
 }
+#do_print {
+  font-family: Arial;
+}
 .nav_links {
   display: none;
   position: fixed;
@@ -1075,27 +1075,28 @@ div.img_mini.symlink div.markTrue, div.img_mini.symlink div.markFalse {
   display: inline-block;
   background-color: #333;
   border-radius: 6px;
-  padding: 0.4em 0.7em 0.4em 0.7em;
-  margin: 0 0 1em 0;
+  font-family: initial;
 }
 .nav_links .qnav_ {
-  padding: 0.4em 0.7em 0.3em 0.7em;
+  padding: 0.1em 0.4em 0em 0.4em;
+  font-family: Arial;
 }
 .nav_links a {
-  font-size: 130%;
+  font-size:2em;
   font-weight: bold;
+  padding:0 0.3em 0.1em 0.3em;
+  margin-bottom:0.65em;
   color: deeppink;
-  cursor: pointer;
 }
 .nav_links .nav_.toggleAuto {
-  padding: 0.4em 0.2em 0.3em 0.2em;
-  margin-right: 0.15em;
+  padding: 0.5em 0.25em 0.4em 0.25em;
+  margin-right: 0.25em;
 }
 .nav_links span#showSpeed {
   font-size: 130%;
   color: deeppink;
   padding: 0;
-  margin: 0 0.05em 1em 0;
+  margin: 0 0.25em 0.8em 0;
 }
 .nav_links span a.speedBase {
   display: inline-block;
@@ -1116,6 +1117,7 @@ div.img_mini.symlink div.markTrue, div.img_mini.symlink div.markFalse {
 .nav_links #full_size {
   padding: 0.3em 0 0.45em 0;
   font-family: "Arial" !important;
+  font-size: 1.5em;
 }
 input.showTime[type="number"] {
   width: 1.3em;
@@ -1241,11 +1243,11 @@ select option {
   border: 2px dashed white;
   background: transparent;
   border-radius: 3px;
-  font-size: 1.4em;
+  font-size: 1.8em;
   font-weight: bold;
 }
 #link_show a:hover {
-  color: black;
+  color: #555;
 }
 #link_show img {
   border: 1.0px solid gray;

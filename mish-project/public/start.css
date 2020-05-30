@@ -24,23 +24,29 @@ body {
 }
 h2, h2 span {
   display: block;
-  font-family: sans, sans-serif;
-  line-height: 1.2em;
-  margin-top: 0;
+  font-family: Arial, Helvetica, sans, sans-serif;
 }
 h2 {
-  letter-spacing: 0.2em;
+  letter-spacing: 0.06em;
+  margin-top: 0.6em;
+  font-size: 160%;
+  margin: 0.5em 0;
 }
 h2 span {
-  letter-spacing: 0.08em;
+  letter-spacing: 0.025em;
+  font-size: 100%;
 }
 h3, p {
   display: inline;
 }
-h3, b {
-  font-family: Verdana, Geneva, Tahoma, sans-serif;
-  font-size: 95%;
-  letter-spacing: 1px;
+h3, h3 b {
+  font-family: Arial, Helvetica, sans, sans-serif;
+  font-size: 120%;
+  letter-spacing: 0px;
+}
+b {
+  font-family: Arial, Helvetica, sans, sans-serif;
+  font-size: 100%;
 }
 a {
   color: rgb(176, 240, 255);
