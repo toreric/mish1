@@ -447,7 +447,7 @@ export default Component.extend (contextMenuMixin, {
     },
     { label: 'Flytta till...', // i18n
       disabled: () => {
-        return !(allow.deleteImg || allow.adminAll);
+        return !(allow.delcreLink || allow.adminAll);
       },
       action () {
         var picName, nels, nlns, nelstxt, movetxt, picNames = [], nodelem = [], nodelem0, i;
@@ -1869,7 +1869,6 @@ export default Component.extend (contextMenuMixin, {
       //$ (".mainMenu p:gt(1)").show ();
       // Close all dialogs/windows
       ediTextClosed ();
-      //$ ("iframe").hide ();
       $ (".img_show").hide ();
       $ (".nav_links").hide ();
       //document.getElementById ("imageList").className = "hide-all";
@@ -1926,9 +1925,11 @@ export default Component.extend (contextMenuMixin, {
       } else {
         value = "";
       }
+      // Do not hide the introduction page at very first view
+      if (value !== $ ("#imdbLink").text ()) {
+        $ ("iframe").hide ();
+      }
       ediTextClosed ();
-
-//console.log(value);
       spinnerWait (true);
       document.getElementById ("stopSpin").innerHTML = "";
       stopSpinStopSpin ();
@@ -2975,7 +2976,10 @@ export default Component.extend (contextMenuMixin, {
             $ (".ember-view.jstree").jstree ("close_all");
             $ (".ember-view.jstree").jstree ("open_node", "#j1_1");
             $ (".ember-view.jstree").jstree ("select_node", "#j1_1");
+            // Next line is a BUG SAVER only. In some way, an initial hide is generated, WHERE?
             this.actions.imageList (true);
+            // Side effect (minor): Deactivation of the "active album" link in the main menu
+            // (next to last entry), but it will be reset as soon as the jstree is revisited.
           }), 2000);
         }, 2000);                 // NOTE: Preserved here just as an example
 //==        spinnerWait (false);
@@ -3467,10 +3471,7 @@ async function parentAlbum (tgt) {
     await new Promise (z => setTimeout (z, 4000));
     tgt = document.getElementsByClassName ("img_mini") [0].getElementsByTagName ("img") [1];
   }
-//console.log("parentAlbum tgt",tgt);
   let classes = $ (tgt).parent ("div").parent ("div").attr("class");
-//console.log($ (tgt).parent ("div").parent ("div"));
-//console.log("classes",classes);
   let albumDir, file, tmp;
   if (classes && -1 < classes.split (" ").indexOf ("symlink")) { // ...of a symlink...
     tmp = $ (tgt).parent ("div").parent ("div").find ("img").attr ("title");
@@ -3500,7 +3501,6 @@ async function parentAlbum (tgt) {
       return namepic;
     }).then (async (namepic) => {
       //await new Promise (z => setTimeout (z, 12000));
-//console.log("  *gotoMinipic!");
       if (namepic) gotoMinipic (namepic);
     });
   } // else do nothing
@@ -3508,7 +3508,6 @@ async function parentAlbum (tgt) {
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Position to a minipic and highlight its border
 function gotoMinipic (namepic) {
-//console.log("***gotoMinipic!");
   let hs = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
   let spinner = document.querySelector("img.spinner");
   let timer;
@@ -4124,9 +4123,6 @@ function reqDirs (imdbroot) { // Read the dirs in imdbLink (requestDirs)
         var dim = (dirList.length - 2)/3;
         var dirLabel = dirList.splice (2 + 2*dim, dim);
         var dirCoco = dirList.splice (2 + dim, dim);
-//console.log(dirList);
-//console.log(dirCoco);
-//console.log(dirLabel);
         $ ("#userDir").text (dirList [0].slice (0, dirList [0].indexOf ("@")));
         $ ("#imdbRoot").text (dirList [0].slice (dirList [0].indexOf ("@") + 1));
         $ ("#imdbLink").text (dirList [1]);
@@ -4176,17 +4172,12 @@ function reqDirs (imdbroot) { // Read the dirs in imdbLink (requestDirs)
             dirCoco [j] = dirCoco [j].replace (/\*/, "—*");
           }
         }
-//console.log(dirList);
-//console.log(dirCoco);
-//console.log(dirLabel);
-
         // Don't keep current album visible if not in dirList:
         let curr = $ ("#imdbDir").text ().match(/\/.*$/); // Remove imdbLink
         if (curr) {curr = curr.toString ();} else {
           curr = "£"; // Side effect: imdb cannot be hidden
         }
         let ix = dirList.indexOf (curr);
-console.log("Current:"+$ ("#imdbDir").text (), curr, ix);
         if ($ ("#imdbDir").text ().length > 0 && ix < 0) {
           document.getElementById ("imageList").className = "hide-all";
           $ ("#imdbDir").text (""); // Remove active album
@@ -4612,10 +4603,8 @@ let doFindText = (sTxt, and, sWhr, exact) => {
       let chalbs = $ ("#imdbDirs").text ().split ("\n");
       n = paths.length;
       let lpath = $ ("#imdbLink").text () + "/" + $ ("#picFound").text ();
-//console.log(chalbs);
       for (let i=0; i<n; i++) {
         let chalb = paths [i].replace (/^[^/]+(.*)\/[^/]+$/, "$1");
-//console.log(chalb);
         if (!(chalbs.indexOf (chalb) < 0)) {
           let fname = paths [i].replace (/^.*\/([^/]+$)/, "$1");
           let linkfrom = paths [i];
@@ -5006,8 +4995,8 @@ var allowSV = [ // Ordered as 'allow', IMPORTANT!
   "göra/radera album",
   "(arbeta med bilagor +4)",
   "(se bilagor)",
-  "göra/radera länkar",
-  "flytta till annat album/radera bilder +5",
+  "flytta till annat album, göra/radera länkar",
+  "radera bilder +5",
   "(redigera bilder)",
   "gömma/visa bilder",
   "se högupplösta bilder",
