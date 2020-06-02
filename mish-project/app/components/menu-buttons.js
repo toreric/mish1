@@ -1480,8 +1480,14 @@ export default Component.extend (contextMenuMixin, {
           later ( ( () => {
             $ (".showCount:first").show ();
             $ (".miniImgs").show ();
-            if (n_files < 1) $ ("#toggleName").hide ();
-            else $ ("#toggleName").show ();
+            if (n_files < 1) {
+              $ ("#toggleName").hide ();
+              $ ("#toggleHide").hide ();
+            }
+            else {
+              $ ("#toggleName").show ();
+              if (allow.adminAll || allow.imgHidden) $ ("#toggleHide").show ();
+            }
             later ( ( () => {
 //==              spinnerWait (false);
               //later ( ( () => {
@@ -2197,8 +2203,10 @@ export default Component.extend (contextMenuMixin, {
       $ ('.showCount').hide ();
       $ ('.showCount:first').show (); // Show upper
       $ ("#toggleName").hide ();
+      $ ("#toggleHide").hide ();
       if (n > 0) {
         $ ("#toggleName").show ();
+        if (allow.adminAll || allow.imgHidden) $ ("#toggleHide").show ();
         $ ("span.ifZero").show ();
         if ( (n - h) > lineCount) {$ ('.showCount').show ();} // Show both
       } else {
@@ -5037,11 +5045,11 @@ function allowFunc () { // Called from setAllow (which is called from init(), lo
   } else {
     $ ("#saveOrder").hide ()
   }
-  if (allow.adminAll || allow.imgHidden) {
+  /*if (allow.adminAll || allow.imgHidden) {
     $ ("#toggleHide").show ();
   } else {
     $ ("#toggleHide").hide ();
-  }
+  }*/
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Disable browser back button

@@ -4,7 +4,7 @@
 }
 body {
  width: 99%!important;
- height: 95%;
+ margin-left: 1.5em;
 }
 @media print {
   html, #wrap_pad {
@@ -18,7 +18,7 @@ body {
 }
 iframe {
   display: block;
-  top: 3.34em;
+  top: 3.5em;
   left: 0;
   height: 100%;
   width: 99.55%;
@@ -26,14 +26,13 @@ iframe {
   background: #5b5f5f!important;
   opacity: 0.95;
   border: 2px solid gray;
-  border-radius: 6px;
   position: fixed;
   z-index: 0;
 }
 #wrap_pad {
   position: relative;
   text-align: center;
-  margin: 0.95em 0 auto 2.6em;
+  margin: 0.95em 0 auto 3.3em;
   padding-top: 1em;     /* click-back area above .img_show */
   padding-bottom: 20em; /* and below .img_txt2             */
   background: transparent!important;
@@ -447,7 +446,7 @@ button.mainMenuClose.ui-dialog-titlebar-close:hover {
 }
 #title {
   display: inline-block;
-  margin: 1em 0 0.75em 2em;
+  margin: 1em 0 0.75em 1.95em;
 }
 #title * {
   color: inherit;
@@ -469,12 +468,12 @@ button.mainMenuClose.ui-dialog-titlebar-close:hover {
   font-family: Verdana, Geneva, Tahoma, sans-serif!important;
   font-size: 0.75em!important;
 }
-@keyframes example {
+@keyframes bluefade {
   from {background-color: #0085ff;}
   to {background-color: transparent;}
 }
 #title .proid:hover, #title .proid:focus {
-  animation-name: example;
+  animation-name: bluefade;
   animation-duration: 4s; /* for touchs */
 }
 #title form {
@@ -578,12 +577,8 @@ div.settings a:hover {
 .spinner {
   display: none;
   position: fixed;
-  /*left: 3em;
-  top: 0.25em;
-  height: 6em;
-  width: 6em;*/
-  left: 0;
-  top: 0.75em;
+  left: 0.35em;
+  top: 0.8em;
   height: 3em;
   width: 3em;
   border-radius: 50%;
@@ -637,9 +632,9 @@ div[aria-describedby='textareas'] {
 }
 #smallButtons {
   position: fixed;
-  top: 1.2em;
+  top: 15px;
   left: 5px;
-  width: 20px;
+  width: 10px;
   background: transparent;
   z-index: 2;
 }
@@ -648,17 +643,17 @@ div[aria-describedby='textareas'] {
 }
 #smallButtons a.smBu {
   display: inline-block;
-  width: 1.2em;
+  width: 0.95em;
   height: 1.1em;
   vertical-align: middle;
   text-align: center;
   background: #444;
-  padding: 0.3em 0.2em 0.3em 0.2em;
+  padding: 0.05em 0.2em 0em 0.2em;
   line-height: 1em;
-  margin-bottom: 1.05em;
-  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  margin-bottom: 0.62em;
+  font-family: Arial, Tahoma, sans-serif;
   font-weight: bold;
-  font-size: 120%;
+  font-size: 210%; /* regulates buttonsize */
   color: lightskyblue;
   border: 1px solid #555;
   border-radius: 6px;
@@ -678,6 +673,8 @@ div[aria-describedby='textareas'] {
 }
 #smallButtons a.smBu:hover {
   color: lightgray;
+  animation-name: bluefade;
+  animation-duration: 4s; /* for touchs */
 }
 #smallButtons a#goTop, #goTop0 {
   background-color: #444;
@@ -689,7 +686,7 @@ div[aria-describedby='textareas'] {
 #smallButtons a#reLd {
   background-color: #444;
   background-image: url(/images/reload.png);
-  background-size: 1em 1em!important;
+  background-size: 0.8em 0.8em!important;
   background-repeat: no-repeat!important;
   background-position: center!important;
 }
@@ -699,7 +696,7 @@ div[aria-describedby='textareas'] {
 #smallButtons a#toggleHide, #toggleHide0 {
   background-color: #444;
   background-image: url(/images/eyes-blue.png);
-  background-size: 1.1em 1.1em!important;
+  background-size: 0.9em 0.9em!important;
   background-repeat: no-repeat!important;
   background-position: center!important;
 }
@@ -794,7 +791,7 @@ strong.albumName {
   padding: 0 0.1em 0.2em 0.4em;
   margin: 0 0.7em 0 0;
   cursor: pointer;
-  font-size: 1.4em;
+  font-size: 1.7em;
 }
 .BUT_2 {
   background:transparent;
@@ -814,6 +811,9 @@ a.imDir img {
 }*/
 a.imDir *:hover {
   color: #0ae;
+}
+.subAlbum.BUT_1:hover {
+  border: 2px solid #aef;
 }
 a.imDir img:hover {
   border: 0.7px solid #aef;
@@ -1061,7 +1061,7 @@ div.img_mini.symlink div.markTrue, div.img_mini.symlink div.markFalse {
 .nav_links {
   display: none;
   position: fixed;
-  right: 0.2em;
+  right: 0;
   top: 15px;
   display: inline;
   background-color: transparent;
@@ -1288,7 +1288,7 @@ select option {
 }
 .mainMenu {
   position: fixed;
-  top: 3.2em;
+  top: 3.5em;
   left: 2px;
   margin: 0 0 0 4px;
   padding: 0 2px 0 2px;
