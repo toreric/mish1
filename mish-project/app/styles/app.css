@@ -643,17 +643,17 @@ div[aria-describedby='textareas'] {
 }
 #smallButtons a.smBu {
   display: inline-block;
-  width: 0.95em;
-  height: 1.1em;
+  width: 0.85em;
+  height: 1em;
   vertical-align: middle;
   text-align: center;
   background: #444;
-  padding: 0.05em 0.2em 0em 0.2em;
+  padding: 0.05em 0.2em 0.05em 0.16em;
   line-height: 1em;
-  margin-bottom: 0.62em;
+  margin-bottom: 0.9em;
   font-family: Arial, Tahoma, sans-serif;
   font-weight: bold;
-  font-size: 210%; /* regulates buttonsize */
+  font-size: 190%; /* regulates buttonsize */
   color: lightskyblue;
   border: 1px solid #555;
   border-radius: 6px;
@@ -861,6 +861,7 @@ The jquery ui-tooltip is used elsewere (totip in *.js) */
   position: relative;
   justify-content: center;
   padding: 0.5em;
+  margin: 0.25px;
   border: 1.0px solid #bbb;
   border-radius: 4px;
   width: 151px;
@@ -1288,7 +1289,7 @@ select option {
 }
 .mainMenu {
   position: fixed;
-  top: 3.5em;
+  top: 3.2em;
   left: 2px;
   margin: 0 0 0 4px;
   padding: 0 2px 0 2px;

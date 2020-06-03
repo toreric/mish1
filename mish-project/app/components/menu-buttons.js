@@ -124,10 +124,11 @@ export default Component.extend (contextMenuMixin, {
       }
     },
     { label: 'Redigera text...',
-      /*disabled: () => {
+      disabled: () => {
         return !(allow.textEdit || allow.adminAll);
-      },*/
-      disabled: false,
+      },
+      //disabled: false, // For 'anyone text preview' change to this 'disabled:' line!
+      // NOTE: Also search for TEXTPREVIEW for another change needed!
       action: () => {
         // Mimic click on the text of the mini-picture (thumbnail)
         $ ("#i" + escapeDots ($ ("#picName").text ().trim ()) + " a").next ().next ().next ().click ();
@@ -921,7 +922,7 @@ export default Component.extend (contextMenuMixin, {
     this._super (...arguments);
 
     this.setNavKeys ();
-    // Search does find also hidden images, thus must be allowed:
+    // Search locates also hidden images, thus must be allowed:
     if (allow.imgHidden || allow.adminAll) {
       $ ("button.findText").show ()
     } else {
@@ -2459,7 +2460,7 @@ export default Component.extend (contextMenuMixin, {
 
         // Clear/reset places for sample images (root may have changed)
         // nIm == number of display nodes for the images (see iframe html)
-        let nIm = 4;
+        let nIm = 3;
         for (let i=0; i<nIm; i++) {
           iImages [i + 1].parentElement.style.display = "none";
         }
@@ -2668,6 +2669,7 @@ export default Component.extend (contextMenuMixin, {
         $ ("button.saveTexts").attr ("disabled", false);
       } else {
         $ ("button.saveTexts").attr ("disabled", true);
+        return; // Remove this line if TEXTPREVIEW for anyone is allowed!
       }
       if ($ ("#navAuto").text () === "true") return;
       $ ("#link_show a").css ('opacity', 0 );
@@ -3077,9 +3079,9 @@ export default Component.extend (contextMenuMixin, {
                 for (let i=0; i<boxes.length; i++) {
                   if (i === boxes.length - 1) boxes [i].checked = true;
                   else boxes [i].checked = false;
-                } USING changed DEFAULT INSTEAD
+                } USING changed DEFAULT INSTEAD*/
                 document.querySelector ('.orAnd input[type="radio"]').checked = false;
-                document.querySelectorAll ('.orAnd input[type="radio"]') [1].checked = true;*/
+                document.querySelectorAll ('.orAnd input[type="radio"]') [1].checked = true;
                 $ ("#searcharea textarea").val (picFind [1]);
                 later ( () => {
                   $ ("button.findText").click ();
