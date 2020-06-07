@@ -5,12 +5,30 @@
 body {
   text-align: left;
   color: white;
-  padding: 0.6em 0 0 3.6em;
+  padding: 0.6em 0 3em 3.6em;
+  background: #5b5f5f;
+}
+#GO {
+  position: fixed;
+  top: 0.5em;
+  left: 0.35em;
+  width: 0.7em;
+  height: 0.7em;
+  border: 0.2em solid rgb(176, 240, 255);
+  border-radius: 1em;
+  font: bold 2em Arial, sans-serif;
+  line-height: 0.7em;
+  text-align: center;
+  padding: 0.2em;
+  background: #060;
+}
+#GO:hover {
+  border-color: white;
 }
 #dzclose { /* NEARLY like in app.css */
   position: fixed;
-  top: 1.8em;
-  left: 0.15em;
+  top: 0.4em;
+  left: 0.4em;
   cursor: pointer;
   font-size: 2.2em;
   line-height: 0.7em;
@@ -55,6 +73,7 @@ a {
 }
 a:hover, a:active, a:focus, a.intro:hover, a.intro:active, a.intro:focus {
   color: white;
+  border-color: white;
   cursor: pointer;
 }
 a.intro {

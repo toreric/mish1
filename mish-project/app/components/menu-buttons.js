@@ -91,7 +91,7 @@ export default Component.extend (contextMenuMixin, {
       albDat = albDat.join (",");
       let count = $ ("#imdbCoco").html ().split ("\n");
       for (let i=0; i<count.length; i++) {
-        albDat = albDat.replace (/{text:"([^" ]*)"/, "{text:€$1<small>" + count[i] + "</small>\"");
+        albDat = albDat.replace (/{text:"([^" ]*)"/, "{text:€$1<small>" + count[i + 1] + "</small>\"");
       }
       albDat = albDat.replace (/€/g, '"');
       this.set ("albumData", eval (albDat));
@@ -902,20 +902,6 @@ export default Component.extend (contextMenuMixin, {
       });
       $ (document).tooltip ("disable");
     });
-    //this.actions.imageList (true);
-    // Wait for spinner and assure the initial complete load of imdbRoot
-    // Too many subalbums may have delayed the load
-    /*let timr;
-    (function repeater () {
-      timr = setTimeout (repeater, 1000)
-      if ($ (".spinner").css ("display") === "none") {
-        clearTimeout (timr);
-        if (!$ ("p.albumsHdr")) {
-          $ ("#j1_1_anchor").click ();
-        }
-      }
-    } ());*/
-
   },
   //----------------------------------------------------------------------------------------------
   didInsertElement () { // ##### Runs at page ready state
@@ -1532,7 +1518,7 @@ export default Component.extend (contextMenuMixin, {
         importStyle: true,
         loadCSS: "printthis.css",
         printContainer: false,
-        pageTitle: $ ("#wrap_pad .img_name").text () + " : " + $ ("#imdbRoot").text () + $ ("#imdbDir").text ().replace (/^[^/]+/, ""),
+        pageTitle: "&nbsp;&nbsp;&nbsp;" + $ ("#wrap_pad .img_name").text () + " : " + $ ("#imdbRoot").text () + $ ("#imdbDir").text ().replace (/^[^/]+/, ""),
       };
       this.get("printThis").print(selector, options);
     },
@@ -5057,7 +5043,8 @@ function allowFunc () { // Called from setAllow (which is called from init(), lo
 // Disable browser back button
 history.pushState (null, null, location.href);
 window.onpopstate = function () {
-    history.go(1);
+  history.go(1);
+  infoDia (null, null, "M E D D E L A N D E", "<b style='color:#060'><br>Du använder just nu en webb-app<br>med bara en sida som det inte går att backa ifrån.<br><br>Använd i stället appens egna navigerings-<br>menyer, -knappar och/eller -länkar!<br><br>Självklart kan du även avsluta appen genom att stänga sidan<br>eller gå till något helt annat i webbläsarens adressfält.<br>&nbsp;</b>", "Ok, jag förstår!", true);
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function showFileInfo () {
