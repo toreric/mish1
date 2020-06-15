@@ -40,7 +40,13 @@ function copyToClipboard (str) {
       <input type="password" class="cred password" size="10" title="Lösenord" placeholder="Password">
       <span class="cred name"></span>
       <span class="cred status" {{action "toggleSettings"}}></span>
+      <span id ="showDropbox" class="picLinker eraseCheck" style="margin:0.5em 0 0 0.5em;display:none" {{action "showDropbox"}}>LADDA UPP</span>
     </div>
+
+      <!--div style="display:inline-block;margin-left:1em" totip="Ladda upp...">
+        <span class="picLinker eraseCheck" style="margin:0.5em 0 0 0" {{action "showDropbox"}}>LADDA UPP</span>
+      </div -->
+
     <div class="settings" draggable="false" ondragstart="return false" style="display:none">
         <div class="check">
           <div>
@@ -68,8 +74,8 @@ function copyToClipboard (str) {
     <span class="picLinker eraseCheck" style="margin:0.5em 0 0 0" {{action "webLinker"}}>WEBBLÄNK</span>
   </div>
   <!-- Erase link+source choice -->
-  <div style="display:inline-block" totip="Markera här (MEN BARA OM DU FÖRSTÅR VAD DU SKA GÖRA!) ifall du vill radera även ORIGINAL-bildfilen samtidigt med en LÄNKAD bild (bra för till exempel radering av funna dubletter)">
-    <span class="eraseCheck" style="display:none">
+  <div style="display:inline-block">&nbsp;
+    <span class="eraseCheck" style="display:none" totip="Markera här (MEN BARA OM DU FÖRSTÅR VAD DU SKA GÖRA!) ifall du vill radera även ORIGINAL-bildfilen samtidigt med en LÄNKAD bild (bra för till exempel radering av funna dubletter)">
       RADERA ÄVEN LÄNKORIGINAL
       <input id="eraOrig" type="checkbox">
       <label for="eraOrig"></label>
@@ -231,7 +237,7 @@ i nytt fönster">↕↔↕</a> &nbsp; <br>
   <a id="toggleName" class="smBu" title="Bildnamnen" draggable="false" ondragstart="return false" style="display:none" {{action 'toggleNameView'}}>N</a>
   <a id="toggleHide" class="smBu" title="Visa/dölj
 gömda bilder" draggable="false" ondragstart="return false" style="display:none" {{action 'toggleHideFlagged'}}></a>
-  <a id ="showDropbox" class="smBu" title="Ladda upp..." draggable="false" ondragstart="return false" {{action 'showDropbox'}} style="display:none">U</a>
+  <a class="smBu" title="Ladda upp...NOT USED" draggable="false" ondragstart="return false" {{action 'showDropbox'}} style="display:none">U</a>
   <a id="saveOrder" class="smBu" title="Spara ändringar" draggable="false" ondragstart="return false" {{action 'saveOrder'}}>S</a>
   <a class="smBu" draggable="false" ondragstart="return false" title="Gå upp (visa
 översta raden)" style="font:bold 190% sans-serif" {{action 'goTop'}}>&uarr;</a>

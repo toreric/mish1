@@ -501,7 +501,7 @@ button.mainMenuClose.ui-dialog-titlebar-close:hover {
   background: transparent;
 }
 #title span.picLinker {
-  display: inline!important;
+  display: inline;
   cursor: pointer!important;
 }
 #title button {
@@ -1214,7 +1214,7 @@ div.settings {
 }
 span.root * {
   cursor: pointer;
-  background: transparent;
+  background: #888; /* for Chrome */
   border: solid 1.0px #888;
   border-radius: 2px;
   color: inherit;

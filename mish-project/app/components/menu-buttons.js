@@ -752,6 +752,7 @@ export default Component.extend (contextMenuMixin, {
         $ ("ul.context-menu").hide ();
         return;
       }
+      $ ("#dialog").dialog ("close"); // Since a modal initiated with open non-modal => danger!
       $ ("ul.context-menu").hide ();
       var nodelem = e.target;
       if (nodelem.tagName === 'IMG' && nodelem.className.indexOf ('left-click') > -1 || nodelem.parentElement.id === 'link_show') {
@@ -1527,7 +1528,7 @@ export default Component.extend (contextMenuMixin, {
       var title = "Information om användarrättigheter"; // i18n
       var text = '<img src="allow.jpg" title="Användarrätigheter">'; // i18n
       var yes = "Ok" // i18n
-      infoDia (null, null, title, text, yes, true);
+      infoDia (null, null, title, text, yes, false);
     },
     //============================================================================================
     subaSelect (subName) { // ##### Sub-album link selected
@@ -2442,23 +2443,23 @@ export default Component.extend (contextMenuMixin, {
         chkPaths = [];
         // Present some preview images in the introduction iframe
         let iWindow = document.getElementsByTagName("iframe") [0].contentWindow;
-        let iImages = iWindow.document.getElementsByTagName ("img");
 
         // Clear/reset places for sample images (root may have changed)
         // nIm == number of display nodes for the images (see iframe html)
         let nIm = 3;
+        let iImages = iWindow.document.getElementsByTagName ("img");
+        let dIm = iImages.length - nIm;
         for (let i=0; i<nIm; i++) {
-          iImages [i + 1].parentElement.style.display = "none";
+          iImages [i + dIm].parentElement.style.display = "none";
         }
 
         let tmp = $ ("#imdbLabels").text ().replace (/[\s]+/g, " ").trim ().split (" ");
         let tmp1 = [];
         // Remove duplicates (only for sample images), i=0 not used, corresponds to root
         for (let i=1; i<tmp.length; i++) {
-          tmp1.push (tmp [i]);
+          tmp1.push (tmp [i + dIm]);
           for (let k=0; k<i; k++) {
-            // $ ("#imdbDirs").text ().indexof (tmp [i].replace (/^[^/]+(.*)\/[^/]+$/, "$1")) < 0 ||
-            if (tmp1 [k] === tmp1 [i]) {
+            if (tmp1 [k] === tmp1 [i + dIm]) {
               tmp1.pop ();
               break;
             }
@@ -2478,12 +2479,12 @@ export default Component.extend (contextMenuMixin, {
         linktext += "/find/" + $ ("#imdbRoot").text ();
         if (tmp.length < nIm) nIm = tmp.length;
         for (let i=0; i<nIm; i++) {
-          iImages [i + 1].setAttribute ("src", tmp [tmpindex [i]]);
-          var name = tmp [tmpindex [i]].replace (/^.+_mini_(.+)\.[^.]+$/, "$1");
-          iImages [i + 1].parentElement.setAttribute ("title", "Testbild " + name);
-          iImages [i + 1].parentElement.setAttribute ("href", linktext + "/" + name);
-          iImages [i + 1].parentElement.setAttribute ("target", "_blank");
-          iImages [i + 1].parentElement.style.display = "";
+          iImages [i + dIm].setAttribute ("src", tmp [tmpindex [i + dIm]]);
+          var name = tmp [tmpindex [i + dIm]].replace (/^.+_mini_(.+)\.[^.]+$/, "$1");
+          iImages [i + dIm].parentElement.setAttribute ("title", "Testbild " + name);
+          iImages [i + dIm].parentElement.setAttribute ("href", linktext + "/" + name);
+          iImages [i + dIm].parentElement.setAttribute ("target", "_blank");
+          iImages [i + dIm].parentElement.style.display = "";
         }
       }).then ( () => {
         document.getElementById ("stopSpin").innerHTML = "SPIN-END";
@@ -3860,6 +3861,8 @@ function niceDialogOpen (dialogId) {
   $ (id).height ("auto");
   $ (id).parent ().css ("max-height", "");
   $ (id).css ("max-height","");
+//if ($ (id).parent (). css ("display") === "none") $ (id).parent ().css ("top", "38px");
+//later ( ( () => {
   $ (id).dialog ("open");
   // For jquery-ui-touch-punch, here maybe useful, may make some dialogs opened here
   // draggable on smartphones. Less useful in other cases (search for them),
@@ -3874,7 +3877,7 @@ function niceDialogOpen (dialogId) {
   $ (id).parent ().css ("max-width", sw+"px");
   //$ (id).parent ().width ("auto");
   $ (id).width ("auto");
-  $ (id).parent ().css ("top", "38px"); // added
+//  $ (id).parent ().css ("top", "38px"); // added
 
   let tmp = $ (id).parent ().parent ().outerWidth (); // helpText??
   let pos = $ (id).parent ().position ();
@@ -3892,6 +3895,7 @@ function niceDialogOpen (dialogId) {
   $ (id).parent ().draggable ();
   //$ (id).parent ().attr ({draggable: "true"}); // wrong draggability!
   // NOTE, nodes above: JQuery objects
+//}), 200);
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Close the ediText dialog and return false if it wasn't already closed, else return true
