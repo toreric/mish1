@@ -77,12 +77,15 @@ a:hover, a:active, a:focus, a.intro:hover, a.intro:active, a.intro:focus {
   cursor: pointer;
 }
 a.intro {
-  display: inline;
+  display: block;
   padding: 0.3em 0.5em;
   text-decoration: none;
   white-space: nowrap;
   border: 1.2px solid white;
   border-radius: 5px;
+}
+a.intro.sampleAll {
+  text-align: center;
 }
 a.border0 {
   border: 0;
@@ -95,9 +98,8 @@ a.border0 {
 .wrap1 div {
   display: inline-block;
   vertical-align: top;
-  width: 8em;
-  text-align: left;
-  margin: 0 0.5em;
+  width: 7em;
+    margin: 0 0.5em 0.5em 0.5em;
 }
 .wrap1 img {
   width: 7em;

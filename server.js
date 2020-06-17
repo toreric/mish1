@@ -19,7 +19,7 @@ var app = express ()
 //});
 
 // Image databases home directory and default album
-process.env.IMDB_HOME = process.argv [2] // home
+process.env.IMDB_HOME = process.argv [2] // albums' home
 process.env.IMDB_ROOT = process.argv [3] // album root
 process.env.PORT = process.argv [4]      // server port
 // set our port

@@ -2446,28 +2446,31 @@ export default Component.extend (contextMenuMixin, {
 
         // Clear/reset places for sample images (root may have changed)
         // nIm == number of display nodes for the images (see iframe html)
-        let nIm = 3;
+        let nIm = 4;
         let iImages = iWindow.document.getElementsByTagName ("img");
         let dIm = iImages.length - nIm;
         for (let i=0; i<nIm; i++) {
           iImages [i + dIm].parentElement.style.display = "none";
         }
-
-        let tmp = $ ("#imdbLabels").text ().replace (/[\s]+/g, " ").trim ().split (" ");
-        let tmp1 = [];
-        // Remove duplicates (only for sample images), i=0 not used, corresponds to root
-        for (let i=1; i<tmp.length; i++) {
-          tmp1.push (tmp [i + dIm]);
-          for (let k=0; k<i; k++) {
-            if (tmp1 [k] === tmp1 [i + dIm]) {
+        // Remove duplicates for sample-image-use, i=0 not used, corresponds to root
+        // Remove symlinks is harder (may irritate if they link to hidden albums)
+        var tmp = $ ("#imdbLabels").text ().replace (/[\s]+/g, " ").trim ().split (" ");
+        var tmp1 = [];
+        var name = [];
+        for (var i=1; i<tmp.length; i++) {
+          tmp1.push (tmp [i]);
+          name.push (tmp [i].replace (/^.+_mini_(.+)\.[^.]+$/, "$1"));
+          var kmax = tmp1.length -1;
+          for (var k=0; k<kmax; k++) {
+            if (name [k] === name [kmax]) {
               tmp1.pop ();
+              name.pop ();
               break;
             }
           }
-          // Remove symlinks if possible ... but: img_mini.symlink arn't loaded!!!
         }
+        // Place some random thumbnails on the itroduction iframe page
         tmp = tmp1;
-
         let tmpindex = randIndex (tmp.length);
         // Make 'find links' for the preview sample imageList
         let linktext = window.location.hostname
@@ -2478,14 +2481,20 @@ export default Component.extend (contextMenuMixin, {
         }
         linktext += "/find/" + $ ("#imdbRoot").text ();
         if (tmp.length < nIm) nIm = tmp.length;
+        name = [];
         for (let i=0; i<nIm; i++) {
           iImages [i + dIm].setAttribute ("src", tmp [tmpindex [i + dIm]]);
-          var name = tmp [tmpindex [i + dIm]].replace (/^.+_mini_(.+)\.[^.]+$/, "$1");
-          iImages [i + dIm].parentElement.setAttribute ("title", "Testbild " + name);
-          iImages [i + dIm].parentElement.setAttribute ("href", linktext + "/" + name);
+          name [i] = tmp [tmpindex [i + dIm]].replace (/^.+_mini_(.+)\.[^.]+$/, "$1");
+          iImages [i + dIm].parentElement.setAttribute ("title", "Testbild " + name [i]);
+          iImages [i + dIm].parentElement.setAttribute ("href", linktext + "/" + name [i]);
           iImages [i + dIm].parentElement.setAttribute ("target", "_blank");
           iImages [i + dIm].parentElement.style.display = "";
         }
+        let iSample = iWindow.document.querySelector ("a.intro.sampleAll");
+        iSample.setAttribute ("title", "Testbilder:\n" + name.join ("\n"));
+        iSample.setAttribute ("href", linktext + "/" + name.join ("%20"));
+        iSample.setAttribute ("target", "_blank");
+        iSample.setAttribute ("style", "display:block");
       }).then ( () => {
         document.getElementById ("stopSpin").innerHTML = "SPIN-END";
         return true;
