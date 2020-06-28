@@ -1170,7 +1170,7 @@ export default Component.extend (contextMenuMixin, {
         }
         return;
       }
-      if (evnt.button === 2) return; // contextmenu may take it
+      if (evnt.button === 2 || false) return; // contextmenu may take it
       var namepic = tgt.parentElement.parentElement.id.slice (1);
 
       // Check if the intention is to "mark" (Shift + click):
@@ -1862,6 +1862,8 @@ export default Component.extend (contextMenuMixin, {
       $ (".mainMenu p:gt(1)").hide ();
       //$ (".mainMenu p:gt(1)").show ();
       // Close all dialogs/windows
+      $ ("#dialog").dialog ("close");
+      $ ("#searcharea").dialog ("close");
       ediTextClosed ();
       $ (".img_show").hide ();
       $ (".nav_links").hide ();
@@ -2972,6 +2974,7 @@ export default Component.extend (contextMenuMixin, {
         $ (".mainMenu").hide ();
         infoDia ("", "", '<b style="background:transparent">ÄR DU UTLOGGAD?</b>', text , "Jag förstår!", false, false);
         //(dialogId, picName, title, text, yes, modal, flag)";
+        document.getElementById ("t3").parentElement.style.display = "none";
 
         // Assure that the album tree is properly shown after LOGOUT
         that.set ("albumData", []); // Triggers jstree rebuild in requestDirs
@@ -3065,7 +3068,11 @@ export default Component.extend (contextMenuMixin, {
         later ( () => {
           //console.log (usr, "status is", status);
           // At this point, we are always logged in with at least 'viewer' status
-
+          if (!(allow.notesView || allow.adminAll)) {
+            document.getElementById ("t3").parentElement.style.display = "none";
+          } else {
+            document.getElementById ("t3").parentElement.style.display = "";
+          }
           later ( () => {
             if (picFind [1] && status !== "viewer") {
               later ( () => {
@@ -3111,7 +3118,7 @@ export default Component.extend (contextMenuMixin, {
             $ ("#title span.cred.name").html ("<b>"+ usr +"</b>");
             $ ("#title span.cred.status").html ("["+ status +"]");
             let tmp = "Du är inloggad som ’" + usr + "’ med [" + status + "]-rättigheter"; // i18n
-            let tmp1 = " (Bara medarbetare: Logga ut före ny inloggning)";
+            let tmp1 = " (För medverkande: Logga ut före ny inloggning)";
             $ ("#title button.cred").attr ("title", tmp + tmp1);
             $ (".cred.name").attr ("title", tmp);
             $ (".cred.status").attr ("title", "Se dina rättigheter");
@@ -3735,6 +3742,7 @@ function favDia (text, add, save, show, close) { // ===== Show favorites dialog
       text: show,
       class: "showFavs",
       click: function () {
+        $ ("#searcharea").dialog ("close");
         let text = $ ('textarea[name="favorites"]').val ().trim (); // Important!
         saveFavorites (text);
         $ (this).dialog ("close");
@@ -4505,12 +4513,12 @@ let prepSearchDialog = () => {
     let sw = ediTextSelWidth () - 25; // Dialog width
     let tw = sw - 25; // Text width
     $ ('<div id="searcharea" style="margin:0;padding:0;width:'+sw+'px"><div class="diaMess"> <div class="edWarn" style="font-weight:normal;text-align:right" ></div> \
-    <div class="srchIn">Sök i:&nbsp; <span class="glue"><input id="t1" type="checkbox" name="search1" value="description" checked/><label for="t1">&nbsp;bildtext (övre texten)</label></span>&nbsp; \
-    <span class="glue"><input id="t2" type="checkbox" name="search2" value="creator" checked/><label for="t2">&nbsp;ursprung (nedre texten)</label></span>&nbsp; \
-    <span class="glue"><input id="t3" type="checkbox" name="search3" value="source"/><label for="t3">&nbsp;anteckningar</label></span>&nbsp; \
-    <span class="glue"><input id="t4" type="checkbox" name="search4" value="album"/><label for="t4">&nbsp;album</label></span>&nbsp; \
+    <div class="srchIn">Sök i:&nbsp; <span class="glue"><input id="t1" type="checkbox" name="search1" value="description" checked/><label for="t1">&nbsp;bildtext (övre texten)</label>&nbsp;</span> \
+    <span class="glue"><input id="t2" type="checkbox" name="search2" value="creator" checked/><label for="t2">&nbsp;ursprung (nedre texten)</label>&nbsp;</span> \
+    <span class="glue"><input id="t3" type="checkbox" name="search3" value="source"/><label for="t3">&nbsp;anteckningar</label>&nbsp;</span> \
+    <span class="glue"><input id="t4" type="checkbox" name="search4" value="album"/><label for="t4">&nbsp;album</label>&nbsp;</span> \
     <span class="glue"><input id="t5" type="checkbox" name="search5" value="name" checked/><label for="t5">&nbsp;namn</label></span></div> \
-    <div class="orAnd">Om blank ska sökas: skriv % (åtskiljer ej)<br>Välj regel för åtskilda ord/textbitar:<br><span class="glue"><input id="r1" type="radio" name="searchmode" value="AND" checked/><label for="r1">&nbsp;alla&nbsp;ska&nbsp;hittas&nbsp;i&nbsp;varje&nbsp;bild</label></span>&nbsp; <span class="glue"><input id="r2" type="radio" name="searchmode" value="OR"/><label for="r2">&nbsp;minst&nbsp;ett&nbsp;av&nbsp;dem&nbsp;ska&nbsp;hittas&nbsp;i&nbsp;någon&nbsp;bild</label></span></div> <span class="srchMsg"></span></div><textarea name="searchtext" placeholder="(minst tre tecken utöver omgivande blanka)" rows="4" style="min-width:'+tw+'px" /></div>').dialog ( {
+    <div class="orAnd">Om blank ska sökas: skriv % (åtskiljer ej) &nbsp; &nbsp; <b style="font-size:75%"><a href="findhelp.html" target="find_help" style="font-family: Arial, Helvetica, sans-serif">SÖKHJÄLP</a></b><br>Välj regel för åtskilda ord/textbitar/sökbegrepp:<br><span class="glue"><input id="r1" type="radio" name="searchmode" value="AND" checked/><label for="r1">&nbsp;alla&nbsp;ska&nbsp;hittas&nbsp;i&nbsp;en&nbsp;bild</label></span>&nbsp; <span class="glue"><input id="r2" type="radio" name="searchmode" value="OR"/><label for="r2">&nbsp;minst&nbsp;ett&nbsp;av&nbsp;dem&nbsp;ska&nbsp;hittas&nbsp;i&nbsp;en&nbsp;bild</label></span></div> <span class="srchMsg"></span></div><textarea name="searchtext" placeholder="(minst tre tecken utöver omgivande blanka)" rows="4" style="min-width:'+tw+'px" /></div>').dialog ( {
       title: "Finn bilder: Sök i bildtexter",
 
       //closeText: "×", // Replaced (why needed?) below by // Close => ×
@@ -4581,6 +4589,9 @@ let prepSearchDialog = () => {
         }
       },
     ]);
+    if (!(allow.notesView || allow.adminAll)) {
+      document.getElementById ("t3").parentElement.style.display = "none";
+    }
     let txt = $ ("button.ui-dialog-titlebar-close").html (); // Close => ×
     txt.replace (/Close/, "×");                              // Close => ×
     $ ("button.ui-dialog-titlebar-close").html (txt);        // Close => ×

@@ -797,6 +797,7 @@ strong.albumName {
   background:transparent;
   display:inline;
   padding: 0.4em 0.1em 0.2em 0em;
+  white-space: nowrap;
 }
 a.imDir span{
   background: transparent;
@@ -1148,12 +1149,15 @@ input[type=number]::-webkit-outer-spin-button {
 input[type=checkbox] {
   display: none;
 }
+#setAllow input[type=checkbox]+label::before {
+  margin: 0 0 -0.25em 0em;
+}
 input[type=checkbox]+label::before {
   content: '';
   display: inline-block;
   border: 1px solid white;
   border-radius: 2px;
-  margin: 0 0 -0.2em 0em;
+  margin: 0 -0.1em 0 0;
   width: 0.5em;
   height: 0.5em;
 }
@@ -1210,7 +1214,7 @@ div.settings {
   text-align: right;
   border: 1px solid #888;
   border-radius: 2px;
-  z-index: 28;
+  z-index: 10;
 }
 span.root * {
   cursor: pointer;

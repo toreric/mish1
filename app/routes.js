@@ -72,6 +72,7 @@ module.exports = function (app) {
       IMDB_ROOT = p [1]
       setRootLink (homeDir, IMDB_ROOT, IMDB_LINK)
       // A few seconds cookie:
+      if (!p [2]) p [2] = ""
       res.cookie (p [0], p [1] + "/" + p [2], {httpOnly: false, expires: new Date (Date.now () + 9000)})
       res.redirect ("../..")
       res.end ()
