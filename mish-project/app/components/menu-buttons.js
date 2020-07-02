@@ -83,7 +83,7 @@ export default Component.extend (contextMenuMixin, {
       let albDat = aData (treePath);
       // Substitute the first name (in '{text:"..."') into the root name:
       albDat = albDat.split (","); // else too long a string (??)
-      albDat [0] = albDat [0].replace (/{text:".*"/, '{text:"' + this.get ("imdbRoot") + ' <span style=\'font-family:Arial;font-weight:bold\'>ROT</span>"');
+      albDat [0] = albDat [0].replace (/{text:".*"/, '{text:"' + ' <span style=\'font-family:Arial;font-weight:bold;font-size:80%\'>ROT: </span>" + this.get ("imdbRoot")');
 
       //              let txt = $("#j1_1_anchor").html ();
       //              $("#j1_1_anchor").html (txt + ' (<span style="font:bold Verdana">ROT</span>)');
@@ -764,7 +764,7 @@ export default Component.extend (contextMenuMixin, {
         var namepic = nodelem.parentElement.nextElementSibling.nextElementSibling.innerHTML.trim ();
         $ ("#picName").text (namepic);
 
-        // Ascertain that the minipic is shown (maybe created just now)
+        // Ascertain that the minipic is shown (maybe autocreated just now?)
         var toshow = document.getElementById ("i" + namepic).firstElementChild.firstElementChild;
         var minipic = toshow.getAttribute ("src");
         toshow.removeAttribute ("src");
@@ -786,12 +786,8 @@ export default Component.extend (contextMenuMixin, {
         $ ("ul.context-menu.context-menu--left").css ("right", "2px");
         $ ("ul.context-menu").show ();
 
-      } /*else {
-        $ ("ul.context-menu").hide ();
-        $ ("#picName").text ('');
-        $ ("#picOrig").text ('');
-      }*/
-    }), 7); // was 20
+      }
+    }), 7); /* was 7 */
   },
 
   // STORAGE FOR THE HTML page population, and other storages
@@ -1162,7 +1158,28 @@ export default Component.extend (contextMenuMixin, {
         that.actions.hideShow ();
         return;
       }
-      if (tgt.tagName !=="IMG") return;
+      if (tgt.tagName !=="IMG" && tgt.parentElement.firstElementChild.tagName !== "IMG") return;
+
+      // Ctrl + click may replace right-click on Mac
+      if (evnt.ctrlKey) {
+        if ($ (tgt).hasClass ("mark")) {
+          if (allow.imgHidden || allow.adminAll) {
+            // Right click on the marker area of a thumbnail...
+            parentAlbum (tgt);
+          }
+          return;
+        }
+        $(tgt.parentElement.firstElementChild).trigger('contextmenu');
+        // Have to be repeated because of this extra contextmenu trigging. Keeps the menu
+        // by the pointer for both rightclick, Ctrl + rightclic, and Ctrl + leftclick:
+        var viewTop = window.pageYOffset; // The viewport position
+        var tmpTop = evnt.clientY;           // The mouse position
+        $ ("div.context-menu-container").css ("top", (viewTop + tmpTop) + "px");
+        var viewLeft = window.pageXOffset; // The viewport position
+        var tmpLeft = evnt.clientX;           // The mouse position
+        $ ("div.context-menu-container").css ("left", (viewLeft + tmpLeft) + "px");
+        return;
+      }
       if ($ (tgt).hasClass ("mark")) {
         if ( (allow.imgHidden || allow.adminAll) && evnt.button === 2) {
           // Right click on the marker area of a thumbnail...
@@ -1170,7 +1187,7 @@ export default Component.extend (contextMenuMixin, {
         }
         return;
       }
-      if (evnt.button === 2 || false) return; // contextmenu may take it
+      if (evnt.button === 2) return; // ember-context-menu should take it
       var namepic = tgt.parentElement.parentElement.id.slice (1);
 
       // Check if the intention is to "mark" (Shift + click):
@@ -1180,7 +1197,9 @@ export default Component.extend (contextMenuMixin, {
           return;
         }), 20);
       } else {
-        if (tgt.parentElement.className) return; // A mini-picture is classless
+        // A mini-picture is classless
+        if (tgt.parentElement.className || tgt.parentElement.id === "link_show") return;
+//console.log("tgt",tgt);
         var origpic = $ ("#imdbLink").text () + "/" + tgt.title;
         var minipic = tgt.src;
         var showpic = minipic.replace ("/_mini_", "/_show_");
@@ -2567,7 +2586,7 @@ export default Component.extend (contextMenuMixin, {
       if ($ ("#helpText").is (":visible") || $ ("#navAuto").text () === "true") {
         $ ('#helpText').dialog ("close");
       } else {
-        let header = "Användarhandledning<br>(främst för dator med mus och tangentbord)"
+        let header = "Användarhandledning<br>(främst för dator med mus eller pekplatta och tangentbord)"
         infoDia ("helpText", null, header, $ ("div.helpText").html (), "Stäng", false);
         $ ("#helpText").parent ().css ("top", "0");
         $ (".mainMenu").hide ();
@@ -3346,7 +3365,7 @@ function getCookie(cname) {
   return "";
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// Make an array width the numbers 0, 1,... (N-1) are ordered randomly
+// Make an array where the numbers 0, 1,... (N-1) are ordered randomly
 function randIndex (N) { // improve, se w3c example
   var a = [];
   Array.from (Array(N), (e, i) => {

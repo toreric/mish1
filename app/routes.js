@@ -1186,7 +1186,7 @@ module.exports = function (app) {
       if (tmp.length === 0) tmp = "-" // Insert fill character
       txt12 = txt12 +'\n'+ tmp
     }
-    // Triggers browswer autorefresh but no meaning to refresh symlinks:
+    // Triggers browser autorefresh but no meaning to refresh symlinks:
     let qrn = '?' + Math.random ().toString (36).substr (2,4)
     if (symlink === 'symlink') {qrn = ''}
     // origfile without root-link-name, nov 2014, e.g. imdb/aa/bb => aa/bb :
