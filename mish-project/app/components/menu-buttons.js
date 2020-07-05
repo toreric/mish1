@@ -1219,6 +1219,9 @@ export default Component.extend (contextMenuMixin, {
         that.actions.toggleHelp ();
       } else
       if (event.keyCode === 27) { // ESC key
+        // If #navAuto is true, runAuto will be stopped if it is running
+        // (with no dialogs open). Else, #navAuto SHOULD be false, anyhow!
+        $ ("#navAuto").text ("false");
         $ (".mainMenu").hide ();
         $ ("iframe").hide ();
         $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
@@ -1235,6 +1238,7 @@ export default Component.extend (contextMenuMixin, {
         } else
         if ($ ("#dialog").is (":visible")) {
           $ ("#dialog").dialog ("close");
+          $ ('#navKeys').text ('true'); // Reset if L/R arrows have been protected
         } else
         if ($ ("div[aria-describedby='textareas']").css ("display") !== "none") { // At text edit, visible
           ediTextClosed ();
@@ -1249,7 +1253,6 @@ export default Component.extend (contextMenuMixin, {
           if (Z) {console.log ('*c');}
         } else
         if ($ (".toggleAuto").text () === "STOP") { // Auto slide show is running
-          $ ("#navAuto").text ("false");
           later ( ( () => {
             $ (".nav_links .toggleAuto").text ("AUTO");
             $ (".nav_links .toggleAuto").attr ("title", "Avsluta bildbyte [Esc]"); //i18n
@@ -1285,29 +1288,35 @@ export default Component.extend (contextMenuMixin, {
         that.actions.showNext (true);
         if (Z) {console.log ('*h');}
       } else
-      if (that.savekey !== 17 && event.keyCode === 65 && $ ("#navAuto").text () !== "true" &&
+      if (that.savekey !== 17 && event.keyCode === 65 && // A key
+      $ ("#navAuto").text () !== "true" &&
       $ ("div[aria-describedby='searcharea']").css ("display") === "none" &&
       $ ("div[aria-describedby='textareas']").css ("display") === "none" &&
+      !$ ("input.i_address").is (":visible") && // Contact message mail dialog
       !$ ("textarea.favorites").is (":focus") &&
       !$ ("input.cred.user").is (":focus") &&
-      !$ ("input.cred.password").is (":focus")) { // A key
+      !$ ("input.cred.password").is (":focus")) {
         if (!($ ("#imdbDir").text () === "")) {
           $ ("#dialog").dialog ("close");
           $ ("#navAuto").text ("true");
           later ( ( () => {
-            $ (".nav_links .toggleAuto").text ("STOP");
-            $ (".nav_links .toggleAuto").attr ("title", "Avsluta bildbyte [Esc]"); //i18n
-            that.runAuto (true);
+            if (Number ($ (".numShown:first").text ()) > 1) {
+              $ (".nav_links .toggleAuto").text ("STOP");
+              $ (".nav_links .toggleAuto").attr ("title", "Avsluta bildbyte [Esc]"); //i18n
+              that.runAuto (true);
+            }
           }), 250);
           if (Z) {console.log ('*i');}
         }
       } else
-      if (that.savekey !== 17 && event.keyCode === 70 && $ ("#navAuto").text () !== "true" &&
+      if (that.savekey !== 17 && event.keyCode === 70 && // F key
+      $ ("#navAuto").text () !== "true" &&
       $ ("div[aria-describedby='searcharea']").css ("display") === "none" &&
       $ ("div[aria-describedby='textareas']").css ("display") === "none" &&
+      !$ ("input.i_address").is (":visible") && // Contact message mail dialog
       !$ ("textarea.favorites").is (":focus") &&
       !$ ("input.cred.user").is (":focus") &&
-      !$ ("input.cred.password").is (":focus")) { // F key
+      !$ ("input.cred.password").is (":focus")) {
         if (!($ ("#imdbDir").text () === "")) {
           //$ ("#dialog").dialog ("close");
           //$ ("#navAuto").text ("true");
@@ -1525,13 +1534,13 @@ export default Component.extend (contextMenuMixin, {
     });
   },
   //----------------------------------------------------------------------------------------------
-  printThis: Ember.inject.service(), // ===== For the 'doPrint' function
+  printThis: Ember.inject.service (), // ===== For the 'doPrint' function
 
   // TEMPLATE ACTIONS, functions reachable from the HTML page
   /////////////////////////////////////////////////////////////////////////////////////////
   actions: {
     //============================================================================================
-    doPrint() { // PDF print a show picture and its text (A4 portrait only)
+    doPrint () { // PDF print a show picture and its text (A4 portrait only)
       const selector = "#wrap_pad";
       const options = {
         debug: false,
@@ -1541,6 +1550,84 @@ export default Component.extend (contextMenuMixin, {
         pageTitle: "&nbsp;&nbsp;&nbsp;" + $ ("#wrap_pad .img_name").text () + " : " + $ ("#imdbRoot").text () + $ ("#imdbDir").text ().replace (/^[^/]+/, ""),
       };
       this.get("printThis").print(selector, options);
+    },
+    //============================================================================================
+    doMail () { // Send a message 'from a picture'
+      if ($ ("input.i_address").is (":visible")) {
+        $ ("#dialog").dialog ("close"); // Close if open
+        return;
+      }
+      let picName = $ ("#picName").text ();
+      let title = "Meddelande till Sävar Hembygdsförening,<br>bild " + picName;
+      let text = 'Skriv ditt meddelande:';
+
+      text += '<br><input type="text" class="i_address" size="36" title="" placeholder=" Namn och adress (frivilligt)" value="' + '' + '" style="background:#f0f0b0;margin: 0.5em 0 0 0">';
+      text += '<br><input type="text" class="i_email" size="36" title="" placeholder=" Din epostadress (obligatoriskt)" value="' + '' + '" style="background:#f0f0b0;margin: 0.5em 0 0 0">';
+
+      text += '<br><textarea class="t_mess" rows="16"  title="" placeholder=" Meddelandetext om minst sju tecken (obligatoriskt)" value="' + '' + '" style="background:#f0f0b0;color:blue;margin: 0.5em 0 0.5em 0">';
+
+      let yes = "Skicka";
+      let no = "Avbryt";
+      $ ('#navKeys').text ('false'); // Prevents prev/next-picture use of L/R arrows
+      let dialogId = "dialog";
+      let id = "#" + dialogId;
+      $ (id).dialog ( { // Initiate dialog
+        title: "", // html set below /#/
+        closeText: "×",
+        autoOpen: false,
+        draggable: true,
+        modal: false,
+        closeOnEscape: true,
+      });
+      later ( ( () => {
+        //infoDia (null, picName, title, text, yes);
+        $ (id).html (text);
+        // Define button array
+        $ (id).dialog ('option', 'buttons', [
+        {
+          text: yes,
+            id: "sendBut",
+          click: function () {
+            let address = $ ("#title span.cred.name").text () + " " + document.querySelector ("input.i_address").value.trim ().replace (/\s+/g, " ");
+            let email = document.querySelector ("input.i_email").value;
+            if (emailOk (email)) {
+              $ ("input.i_email").css ("background", "#dfd");
+            } else {
+              $ ("input.i_email").css ("background", "#fdd");
+              $ ("input.i_email").focus ();
+              //$ ('#navKeys').text ('false'); // Repeated since non-modal
+              return;
+            }
+            let mess = document.querySelector ("textarea.t_mess").value.trim ().replace (/\s+/g, " ");
+            if (mess.length < 7) {
+              $ ("textarea.t_mess").css ("background", "#fdd");
+              $ ("textarea.t_mess").focus ();
+              //$ ('#navKeys').text ('false'); // Repeated since non-modal
+              return;
+            }
+            console.log(address);
+            console.log(email,"mess",mess);
+            $ (this).dialog ("close");
+            alert ("Check content and send mail here, now");
+            $ ('#navKeys').text ('true'); // Reset when L/R arrows have been protected
+            return;
+          }
+        },
+        {
+          text: no,
+            id: "cancelBut",
+          click: function () {
+            $ (this).dialog ("close");
+            $ ('#navKeys').text ('true'); // Reset when L/R arrows have been protected
+            return;
+          }
+        }]);
+        $ ("div[aria-describedby='" + dialogId + "'] span.ui-dialog-title").html (title); /#/
+        niceDialogOpen (dialogId);
+      }), 33);
+      later ( ( () => {
+        $ ("input.i_address").focus ();
+      }), 333);
     },
     //============================================================================================
     infStatus () {
@@ -3005,7 +3092,7 @@ export default Component.extend (contextMenuMixin, {
             $ (".ember-view.jstree").jstree ("open_node", "#j1_1");
             $ (".ember-view.jstree").jstree ("select_node", "#j1_1");
             // Next line is a BUG SAVER only. In some way, an initial hide is generated, WHERE?
-            this.actions.imageList (true);
+            if (this.actions) this.actions.imageList (true);
             // Side effect (minor): Deactivation of the "active album" link in the main menu
             // (next to last entry), but it will be reset as soon as the jstree is revisited.
           }), 2000);
@@ -3694,6 +3781,7 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) { // ===== I
           }), 800);
         }
         $ (this).dialog ("close");
+        $ ('#navKeys').text ('true'); // Reset in case L/R arrows have been protected
         if (flag && !picName) { // Special case: evaluate #temporary
           console.log ($ ("#temporary").text ());
           eval ($ ("#temporary").text ());
@@ -4685,7 +4773,7 @@ let doFindText = (sTxt, and, sWhr, exact) => {
       }
     }
     let sobj;
-    if (filesFound < 3) {
+    if (filesFound < 3) { // Since ...?
       //console.log("obj",obj);
       sobj = obj.sort ( (a, b) => {return a.sortIndex - b.sortIndex})
       //console.log("sobj",sobj);
@@ -5109,4 +5197,8 @@ function showFileInfo () {
   });
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function emailOk(email) {
+  const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return re.test(email);
+}
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

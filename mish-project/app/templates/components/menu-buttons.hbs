@@ -152,7 +152,10 @@ eller bildtextrad">&nbsp;per<br>&nbsp;text-&nbsp;<br>&nbsp;rad</a>
   <!-- FULL SIZE -->
   <a class="nav_" id="full_size" draggable="false" {{action 'fullSize'}} title="Full storlek
 i nytt fönster">↕↔↕</a> &nbsp; <br>
-  <a class="nav_ pnav_" id="do_print" title="Skriv ut" {{action 'doPrint'}}>∏</a> &nbsp;
+<a class="nav_ mail" id="do_mail" title="Skicka ett meddelande,
+din kommentar, rättelse
+eller annan upplysning" {{action 'doMail'}}>&#9993;</a> &nbsp; <br>
+<a class="nav_ pnav_" id="do_print" title="Skriv ut" {{action 'doPrint'}}>&#9997;</a> &nbsp;
 </div>
 
 <!-- ///// DISPLAY THE (SLIDE) SHOW IMAGE ///// -->
@@ -343,10 +346,10 @@ gömda bilder" draggable="false" ondragstart="return false" style="display:none"
         <div class="img_name" title="Click = Copy!" totip="Click = Copy!" onclick="copyToClipboard(this.innerHTML)">
           {{file.name}}
         </div>
-        <div class="img_txt1" title="{{file.txt1}}" totip="{{file.txt1}}" {{action 'ediText' file.name}}>
+        <div class="img_txt1" draggable="false" ondragstart="return false" title="{{file.txt1}}" totip="{{file.txt1}}" {{action 'ediText' file.name}}>
           {{file.txt1}}
         </div>
-        <div class="img_txt2" title="{{file.txt2}}" totip="{{file.txt2}}" {{action 'ediText' file.name}}>
+        <div class="img_txt2" draggable="false" ondragstart="return false" title="{{file.txt2}}" totip="{{file.txt2}}" {{action 'ediText' file.name}}>
           {{file.txt2}}
         </div>
         {{#if (eq file allNames.lastObject)}}
