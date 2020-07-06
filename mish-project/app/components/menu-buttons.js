@@ -1298,9 +1298,10 @@ export default Component.extend (contextMenuMixin, {
       !$ ("input.cred.password").is (":focus")) {
         if (!($ ("#imdbDir").text () === "")) {
           $ ("#dialog").dialog ("close");
-          $ ("#navAuto").text ("true");
           later ( ( () => {
+            $ ("#navAuto").text ("false");
             if (Number ($ (".numShown:first").text ()) > 1) {
+              $ ("#navAuto").text ("true");
               $ (".nav_links .toggleAuto").text ("STOP");
               $ (".nav_links .toggleAuto").attr ("title", "Avsluta bildbyte [Esc]"); //i18n
               that.runAuto (true);
@@ -1557,13 +1558,14 @@ export default Component.extend (contextMenuMixin, {
         $ ("#dialog").dialog ("close"); // Close if open
         return;
       }
+      let user = $ ("#title span.cred.name").text ();
       let picName = $ ("#picName").text ();
-      let title = "Meddelande till Sävar Hembygdsförening,<br>bild " + picName;
+      let tmp = extractContent (this.get ("albumName")).replace (/\s/g, "_");
+      if (tmp.indexOf (picFound) === 0) picName = picName.replace (/\.[^.]{4}$/, "");
+      let title = "Meddelande från Mish, <b style='background:inherit'>" + user + "/" + picName + "</b>"; // i18n
       let text = 'Skriv ditt meddelande:';
-
       text += '<br><input type="text" class="i_address" size="36" title="" placeholder=" Namn och adress (frivilligt)" value="' + '' + '" style="background:#f0f0b0;margin: 0.5em 0 0 0">';
-      text += '<br><input type="text" class="i_email" size="36" title="" placeholder=" Din epostadress (obligatoriskt)" value="' + '' + '" style="background:#f0f0b0;margin: 0.5em 0 0 0">';
-
+      text += '<br><input type="email" class="i_email" size="36" title="" placeholder=" Din epostadress (obligatoriskt)" value="' + '' + '" style="background:#f0f0b0;margin: 0.5em 0 0 0">';
       text += '<br><textarea class="t_mess" rows="16"  title="" placeholder=" Meddelandetext om minst sju tecken (obligatoriskt)" value="' + '' + '" style="background:#f0f0b0;color:blue;margin: 0.5em 0 0.5em 0">';
 
       let yes = "Skicka";
@@ -1580,7 +1582,6 @@ export default Component.extend (contextMenuMixin, {
         closeOnEscape: true,
       });
       later ( ( () => {
-        //infoDia (null, picName, title, text, yes);
         $ (id).html (text);
         // Define button array
         $ (id).dialog ('option', 'buttons', [
@@ -1588,7 +1589,7 @@ export default Component.extend (contextMenuMixin, {
           text: yes,
             id: "sendBut",
           click: function () {
-            let address = $ ("#title span.cred.name").text () + " " + document.querySelector ("input.i_address").value.trim ().replace (/\s+/g, " ");
+            let from = document.querySelector ("input.i_address").value.trim ().replace (/\s+/g, " ");
             let email = document.querySelector ("input.i_email").value;
             if (emailOk (email)) {
               $ ("input.i_email").css ("background", "#dfd");
@@ -1598,19 +1599,40 @@ export default Component.extend (contextMenuMixin, {
               //$ ('#navKeys').text ('false'); // Repeated since non-modal
               return;
             }
-            let mess = document.querySelector ("textarea.t_mess").value.trim ().replace (/\s+/g, " ");
-            if (mess.length < 7) {
+            let message = document.querySelector ("textarea.t_mess").value.trim ().replace (/\s+/g, " ");
+            if (message.length < 7) {
               $ ("textarea.t_mess").css ("background", "#fdd");
               $ ("textarea.t_mess").focus ();
               //$ ('#navKeys').text ('false'); // Repeated since non-modal
               return;
             }
-            console.log(address);
-            console.log(email,"mess",mess);
             $ (this).dialog ("close");
-            alert ("Check content and send mail here, now");
             $ ('#navKeys').text ('true'); // Reset when L/R arrows have been protected
-            return;
+            // Send email from server
+            let data = new FormData ();
+            data.append ("title", extractContent (title));
+            data.append ("username", user);
+            data.append ("picturename", picName);
+            data.append ("mailtoadmin", mailAdmin);
+            data.append ("from", from);
+            data.append ("email", email);
+            data.append ("message", message);
+            return new Promise ( (resolve, reject) => {
+              let xhr = new XMLHttpRequest ();
+              xhr.open ('POST', 'contact/')
+              xhr.onload = function () {
+                resolve (xhr.responseText); // empty
+              };
+              xhr.onerror = function () {
+                resolve (xhr.statusText);
+                reject ({
+                  status: this.status,
+                  statusText: xhr.statusText
+                });
+              };
+              xhr.send (data);
+              infoDia (null, null, title, "<br>Ditt meddelande är skickat!", "Ok"); // i18n
+            });
           }
         },
         {
@@ -1619,7 +1641,7 @@ export default Component.extend (contextMenuMixin, {
           click: function () {
             $ (this).dialog ("close");
             $ ('#navKeys').text ('true'); // Reset when L/R arrows have been protected
-            return;
+            //return;
           }
         }]);
         $ ("div[aria-describedby='" + dialogId + "'] span.ui-dialog-title").html (title); /#/
@@ -1630,7 +1652,7 @@ export default Component.extend (contextMenuMixin, {
       }), 333);
     },
     //============================================================================================
-    infStatus () {
+    infStatus () { // ##### Display permissions with the picture allow.jpg
       var title = "Information om användarrättigheter"; // i18n
       var text = '<img src="allow.jpg" title="Användarrätigheter">'; // i18n
       var yes = "Ok" // i18n
@@ -2430,6 +2452,7 @@ export default Component.extend (contextMenuMixin, {
 
       $ (".shortMessage").hide ();
       if (Number ($ (".numShown:first").text ()) < 2) {
+        $ ("#navAuto").text ("false");
         $ ("#link_show a").blur ();
         return;
       }
@@ -2497,7 +2520,10 @@ export default Component.extend (contextMenuMixin, {
     //============================================================================================
     toggleAuto () { // ##### Start/stop auto slide show
 
-      if (Number ($ (".numShown:first").text ()) < 2) return;
+      if (Number ($ (".numShown:first").text ()) < 2) {
+        $ ("#navAuto").text ("false");
+        return;
+      }
 
       $ ("#dialog").dialog ("close");
       if ($ ("#imdbDir").text () === "") return;
@@ -3415,6 +3441,7 @@ let cmsg = "Får inte förstoras utan särskilt medgivande  Vänligen kontakta c
 let eraseOriginals = false;
 let homeTip = "I N T R O D U K T I O N";
 let logAdv = "Logga in för att kunna se inställningar: Anonymt utan namn och lösenord, eller med namnet ’gäst’ utan lösenord som ger vissa redigeringsrättigheter"; // i18n
+let mailAdmin = "tore.ericsson@tores.se"
 let nosObs = "Du får skriva men kan ej spara text utan annan inloggning"; // i18n
 let nopsGif = "GIF-fil kan bara ha tillfällig text"; // i18n
 let picFound = "Funna_bilder"; // i18n

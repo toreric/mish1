@@ -559,7 +559,37 @@ module.exports = function (app) {
     })
   })
 
-  // ##### #7.1 ¿¿ Never used ??
+  // ##### #6.7 Send a mail message to admin
+  app.post ('/contact', upload.none (), async function (req, res, next) {
+    let title = req.body.title
+    let username = req.body.username
+    let picturename = req.body.picturename
+    let mailtoadmin = req.body.mailtoadmin
+    let from = req.body.from
+    let email = req.body.email
+    let message = req.body.message
+    let mailsender = "savarhembygd@telia.com"
+
+console.log(req.body);
+    let cmd = username + "/" + picturename + " " + from + "\r\n" + email + "\r\n" + message
+    cmd = "message=" + "\"" + cmd.replace (/"/g, '\\"') + "\""
+    cmd = cmd + "&& echo $message |mail -s \"" + title + "\" -r " + mailsender + " " + mailtoadmin
+    await execP (cmd)
+console.log(cmd);
+    cmd = "whoami"
+    let r = await execP (cmd)
+console.log(r);
+/*data.append ("title", extractContent (title));
+data.append ("username", user);
+data.append ("picturename", picName);
+data.append ("mailtoadmin", mailAdmin);
+data.append ("from", from);
+data.append ("email", email);
+data.append ("message", message);*/
+  })
+
+
+  // ##### #7.1 Used by dropzone.js
   app.post ('/setimdbdir/:imagedir', function (req, res) {
     IMDB_DIR = req.params.imagedir.replace (/@/g, "/")
     res.send (IMDB_DIR)
