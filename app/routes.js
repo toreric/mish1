@@ -26,6 +26,8 @@ module.exports = function (app) {
   // ----- C O M M O N S
   // ----- Upload counter
   let n_upl = 0
+  // ----- mailSender/host/provider/smtpRelay for the contact function
+  let mailsender = "savarhembygd@telia.com"
   // ----- Present work directory
   let PWD_PATH = path.resolve ('.')
   // ----- Image data(base) root directory
@@ -561,6 +563,7 @@ module.exports = function (app) {
 
   // ##### #6.7 Send a mail message to admin
   app.post ('/contact', upload.none (), async function (req, res, next) {
+    //let serveruser = await execP ("whoami")
     let title = req.body.title
     let username = req.body.username
     let picturename = req.body.picturename
@@ -568,24 +571,10 @@ module.exports = function (app) {
     let from = req.body.from
     let email = req.body.email
     let message = req.body.message
-    let mailsender = "savarhembygd@telia.com"
-
-console.log(req.body);
     let cmd = username + "/" + picturename + " " + from + "\r\n" + email + "\r\n" + message
     cmd = "message=" + "\"" + cmd.replace (/"/g, '\\"') + "\""
     cmd = cmd + "&& echo $message |mail -s \"" + title + "\" -r " + mailsender + " " + mailtoadmin
     await execP (cmd)
-console.log(cmd);
-    cmd = "whoami"
-    let r = await execP (cmd)
-console.log(r);
-/*data.append ("title", extractContent (title));
-data.append ("username", user);
-data.append ("picturename", picName);
-data.append ("mailtoadmin", mailAdmin);
-data.append ("from", from);
-data.append ("email", email);
-data.append ("message", message);*/
   })
 
 

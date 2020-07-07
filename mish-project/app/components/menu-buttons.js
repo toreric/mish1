@@ -239,7 +239,7 @@ export default Component.extend (contextMenuMixin, {
         resetBorders (); // Reset all borders
       }
     },
-    { label: 'Markera bara gömda',
+    { label: 'Markera bara dolda',
       disabled: () => {
         return false;
       },
@@ -1562,11 +1562,11 @@ export default Component.extend (contextMenuMixin, {
       let picName = $ ("#picName").text ();
       let tmp = extractContent (this.get ("albumName")).replace (/\s/g, "_");
       if (tmp.indexOf (picFound) === 0) picName = picName.replace (/\.[^.]{4}$/, "");
-      let title = "Meddelande från Mish, <b style='background:inherit'>" + user + "/" + picName + "</b>"; // i18n
+      let title = "Mejl från Mish, <b style='background:inherit'>" + user + "/" + picName + "</b>"; // i18n
       let text = 'Skriv ditt meddelande:';
       text += '<br><input type="text" class="i_address" size="36" title="" placeholder=" Namn och adress (frivilligt)" value="' + '' + '" style="background:#f0f0b0;margin: 0.5em 0 0 0">';
       text += '<br><input type="email" class="i_email" size="36" title="" placeholder=" Din epostadress (obligatoriskt)" value="' + '' + '" style="background:#f0f0b0;margin: 0.5em 0 0 0">';
-      text += '<br><textarea class="t_mess" rows="16"  title="" placeholder=" Meddelandetext om minst sju tecken (obligatoriskt)" value="' + '' + '" style="background:#f0f0b0;color:blue;margin: 0.5em 0 0.5em 0">';
+      text += '<br><textarea class="t_mess" rows="6"  title="" placeholder=" Meddelandetext om minst sju tecken (obligatoriskt)" value="' + '' + '" style="background:#f0f0b0;color:blue;margin: 0.5em 0 0.5em 0"></textarea><br>Skriv om du saknar något eller hittar fel i en bildtext – tack!';
 
       let yes = "Skicka";
       let no = "Avbryt";
