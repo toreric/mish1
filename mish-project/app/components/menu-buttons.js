@@ -1563,10 +1563,10 @@ export default Component.extend (contextMenuMixin, {
       let tmp = extractContent (this.get ("albumName")).replace (/\s/g, "_");
       if (tmp.indexOf (picFound) === 0) picName = picName.replace (/\.[^.]{4}$/, "");
       let title = "Mejl från Mish, <b style='background:inherit'>" + user + "/" + picName + "</b>"; // i18n
-      let text = 'Skriv ditt meddelande:';
-      text += '<br><input type="text" class="i_address" size="36" title="" placeholder=" Namn och adress (frivilligt)" value="' + '' + '" style="background:#f0f0b0;margin: 0.5em 0 0 0">';
-      text += '<br><input type="email" class="i_email" size="36" title="" placeholder=" Din epostadress (obligatoriskt)" value="' + '' + '" style="background:#f0f0b0;margin: 0.5em 0 0 0">';
-      text += '<br><textarea class="t_mess" rows="6"  title="" placeholder=" Meddelandetext om minst sju tecken (obligatoriskt)" value="' + '' + '" style="background:#f0f0b0;color:blue;margin: 0.5em 0 0.5em 0"></textarea><br>Skriv om du saknar något eller hittar fel i en bildtext – tack!';
+      let text = 'Skriv ditt meddelande till Sävar Hembygdsförening:';
+      text += '<br><input type="text" class="i_address" title="" placeholder=" Namn och adress (frivilligt)" value="' + '' + '" style="width:100%;background:#f0f0cf;margin: 0.5em 0 0 0">';
+      text += '<br><input type="email" class="i_email" title="" placeholder=" Din epostadress (obligatoriskt, visas ej)" value="' + '' + '" style="width:100%;background:#f0f0b0;margin: 0.5em 0 0 0">';
+      text += '<br><textarea class="t_mess" rows="6"  title="" placeholder=" Meddelandetext om minst sju tecken (obligatoriskt)" value="' + '' + '" style="width:100%;background:#f0f0b0;color:blue;margin: 0.5em 0 0.5em 0"></textarea><br>Skriv om du saknar något eller hittar fel i en bildtext – tack! Och berätta om du vill bidra med egna bilder. Det du skriver här kan bara ses av Hembygdsföreningens mejlmottagare.';
 
       let yes = "Skicka";
       let no = "Avbryt";
@@ -3118,9 +3118,13 @@ export default Component.extend (contextMenuMixin, {
             $ (".ember-view.jstree").jstree ("open_node", "#j1_1");
             $ (".ember-view.jstree").jstree ("select_node", "#j1_1");
             // Next line is a BUG SAVER only. In some way, an initial hide is generated, WHERE?
-            if (this.actions) this.actions.imageList (true);
+            //if (this.actions) this.actions.imageList (true);
             // Side effect (minor): Deactivation of the "active album" link in the main menu
             // (next to last entry), but it will be reset as soon as the jstree is revisited.
+            //$ (".ember-view.jstree").jstree ("select_node", $ ("#j1_1"));
+            /*later ( ( () => {
+              $ ("#j1_1_anchor").click ();
+            }), 2000);*/
           }), 2000);
         }, 2000);                 // NOTE: Preserved here just as an example
 //==        spinnerWait (false);
@@ -3191,6 +3195,11 @@ export default Component.extend (contextMenuMixin, {
 //==                  spinnerWait (false);
                 }), 1000);
               }), 500);
+              // Next lines are a 'BUG SAVER'. Else, is all not initiated...?
+              // And the delay appears to be important, 2000 is too little.
+              later ( ( () => {
+                $ ("#j1_1_anchor").click ();
+              }), 4000);
             }
             $ ("#title a.proid").focus ();
           }
@@ -3288,6 +3297,10 @@ export default Component.extend (contextMenuMixin, {
             } else {
               $ ("#showDropbox").show ();
             }
+            // Next line is a BUG SAVER only. In some way, an initial hide is generated, WHERE?
+            /*later ( ( () => {
+              $ ("#j1_1_anchor").click ();
+            }), 2000);*/
           }).catch (error => {
             console.error (error.message);
           });
