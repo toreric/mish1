@@ -117,6 +117,12 @@ export default Component.extend (contextMenuMixin, {
   /////////////////////////////////////////////////////////////////////////////////////////
   contextItems: [
     { label: "×", disabled: false, action () {} }, // Spacer
+    { label: 'Frågor? Kontakta oss...',
+      disabled: false,
+      action () {
+        document.getElementById('do_mail').click();
+      }
+    },
     { label: 'Information',
       disabled: false,
       action () {
@@ -834,7 +840,7 @@ export default Component.extend (contextMenuMixin, {
         }
         console.log ("jQuery v" + $ ().jquery);
         // The time stamp is produced with the Bash 'ember-b-script'
-        userLog ($ ("#timeStamp").text (), true);
+        // userLog ($ ("#timeStamp").text (), true); // Confuses phone users
         // Login advice:
         $ ("#title a.proid").attr ("title", homeTip);
         //$ ("#title a.proid").attr ("totip", homeTip);
@@ -3005,6 +3011,7 @@ export default Component.extend (contextMenuMixin, {
       if (!name) {
         name = document.getElementById ("link_show").nextElementSibling.nextElementSibling.textContent.trim ();
       }
+      $ ("#picName").text (name);
       resetBorders (); // Reset all borders
       var ident = "#i" + escapeDots (name) + " div:first";
       var marked = $ (ident).hasClass ("markTrue");
@@ -3199,7 +3206,7 @@ export default Component.extend (contextMenuMixin, {
               // And the delay appears to be important, 2000 is too little.
               later ( ( () => {
                 $ ("#j1_1_anchor").click ();
-              }), 4000);
+              }), 6000);
             }
             $ ("#title a.proid").focus ();
           }
@@ -3376,7 +3383,7 @@ export default Component.extend (contextMenuMixin, {
         linktext = "https://" + linktext;
       }
       linktext += "/find/" + $ ("#imdbRoot").text () + "/";
-      let names = $ (".img_mini .img_name").text ();
+      /*let names = $ (".img_mini .img_name").text ();
       names = names.toString ().trim ().replace (/\s+/g, " ");
       names = names.split (" ");
       let tmp = document.getElementsByClassName ("img_mini");
@@ -3390,12 +3397,18 @@ export default Component.extend (contextMenuMixin, {
           //linktext += names [i] + "%20";
           linkarr.push (names [i]);
         }
-      }
+      }*/
       let pixt = "bilden"; // i18n
-      if (linkarr.length > 1) pixt = "bilderna";
-      linktext += linkarr.join ("%20");
+      //if (linkarr.length > 1) pixt = "bilderna";
+      //linktext += linkarr.join ("%20");
       //console.log(linktext);
-      let lite = "<br>Just nu visas inga albumbilder";
+      //let lite = "<br>Just nu visas inga albumbilder";
+      let name = $ ("#picName").text (); // Link to a single picture
+      if ($ ("#imdbDir").text () === $ ("#imdbLink").text () + "/" + $ ("#picFound").text ()) {
+        name = name.replace (/\.[^.]{4}$/, "");
+      }
+      linktext += name;
+      let lite = "<br>Välj först en albumbild!";
       if (linktext.replace (/^([^/]*\/)*(.*)/, "$2")) {
         lite = "Webblänk till " + pixt + ":<br><br>";
         lite += '<div style="text-align:left;word-break:break-all">';
@@ -3406,8 +3419,8 @@ export default Component.extend (contextMenuMixin, {
         lite += "eller i en webbläsares adressfält ";
         lite += "(du kan testa med att klicka på länken)<br><br>";
         lite += "Kontrollera resultatet innan du skickar länken vidare till någon annan; ";
-        lite += "det kan eventuellt visas fler eller färre bilder än man tänkt sig ";
-        lite += "– orsakat av namnlikhet, dolt album eller annat</div>";
+        lite += "om det inte blir som man tänkt sig kan det ";
+        lite += "orsakas av namnlikhet, dolt album eller annat</div>";
         if (loginStatus !== "guest") {
           lite += "<br>Tänk på att vissa bilder kan kräva mer än gästinloggning för att kunna ";
           lite += "ses. Var därför gärna inloggad som ”gäst” när du gör en webblänk till andra!";

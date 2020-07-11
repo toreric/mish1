@@ -42,11 +42,6 @@ function copyToClipboard (str) {
       <span class="cred status" {{action "toggleSettings"}}></span>
       <span id ="showDropbox" class="picLinker eraseCheck" style="margin:0.5em 0 0 0.5em;display:none" {{action "showDropbox"}}>LADDA UPP</span>
     </div>
-
-      <!--div style="display:inline-block;margin-left:1em" totip="Ladda upp...">
-        <span class="picLinker eraseCheck" style="margin:0.5em 0 0 0" {{action "showDropbox"}}>LADDA UPP</span>
-      </div -->
-
     <div class="settings" draggable="false" ondragstart="return false" style="display:none">
         <div class="check">
           <div>
@@ -70,8 +65,8 @@ function copyToClipboard (str) {
   <div style="display:inline-block;white-space:nowrap;margin-top:0.4em">
 
   <!-- Get webblink to non-hidden pictures -->
-  <div style="display:inline-block;margin-left:1em" totip="Information om direktlänk till de bilder som visas">
-    <span class="picLinker eraseCheck" style="margin:0.5em 0 0 0" {{action "webLinker"}}>WEBBLÄNK</span>
+  <div style="display:inline-block;margin-left:1em" totip="Direktlänk till aktuell bild">
+    <span class="picLinker" style="margin:0.5em 0 0 0" {{action "webLinker"}}>WEBBLÄNK</span>
   </div>
   <!-- Erase link+source choice -->
   <div style="display:inline-block">&nbsp;
@@ -152,9 +147,9 @@ eller bildtextrad">&nbsp;per<br>&nbsp;text-&nbsp;<br>&nbsp;rad</a>
   <!-- FULL SIZE -->
   <a class="nav_" id="full_size" draggable="false" {{action 'fullSize'}} title="Full storlek
 i nytt fönster">↕↔↕</a> &nbsp; <br>
-<a class="nav_ mail" id="do_mail" title="Mejla ett meddelande,
-din kommentar, rättelse
-eller annan upplysning" {{action 'doMail'}}>&#9993;</a> &nbsp; <br>
+<a class="nav_ mail" id="do_mail" title="Fråga oss om något eller skicka
+ett meddelande med kommentarer,
+rättelser eller andra upplysningar" {{action 'doMail'}}>&#9993;</a> &nbsp; <br>
 <a class="nav_ pnav_" id="do_print" title="Skriv ut" {{action 'doPrint'}}>&#9997;</a> &nbsp;
 </div>
 

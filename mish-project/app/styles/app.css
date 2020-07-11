@@ -488,7 +488,7 @@ button.mainMenuClose.ui-dialog-titlebar-close:hover {
 #title a.finish, #title span.eraseCheck {
   font-size: 70%!important;
 }
-#title input.cred, #title a.finish, #title span.eraseCheck {
+#title input.cred, #title a.finish, #title span.eraseCheck, #title span.picLinker {
   font-family: Verdana, Geneva, Tahoma, sans-serif!important;
   font-size: 0.8em;
   text-align: center;
