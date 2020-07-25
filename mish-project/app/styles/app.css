@@ -405,8 +405,8 @@ button.mainMenuClose.ui-dialog-titlebar-close:hover {
   font-weight: bold;
   color: yellowgreen;
   top: 25%;
-  left: 15%;
-  width: 50%;
+  left: 5%;
+  width: 90%;
   z-index: 130;
 }
 .selectOption {
@@ -911,7 +911,7 @@ The jquery ui-tooltip is used elsewere (totip in *.js) */
   cursor: default;
 }
 .img_txt1, .img_txt2 {
-  cursor: pointer;
+  cursor: text;
   text-align: left;
   margin: 0;
   color: #fff;

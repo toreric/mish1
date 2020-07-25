@@ -73,7 +73,7 @@ a {
   outline: 0;
 }
 a:hover, a:active, a:focus, a.intro:hover, a.intro:active, a.intro:focus {
-  color: white;
+  color: #6cf;
   border-color: white;
   cursor: pointer;
 }

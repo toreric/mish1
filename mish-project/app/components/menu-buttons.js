@@ -35,7 +35,7 @@ export default Component.extend (contextMenuMixin, {
         rootList = rootList.split ("\n");
         let seltxt = rootList [0];
         rootList.splice (0, 1, "");
-        rootList [0] = "Välj albumkatalog: "; // i18n, must have a space
+        rootList [0] = "Välj albumkatalog "; // i18n, must have a space
         let selix = rootList.indexOf (seltxt);
         if (selix > 0) {
           this.set ("imdbRoot", seltxt);
@@ -868,8 +868,6 @@ export default Component.extend (contextMenuMixin, {
               $ ("#title a.proid").focus ();
               this.actions.selectRoot ("");
               later ( ( () => {
-                //if ($ ("#imdbDir").text ())
-                //this.actions.imageList (true);
               }), 600);
             }), 1000);
           }), 1000);
@@ -924,7 +922,12 @@ export default Component.extend (contextMenuMixin, {
     }), 10);
     execute ("head -n1 LICENSE.txt").then (a => {
       $ (".copyright").text (a);
-    });
+    /*}).then ( () => {
+      later ( ( () => {
+        if (allow.textEdit || allow.adminAll) $ (".img_txt1, .img_txt2").css ("cursor","pointer");
+        else $ (".img_txt1, .img_txt2").css ("cursor","text");
+      }), 4000);*/
+     });
   },
   //----------------------------------------------------------------------------------------------
   didRender () {
@@ -1417,10 +1420,9 @@ export default Component.extend (contextMenuMixin, {
             $ ("#imdbDir").text ("");
           } else {
             that.set ("albumText", " Valt album:");
-            that.set ("albumName", '<strong class="albumName">' + tmpName + '</strong>');
-            that.set ("jstreeHdr", "Alla album:");
+            that.set ("albumName", '<strong class="albumName"> ' + tmpName + '</strong>');
+            that.set ("jstreeHdr", "Alla album (albumkarta, albumträd):");
             $ ("#jstreeHdr").attr ("title", htmlSafe ("Visa alla album\n(hela albumträdet)")); //i18n
-            //$ ("#jstreeHdr").attr ("totip", "Visa alla album (hela albumträdet");
           }
           resolve (data); // Return file-name text lines
           console.log ("ORDER received");
@@ -1760,7 +1762,7 @@ export default Component.extend (contextMenuMixin, {
       var album = $ (this.get ("albumName")).text ().replace (/\s/g, " ");
       var album1 = $ ("#picFound").text ().replace (/_/g, " ");
       if ( (!(allow.albumEdit || allow.adminAll)) || album === album1) {
-        userLog ("ALBUM protected");
+        userLog ("RÄTTIGHET SAKNAS", true, 1000);
         return;
       }
       $ (".mainMenu").hide ();
@@ -1876,7 +1878,7 @@ export default Component.extend (contextMenuMixin, {
                   }), 100);
                 } else {
                   console.log ("Album created: " + nameNew);
-                  userLog ("CREATED " + nameNew + ", RESTARTING");
+                  userLog ("CREATED " + nameNew + ", RESTARTING", 10000);
                   later ( ( () => {
                     location.reload ();
                   }), 2000);
@@ -2446,7 +2448,10 @@ export default Component.extend (contextMenuMixin, {
           $ (".img_show .img_name").toggle ();
         }*/
       }
-      if ($ ("div[aria-describedby='dialog']").is (":visible") && $ ("div[aria-describedby='dialog'] div span").html () === "Information") {showFileInfo ();}
+      // Reset draggability for the texts (perhaps set to true somewhere by Jquery?)
+      $ ("#wrap_show .img_txt1").attr ("draggable", "false");
+      $ ("#wrap_show .img_txt2").attr ("draggable", "false");
+      if ($ ("div[aria-describedby='dialog']").is (":visible") && $ ("div[aria-describedby='dialog'] div span").html () === "Information") showFileInfo ();
     },
     //============================================================================================
     hideShow () { // ##### Hide the show image element
@@ -2478,7 +2483,7 @@ export default Component.extend (contextMenuMixin, {
           namepic = null;
           if (!document.getElementById ("i" + namehere) || !document.getElementById ("i" + namehere).parentElement.nextElementSibling) { // last
             namepic = tmp [0].getAttribute ("id").slice (1);
-            userLog ("FIRST");
+            userLog ("FIRST", false, 2000);
           } else {
             // here a problem:
             namepic = document.getElementById ("i" + namehere).parentElement.nextElementSibling.firstElementChild.id.slice (1);
@@ -2493,7 +2498,7 @@ export default Component.extend (contextMenuMixin, {
           if (!document.getElementById ("i" + namehere) || !document.getElementById ("i" + namehere).parentElement.previousElementSibling) { // first
             //var tmp = document.getElementsByClassName ("img_mini");
             namepic = tmp [tmp.length - 1].getAttribute ("id").slice (1);
-            userLog ("LAST");
+            userLog ("LAST", false, 2000);
           } else {
             namepic = document.getElementById ("i" + namehere).parentElement.previousElementSibling.firstElementChild.id.slice (1);
           }
@@ -2580,12 +2585,15 @@ export default Component.extend (contextMenuMixin, {
         if (chkPaths.length > 0) {
           sqlUpdate (chkPaths.join ("\n"));
         }
+        chkPaths = randIndex (0); // Dummy use of randIndex (=> [])
         chkPaths = [];
-        // Present some preview images in the introduction iframe
+
+
+        /* // Present some preview images in the introduction iframe
         let iWindow = document.getElementsByTagName("iframe") [0].contentWindow;
 
         // Clear/reset places for sample images (root may have changed)
-        // nIm == number of display nodes for the images (see iframe html)
+        // nIm == number of display nodes for the images (see iframe html file)
         let nIm = 4;
         let iImages = iWindow.document.getElementsByTagName ("img");
         let dIm = iImages.length - nIm;
@@ -2634,7 +2642,9 @@ export default Component.extend (contextMenuMixin, {
         iSample.setAttribute ("title", "Testbilder:\n" + name.join ("\n"));
         iSample.setAttribute ("href", linktext + "/" + name.join ("%20"));
         iSample.setAttribute ("target", "_blank");
-        iSample.setAttribute ("style", "display:block");
+        iSample.setAttribute ("style", "display:block"); */
+
+
       }).then ( () => {
         document.getElementById ("stopSpin").innerHTML = "SPIN-END";
         return true;
@@ -2803,8 +2813,10 @@ export default Component.extend (contextMenuMixin, {
       var name0 = $ ("div[aria-describedby='textareas'] span.ui-dialog-title span").html ();
       if (allow.textEdit || allow.adminAll) {
         $ ("button.saveTexts").attr ("disabled", false);
+        $ (".img_txt1, .img_txt2").css ("cursor","pointer");
       } else {
         $ ("button.saveTexts").attr ("disabled", true);
+        $ (".img_txt1, .img_txt2").css ("cursor","text");
         return; // Remove this line if TEXTPREVIEW for anyone is allowed!
       }
       if ($ ("#navAuto").text () === "true") return;
@@ -2907,10 +2919,8 @@ export default Component.extend (contextMenuMixin, {
       var name = $ ("#picName").text ();
       // Only selected user classes may view or download protected images
       if ( (name.startsWith ("Vbm") || name.startsWith ("CPR")) && ["admin", "editall", "edit"].indexOf (loginStatus) < 0) {
-        userLog ("COPYRIGHT©protected", true);
-        later ( ( () => {
-          userLog (cmsg, true, 10000); // 10 s
-        }), 2000);
+        userLog (name + " COPYRIGHT©protected");
+        userLog (cmsg, true, 10000); // 10 s
         return;
       }
       spinnerWait (true);
@@ -2927,7 +2937,7 @@ export default Component.extend (contextMenuMixin, {
             //var dejavu = window.open (djvuName  + '?djvuopts&amp;zoom=100', 'dejavu', 'width=916,height=600,resizable=yes,location=no,titlebar=no,toolbar=no,menubar=no,scrollbars=yes,status=no'); // Use the PNG file instead (wrongly named):
             var dejavu = window.open (djvuName, 'dejavu', 'width=916,height=600,resizable=yes,location=no,titlebar=no,toolbar=no,menubar=no,scrollbars=yes,status=no');
             if (dejavu) {dejavu.focus ();} else {
-              userLog ("POPUP blocked");
+              userLog ("POPUP blocked by browser", true, 5000); // 5 s
             }
             spinnerWait (false);
             resolve (true);
@@ -3180,7 +3190,6 @@ export default Component.extend (contextMenuMixin, {
             if ($ ("#imdbRoots").text ().split ("\n").indexOf (picFind [0]) < 1) picFind = ["", ""];
             else {
               if ($ ("#imdbRoot").text () !== picFind [0]) { // Change album root
-                //pause (4000);
                 that.actions.selectRoot (picFind [0], that);
               }
             }
@@ -3188,7 +3197,8 @@ export default Component.extend (contextMenuMixin, {
               // Regenerate the picFound album: the shell commands must execute in sequence
               let lpath = $ ("#imdbLink").text () + "/" + $ ("#picFound").text ();
               execute ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb").then ();
-              let lnk = this.get ("imdbLink");
+              // Remove all too old picFound album catalogs:
+              let lnk = this.get ("imdbLink"); // NOTE: Remember the added random <.01yz>
               let toold = 60; // minutes. NOTE: Also defined in routes.js, please MAKE COMMON!!
               execute ('find -L ' + lnk + ' -type d -name "' + picFound + '*" -amin +' + toold + ' | xargs rm -rf').then ();
               userLog ("START " + $ ("#imdbRoot").text ());
@@ -3236,14 +3246,20 @@ export default Component.extend (contextMenuMixin, {
                 $ ("#searcharea textarea").val (picFind [1]);
                 later ( () => {
                   $ ("button.findText").click ();
-                  //$ ("img.left-click") [0].click ();
-                }, 2000);
+                  later ( () => {
+                    parentAlbum ();
+                    later ( () => {
+                      let idimg = "#i" + escapeDots (picFind [1]);
+                      $ (idimg + " img") [0].click ();
+                      console.log(idimg + " img");
+                    }, 8000);
+                  }, 6000);
+                }, 4000);
               }, 2000);
             }
           }, 200);
         }, 2000);
       }
-
       //¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
       // When password doesn't match user, return true; [else set 'allowvalue' and return false]
       // NOTE: Update aug 2017: else set anonymous viewer with no credentials, still return true
@@ -3463,7 +3479,7 @@ let BACKG = "#cbcbcb";
 let TEXTC = "#000";
 let BLUET = "#146";
 let bkgTip = "Byt bakgrund";
-let cmsg = "Får inte förstoras utan särskilt medgivande  Vänligen kontakta copyrightinnehavaren eller Hembygdsföreningen"
+let cmsg = "Får inte laddas ned/förstoras utan särskilt medgivande: Vänligen kontakta copyrightinnehavaren eller Hembygdsföreningen"
 let eraseOriginals = false;
 let homeTip = "I N T R O D U K T I O N";
 let logAdv = "Logga in för att kunna se inställningar: Anonymt utan namn och lösenord, eller med namnet ’gäst’ utan lösenord som ger vissa redigeringsrättigheter"; // i18n
@@ -3855,7 +3871,7 @@ function favDia (text, add, save, show, close) { // ===== Show favorites dialog
   // the arguments = the favorite text list and four button texts
   $ ("#dialog").dialog ('destroy').remove ();
   let favs = "Favoritbilder"; // i18n
-  $ ('<div id="dialog"><textarea class="favorites" name="favorites" placeholder="För favoriter = sparade bildnamn" rows="16" cols="32"></textarea></div>').dialog ( { // Initiate dialog
+  $ ('<div id="dialog"><textarea class="favorites" name="favorites" placeholder="Skriv in favoriter = bildnamn som ska sparas" rows="16" cols="32"></textarea></div>').dialog ( { // Initiate dialog
     title: favs,
     closeText: "×",
     autoOpen: false,
@@ -4231,25 +4247,28 @@ function saveFavorites (favList) {
   setCookie ("favorites", favList.replace (/\n/g, " "), 0);
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function userLog (message, flashOnly, more) { // ===== Message to the log file and flash the user
+function userLog (message, flashOnly, mstime) { // ===== Message to the log file and flash the user
   if (!flashOnly) {
     console.log (message);
-    var messes = $ ("#title span.usrlg").text ().trim ().split ("•");
+    /*var messes = $ ("#title span.usrlg").text ().trim ().split ("•");
     if (messes.length === 1 && messes [0].length < 1) {messes = [];}
     if (!(messes.length > 0 && messes [messes.length - 1].trim () === message.trim ())) {messes.push (message);}
     if (messes.length > 5) {messes.splice (0, messes.length -5);}
-    messes = messes.join (" • ");
+    messes = messes.join (" • ");*/
     // discontinued: $ ("#title span.usrlg").text (messes);
   }
-  let time =2000;
-  if (more) {
-    if (more > time) {time = more;}
+  /*let t =2000;
+  if (mstime) {
+    if (mstime > t) {t = mstime;}
+  }*/
+  //if (!mstime) mstime = 2000;
+  if (mstime) {
+    $ (".shortMessage").text (message);
+    $ (".shortMessage").show ();
+    later ( ( () => {
+      $ (".shortMessage").hide ();
+    }), mstime);
   }
-  $ (".shortMessage").text (message);
-  $ (".shortMessage").show ();
-  later ( ( () => {
-    $ (".shortMessage").hide ();
-  }), time);
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function reqRoot () { // Propose root directory (requestDirs)

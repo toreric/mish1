@@ -199,9 +199,9 @@ rättelser eller andra upplysningar" {{action 'doMail'}}>&#9993;</a> &nbsp; <br>
   <div class="mainMenu BACKG" onclick="return false" draggable="false" ondragstart="return false" style="display:none">
 
     <p onclick="return false" draggable="false" ondragstart="return false">
-      <a class="search" {{action 'findText'}}>Finn bilder <span style="font:normal 1em monospace!important">[F]</span>:</a> Sök i
+      <a title="Sökning" class="search" {{action 'findText'}}>Finn bilder <span style="font:normal 1em monospace!important">[F]</span>:</a> Sök i
       <span class="root">
-        <select id="rootSel" title="Välj albumkatalog här" totip="Välj albumkatalog här" onchange={{action 'selectRoot' value='target.value'}}>
+        <select id="rootSel" title="Albumkatalog (albumrot)" onchange={{action 'selectRoot' value='target.value'}}>
           {{#each imdbRoots as |rootChoice|}}
             <option onclick="this.parentElement.blur()" value={{rootChoice}} selected={{eq imdbRoot rootChoice}}>{{rootChoice}}</option>
           {{/each}}
@@ -210,7 +210,8 @@ rättelser eller andra upplysningar" {{action 'doMail'}}>&#9993;</a> &nbsp; <br>
       <button class="ui-button mainMenuClose ui-dialog-titlebar-close" title="Close" {{action 'toggleMainMenu' imdbRoot}}>×</button>
     </p><br>
     <p onclick="return false" draggable="false" ondragstart="return false" title="Favoritskötsel  ">
-      <a id ="favorites" {{action 'seeFavorites'}}>Favoritbilder</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[F11]=fullskärm!
+      <a id ="favorites" {{action 'seeFavorites'}}>Favoritbilder</a>
+      <p style="float:right">[F11]=fullskärm</p>
     </p><br>
     <p onclick="return false" draggable="false" ondragstart="return false" title="Ta bort eller gör nytt album ...">
       <a {{action 'albumEdit'}}>{{{albumText}}}</a>{{{albumName}}}
@@ -253,7 +254,7 @@ gömda bilder" draggable="false" ondragstart="return false" style="display:none"
     <b style="color:#0b0">En bild med grön underkant/markeringsring är länkad</b> från annat album<br>
     <b style="color:#0b0">Gå till originalbilden</b> med högerklick i grön markeringsring</span></p>
   <p style="text-align:left;margin-left:1.5em;line-height:1.7em" draggable="false" ondragstart="return false">
-    <b>FÖRST knappar till vänster</b> (vilka som syns varierar):<br>
+    <b>Se FÖRST knappar till vänster</b> (vilka som syns varierar):<br>
     <a id="albSel">☰</a> Huvudmeny: Välj album, sökning, albumöversikt<br>
     <a id="questionMark0">?</a> Visa/dölj den här användarhandledningen<br>
     <a id="reLd0"><img draggable="false" ondragstart="return false" src="/images/reload.png"></a> Ladda om albumet, återställ eventuella osparade ändringar¹³ (’ångerknapp’, men avser ej textändringar)<br>

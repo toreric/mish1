@@ -140,7 +140,7 @@ module.exports = function (app) {
     var fileStat = "<i>Filnamn</i>: " + filex + "<br><br>"
     if (linkto) {
       fileStat = "<i>Filnamn</i>: <span style='color:#0a4'>" + filex + "</span><br><br>"
-      fileStat += "<i>Länk till original</i>: " + linkto + "<br><br>"
+      fileStat += "<i>Original</i>: " + linkto + "<br><br>"
     }
     fileStat += "<i>Storlek</i>: " + stat.size/1000000 + " Mb<br>"
     var tmp = execSync ("exif_dimension " + file).toString ().trim ()

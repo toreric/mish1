@@ -11,7 +11,13 @@
     <link rel="stylesheet" type="text/css" href="start.css">
   </head>
   <body>
-
+    <script>
+      function toggle(queSel) {
+        var x = document.querySelector(queSel);
+        if (x.style.display === "none") x.style.display = "";
+        else x.style.display = "none";
+      }
+    </script>
     <a id="GO" href="index.html" title="S T A R T K N A P P" style="display:none">I</a>
     <div class="wrap0">
       <a href="https://bygdegardarna.se/savar" target="_blank" title="Gå till hemsidan
@@ -24,24 +30,32 @@ kommuns
 vapen" style="width:2.4em;border:0;margin: 0 0.2em -0.4em 0.1em">
       <h3 style="margin:-0.1em 0 0.5em 0">Minnen från <br>Sävarådalen och Holmön </h3>
       <br>
-      <pre style="font-size:95%;font-weight:normal;line-height:130%">Välj fotoalbum, sök i bildtexter
+
+<pre style="font-size:95%;font-weight:normal;line-height:130%;margin:0.5em 0"><a title="Läs användarregler, upphovrättsavtal..." onclick="toggle('.mid')">Se användarregler med mera</a>,
+välj fotoalbum, sök i bildtexter
 och finn bland tusentals bilder!
 <b>Tips</b>: Sök något ortsnamn, förnamn och/eller
 efternamn med den <b style="color:#6cf">blå</b> menyknappen:
-Välj ”Finn bilder” och skriv sökbegrepp...</pre><a class="intro" title="Öppna sökfönstret" hreff="find/something" onclick="window.parent.document.getElementById('menuButton').click();window.parent.document.querySelector('a.search').parentElement.focus();setTimeout(function(){window.parent.document.querySelector('a.search').click();}, 2000)" target="_parent" style="text-align:center;margin:-0.6em 6em 0.5em 0">...eller visa hur man gör...</a>
-      <div class="mid">
-        <a class="intro" title="Läs användarreglerna" href="villkor.html" target="villkor" style="">...men läs först Hembygds-<br>föreningens användarregler!</a><br>
-        <a class="intro" href="index.html" target="_top" style="">
+Välj ”Finn bilder” och skriv sökbegrepp...
+<a title="Öppna sökfönstret" onclick="window.parent.document.querySelector('a.search').click()" target="_parent" style="margin: 0 1em 1em 0">...eller sök direkt!</a></pre>
+
+      <div class="mid" style="display:none">
+        <a class="intro" title="Användarreglerna" href="villkor.html" target="villkor" style="">Läs &ndash; i nytt fönster &ndash; Hembygds-<br>föreningens användarregler!</a><br>
+        <!--a class="intro" href="index.html" target="_top" style="">
           Om du vill börja om:<br>Återstarta (starta om) Mish
         </a><br>
-        <a class="intro" href="https://minne.no-ip.org/index.html" target="_blank" style="">Gå till gamla Mish i nytt fönster</a>
+        <a class="intro" title="Upphovsrättsavtal" href="copyrightavtal.pdf" target="copyrightavtal" style="">Upphovsrättsavtal som &nbsp; <br>gäller för bildbidrag</a><br-->
+        <a class="intro" title="Egna bidrag" href="#" onclick="window.parent.document.getElementById('do_mail').click()" style="">Har du frågor? Kontakta oss!<br>(vill du bidra med egna fotografier?)</a><br>
+        <a class="intro" href="https://minne.no-ip.org" target="_blank" style="">Historik &ndash; i nytt fönster</a>
       </div>
-      <pre><span style="color:moccasin">
-Mish brukar kakor (cookies) för att spara
-inställningar och dina ”favoritbilder”</span></pre>
-    </div>
 
-    <div class="wrap1">
+<pre style="margin:0.8em 0 1em 0"><span style="color:moccasin">Mish brukar kakor (cookies) för att spara
+inställningar och dina ”favoritbilder”</span></pre>
+
+<pre style="margin:0.8em 0 1em 0"><a onclick="window.parent.document.querySelector('#menuButton').click();if(window.parent.document.querySelector('.jstreeAlbumSelect').style.display==='none')window.parent.document.querySelector('#jstreeHdr').click()">Site map (albumkarta, albumträd)</a></pre>
+
+    </div>
+    <!--div class="wrap1">
       <div class="lef">
         <b>Testbilder</b>
         <pre style="margin:0.1em 0 0.4em 0">Klicka för att
@@ -59,13 +73,13 @@ nytt fönster:</pre>
         <a class="" title="" href="#" style="">&nbsp;</a>
         <a class="" title="" href="#" style="">&nbsp;</a>
       </div>
-      <!--div class="rig">
+      <div class="rig">
         <a class="intro border0" title="Testbild" href="" style="display:none"><img src=""></a>
         <a class="intro border0" title="Testbild" href="" style="display:none"><img src=""></a>
         <a class="intro border0" title="Testbild" href="" style="display:none"><img src=""></a>
         <a class="intro border0" title="Testbild" href="" style="display:none"><img src=""></a>
-      </div-->
-    </div>
+      </div>
+    </div-->
     <script>
       if (!window.parent.frames.length) {
         document.getElementById ("GO").style.display = "block";
