@@ -95,6 +95,7 @@ a.border0 {
 .wrap0, .wrap1 {
   display: inline-block;
   vertical-align: top;
+  margin: 0 1em 0 0;
 }
 .wrap1 div {
   display: inline-block;

@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 clear
 port=3000

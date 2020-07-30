@@ -111,6 +111,41 @@ export default Component.extend (contextMenuMixin, {
       }
     }
 
+    //&&&&&
+    let iWindow = document.getElementsByTagName("iframe") [0].contentWindow;
+    let iImages = iWindow.document.getElementsByTagName ("img");
+    let nIm = iImages.length;
+    let linktext = window.location.hostname
+    if (linktext === "localhost") {
+      linktext = "http://localhost:3000" + "/";
+    } else {
+      linktext = "https://" + linktext + "/";
+    }
+
+    let iAlbum = ["/abc", "/def", "/abc/subb/subba"];
+    let iName = ["IMG_6241", "savar_komm_fullm_1973", "Vbm_68bot"];
+
+    for (let i=1; i<nIm; i++) { // i=0 is the logo picture
+      iImages [i].setAttribute ("src", linktext + $ ("#imdbLink").text () + iAlbum [i - 1] + "/_show_" + iName [i - 1] + ".png");
+
+      let tmp = $ ("#imdbDirs").text ().split ("\n");
+      let idx = tmp.indexOf (iAlbum [i - 1]);
+console.log("imdbDirs",tmp);
+console.log("iAlbum",iAlbum [i - 1]);
+console.log("i:idx",idx,i);
+      iImages [i].parentElement.setAttribute ("onclick","parent.selectJstreeNode("+idx+");parent.gotoMinipic ('" + iName [i - 1] + "')");
+
+      //iImages [i].parentElement.setAttribute ("href", linktext + "find/" + $ ("#imdbRoot").text () + "/" + iName [i - 1]);
+      iImages [i].parentElement.setAttribute ("title", iName [i - 1]);
+      //iImages [i].parentElement.setAttribute ("target", "_blank");
+      iImages [i].style.width = "19em";
+      //iImages [i].style.height = "16em";
+      iImages [i].style.margin = "0.5em 0";
+      iImages [i].style.border = "1px solid gray";
+      iImages [i].style.borderRadius = "4px";
+    }
+    //&&&&&
+
   }),
 
   // CONTEXT MENU Context menu
@@ -1676,12 +1711,12 @@ export default Component.extend (contextMenuMixin, {
       let names = $ ("#imdbDirs").text ().split ("\n");
       let name = $ ("#imdbDir").text ().slice ($ ("#imdbLink").text ().length); // Remove imdbLink
       let here, idx;
-      if (subName === "|«") { // top in tree
+      if (subName === "|«") { // go to top in tree
         idx = 0;
-      } else if (subName === "«") { // up in tree
+      } else if (subName === "«") { // go up in tree
         name = name.replace (/((\/[^/])*)(\/[^/]*$)/, "$1");
         idx = names.indexOf (name);
-      } else if (subName === "‹›") { // most recent
+      } else if (subName === "‹›") { // go to most recent
         idx = savedAlbumIndex;
       } else {
         here = names.indexOf (name);
@@ -1696,11 +1731,7 @@ export default Component.extend (contextMenuMixin, {
         $ (".mainMenu").hide ();
         return;
       } else {
-        $ (".ember-view.jstree").jstree ("close_all");
-        $ (".ember-view.jstree").jstree ("_open_to", "#j1_" + (1 + idx));
-        $ (".ember-view.jstree").jstree ("deselect_all");
-        $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_" + (1 + idx)));
-        $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
+        window.selectJstreeNode (idx);
       }
     },
     //============================================================================================
@@ -2079,7 +2110,7 @@ export default Component.extend (contextMenuMixin, {
           $ ("#picOrig").text ("");
           $ ("#sortOrder").text ("");
           $ (".showCount").hide ();
-          $ (".miniImgs").hide ();
+//          $ (".miniImgs").hide (); // NOTE: Vad är detta?????
         }
         let imdbDir = value;
         $ ("#imdbDir").text (value);
@@ -2143,7 +2174,7 @@ export default Component.extend (contextMenuMixin, {
 
         later ( ( () => {
           $ ("a.imDir").attr ("title", "Album");
-          let n = $ ("a.imDir").length/2; // there is also a bottom link line...
+          let n = $ ("a.imDir").length/2; // there is also a page bottom link line...
           let nsub = n;
           let z, iz, obj;
           let fullAlbumName= $ ("#imdbRoot").text () + $ ("#imdbDir").text ().replace (/^[^/]*/, "");
@@ -2588,6 +2619,8 @@ export default Component.extend (contextMenuMixin, {
         chkPaths = randIndex (0); // Dummy use of randIndex (=> [])
         chkPaths = [];
 
+//&&&&&imgimgimgimg det här avsnittet bör komma någon annanstans, i t.ex. selectRoot
+//&&&&&imgimgimgimg
 
         /* // Present some preview images in the introduction iframe
         let iWindow = document.getElementsByTagName("iframe") [0].contentWindow;
@@ -3492,7 +3525,7 @@ let loginStatus = "";
 let tempStore = "";
 let chkPaths = []; // For DB picture paths to be soon updated (or removed)
 let savedAlbumIndex = 0;
-let returnTitles = ["ROT", "MOT ROT", "SENASTE"]; // i18n
+let returnTitles = ["Gå TILL ROT-album", "Gå MOT ROT-album", "Gå TILL SENASTE album"]; // i18n
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Cookie functions
 function setCookie(cname, cvalue, exminutes) {
@@ -3695,6 +3728,11 @@ async function parentAlbum (tgt) {
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Position to a minipic and highlight its border
+window.gotoMinipic = function (namepic) {
+  later ( ( () => {
+    gotoMinipic (namepic);
+  }), 2000);
+}
 function gotoMinipic (namepic) {
   let hs = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
   let spinner = document.querySelector("img.spinner");
@@ -4508,7 +4546,10 @@ function resetBorders () { // Reset all mini-image borders and SRC attributes
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function markBorders (picName) { // Mark a mini-image border
-  $ ('#i' + escapeDots (picName) + ".img_mini img.left-click").css ('border', '2px dotted deeppink');
+  $ ('#i' + escapeDots (picName) + ".img_mini img.left-click").addClass ("dotted");
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+window.markBorders = function (picName) { // Mark a mini-image border
   $ ('#i' + escapeDots (picName) + ".img_mini img.left-click").addClass ("dotted");
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -5247,7 +5288,7 @@ function allowFunc () { // Called from setAllow (which is called from init(), lo
 history.pushState (null, null, location.href);
 window.onpopstate = function () {
   history.go(1);
-  infoDia (null, null, "M E D D E L A N D E", "<b style='color:#060'><br>Du använder just nu en webb-app<br>med bara en sida som det inte går att backa ifrån.<br><br>Använd i stället appens egna navigerings-<br>menyer, -knappar och/eller -länkar!<br><br>Självklart kan du även avsluta appen genom att stänga sidan<br>eller gå till något helt annat i webbläsarens adressfält.<br>&nbsp;</b>", "Ok, jag förstår!", true);
+  infoDia (null, null, "M E D D E L A N D E", "<b style='color:#060'><br>Du använder just nu en webb-app<br>med bara en enda sida som det inte går att<br>backa ifrån på det sättet.<br><br>Använd i stället appens egna navigerings-<br>menyer, -knappar och/eller -länkar!<br><br>Självklart kan du även avsluta appen genom att<br>stänga sidan eller gå till något helt annat<br>i webbläsarens adressfält.<br>&nbsp;</b>", "Ok, jag förstår!", true);
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function showFileInfo () {
@@ -5272,5 +5313,13 @@ function showFileInfo () {
 function emailOk(email) {
   const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   return re.test(email);
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+window.selectJstreeNode = function (idx) {
+  $ (".ember-view.jstree").jstree ("close_all");
+  $ (".ember-view.jstree").jstree ("_open_to", "#j1_" + (1 + idx));
+  $ (".ember-view.jstree").jstree ("deselect_all");
+  $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_" + (1 + idx)));
+  $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
