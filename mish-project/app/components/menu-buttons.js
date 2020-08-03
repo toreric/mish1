@@ -122,8 +122,9 @@ export default Component.extend (contextMenuMixin, {
       linktext = "https://" + linktext + "/";
     }
 
-    let iAlbum = ["/abc", "/def", "/abc/subb/subba"];
-    let iName = ["IMG_6241", "savar_komm_fullm_1973", "Vbm_68bot"];
+    let iAlbum = ["/Flygfoton_2016/Sävar_med_omnejd", "/Sävar_med_omnejd/Flygfoton_1968", "/Botsmark_med_omnejd/Botsmarks-gårdar_ca_1950"];
+    let iName = ["IMG_6241", "Vbm_58_flb", "Vbm_68bot"];
+    let iText = iWindow.document.querySelectorAll ("span.imtx");
 
     for (let i=1; i<nIm; i++) { // i=0 is the logo picture
       iImages [i].setAttribute ("src", linktext + $ ("#imdbLink").text () + iAlbum [i - 1] + "/_show_" + iName [i - 1] + ".png");
@@ -136,11 +137,14 @@ console.log("i:idx",idx,i);
       iImages [i].parentElement.setAttribute ("onclick","parent.selectJstreeNode("+idx+");parent.gotoMinipic ('" + iName [i - 1] + "')");
 
       //iImages [i].parentElement.setAttribute ("href", linktext + "find/" + $ ("#imdbRoot").text () + "/" + iName [i - 1]);
-      iImages [i].parentElement.setAttribute ("title", iName [i - 1]);
-      //iImages [i].parentElement.setAttribute ("target", "_blank");
+      iImages [i].parentElement.setAttribute ("title", "Gå till " + iName [i - 1]); // i18n
+      iImages [i].parentElement.style.margin ="0";
+      iText [i - 1].innerHTML = "I: " + removeUnderscore (iAlbum [i - 1].slice (1)).replace (/\//g, ", ");
+        iText [i - 1].style.fontSize = "90%";
+        iText [i - 1].style.verticalAlign = "top";
       iImages [i].style.width = "19em";
       //iImages [i].style.height = "16em";
-      iImages [i].style.margin = "0.5em 0";
+      iImages [i].style.margin = "0.7em 0 0 0";
       iImages [i].style.border = "1px solid gray";
       iImages [i].style.borderRadius = "4px";
     }
@@ -1731,7 +1735,7 @@ console.log("i:idx",idx,i);
         $ (".mainMenu").hide ();
         return;
       } else {
-        window.selectJstreeNode (idx);
+        selectJstreeNode (idx);
       }
     },
     //============================================================================================
@@ -2748,10 +2752,10 @@ console.log("i:idx",idx,i);
       if ($ ("#helpText").is (":visible") || $ ("#navAuto").text () === "true") {
         $ ('#helpText').dialog ("close");
       } else {
+        $ (".mainMenu").hide ();
         let header = "Användarhandledning<br>(främst för dator med mus eller pekplatta och tangentbord)"
         infoDia ("helpText", null, header, $ ("div.helpText").html (), "Stäng", false);
         $ ("#helpText").parent ().css ("top", "0");
-        $ (".mainMenu").hide ();
       }
     },
     //============================================================================================
@@ -3154,8 +3158,11 @@ console.log("i:idx",idx,i);
         text += "Börja om med att logga ut och så vidare.";
         $ ("iframe").hide ();
         $ (".mainMenu").hide ();
-        infoDia ("", "", '<b style="background:transparent">ÄR DU UTLOGGAD?</b>', text , "Jag förstår!", false, false);
+        infoDia ("", "", '<b style="background:transparent">ÄR DU UTLOGGAD?</b>', text, "Jag förstår!", false, false);
         //(dialogId, picName, title, text, yes, modal, flag)";
+        later ( ( () => { // Do not hide the top logon line:
+          $ ("#dialog").parent ().css ("top", "38px");
+        }), 200);
         document.getElementById ("t3").parentElement.style.display = "none";
 
         // Assure that the album tree is properly shown after LOGOUT
@@ -3728,10 +3735,14 @@ async function parentAlbum (tgt) {
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Position to a minipic and highlight its border
-window.gotoMinipic = function (namepic) {
+window.gotoMinipic = function (namepic) { // for child window
   later ( ( () => {
     gotoMinipic (namepic);
-  }), 2000);
+  }), 4000);
+  later ( ( () => {
+    userLog ("KLICKA FÖR STÖRRE BILD!", true, 6000)
+    //infoDia (null, null, "Information", "<br>Klicka på miniatyrbilden så visas den större!Klicka på miniatyrbilden så visas den större!<br>", "Ok", true);
+  }), 10000);
 }
 function gotoMinipic (namepic) {
   let hs = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
@@ -4025,7 +4036,7 @@ function notesDia (picName, filePath, title, text, save, saveClose, close) { // 
         $ ('textarea[name="notes"]').val (text.replace (/<br>/g, "\n"));
         // Link: filePath correct?
         execute ("xmpset source " + filePath + ' "' + text.replace (/"/g, '\\"')+ '"').then ( () => {
-          userLog ("TEXT written");
+          userLog ("TEXT written", false, 2000);
         });
       }
     });
@@ -4108,7 +4119,7 @@ function niceDialogOpen (dialogId) {
   $ (id).parent ().css ("max-width", sw+"px");
   //$ (id).parent ().width ("auto");
   $ (id).width ("auto");
-//  $ (id).parent ().css ("top", "38px"); // added
+  //$ (id).parent ().css ("top", "38px"); // added
 
   let tmp = $ (id).parent ().parent ().outerWidth (); // helpText??
   let pos = $ (id).parent ().position ();
@@ -4262,10 +4273,10 @@ const saveOrderFunc = namelist => { // ===== XMLHttpRequest saving the thumbnail
     xhr.open ('POST', 'saveorder/' + IMDB_DIR); // URL matches server-side routes.js
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {
-        userLog ("SAVE");
+        userLog ("SAVE", false, 3000);
         resolve (true); // Can we forget 'resolve'?
       } else {
-        userLog ("SAVE error");
+        userLog ("SAVE error", false, 5000);
         reject ({
           status: this.status,
           statusText: xhr.statusText
@@ -5158,7 +5169,7 @@ $ ( () => {
           $ ("#i" + ednp + " .img_txt2" ).html ("");
           infoDia (null, null,"Texten sparades inte!", '<br>Bildtexten kan inte uppdateras på grund av<br>något åtkomsthinder &ndash; är filen ändringsskyddad?<br><br>Eventuell tillfälligt förlorad text återfås med ”Återställ osparade ändringar”', "Ok", true);
         } else {
-          userLog ("TEXT written");
+          userLog ("TEXT written", false, 2000);
           //console.log ('Xmp.dc metadata saved in ' + fileName);
         }
       }
@@ -5315,7 +5326,10 @@ function emailOk(email) {
   return re.test(email);
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-window.selectJstreeNode = function (idx) {
+window.selectJstreeNode = function (idx) { // for child window
+  selectJstreeNode (idx);
+}
+function selectJstreeNode (idx) {
   $ (".ember-view.jstree").jstree ("close_all");
   $ (".ember-view.jstree").jstree ("_open_to", "#j1_" + (1 + idx));
   $ (".ember-view.jstree").jstree ("deselect_all");
