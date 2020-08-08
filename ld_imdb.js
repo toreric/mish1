@@ -115,10 +115,19 @@ function removeDiacritics (str) {
 // Transactions is a must-be!
 // NOTE: imdbLink is used hardcoded (perhaps make it argv [3]?)
 if (process.argv [2] == "-e") {
+  loadImageMetadata ()
+} else {
+  console.log ("Usage: " + process.argv [1] + " -e")
+  console.log ("  Reloads image file text metadata into _imdb_images.sqlite")
+  console.log ("  from the album tree after removing diacritic symbols")
+  console.log ("  Note: This program must run in the www-album-roots root")
+  console.log ("  Needs: nodejs")
+}
+function loadImageMetadata () {
   let sqlite = require('sqlite3').verbose ()
   let TransactionDatabase = require("sqlite3-transactions").TransactionDatabase
   let execSync = require ('child_process').execSync
-  let cmd = 'find imdb/ -type f -not -name "_*" -not -name ".*" | egrep -i "(JPE?G|TIF{1,2}|PNG|GIF)$"'
+  let cmd = 'find imdb/ -type f -name ".imdb" | sed "s/.imdb//" |xargs -Ipath find path -maxdepth 1 -type f -not -name "_*" -not -name ".*" | egrep -i "(JPE?G|TIF{1,2}|PNG|GIF)$"'
   let pathlist = execSync (cmd)
   //console.log ("  pathlist:\n" + pathlist)
   execSync ('rm -f imdb/_imdb_images.sqlite')
@@ -196,10 +205,4 @@ if (process.argv [2] == "-e") {
 //  } catch (err) {
 //    console.error ("10",err.message)
 //  }
-} else {
-  console.log ("Usage: " + process.argv [1] + " -e")
-  console.log ("  Reloads image file text metadata into _imdb_images.sqlite")
-  console.log ("  from the imdb album tree after removing diacritic symbols")
-  console.log ("  Note: This program must run in the www-album-roots root")
-  console.log ("  Needs: nodejs")
 }

@@ -571,7 +571,7 @@ module.exports = function (app) {
     let from = req.body.from
     let email = req.body.email
     let message = req.body.message
-    let cmd = username + "/" + picturename + " " + from + "\r\n" + email + "\r\n" + message
+    let cmd = "Mejl från:\r\n" + username + "/" + picturename + " " + from + "\r\n" + email + "\r\n" + message
     cmd = "message=" + "\"" + cmd.replace (/"/g, '\\"') + "\""
     cmd = cmd + "&& echo $message |mail -s \"" + title + "\" -r " + mailsender + " " + mailtoadmin
     await execP (cmd)

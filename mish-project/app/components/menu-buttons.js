@@ -131,9 +131,6 @@ export default Component.extend (contextMenuMixin, {
 
       let tmp = $ ("#imdbDirs").text ().split ("\n");
       let idx = tmp.indexOf (iAlbum [i - 1]);
-console.log("imdbDirs",tmp);
-console.log("iAlbum",iAlbum [i - 1]);
-console.log("i:idx",idx,i);
       iImages [i].parentElement.setAttribute ("onclick","parent.selectJstreeNode("+idx+");parent.gotoMinipic ('" + iName [i - 1] + "')");
 
       //iImages [i].parentElement.setAttribute ("href", linktext + "find/" + $ ("#imdbRoot").text () + "/" + iName [i - 1]);
@@ -1129,7 +1126,7 @@ console.log("i:idx",idx,i);
             }
 
             later ( ( () => {
-              if ($ ("strong.albumName") [0].innerHTML.replace (/&nbsp;/g, " ") === $ ("#picFound").text ().replace (/\.[^.]{4}$/, "").replace (/_/g, " ")) {
+              if ($ ("strong.albumName") [0].innerHTML.replace (/&nbsp;/g, " ").trim () === $ ("#picFound").text ().replace (/\.[^.]{4}$/, "").replace (/_/g, " ")) {
                 // The search result album
                 $ ("div.BUT_2").html ($.parseHTML ('<span style="color:#0b0";font-weight:bold>Gå till bildens eget album med högerklick i grön ring!</span>'));
               } else {
