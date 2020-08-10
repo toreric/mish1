@@ -12,7 +12,7 @@ function copyToClipboard (str) {
     document.getSelection().rangeCount > 0        // Check if there is any content selected previously
       ? document.getSelection().getRangeAt(0)     // Store selection if found
       : false;                                    // Mark as false to know no selection existed before
-  // Found symlinks have a random name extension and has no use copied ...
+  // A found symlink (presented in picFound) has a 'useless' random name extension ...
   if ($ ("#imdbDir").text ().replace (/^[^/]*\//, "") === $ ("#picFound").text ()) {
     el.value = el.value.replace (/\.[^.]{4}$/, ""); // ... thus remove the extension!
   }
@@ -86,6 +86,8 @@ function copyToClipboard (str) {
 <!-- ///// JQUERY DIALOGS ///// -->
 <div id="dialog" style="display:none">DIALOG</div>
 <div id="helpText" style="display:none">HELP</div>
+<!--div id="textareas" style="display:none">TEXTEDIT</div-->
+<div id="textareas" style="margin:0;padding:0"><div class="diaMess"><span class="edWarn"></span></div><textarea name="description" rows="6" /><br><textarea name="creator" rows="1" /></div>
 <!-- ///// PARAMETER STORE ///// -->
 <div id="allowValue" title="permissions" style="display:none"></div>
 <div id="backImg" style="display:none"></div>

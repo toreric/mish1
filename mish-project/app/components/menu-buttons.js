@@ -892,6 +892,11 @@ export default Component.extend (contextMenuMixin, {
         zeroSet ();
         this.actions.setAllow ();
         this.actions.setAllow (true);
+        later ( ( () => {
+          prepDialog ();
+          prepTextEditDialog ();
+          prepSearchDialog ();
+        }), 10);
         later ( ( () => { // To top of screen:
           scrollTo (0, 0);
           $ ("#title a.proid").focus ();
@@ -951,11 +956,6 @@ export default Component.extend (contextMenuMixin, {
     } else {
       $ ("button.findText").hide ()
     }
-    later ( ( () => {
-      prepDialog ();
-      prepTextEditDialog ();
-      prepSearchDialog ();
-    }), 10);
     execute ("head -n1 LICENSE.txt").then (a => {
       $ (".copyright").text (a);
     /*}).then ( () => {
@@ -2910,7 +2910,7 @@ export default Component.extend (contextMenuMixin, {
 
         $ ('textarea[name="description"]').attr ("placeholder", "Skriv bildtext: När var vad vilka (för Xmp.dc.description)");
         $ ('textarea[name="creator"]').attr ("placeholder", "Skriv ursprung: Foto upphov källa (för Xmp.dc.creator)");
-      }), 10);
+      }), 50);
 
       refreshEditor (namepic, origpic); // ...and perhaps warnings
 
@@ -4746,10 +4746,11 @@ let prepSearchDialog = () => {
     <span class="glue"><input id="t3" type="checkbox" name="search3" value="source"/><label for="t3">&nbsp;anteckningar</label>&nbsp;</span> \
     <span class="glue"><input id="t4" type="checkbox" name="search4" value="album"/><label for="t4">&nbsp;album</label>&nbsp;</span> \
     <span class="glue"><input id="t5" type="checkbox" name="search5" value="name" checked/><label for="t5">&nbsp;namn</label></span></div> \
-    <div class="orAnd">Om blank ska sökas: skriv % (åtskiljer ej) &nbsp; &nbsp; <b style="font-size:75%"><a href="findhelp.html" target="find_help" style="font-family: Arial, Helvetica, sans-serif">SÖKHJÄLP</a></b><br>Välj regel för åtskilda ord/textbitar/sökbegrepp:<br><span class="glue"><input id="r1" type="radio" name="searchmode" value="AND" checked/><label for="r1">&nbsp;alla&nbsp;ska&nbsp;hittas&nbsp;i&nbsp;en&nbsp;bild</label></span>&nbsp; <span class="glue"><input id="r2" type="radio" name="searchmode" value="OR"/><label for="r2">&nbsp;minst&nbsp;ett&nbsp;av&nbsp;dem&nbsp;ska&nbsp;hittas&nbsp;i&nbsp;en&nbsp;bild</label></span></div> <span class="srchMsg"></span></div><textarea name="searchtext" placeholder="(minst tre tecken utöver omgivande blanka)" rows="4" style="min-width:'+tw+'px" /></div>').dialog ( {
+    <div class="orAnd">Om blank ska sökas: skriv % (åtskiljer ej) &nbsp; &nbsp; <b style="font-size:75%"><a href="findhelp.html" target="find_help" style="font-family: Arial, Helvetica, sans-serif">SÖKHJÄLP</a></b><br>Välj regel för åtskilda ord/textbitar/sökbegrepp:<br><span class="glue"><input id="r1" type="radio" name="searchmode" value="AND" checked/><label for="r1">&nbsp;alla&nbsp;ska&nbsp;hittas&nbsp;i&nbsp;en&nbsp;bild</label></span>&nbsp; <span class="glue"><input id="r2" type="radio" name="searchmode" value="OR"/><label for="r2">&nbsp;minst&nbsp;ett&nbsp;av&nbsp;dem&nbsp;ska&nbsp;hittas&nbsp;i&nbsp;en&nbsp;bild</label></span></div> <span class="srchMsg"></span></div><textarea name="searchtext" placeholder="(minst tre tecken utöver omgivande blanka)" rows="4" style="min-width:'+tw+'px"></textarea></div>').dialog ( {
       title: "Finn bilder: Sök i bildtexter",
-
       //closeText: "×", // Replaced (why needed?) below by // Close => ×
+      // ANSWER: This way to initiate a dialog brings some anomalies -
+      //         the 'textareas' dialog shows a much better way!
       autoOpen: false,
       closeOnEscape: true,
       modal: false
@@ -5026,18 +5027,32 @@ function searchText (searchString, and, searchWhere, exact) {
 // https://stackoverflow.com/questions/30605298/jquery-dialog-with-input-textbox etc.
 // Prepare the dialog for the image texts editor
 var prepTextEditDialog = () => {
-$ ( () => {
+//$ ( () => {
   var sw = ediTextSelWidth (); // Selected dialog width
   var tw = sw - 25; // Text width
-  $ ('<div id="textareas" style="margin:0;padding:0;width:'+sw+'px"><div class="diaMess"><span class="edWarn"></span></div><textarea name="description" rows="6" style="min-width:'+tw+'px" /><br><textarea name="creator" rows="1" style="min-width:'+tw+'px" /></div>').dialog ( {
+  /*$ ('<div id="textareas" style="margin:0;padding:0;width:'+sw+'px"><div class="diaMess"><span class="edWarn"></span></div><textarea name="description" rows="6" style="min-width:'+tw+'px" /><br><textarea name="creator" rows="1" style="min-width:'+tw+'px" /></div>').dialog ( {
     title: "Bildtexter",
     //closeText: "×", // Replaced (why needed?) below by // Close => ×
     autoOpen: false,
     draggable: true,
     closeOnEscape: false, // NOTE: handled otherwise
     modal: false
-  });
+  });*/
 
+  $ ("#textareas").dialog ({
+    title: "Bildtexter",
+    closeText: "×", // Set title below
+    autoOpen: false,
+    draggable: true,
+    closeOnEscape: false, // NOTE: handled otherwise
+    modal: false
+  });
+  $ ("#textareas").css ("width", sw + "px");
+  $ ('textarea[name="description"]').css ("min-width", tw + "px");
+  $ ('textarea[name="creator"]').css ("min-width", tw + "px");
+
+//((()))
+//later ( ( () => {
   $ ("#textareas").dialog ('option', 'buttons', [
     {
       text: "Anteckningar",
@@ -5105,15 +5120,18 @@ $ ( () => {
       }
     }
   ]);
-
-  var txt = $ ("div.ui-dialog-titlebar button.ui-dialog-titlebar-close").html (); // Close => ×
-  txt.replace (/Close/, "×");                              // Close => ×
-  $ ("div.ui-dialog-titlebar button.ui-dialog-titlebar-close").html (txt);        // Close => ×
+  // Set close title:
+  $ ("div.ui-dialog-titlebar button.ui-dialog-titlebar-close").attr ("title", "Stäng"); // i18n
+//  var txt = $ ("div.ui-dialog-titlebar button.ui-dialog-titlebar-close").html (); // Close => ×
+//  txt.replace (/Close/, "×");                              // Close => ×
+//  $ ("div.ui-dialog-titlebar button.ui-dialog-titlebar-close").html (txt);        // Close => ×
+  // Set close action ...
   // NOTE this clumpsy direct reference to jquery (how directly trigger ediTextClosed?):
   $ ("div.ui-dialog-titlebar button.ui-dialog-titlebar-close").attr ("onclick",'$("div[aria-describedby=\'textareas\'] span.ui-dialog-title span").html("");$("div[aria-describedby=\'textareas\']").hide();$("#navKeys").text("true");$("#smallButtons").show();');
 
   $ ("button.block").wrapAll ('<div id="glued" style="display:inline-block;white-space:nowrap;"></div>');
-
+//}), 800);
+//((()))
   function storeText (namepic, text1, text2) {
     text1 = text1.replace (/ +/g, " ").replace (/\n /g, "<br>").replace (/\n/g, "<br>").trim ();
     text2 = text2.replace (/ +/g, " ").replace (/\n /g, "<br>").replace (/\n/g, "<br>").trim ();
@@ -5173,7 +5191,7 @@ $ ( () => {
       xhr.send (txt);
     }
   }
-});
+//});
 } // end prepTextEditDialog
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Refresh the editor dialog content
@@ -5213,7 +5231,7 @@ function refreshEditor (namepic, origpic) {
   later ( ( () => {
     $ ('textarea[name="creator"]').val ($ ('#i' + escapeDots (namepic) + ' .img_txt2').html ().trim ().replace (/<br>/g, "\n"));
     $ ('textarea[name="description"]').val ($ ('#i' + escapeDots (namepic) + ' .img_txt1').html ().trim ().replace (/<br>/g, "\n"));
-  }), 40);
+  }), 80);
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Allowance settings

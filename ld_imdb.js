@@ -127,7 +127,12 @@ function loadImageMetadata () {
   let sqlite = require('sqlite3').verbose ()
   let TransactionDatabase = require("sqlite3-transactions").TransactionDatabase
   let execSync = require ('child_process').execSync
-  let cmd = 'find imdb/ -type f -name ".imdb" | sed "s/.imdb//" |xargs -Ipath find path -maxdepth 1 -type f -not -name "_*" -not -name ".*" | egrep -i "(JPE?G|TIF{1,2}|PNG|GIF)$"'
+  //    This script (cmd) is subdivided (by |) into 4 tasks:
+  // 1. Finds all '.imdb' file paths (with album directories)
+  // 2. Removes all file names ('.imdb') from that path list, leaving the directories
+  // 3. Uses the list entries as arguments to find all non-"_*|.*" files in each directory (using depth=1)
+  // 4. Accepts only files having supported image file endings
+  let cmd = 'find imdb/ -type f -name ".imdb" | sed "s/.imdb$//" | xargs -Ipath find path -maxdepth 1 -type f -not -name "_*" -not -name ".*" | egrep -i "(JPE?G|TIF{1,2}|PNG|GIF)$"'
   let pathlist = execSync (cmd)
   //console.log ("  pathlist:\n" + pathlist)
   execSync ('rm -f imdb/_imdb_images.sqlite')
@@ -135,11 +140,6 @@ function loadImageMetadata () {
   let dbtr = new TransactionDatabase (
     new sqlite.Database ("imdb/_imdb_images.sqlite", sqlite.OPEN_READWRITE | sqlite.OPEN_CREATE)
   )
-    /*let db = new sqlite.Database ('imdb/_imdb_images.sqlite', function (err) {
-      if (err) {
-        console.error("00",err.message)
-      }
-    })*/
   dbtr.beginTransaction (function (err,db) {
     db.serialize ( () => {
       db.run ('CREATE TABLE imginfo (id INTEGER PRIMARY KEY, filepath TEXT UNIQUE, name TEXT, album TEXT, description TEXT, creator TEXT, source TEXT, subject TEXT, tcreated TEXT, tchanged TEXT)', function (err) {
@@ -200,9 +200,4 @@ function loadImageMetadata () {
     })
     dbtr.close ()
   })
-
-    //console.log ("09",'_imdb_images.sqlite loaded')
-//  } catch (err) {
-//    console.error ("10",err.message)
-//  }
 }
