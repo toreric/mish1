@@ -8,7 +8,6 @@ module.exports = function (app) {
   var upload = multer ( {dest: '/tmp'}) // tmp upload
   var exec = require ('child_process').exec
   var execSync = require ('child_process').execSync
-//  var Utimes = require('@ronomon/utimes')
   //var bodyParser = require ('body-parser')
   //app.use (bodyParser.urlencoded ( {extended: false}))
   //app.use (bodyParser.json())
@@ -720,9 +719,6 @@ module.exports = function (app) {
           //console.log (fileName + " '" + body + "'")
           if (fs.open)
           execSync ('set_xmp_creator ' + fileName + " '" + body + "'") // for txt2
-//          var u = undefined // Restore ONLY mtime:
-//          Utimes.utimes (fileName, u, Number (mtime), u, function (error) {if (error) {throw error}})
-console.log("mtime",mtime);
           execSync ('touch -d "' + mtime + '" "' + fileName + '"')
           res.send ('')
           await new Promise (z => setTimeout (z, 888))

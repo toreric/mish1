@@ -123,27 +123,34 @@ export default Component.extend (contextMenuMixin, {
     }
 
     let iAlbum = ["/Flygfoton_2016/Sävar_med_omnejd", "/Sävar_med_omnejd/Flygfoton_1968", "/Botsmark_med_omnejd/Botsmarks-gårdar_ca_1950"];
-    let iName = ["IMG_6241", "Vbm_58_flb", "Vbm_68bot"];
+    //let iName = ["IMG_6241", "Vbm_58_flb", "Vbm_68bot"];
+    let iName = ["", "", ""];
     let iText = iWindow.document.querySelectorAll ("span.imtx");
 
     for (let i=1; i<nIm; i++) { // i=0 is the logo picture
-      iImages [i].setAttribute ("src", linktext + $ ("#imdbLink").text () + iAlbum [i - 1] + "/_show_" + iName [i - 1] + ".png");
+      if (iName [i - 1]) {
+        var imgSrc = linktext + $ ("#imdbLink").text () + iAlbum [i - 1] + "/_show_" + iName [i - 1] + ".png";
+        let tmp = $ ("#imdbDirs").text ().split ("\n");
+        let idx = tmp.indexOf (iAlbum [i - 1]);
+        iImages [i].parentElement.setAttribute ("onclick","parent.selectJstreeNode("+idx+");parent.gotoMinipic ('" + iName [i - 1] + "')");
 
-      let tmp = $ ("#imdbDirs").text ().split ("\n");
-      let idx = tmp.indexOf (iAlbum [i - 1]);
-      iImages [i].parentElement.setAttribute ("onclick","parent.selectJstreeNode("+idx+");parent.gotoMinipic ('" + iName [i - 1] + "')");
-
-      //iImages [i].parentElement.setAttribute ("href", linktext + "find/" + $ ("#imdbRoot").text () + "/" + iName [i - 1]);
-      iImages [i].parentElement.setAttribute ("title", "Gå till " + iName [i - 1]); // i18n
-      iImages [i].parentElement.style.margin ="0";
-      iText [i - 1].innerHTML = "I: " + removeUnderscore (iAlbum [i - 1].slice (1)).replace (/\//g, ", ");
+        //iImages [i].parentElement.setAttribute ("href", linktext + "find/" + $ ("#imdbRoot").text () + "/" + iName [i - 1]);
+        iImages [i].parentElement.setAttribute ("title", "Gå till " + iName [i - 1]); // i18n
+        iImages [i].parentElement.style.margin ="0";
+        iText [i - 1].innerHTML = "I: " + removeUnderscore (iAlbum [i - 1].slice (1)).replace (/\//g, ", ");
         iText [i - 1].style.fontSize = "90%";
         iText [i - 1].style.verticalAlign = "top";
-      iImages [i].style.width = "19em";
-      //iImages [i].style.height = "16em";
-      iImages [i].style.margin = "0.7em 0 0 0";
-      iImages [i].style.border = "1px solid gray";
-      iImages [i].style.borderRadius = "4px";
+        iImages [i].style.width = "19em";
+        //iImages [i].style.height = "16em";
+        iImages [i].style.margin = "0.7em 0 0 0";
+        iImages [i].style.border = "1px solid gray";
+        iImages [i].style.borderRadius = "4px";
+      } else {
+        imgSrc = "favicon.ico";
+        iImages [i].style.width = "0";
+        iImages [i].style.border = "0";
+      }
+      iImages [i].setAttribute ("src", imgSrc);
     }
     //&&&&&
 
@@ -1156,6 +1163,8 @@ export default Component.extend (contextMenuMixin, {
             userLog ("RELOAD");
           } else {
             later ( ( () => {
+              let ntext = $ ("div.BUT_2").text ().replace (/(^[^,]*),.*$/, "$1");
+              $ ("div.BUT_2").text (ntext);
               //if ($ ("strong.albumName") [0].innerHTML.replace (/&nbsp;/g, " ") === $ ("#picFound").text ().replace (/_/g, " ")) {
               if ($ ("strong.albumName") [0].innerHTML.replace (/&nbsp;/g, " ") === $ ("#picFound").text ().replace (/\.[^.]{4}$/, "").replace (/_/g, " ")) {
                 $ ("div.BUT_2").text (""); // The search result album
@@ -1819,6 +1828,10 @@ export default Component.extend (contextMenuMixin, {
       if (imdbDir !== imdbRoot) {
         code += '\n<option value="erase">&nbsp;Radera albumet&nbsp;</option>';
       }
+      if ($ (".img_mini").length > 1) {
+        code += '\n<option value="order">&nbsp;Sortera bilderna efter namn&nbsp;</option>';
+        code += '\n<option value="reverse">&nbsp;Sortera dito men baklänges&nbsp;</option>';
+      }
       code += '\n</select>';
       infoDia (null, null, album, code, 'Avbryt', true);
       later ( ( () => {
@@ -1846,6 +1859,18 @@ export default Component.extend (contextMenuMixin, {
         if (opt === "erase") {
           header = "Radera " + nameText; // i18n
           optionText = "<b>Vänligen bekräfta:</b><br>Albumet <b>" + nameText + "<br>ska alltså raderas?</b><br>(<i>kan inte ångras</i>)"; // i18n
+          okay = "Ja";
+          cancel = "Nej";
+        }
+        if (opt === "order") {
+          header = "Sortera i bildnamnordning"; // i18n
+          optionText = "<b>Vänligen bekräfta:</b><br>Bilderna i <b>" + nameText + "<br>ska alltså sorteras i namnordning?</b><br>(<i>kan inte ångras</i>)"; // i18n
+          okay = "Ja";
+          cancel = "Nej";
+        }
+        if (opt === "reverse") {
+          header = "Sortera i omvänd bildnamnordning"; // i18n
+          optionText = "<b>Vänligen bekräfta:</b><br>Bilderna i <b>" + nameText + "<br>ska alltså sorteras i omvänd namnordning?</b><br>(<i>kan inte ångras</i>)"; // i18n
           okay = "Ja";
           cancel = "Nej";
         }
@@ -1945,6 +1970,18 @@ export default Component.extend (contextMenuMixin, {
                   });
                 }
               });
+            } else if (opt === "order" || opt === "reverse") {
+              let sortop = "sort -f "; // -f is ignore case
+              if (opt === "reverse") sortop = "sort -rf "
+              $ ("#saveOrder").click ();
+              later ( ( () => {
+                cmd = sortop + $ ("#imdbDir").text () + "/_imdb_order.txt > /tmp/tmp && cp /tmp/tmp " + $ ("#imdbDir").text () + "/_imdb_order.txt";
+                execute (cmd).then ( () => {
+                  later ( ( () => {
+                    $ ("#reLd").click ();
+                  }), 500);
+                });
+              }), 2000);
             }
             $ (this).dialog ("close");
           }
@@ -1967,6 +2004,8 @@ export default Component.extend (contextMenuMixin, {
 
             } else if (opt === "erase") {
               console.log ("Untouched: " + nameText);
+            } else if (opt === "order" || opt === "reverse") {
+              // do nothing
             }
             $ (this).dialog ("close");
           }
@@ -2621,7 +2660,7 @@ export default Component.extend (contextMenuMixin, {
         chkPaths = [];
 
 //&&&&&imgimgimgimg det här avsnittet bör komma någon annanstans, i t.ex. selectRoot
-//&&&&&imgimgimgimg
+//&&&&&imgimgimgimg              Det blev requestDirs
 
         /* // Present some preview images in the introduction iframe
         let iWindow = document.getElementsByTagName("iframe") [0].contentWindow;
@@ -4748,7 +4787,7 @@ let prepSearchDialog = () => {
     <span class="glue"><input id="t5" type="checkbox" name="search5" value="name" checked/><label for="t5">&nbsp;namn</label></span></div> \
     <div class="orAnd">Om blank ska sökas: skriv % (åtskiljer ej) &nbsp; &nbsp; <b style="font-size:75%"><a href="findhelp.html" target="find_help" style="font-family: Arial, Helvetica, sans-serif">SÖKHJÄLP</a></b><br>Välj regel för åtskilda ord/textbitar/sökbegrepp:<br><span class="glue"><input id="r1" type="radio" name="searchmode" value="AND" checked/><label for="r1">&nbsp;alla&nbsp;ska&nbsp;hittas&nbsp;i&nbsp;en&nbsp;bild</label></span>&nbsp; <span class="glue"><input id="r2" type="radio" name="searchmode" value="OR"/><label for="r2">&nbsp;minst&nbsp;ett&nbsp;av&nbsp;dem&nbsp;ska&nbsp;hittas&nbsp;i&nbsp;en&nbsp;bild</label></span></div> <span class="srchMsg"></span></div><textarea name="searchtext" placeholder="(minst tre tecken utöver omgivande blanka)" rows="4" style="min-width:'+tw+'px"></textarea></div>').dialog ( {
       title: "Finn bilder: Sök i bildtexter",
-      //closeText: "×", // Replaced (why needed?) below by // Close => ×
+      //closeText: "×", // Replaced (why needed?) below, see lines // Close => ×
       // ANSWER: This way to initiate a dialog brings some anomalies -
       //         the 'textareas' dialog shows a much better way!
       autoOpen: false,
