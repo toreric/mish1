@@ -577,7 +577,7 @@ div.settings a:hover {
 .spinner {
   display: none;
   position: fixed;
-  left: 0.1em;
+  left: 0.45em;
   top: 0.7em;
   height: 3em;
   width: 3em;
