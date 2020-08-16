@@ -18,9 +18,6 @@ function copyToClipboard (str) {
   }
   el.select();                                    // Select the <textarea> content
   document.execCommand('copy');                   // Copy - only works as a result of a user action (e.g. click events)
-  /*console.log ("   This album:", $ ("#imdbDir").text ());
-  console.log ("'Found' album:", $ ("#picFound").text ());
-  console.log ("  Copied name:", el.value);*/
   document.body.removeChild(el);                  // Remove the <textarea> element
   if (selected) {                                 // If a selection existed before copying
     document.getSelection().removeAllRanges();    // Unselect everything on the HTML document
@@ -85,9 +82,58 @@ function copyToClipboard (str) {
 
 <!-- ///// JQUERY DIALOGS ///// -->
 <div id="dialog" style="display:none">DIALOG</div>
+
 <div id="helpText" style="display:none">HELP</div>
-<!--div id="textareas" style="display:none">TEXTEDIT</div-->
-<div id="textareas" style="margin:0;padding:0"><div class="diaMess"><span class="edWarn"></span></div><textarea name="description" rows="6" /><br><textarea name="creator" rows="1" /></div>
+
+<div id="textareas" style="margin:0;padding:0">
+  <div class="diaMess"><span class="edWarn"></span></div>
+  <textarea name="description" rows="6" /><br>
+  <textarea name="creator" rows="1" />
+</div>
+
+<div id="searcharea" style="margin:0;padding:0;width:">
+  <div class="diaMess">
+    <div class="edWarn" style="font-weight:normal;text-align:right" ></div>
+    <div class="srchIn"> Sök i:&nbsp;
+      <span class="glue">
+        <input id="t1" type="checkbox" name="search1" value="description" checked />
+        <label for="t1">&nbsp;bildtext (övre texten)</label>&nbsp;
+      </span>
+      <span class="glue">
+        <input id="t2" type="checkbox" name="search2" value="creator" checked />
+        <label for="t2">&nbsp;ursprung (nedre texten)</label>&nbsp;
+      </span>
+      <span class="glue">
+        <input id="t3" type="checkbox" name="search3" value="source" />
+        <label for="t3">&nbsp;anteckningar</label>&nbsp;
+      </span>
+      <span class="glue">
+        <input id="t4" type="checkbox" name="search4" value="album" />
+        <label for="t4">&nbsp;album</label>&nbsp;
+      </span>
+      <span class="glue">
+        <input id="t5" type="checkbox" name="search5" value="name" checked />
+        <label for="t5">&nbsp;namn</label>
+      </span>
+    </div>
+    <div class="orAnd">Om blank ska sökas: skriv % (åtskiljer ej) &nbsp; &nbsp;
+      <b style="font-size:75%">
+        <a href="findhelp.html" target="find_help" style="font-family: Arial, Helvetica, sans-serif">SÖKHJÄLP</a>
+      </b><br>Välj regel för åtskilda ord/textbitar/sökbegrepp:<br>
+      <span class="glue">
+        <input id="r1" type="radio" name="searchmode" value="AND" checked />
+        <label for="r1">&nbsp;alla&nbsp;ska&nbsp;hittas&nbsp;i&nbsp;en&nbsp;bild</label>
+      </span>&nbsp;
+      <span class="glue">
+        <input id="r2" type="radio" name="searchmode" value="OR" />
+        <label for="r2">&nbsp;minst&nbsp;ett&nbsp;av&nbsp;dem&nbsp;ska&nbsp;hittas&nbsp;i&nbsp;en&nbsp;bild</label>
+      </span>
+    </div>
+    <span class="srchMsg"></span>
+  </div>
+  <textarea name="searchtext" placeholder="(minst tre tecken utöver omgivande blanka)" rows="4" style="min-width:" />
+</div>
+
 <!-- ///// PARAMETER STORE ///// -->
 <div id="allowValue" title="permissions" style="display:none"></div>
 <div id="backImg" style="display:none"></div>
@@ -99,6 +145,7 @@ function copyToClipboard (str) {
 <div id="imdbCoco" title="albums content counts" style="display:none"></div>
 <div id="imdbDir" title="path to album" style="display:none"></div>
 <div id="imdbDirs" title="paths to albums" style="display:none"></div>
+<div id="imdbIntro" title="introduction info" style="display:none"></div>
 <div id="imdbLabels" title="paths to album labels" style="display:none"></div>
 <div id="imdbLink" title="link to find albums" style="display:none"></div>
 <div id="imdbRoot" title="find albums here" style="display:none"></div>
@@ -149,9 +196,6 @@ eller bildtextrad">&nbsp;per<br>&nbsp;text-&nbsp;<br>&nbsp;rad</a>
   <!-- FULL SIZE -->
   <a class="nav_" id="full_size" draggable="false" {{action 'fullSize'}} title="Full storlek
 i nytt fönster">↕↔↕</a> &nbsp; <br>
-<a class="nav_ mail" id="do_mail" title="Fråga oss om något eller skicka
-ett meddelande med kommentarer,
-rättelser eller andra upplysningar" {{action 'doMail'}}>&#9993;</a> &nbsp; <br>
 <a class="nav_ pnav_" id="do_print" title="Skriv ut" {{action 'doPrint'}}>&#9997;</a> &nbsp;
 </div>
 
@@ -174,8 +218,6 @@ rättelser eller andra upplysningar" {{action 'doMail'}}>&#9993;</a> &nbsp; <br>
               <a style="top: 0%; left: 50%; width: 50%; height: 100%; border-left:0;" draggable="false" ondragstart="return false" {{action 'showNext' true}}><p>nästa<br><span style="font:normal 1em Arial!important">[&gt;]</span></p><br>&nbsp;<br>&nbsp;</a>
 
               <a style="top:50%; right:-3em; width:1%; border:0;" draggable="false" ondragstart="return false" {{action 'hideShow'}}><p>stäng<br><span style="font:normal 1em Arial!important">[esc]</span></p></a>
-
-              <!-- a id="full_size" style="top:40%; left:40%; width:20%; height:20%; border-radius:12px; background-color:rgba(255,255,255,0.555);" draggable="false" ondragstart="return false" {{action 'fullSize'}}>full storlek</a -->
 
               <div id="markShow" class="markFalseShow" alt="MARKSHOW" title="Markera" {{action 'toggleMark'}} draggable="false" ondragstart="return false"><img src="/images/markericon.svg" draggable="false" ondragstart="return false" class="mark"></div>
 
@@ -201,26 +243,33 @@ rättelser eller andra upplysningar" {{action 'doMail'}}>&#9993;</a> &nbsp; <br>
   <div class="mainMenu BACKG" onclick="return false" draggable="false" ondragstart="return false" style="display:none">
 
     <p onclick="return false" draggable="false" ondragstart="return false">
-      <a title="Sökning" class="search" {{action 'findText'}}>Finn bilder <span style="font:normal 1em monospace!important">[F]</span>:</a> Sök i
-      <span class="root">
+      <a title="Sökning" class="search" {{action 'findText'}}>Finn bilder <span style="font:normal 1em monospace!important">[F]</span></a>
+      <span> &nbsp; [F11]=fullskärm</span>
+      <button class="ui-button mainMenuClose ui-dialog-titlebar-close" title="Close" {{action 'toggleMainMenu' imdbRoot}}>×</button>
+    </p><br>
+
+    <p onclick="return false" draggable="false" ondragstart="return false">
+      <a class="">
         <select id="rootSel" title="Albumkatalog (albumrot)" onchange={{action 'selectRoot' value='target.value'}}>
           {{#each imdbRoots as |rootChoice|}}
             <option onclick="this.parentElement.blur()" value={{rootChoice}} selected={{eq imdbRoot rootChoice}}>{{rootChoice}}</option>
           {{/each}}
         </select>
-      </span>
-      <button class="ui-button mainMenuClose ui-dialog-titlebar-close" title="Close" {{action 'toggleMainMenu' imdbRoot}}>×</button>
+      </a>
     </p><br>
+
     <p onclick="return false" draggable="false" ondragstart="return false" title="Favoritskötsel  ">
       <a id ="favorites" {{action 'seeFavorites'}}>Favoritbilder</a>
-      <p style="float:right">[F11]=fullskärm</p>
     </p><br>
-    <p onclick="return false" draggable="false" ondragstart="return false" title="Ta bort eller gör nytt album ...">
-      <a {{action 'albumEdit'}}>{{{albumText}}}</a>{{{albumName}}}
+
+    <p onclick="return false" draggable="false" ondragstart="return false" title="Ta bort, gör nytt, bildsortera ...">
+      <a {{action 'albumEdit'}}>{{{albumText}}}</a> &nbsp; Valt album: {{{albumName}}}
     </p><br>
+
     <p onclick="return false" draggable="false" ondragstart="return false" title="Visa alla album = hela albumträdet">
       <a id ="jstreeHdr" {{action 'toggleJstreeAlbumSelect'}}>{{jstreeHdr}}</a>
     </p>
+
     <div class="jstreeAlbumSelect" style="display:none">
       {{ember-jstree
         data=albumData
@@ -229,7 +278,7 @@ rättelser eller andra upplysningar" {{action 'doMail'}}>&#9993;</a> &nbsp; <br>
     </div>
   </div>
 
-  <!-- Start "home" page -->
+  <!-- Start "home" page: the Information page-->
   <iframe src="start.html" name=""></iframe>
 
   <a id="questionMark" class="smBu" title="Användarhandledning" draggable="false" ondragstart="return false" {{action 'toggleHelp'}}>?</a>
@@ -240,6 +289,9 @@ rättelser eller andra upplysningar" {{action 'doMail'}}>&#9993;</a> &nbsp; <br>
 gömda bilder" draggable="false" ondragstart="return false" style="display:none" {{action 'toggleHideFlagged'}}></a>
   <a class="smBu" title="Ladda upp...NOT USED" draggable="false" ondragstart="return false" {{action 'showDropbox'}} style="display:none">U</a>
   <a id="saveOrder" class="smBu" title="Spara ändringar" draggable="false" ondragstart="return false" {{action 'saveOrder'}}>S</a>
+  <a class="smBu" id="do_mail" title="Fråga oss om något eller skicka
+ett meddelande med kommentarer,
+rättelser eller andra upplysningar" {{action 'doMail'}}>&#9993;</a>
   <a class="smBu" draggable="false" ondragstart="return false" title="Gå upp (visa
 översta raden)" style="font:bold 190% sans-serif" {{action 'goTop'}}>&uarr;</a>
 </div>

@@ -308,7 +308,7 @@ button.updText {
   color: #df1837 !important; /* deeppink replaced */
 }
 textarea.favorites {
-  background: #ffc;
+  background: #f0f0e0;
   width: 20em;
 }
 .ui-widget textarea {
@@ -1216,15 +1216,8 @@ div.settings {
   border-radius: 2px;
   z-index: 10;
 }
-span.root * {
+select {
   cursor: pointer;
-  background: #888; /* for Chrome */
-  border: solid 1.0px #888;
-  border-radius: 2px;
-  color: inherit;
-  font-weight: bold;
-}
-select option {
 }
 #wrap_show {
   display: inline-table;

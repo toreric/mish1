@@ -103,11 +103,6 @@ a.border0 {
   width: 7em;
     margin: 0 0.5em 0.5em 0.5em;
 }
-.wrap1 img {
-  width: 7em;
-  border: 1.2px solid white;
-  border-radius: 4px;
-}
 .wrap1 .lef img {
   display: inline-block;
 }

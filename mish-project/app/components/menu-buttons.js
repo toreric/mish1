@@ -111,47 +111,9 @@ export default Component.extend (contextMenuMixin, {
       }
     }
 
-    //&&&&&
-    let iWindow = document.getElementsByTagName("iframe") [0].contentWindow;
-    let iImages = iWindow.document.getElementsByTagName ("img");
-    let nIm = iImages.length;
-    let linktext = window.location.hostname
-    if (linktext === "localhost") {
-      linktext = "http://localhost:3000" + "/";
-    } else {
-      linktext = "https://" + linktext + "/";
-    }
-
-    let iAlbum = ["/Flygfoton_2016/Sävar_med_omnejd", "/Sävar_med_omnejd/Flygfoton_1968", "/Botsmark_med_omnejd/Botsmarks-gårdar_ca_1950"];
-    //let iName = ["IMG_6241", "Vbm_58_flb", "Vbm_68bot"];
-    let iName = ["", "", ""];
-    let iText = iWindow.document.querySelectorAll ("span.imtx");
-
-    for (let i=1; i<nIm; i++) { // i=0 is the logo picture
-      if (iName [i - 1]) {
-        var imgSrc = linktext + $ ("#imdbLink").text () + iAlbum [i - 1] + "/_show_" + iName [i - 1] + ".png";
-        let tmp = $ ("#imdbDirs").text ().split ("\n");
-        let idx = tmp.indexOf (iAlbum [i - 1]);
-        iImages [i].parentElement.setAttribute ("onclick","parent.selectJstreeNode("+idx+");parent.gotoMinipic ('" + iName [i - 1] + "')");
-
-        //iImages [i].parentElement.setAttribute ("href", linktext + "find/" + $ ("#imdbRoot").text () + "/" + iName [i - 1]);
-        iImages [i].parentElement.setAttribute ("title", "Gå till " + iName [i - 1]); // i18n
-        iImages [i].parentElement.style.margin ="0";
-        iText [i - 1].innerHTML = "I: " + removeUnderscore (iAlbum [i - 1].slice (1)).replace (/\//g, ", ");
-        iText [i - 1].style.fontSize = "90%";
-        iText [i - 1].style.verticalAlign = "top";
-        iImages [i].style.width = "19em";
-        //iImages [i].style.height = "16em";
-        iImages [i].style.margin = "0.7em 0 0 0";
-        iImages [i].style.border = "1px solid gray";
-        iImages [i].style.borderRadius = "4px";
-      } else {
-        imgSrc = "favicon.ico";
-        iImages [i].style.width = "0";
-        iImages [i].style.border = "0";
-      }
-      iImages [i].setAttribute ("src", imgSrc);
-    }
+    //&&&&& START
+console.log("Start 1");
+    //startInfoPage ()
     //&&&&&
 
   }),
@@ -160,12 +122,12 @@ export default Component.extend (contextMenuMixin, {
   /////////////////////////////////////////////////////////////////////////////////////////
   contextItems: [
     { label: "×", disabled: false, action () {} }, // Spacer
-    { label: 'Frågor? Kontakta oss...',
+    /*{ label: 'Frågor? Kontakta oss...',
       disabled: false,
       action () {
-        document.getElementById('do_mail').click();
-      }
-    },
+      document.getElementById('do_mail').click();
+    }
+    },*/
     { label: 'Information',
       disabled: false,
       action () {
@@ -199,598 +161,598 @@ export default Component.extend (contextMenuMixin, {
     { label: 'Göm eller visa', // Toggle hide/show
       disabled: () => {
         return !(allow.imgHidden || allow.adminAll);
-      },
-      action () {
-        var picName, act, nels, nelstxt, picNames = [], nodelem = [], nodelem0, i;
-        later ( ( () => { // Picname needs time to settle...
-          picName = $ ("#picName").text ().trim ();
-        }), 50);
+    },
+    action () {
+      var picName, act, nels, nelstxt, picNames = [], nodelem = [], nodelem0, i;
+      later ( ( () => { // Picname needs time to settle...
         picName = $ ("#picName").text ().trim ();
+      }), 50);
+      picName = $ ("#picName").text ().trim ();
+      picNames [0] = picName;
+      nodelem0 = document.getElementById ("i" + picName).firstElementChild.nextElementSibling;
+      nels = 1;
+      var picMarked = nodelem0.className === "markTrue";
+      if (picMarked) {
+        picNames = [];
+        nodelem = document.getElementsByClassName ("markTrue");
+        nels = nodelem.length;
+        nelstxt = "alla " + nels;
+        if (nels === 2) {nelstxt = "båda två";}
+        for (i=0; i<nodelem.length; i++) {
+          picNames.push (nodelem [i].nextElementSibling.innerHTML.trim ());
+        }
+      }
+      //console.log (nodelem0.parentNode.style.backgroundColor); // Check representation!
+      if (nodelem0.parentNode.style.backgroundColor === $ ("#hideColor").text ())
+        {act = 0;} else {act = 1;} // 0 = show, 1 = hide (it's the hide flag!)
+      var actxt1 = ["Vill du visa ", "Vill du gömma "];
+      var actxt2 = ["ska visas ", "ska gömmas "];
+      if (nels > 1) {
+        resetBorders (); // Reset all borders
+        markBorders (picName); // Mark this one
+        $ ("#dialog").html ("<b>" + actxt1 [act] + nelstxt + "?</b><br>" + cosp (picNames) + "<br>" + actxt2 [act]); // Set dialog text content
+        $ ("#dialog").dialog ( { // Initiate dialog
+          title: "Göm eller visa...",
+          autoOpen: false,
+          draggable: true,
+          modal: true,
+          closeOnEscape: true
+        });
+        // Define button array
+        $ ("#dialog").dialog ('option', 'buttons', [
+        {
+          text: "Ja", // Yes
+          "id": "allButt", // Process all
+          click: function () {
+            hideFunc (picNames, nels, act);
+            $ (this).dialog ('close');
+          }
+        },
+        {
+          text: "", // Set later, in order to include html tags (illegal here)
+          "id": "singButt", // Process only one
+          click: function () {
+            var nodelem = [];       // Redefined since:
+            nodelem [0] = nodelem0; // Else illegal, displays "read-only"!
+            picNames [0] = picName;
+            nels = 1;
+            hideFunc (picNames, nels, act);
+            $ (this).dialog ('close');
+          }
+        }]);
+        $ ("#singButt").html ('Nej, bara <span  style="color:deeppink">' + picName + '</span>'); // 'text:', here we may include html tags
+        niceDialogOpen ();
+        $ ("#allButt").focus ();
+      } else {
+        hideFunc (picNames, nels, act);
+      }
+    }
+  },
+  { label: "───────────────", disabled: false, action () {} }, // Spacer
+  { label: 'Markera/avmarkera alla',
+    disabled: false,
+    action () {
+      var picName = $ ("#picName").text ().trim ();
+      var tmp = document.getElementById ("i" + picName).firstElementChild.nextElementSibling.className;
+      var marked;
+      $ ("[alt='MARKER']").removeClass ();
+      $ ("#markShow").removeClass ();
+      if (tmp === "markTrue") {
+        $ ("[alt='MARKER']").addClass ("markFalse");
+        $ ("#markShow").addClass ("markFalseShow");
+        marked = "0";
+      } else {
+        $ ("[alt='MARKER']").addClass ("markTrue");
+        $ ("#markShow").addClass ("markTrueShow");
+        marked = $ ("[alt='MARKER']").length;
+      }
+      $ (".numMarked").text (marked);
+      resetBorders (); // Reset all borders
+    }
+  },
+  { label: 'Markera bara dolda',
+    disabled: () => {
+      return false;
+    },
+    action () {
+      let hico = $("#hideColor").text ();
+      let tmp = document.getElementsByClassName ("img_mini");
+      for (let i=0; i<tmp.length; i++) {
+        tmp [i].querySelector ("div[alt='MARKER']").setAttribute ("class", "markFalse") ;
+        if (tmp [i].style.backgroundColor === hico) {
+          tmp [i].querySelector ("div[alt='MARKER']").setAttribute ("class", "markTrue") ;
+        }
+      }
+      $ ('.showCount .numMarked').text ($ (".markTrue").length + " ");
+    }
+  },
+  { label: 'Invertera markeringar',
+    disabled: false,
+    action () {
+      $ (".markTrue").addClass ("set_false");
+      $ (".markFalse").addClass ("set_true");
+      $ (".set_false").removeClass ("markTrue");
+      $ (".set_true").removeClass ("markFalse");
+      $ (".set_false").addClass ("markFalse");
+      $ (".set_true").addClass ("markTrue");
+      $ (".markTrue").removeClass ("set_true");
+      $ (".markFalse").removeClass ("set_false");
+      var marked = $ (".markTrue").length;
+      $ (".numMarked").text (" " + marked);
+      var cn = document.getElementById ("markShow").className;
+      $ ("#markShow").removeClass ();
+      if (cn === "markFalseShow") {
+        $ ("#markShow").addClass ("markTrueShow");
+      } else {
+        $ ("#markShow").addClass ("markFalseShow");
+      }
+      resetBorders (); // Reset all borders
+    }
+  },
+  { label: 'Placera först',
+    disabled: () => {
+      return !( (allow.imgReorder && allow.saveChanges) || allow.adminAll);
+    },
+    action () {
+      var picName;
+      picName = $ ("#picName").text ();
+      var sortOrder = $ ("#sortOrder").text ();
+      var rex = new RegExp (picName + ",[\\d,]+\\n?", "");
+      var k = sortOrder.search (rex);
+      if (k < 1) return;
+      var line = sortOrder.match (rex) [0];
+      sortOrder = sortOrder.replace (line, "");
+      sortOrder = sortOrder.replace (/\\n\\n/g, "\n");
+      sortOrder = line.trim () + "\n" + sortOrder.trim ();
+      $ ("#sortOrder").text (sortOrder);
+      saveOrderFunc (sortOrder) // Save on server disk
+      .then ($ ("#refresh-1").click ()); // Call via DOM...
+      later ( ( () => {
+        scrollTo (null, $ (".showCount:first").offset ().top);
+      }), 50);
+    }
+  },
+  { label: 'Placera sist',
+    disabled: () => {
+      return !( (allow.imgReorder && allow.saveChanges) || allow.adminAll);
+      //return !( (allow.imgReorder && allow.saveChanges && $ ("#saveOrder").css ("display") !== "none") || allow.adminAll);
+    },
+    action () {
+      var picName;
+      picName = $ ("#picName").text ();
+      var sortOrder = $ ("#sortOrder").text ();
+      var rex = new RegExp (picName + ",[\\d,]+\\n?", "");
+      var k = sortOrder.search (rex);
+      if (k < 0) return;
+      var line = sortOrder.match (rex) [0];
+      sortOrder = sortOrder.replace (line, "");
+      sortOrder = sortOrder.replace (/\\n\\n/g, "\n");
+      sortOrder = sortOrder.trim () + "\n" + line.trim ();
+      $ ("#sortOrder").text (sortOrder);
+      saveOrderFunc (sortOrder) // Save on server disk
+      .then ($ ("#refresh-1").click ()); // Call via DOM...
+      later ( ( () => {
+        scrollTo (null, $ ("#lowDown").offset ().top - window.screen.height*0.85);
+      }), 50);
+    }
+  },
+  { label:  "───────────────", disabled: false, action () {} }, // Spacer
+  { label: 'Ladda ned...',
+    disabled: () => {
+      return !(["admin", "editall", "edit"].indexOf (loginStatus) > -1 && (allow.imgOriginal || allow.adminAll));
+    },
+    action () {
+      $ ("#downLoad").click (); // Call via DOM since "this" is ...where?
+    }
+  },
+  //{ label: ' ', disabled: false, action () {} }, // Spacer
+  { label: 'Länka till...', // i18n
+    disabled: () => {
+      return !(allow.delcreLink || allow.adminAll);
+    },
+    action () {
+      var picName, nels, nlns, nelstxt, linktxt, picNames = [], nodelem = [], nodelem0, i;
+      let symlinkClicked;
+      picName = $ ("#picName").text ().trim ();
+      later ( ( () => { // Picname needs time to settle...
+        picName = $ ("#picName").text ().trim ();
+      }), 50);
+      resetBorders (); // Reset all borders
+      if (!$ ("#i" + escapeDots (picName)).hasClass ("symlink")) { // Leave out symlinks
+        markBorders (picName);
         picNames [0] = picName;
-        nodelem0 = document.getElementById ("i" + picName).firstElementChild.nextElementSibling;
         nels = 1;
-        var picMarked = nodelem0.className === "markTrue";
-        if (picMarked) {
-          picNames = [];
-          nodelem = document.getElementsByClassName ("markTrue");
-          nels = nodelem.length;
-          nelstxt = "alla " + nels;
-          if (nels === 2) {nelstxt = "båda två";}
-          for (i=0; i<nodelem.length; i++) {
-            picNames.push (nodelem [i].nextElementSibling.innerHTML.trim ());
+        symlinkClicked = false;
+      } else {
+        symlinkClicked = true;
+        nels = 0;
+        $ ("#picName").text (""); // Signals non-linkable, see "downHere"
+      }
+      nodelem0 = document.getElementById ("i" + picName).firstElementChild.nextElementSibling;
+      var picMarked = nodelem0.className === "markTrue";
+      if (picMarked) {
+        picNames = [];
+        nodelem = document.getElementsByClassName ("markTrue");
+        for (i=0; i<nodelem.length; i++) {
+          var tmpName = nodelem [i].nextElementSibling.innerHTML.trim ();
+          if (!$ ("#i" + escapeDots (tmpName)).hasClass ("symlink")) { // Leave out symlinks
+            picNames.push (tmpName);
           }
         }
-        //console.log (nodelem0.parentNode.style.backgroundColor); // Check representation!
-        if (nodelem0.parentNode.style.backgroundColor === $ ("#hideColor").text ())
-          {act = 0;} else {act = 1;} // 0 = show, 1 = hide (it's the hide flag!)
-        var actxt1 = ["Vill du visa ", "Vill du gömma "];
-        var actxt2 = ["ska visas ", "ska gömmas "];
-        if (nels > 1) {
-          resetBorders (); // Reset all borders
-          markBorders (picName); // Mark this one
-          $ ("#dialog").html ("<b>" + actxt1 [act] + nelstxt + "?</b><br>" + cosp (picNames) + "<br>" + actxt2 [act]); // Set dialog text content
-          $ ("#dialog").dialog ( { // Initiate dialog
-            title: "Göm eller visa...",
-            autoOpen: false,
-            draggable: true,
-            modal: true,
-            closeOnEscape: true
-          });
-          // Define button array
-          $ ("#dialog").dialog ('option', 'buttons', [
-          {
-            text: "Ja", // Yes
-            "id": "allButt", // Process all
-            click: function () {
-              hideFunc (picNames, nels, act);
+        nels = picNames.length;
+        nlns = nodelem.length - nels;
+        linktxt = "";
+        if (nlns > 0) {linktxt = "En är redan länk, övriga:<br>";} // i18n
+        if (nlns > 1) {linktxt = nlns + " är länkar och kan inte användas; övriga:<br>";} // i18n
+        nelstxt = "Vill du länka alla " + nels; // i18n
+        if (nels === 2) {nelstxt = "Vill du länka båda två";} // i18n
+      }
+      if (nels === 0) {
+        var title = "Ingenting att länka"; // i18n
+        var text = "<br><b>Omöjligt att länka länkar!</b>"; // i18n
+        var yes = "Uppfattat" // i18n
+        infoDia (null, null, title, text, yes, true);
+        return;
+      }
+      //console.log (nodelem0.parentNode.style.backgroundColor); // <- Checks this text content
+      $ ("#picNames").text (picNames.join ("\n"));
+      if (nels > 1) {
+        var lnTxt = "<br>ska länkas till visning också i annat album"; // i18n
+        $ ("#dialog").html (linktxt + "<b>" + nelstxt + "?</b><br>" + cosp (picNames) + lnTxt); // Set dialog text content
+        $ ("#dialog").dialog ( { // Initiate dialog
+          title: "Länka till... ", // i18n
+          autoOpen: false,
+          draggable: true,
+          modal: true,
+          closeOnEscape: true
+        });
+        // Define button array
+        $ ("#dialog").dialog ('option', 'buttons', [
+        {
+          text: "Ja", // Yes i18n
+          "id": "allButt", // Process all
+          click: function () {
+            $ (this).dialog ('close');
+            linkFunc (picNames);
+            spinnerWait (false);
+          }
+        },
+        {
+          text: "", // Set later, in order to include html tags (illegal here)
+          "id": "singButt", // Process only one
+          click: function () {
+            if (picName === "") {
               $ (this).dialog ('close');
-            }
-          },
-          {
-            text: "", // Set later, in order to include html tags (illegal here)
-            "id": "singButt", // Process only one
-            click: function () {
+            } else {
               var nodelem = [];       // Redefined since:
               nodelem [0] = nodelem0; // Else illegal, displays "read-only"!
+              picNames = [];
               picNames [0] = picName;
               nels = 1;
-              hideFunc (picNames, nels, act);
-              $ (this).dialog ('close');
-            }
-          }]);
-          $ ("#singButt").html ('Nej, bara <span  style="color:deeppink">' + picName + '</span>'); // 'text:', here we may include html tags
-          niceDialogOpen ();
-          $ ("#allButt").focus ();
-        } else {
-          hideFunc (picNames, nels, act);
-        }
-      }
-    },
-    { label: "───────────────", disabled: false, action () {} }, // Spacer
-    { label: 'Markera/avmarkera alla',
-      disabled: false,
-      action () {
-        var picName = $ ("#picName").text ().trim ();
-        var tmp = document.getElementById ("i" + picName).firstElementChild.nextElementSibling.className;
-        var marked;
-        $ ("[alt='MARKER']").removeClass ();
-        $ ("#markShow").removeClass ();
-        if (tmp === "markTrue") {
-          $ ("[alt='MARKER']").addClass ("markFalse");
-          $ ("#markShow").addClass ("markFalseShow");
-          marked = "0";
-        } else {
-          $ ("[alt='MARKER']").addClass ("markTrue");
-          $ ("#markShow").addClass ("markTrueShow");
-          marked = $ ("[alt='MARKER']").length;
-        }
-        $ (".numMarked").text (marked);
-        resetBorders (); // Reset all borders
-      }
-    },
-    { label: 'Markera bara dolda',
-      disabled: () => {
-        return false;
-      },
-      action () {
-        let hico = $("#hideColor").text ();
-        let tmp = document.getElementsByClassName ("img_mini");
-        for (let i=0; i<tmp.length; i++) {
-          tmp [i].querySelector ("div[alt='MARKER']").setAttribute ("class", "markFalse") ;
-          if (tmp [i].style.backgroundColor === hico) {
-            tmp [i].querySelector ("div[alt='MARKER']").setAttribute ("class", "markTrue") ;
-          }
-        }
-        $ ('.showCount .numMarked').text ($ (".markTrue").length + " ");
-      }
-    },
-    { label: 'Invertera markeringar',
-      disabled: false,
-      action () {
-        $ (".markTrue").addClass ("set_false");
-        $ (".markFalse").addClass ("set_true");
-        $ (".set_false").removeClass ("markTrue");
-        $ (".set_true").removeClass ("markFalse");
-        $ (".set_false").addClass ("markFalse");
-        $ (".set_true").addClass ("markTrue");
-        $ (".markTrue").removeClass ("set_true");
-        $ (".markFalse").removeClass ("set_false");
-        var marked = $ (".markTrue").length;
-        $ (".numMarked").text (" " + marked);
-        var cn = document.getElementById ("markShow").className;
-        $ ("#markShow").removeClass ();
-        if (cn === "markFalseShow") {
-          $ ("#markShow").addClass ("markTrueShow");
-        } else {
-          $ ("#markShow").addClass ("markFalseShow");
-        }
-        resetBorders (); // Reset all borders
-      }
-    },
-    { label: 'Placera först',
-      disabled: () => {
-        return !( (allow.imgReorder && allow.saveChanges) || allow.adminAll);
-      },
-      action () {
-        var picName;
-        picName = $ ("#picName").text ();
-        var sortOrder = $ ("#sortOrder").text ();
-        var rex = new RegExp (picName + ",[\\d,]+\\n?", "");
-        var k = sortOrder.search (rex);
-        if (k < 1) return;
-        var line = sortOrder.match (rex) [0];
-        sortOrder = sortOrder.replace (line, "");
-        sortOrder = sortOrder.replace (/\\n\\n/g, "\n");
-        sortOrder = line.trim () + "\n" + sortOrder.trim ();
-        $ ("#sortOrder").text (sortOrder);
-        saveOrderFunc (sortOrder) // Save on server disk
-        .then ($ ("#refresh-1").click ()); // Call via DOM...
-        later ( ( () => {
-          scrollTo (null, $ (".showCount:first").offset ().top);
-        }), 50);
-      }
-    },
-    { label: 'Placera sist',
-      disabled: () => {
-        return !( (allow.imgReorder && allow.saveChanges) || allow.adminAll);
-        //return !( (allow.imgReorder && allow.saveChanges && $ ("#saveOrder").css ("display") !== "none") || allow.adminAll);
-      },
-      action () {
-        var picName;
-        picName = $ ("#picName").text ();
-        var sortOrder = $ ("#sortOrder").text ();
-        var rex = new RegExp (picName + ",[\\d,]+\\n?", "");
-        var k = sortOrder.search (rex);
-        if (k < 0) return;
-        var line = sortOrder.match (rex) [0];
-        sortOrder = sortOrder.replace (line, "");
-        sortOrder = sortOrder.replace (/\\n\\n/g, "\n");
-        sortOrder = sortOrder.trim () + "\n" + line.trim ();
-        $ ("#sortOrder").text (sortOrder);
-        saveOrderFunc (sortOrder) // Save on server disk
-        .then ($ ("#refresh-1").click ()); // Call via DOM...
-        later ( ( () => {
-          scrollTo (null, $ ("#lowDown").offset ().top - window.screen.height*0.85);
-        }), 50);
-      }
-    },
-    { label:  "───────────────", disabled: false, action () {} }, // Spacer
-    { label: 'Ladda ned...',
-      disabled: () => {
-        return !(["admin", "editall", "edit"].indexOf (loginStatus) > -1 && (allow.imgOriginal || allow.adminAll));
-      },
-      action () {
-        $ ("#downLoad").click (); // Call via DOM since "this" is ...where?
-      }
-    },
-    //{ label: ' ', disabled: false, action () {} }, // Spacer
-    { label: 'Länka till...', // i18n
-      disabled: () => {
-        return !(allow.delcreLink || allow.adminAll);
-      },
-      action () {
-        var picName, nels, nlns, nelstxt, linktxt, picNames = [], nodelem = [], nodelem0, i;
-        let symlinkClicked;
-        picName = $ ("#picName").text ().trim ();
-        later ( ( () => { // Picname needs time to settle...
-          picName = $ ("#picName").text ().trim ();
-        }), 50);
-        resetBorders (); // Reset all borders
-        if (!$ ("#i" + escapeDots (picName)).hasClass ("symlink")) { // Leave out symlinks
-          markBorders (picName);
-          picNames [0] = picName;
-          nels = 1;
-          symlinkClicked = false;
-        } else {
-          symlinkClicked = true;
-          nels = 0;
-          $ ("#picName").text (""); // Signals non-linkable, see "downHere"
-        }
-        nodelem0 = document.getElementById ("i" + picName).firstElementChild.nextElementSibling;
-        var picMarked = nodelem0.className === "markTrue";
-        if (picMarked) {
-          picNames = [];
-          nodelem = document.getElementsByClassName ("markTrue");
-          for (i=0; i<nodelem.length; i++) {
-            var tmpName = nodelem [i].nextElementSibling.innerHTML.trim ();
-            if (!$ ("#i" + escapeDots (tmpName)).hasClass ("symlink")) { // Leave out symlinks
-              picNames.push (tmpName);
-            }
-          }
-          nels = picNames.length;
-          nlns = nodelem.length - nels;
-          linktxt = "";
-          if (nlns > 0) {linktxt = "En är redan länk, övriga:<br>";} // i18n
-          if (nlns > 1) {linktxt = nlns + " är länkar och kan inte användas; övriga:<br>";} // i18n
-          nelstxt = "Vill du länka alla " + nels; // i18n
-          if (nels === 2) {nelstxt = "Vill du länka båda två";} // i18n
-        }
-        if (nels === 0) {
-          var title = "Ingenting att länka"; // i18n
-          var text = "<br><b>Omöjligt att länka länkar!</b>"; // i18n
-          var yes = "Uppfattat" // i18n
-          infoDia (null, null, title, text, yes, true);
-          return;
-        }
-        //console.log (nodelem0.parentNode.style.backgroundColor); // <- Checks this text content
-        $ ("#picNames").text (picNames.join ("\n"));
-        if (nels > 1) {
-          var lnTxt = "<br>ska länkas till visning också i annat album"; // i18n
-          $ ("#dialog").html (linktxt + "<b>" + nelstxt + "?</b><br>" + cosp (picNames) + lnTxt); // Set dialog text content
-          $ ("#dialog").dialog ( { // Initiate dialog
-            title: "Länka till... ", // i18n
-            autoOpen: false,
-            draggable: true,
-            modal: true,
-            closeOnEscape: true
-          });
-          // Define button array
-          $ ("#dialog").dialog ('option', 'buttons', [
-          {
-            text: "Ja", // Yes i18n
-            "id": "allButt", // Process all
-            click: function () {
+              $ ("#picNames").text (picNames.join ("\n"));
               $ (this).dialog ('close');
               linkFunc (picNames);
               spinnerWait (false);
             }
-          },
-          {
-            text: "", // Set later, in order to include html tags (illegal here)
-            "id": "singButt", // Process only one
-            click: function () {
-              if (picName === "") {
-                $ (this).dialog ('close');
-              } else {
-                var nodelem = [];       // Redefined since:
-                nodelem [0] = nodelem0; // Else illegal, displays "read-only"!
-                picNames = [];
-                picNames [0] = picName;
-                nels = 1;
-                $ ("#picNames").text (picNames.join ("\n"));
-                $ (this).dialog ('close');
-                linkFunc (picNames);
-                spinnerWait (false);
-              }
-            }
-          }]);
-          if (symlinkClicked) {
-            picName = "";
-            $ ("#singButt").html ("Nej");
-          } else {
-            $ ("#singButt").html ('Nej, bara <span  style="color:deeppink">' + picName + '</span>'); // 'text:', here we may include html tags
           }
-          niceDialogOpen ();
-          $ ("#singButt").removeClass ("ui-button-disabled ui-state-disabled");
-          if ($ ("#picName").text () === "") { // "downHere", referenced above
-            $ ("#singButt").addClass ("ui-button-disabled ui-state-disabled");
-          }
-          $ ("#allButt").focus ();
+        }]);
+        if (symlinkClicked) {
+          picName = "";
+          $ ("#singButt").html ("Nej");
         } else {
-          $ (this).dialog ('close');
-          markBorders (picNames [0]); // Mark this single one, even if it wasn't clicked
-          linkFunc (picNames);
-          niceDialogOpen ();
-          spinnerWait (false);
+          $ ("#singButt").html ('Nej, bara <span  style="color:deeppink">' + picName + '</span>'); // 'text:', here we may include html tags
         }
+        niceDialogOpen ();
+        $ ("#singButt").removeClass ("ui-button-disabled ui-state-disabled");
+        if ($ ("#picName").text () === "") { // "downHere", referenced above
+          $ ("#singButt").addClass ("ui-button-disabled ui-state-disabled");
+        }
+        $ ("#allButt").focus ();
+      } else {
+        $ (this).dialog ('close');
+        markBorders (picNames [0]); // Mark this single one, even if it wasn't clicked
+        linkFunc (picNames);
+        niceDialogOpen ();
+        spinnerWait (false);
       }
+    }
+  },
+  { label: 'Flytta till...', // i18n
+    disabled: () => {
+      return !(allow.delcreLink || allow.adminAll);
     },
-    { label: 'Flytta till...', // i18n
-      disabled: () => {
-        return !(allow.delcreLink || allow.adminAll);
-      },
-      action () {
-        var picName, nels, nlns, nelstxt, movetxt, picNames = [], nodelem = [], nodelem0, i;
-        let symlinkClicked;
+    action () {
+      var picName, nels, nlns, nelstxt, movetxt, picNames = [], nodelem = [], nodelem0, i;
+      let symlinkClicked;
+      picName = $ ("#picName").text ().trim ();
+      later ( ( () => { // Picname needs time to settle...
         picName = $ ("#picName").text ().trim ();
-        later ( ( () => { // Picname needs time to settle...
-          picName = $ ("#picName").text ().trim ();
-        }), 50);
-        resetBorders (); // Reset all borders
-        if (!$ ("#i" + escapeDots (picName)).hasClass ("symlink")) { // Leave out symlinks
-          markBorders (picName);
-          picNames [0] = picName;
-          nels = 1;
-          symlinkClicked = false;
-        } else {
-          symlinkClicked = true;
-          nels = 0;
-          $ ("#picName").text (""); // Signals non-movable, see "downHere"
-        }
-        nodelem0 = document.getElementById ("i" + picName).firstElementChild.nextElementSibling;
-        var picMarked = nodelem0.className === "markTrue";
-        if (picMarked) {
-          picNames = [];
-          nodelem = document.getElementsByClassName ("markTrue");
-          for (i=0; i<nodelem.length; i++) {
-            var tmpName = nodelem [i].nextElementSibling.innerHTML.trim ();
-            if (!$ ("#i" + escapeDots (tmpName)).hasClass ("symlink")) { // Leave out symlinks
-              picNames.push (tmpName);
-            }
+      }), 50);
+      resetBorders (); // Reset all borders
+      if (!$ ("#i" + escapeDots (picName)).hasClass ("symlink")) { // Leave out symlinks
+        markBorders (picName);
+        picNames [0] = picName;
+        nels = 1;
+        symlinkClicked = false;
+      } else {
+        symlinkClicked = true;
+        nels = 0;
+        $ ("#picName").text (""); // Signals non-movable, see "downHere"
+      }
+      nodelem0 = document.getElementById ("i" + picName).firstElementChild.nextElementSibling;
+      var picMarked = nodelem0.className === "markTrue";
+      if (picMarked) {
+        picNames = [];
+        nodelem = document.getElementsByClassName ("markTrue");
+        for (i=0; i<nodelem.length; i++) {
+          var tmpName = nodelem [i].nextElementSibling.innerHTML.trim ();
+          if (!$ ("#i" + escapeDots (tmpName)).hasClass ("symlink")) { // Leave out symlinks
+            picNames.push (tmpName);
           }
-          nels = picNames.length;
-          nlns = nodelem.length - nels;
-          movetxt = "";
-          if (nlns > 0) {movetxt = "En är länk och kan inte flyttas; övriga:<br>";} // i18n
-          if (nlns > 1) {movetxt = nlns + " är länkar som inte kan flyttas; övriga:<br>";} // i18n
-          nelstxt = "Vill du flytta alla " + nels; // i18n
-          if (nels === 2) {nelstxt = "Vill du flytta båda två";} // i18n
         }
-        if (nels === 0) {
-          var title = "Ingenting att flytta"; // i18n
-          var text = "<br><b>Omöjligt att flytta länkar!</b>"; // i18n
-          var yes = "Uppfattat" // i18n
-          infoDia (null, null, title, text, yes, true);
-          return;
-        }
-        //console.log (nodelem0.parentNode.style.backgroundColor); // <- Checks this text content
-        $ ("#picNames").text (picNames.join ("\n"));
-        if (nels > 1) {
-          var mvTxt = "<br>ska flyttas till annat album"; // i18n
-          $ ("#dialog").html (movetxt + "<b>" + nelstxt + "?</b><br>" + cosp (picNames) + mvTxt); // Set dialog text content
-          $ ("#dialog").dialog ( { // Initiate dialog
-            title: "Flytta till... ", // i18n
-            autoOpen: false,
-            draggable: true,
-            modal: true,
-            closeOnEscape: true
-          });
-          // Define button array
-          $ ("#dialog").dialog ('option', 'buttons', [
-          {
-            text: "Ja", // Yes i18n
-            "id": "allButt", // Process all
-            click: function () {
+        nels = picNames.length;
+        nlns = nodelem.length - nels;
+        movetxt = "";
+        if (nlns > 0) {movetxt = "En är länk och kan inte flyttas; övriga:<br>";} // i18n
+        if (nlns > 1) {movetxt = nlns + " är länkar som inte kan flyttas; övriga:<br>";} // i18n
+        nelstxt = "Vill du flytta alla " + nels; // i18n
+        if (nels === 2) {nelstxt = "Vill du flytta båda två";} // i18n
+      }
+      if (nels === 0) {
+        var title = "Ingenting att flytta"; // i18n
+        var text = "<br><b>Omöjligt att flytta länkar!</b>"; // i18n
+        var yes = "Uppfattat" // i18n
+        infoDia (null, null, title, text, yes, true);
+        return;
+      }
+      //console.log (nodelem0.parentNode.style.backgroundColor); // <- Checks this text content
+      $ ("#picNames").text (picNames.join ("\n"));
+      if (nels > 1) {
+        var mvTxt = "<br>ska flyttas till annat album"; // i18n
+        $ ("#dialog").html (movetxt + "<b>" + nelstxt + "?</b><br>" + cosp (picNames) + mvTxt); // Set dialog text content
+        $ ("#dialog").dialog ( { // Initiate dialog
+          title: "Flytta till... ", // i18n
+          autoOpen: false,
+          draggable: true,
+          modal: true,
+          closeOnEscape: true
+        });
+        // Define button array
+        $ ("#dialog").dialog ('option', 'buttons', [
+        {
+          text: "Ja", // Yes i18n
+          "id": "allButt", // Process all
+          click: function () {
+            $ (this).dialog ('close');
+            moveFunc (picNames);
+          }
+        },
+        {
+          text: "", // Set later, in order to include html tags (illegal here)
+          "id": "singButt", // Process only one
+          click: function () {
+            if (picName === "") {
+              $ (this).dialog ('close');
+            } else {
+              var nodelem = [];       // Redefined since:
+              nodelem [0] = nodelem0; // Else illegal, displays "read-only"!
+              picNames = [];
+              picNames [0] = picName;
+              nels = 1;
+              $ ("#picNames").text (picNames.join ("\n"));
               $ (this).dialog ('close');
               moveFunc (picNames);
             }
-          },
-          {
-            text: "", // Set later, in order to include html tags (illegal here)
-            "id": "singButt", // Process only one
-            click: function () {
-              if (picName === "") {
-                $ (this).dialog ('close');
-              } else {
-                var nodelem = [];       // Redefined since:
-                nodelem [0] = nodelem0; // Else illegal, displays "read-only"!
-                picNames = [];
-                picNames [0] = picName;
-                nels = 1;
-                $ ("#picNames").text (picNames.join ("\n"));
-                $ (this).dialog ('close');
-                moveFunc (picNames);
-              }
-            }
-          }]);
-          if (symlinkClicked) {
-            picName = "";
-            $ ("#singButt").html ("Nej");
-          } else {
-            $ ("#singButt").html ('Nej, bara <span  style="color:deeppink">' + picName + '</span>'); // 'text:', here we may include html tags
           }
-          niceDialogOpen ();
-          $ ("#singButt").removeClass ("ui-button-disabled ui-state-disabled");
-          if ($ ("#picName").text () === "") { // "downHere", referenced above
-            $ ("#singButt").addClass ("ui-button-disabled ui-state-disabled");
-          }
-          $ ("#allButt").focus ();
+        }]);
+        if (symlinkClicked) {
+          picName = "";
+          $ ("#singButt").html ("Nej");
         } else {
-          $ (this).dialog ('close');
-          markBorders (picNames [0]); // Mark this single one, even if it wasn't clicked
-          moveFunc (picNames);
-          niceDialogOpen ();
+          $ ("#singButt").html ('Nej, bara <span  style="color:deeppink">' + picName + '</span>'); // 'text:', here we may include html tags
         }
+        niceDialogOpen ();
+        $ ("#singButt").removeClass ("ui-button-disabled ui-state-disabled");
+        if ($ ("#picName").text () === "") { // "downHere", referenced above
+          $ ("#singButt").addClass ("ui-button-disabled ui-state-disabled");
+        }
+        $ ("#allButt").focus ();
+      } else {
+        $ (this).dialog ('close');
+        markBorders (picNames [0]); // Mark this single one, even if it wasn't clicked
+        moveFunc (picNames);
+        niceDialogOpen ();
       }
+    }
+  },
+  { label: 'RADERA...',
+    disabled: () => {
+      return !(allow.delcreLink || allow.deleteImg || allow.adminAll);
     },
-    { label: 'RADERA...',
-      disabled: () => {
-        return !(allow.delcreLink || allow.deleteImg || allow.adminAll);
-      },
-      action () {
-        // Decide whether also the ORIGINAL will be erased when a LINKED PICTURE is erased
-        if (allow.deleteImg && $ ("#eraOrig") [0].checked === true) {
-          eraseOriginals = true;
-        } else {
-          eraseOriginals = false;
-        }
-        var picPath, picName, delNames, all, nels, nelstxt,
-          picPaths = [], picNames = [], nodelem = [], nodelem0, linked;
-        picName = $ ("#picName").text ().trim ();
-        picPath = $ ("#imdbLink").text () + "/" + $ ("#i" + escapeDots (picName) + " a img").attr ("title");
-        // Non-symlink clicked:
-        var title = "Otillåtet"; // i18n
-        var text = "<br>— du får bara radera länkar —"; // i18n
-        var yes = "Uppfattat" // i18n
-        let symlink = document.getElementById ("i" + picName).classList.contains ('symlink');
-        if (!symlink && !allow.deleteImg) {
+    action () {
+      // Decide whether also the ORIGINAL will be erased when a LINKED PICTURE is erased
+      if (allow.deleteImg && $ ("#eraOrig") [0].checked === true) {
+        eraseOriginals = true;
+      } else {
+        eraseOriginals = false;
+      }
+      var picPath, picName, delNames, all, nels, nelstxt,
+        picPaths = [], picNames = [], nodelem = [], nodelem0, linked;
+      picName = $ ("#picName").text ().trim ();
+      picPath = $ ("#imdbLink").text () + "/" + $ ("#i" + escapeDots (picName) + " a img").attr ("title");
+      // Non-symlink clicked:
+      var title = "Otillåtet"; // i18n
+      var text = "<br>— du får bara radera länkar —"; // i18n
+      var yes = "Uppfattat" // i18n
+      let symlink = document.getElementById ("i" + picName).classList.contains ('symlink');
+      if (!symlink && !allow.deleteImg) {
+        infoDia (null, null, title, text, yes, true);
+        return;
+      }
+      // nels == no of all elements (images), linked == no of linked elements
+      nodelem0 = document.getElementById ("i" + picName).firstElementChild.nextElementSibling;
+      nodelem [0] = nodelem0;
+      nels = 1;
+      var picMarked = nodelem0.className === "markTrue";
+      if (picMarked) {
+        picNames = [];
+        picPaths = [];
+        nodelem = document.getElementsByClassName ("markTrue");
+        linked = $ (".symlink .markTrue").length;
+        all = "alla ";
+        nels = nodelem.length;
+        nelstxt = nels; // To be used as text...
+        if (nels === 2) {all = "båda "; nelstxt = "två";}
+      }
+      for (let i=0; i<nels; i++) {
+        picNames.push (nodelem [i].nextElementSibling.innerHTML.trim ());
+      }
+      for (let i=0; i<nodelem.length; i++) {
+          symlink = document.getElementById ("i" + picNames [i]).classList.contains ('symlink');
+          if (symlink && eraseOriginals) {
+            /* Use file paths instead of picture names in order to make
+            possible erase even symlinked originals (e.g. for dups removal):
+            deleteFiles (picNames, nels) was changed to
+            deleteFiles (picNames, nels, picPaths) and
+            deleteFile (picName) was changed to deleteFile (picPath)
+            */
+            let tmp = $ ("#imdbLink").text () + "/" + $ ("#i" + escapeDots (picNames [i]) + " a img").attr ("title");
+            execute ("readlink -n " + tmp).then (res => {
+              res = res.replace (/^(\.{1,2}\/)*/, $ ("#imdbLink").text () + "/");
+              picPaths.push (res);
+              if (picName === picNames [i]) {
+                picPath = res;
+              }
+            });
+          } else {
+            picPaths.push ($ ("#imdbLink").text () + "/" + $ ("#i" + escapeDots (picNames [i]) + " a img").attr ("title"));
+          }
+      }
+      delNames = picName;
+      if (nels > 1) {
+
+        // Not only symlinks are included:
+        if (nels > linked && !allow.deleteImg) {
           infoDia (null, null, title, text, yes, true);
           return;
         }
-        // nels == no of all elements (images), linked == no of linked elements
-        nodelem0 = document.getElementById ("i" + picName).firstElementChild.nextElementSibling;
-        nodelem [0] = nodelem0;
-        nels = 1;
-        var picMarked = nodelem0.className === "markTrue";
-        if (picMarked) {
-          picNames = [];
-          picPaths = [];
-          nodelem = document.getElementsByClassName ("markTrue");
-          linked = $ (".symlink .markTrue").length;
-          all = "alla ";
-          nels = nodelem.length;
-          nelstxt = nels; // To be used as text...
-          if (nels === 2) {all = "båda "; nelstxt = "två";}
-        }
-        for (let i=0; i<nels; i++) {
-          picNames.push (nodelem [i].nextElementSibling.innerHTML.trim ());
-        }
-        for (let i=0; i<nodelem.length; i++) {
-            symlink = document.getElementById ("i" + picNames [i]).classList.contains ('symlink');
-            if (symlink && eraseOriginals) {
-              /* Use file paths instead of picture names in order to make
-              possible erase even symlinked originals (e.g. for dups removal):
-              deleteFiles (picNames, nels) was changed to
-              deleteFiles (picNames, nels, picPaths) and
-              deleteFile (picName) was changed to deleteFile (picPath)
-              */
-              let tmp = $ ("#imdbLink").text () + "/" + $ ("#i" + escapeDots (picNames [i]) + " a img").attr ("title");
-              execute ("readlink -n " + tmp).then (res => {
-                res = res.replace (/^(\.{1,2}\/)*/, $ ("#imdbLink").text () + "/");
-                picPaths.push (res);
-                if (picName === picNames [i]) {
-                  picPath = res;
-                }
-              });
-            } else {
-              picPaths.push ($ ("#imdbLink").text () + "/" + $ ("#i" + escapeDots (picNames [i]) + " a img").attr ("title"));
-            }
-        }
-        delNames = picName;
-        if (nels > 1) {
 
-          // Not only symlinks are included:
-          if (nels > linked && !allow.deleteImg) {
-            infoDia (null, null, title, text, yes, true);
-            return;
+        delNames =  cosp (picNames);
+        nelstxt = "<b>Vill du radera " + all + nelstxt + "?</b><br>" + delNames + "<br>ska raderas permanent";
+        if (linked) {
+          if (eraseOriginals) {
+            nelstxt += " *<br><span style='color:black;font-weight:bold'>* <span style='color:#d00'>Originalet</span> till <span style='color:green'>länk</span> raderas nu också!</span>"; // #d00 is deep red
+          } else {
+            nelstxt += " *<br><span style='color:green;font-size:85%'>* Då <span style='color:green;text-decoration:underline'>länk</span> raderas berörs inte originalet</span>";
           }
-
-          delNames =  cosp (picNames);
-          nelstxt = "<b>Vill du radera " + all + nelstxt + "?</b><br>" + delNames + "<br>ska raderas permanent";
-          if (linked) {
-            if (eraseOriginals) {
-              nelstxt += " *<br><span style='color:black;font-weight:bold'>* <span style='color:#d00'>Originalet</span> till <span style='color:green'>länk</span> raderas nu också!</span>"; // #d00 is deep red
-            } else {
-              nelstxt += " *<br><span style='color:green;font-size:85%'>* Då <span style='color:green;text-decoration:underline'>länk</span> raderas berörs inte originalet</span>";
-            }
-          }
-          $ ("#dialog").html (nelstxt); // i18n
-          var eraseText = $ ("#imdbDir").text ().replace (/^(.+[/])+/, "") + ": Radera...";
-          // Set dialog text content
-          $ ("#dialog").dialog ( { // Initiate dialog
-            title: eraseText,
-            autoOpen: false,
-            draggable: true,
-            modal: true,
-            closeOnEscape: true
-          });
-          // Close button
-          $ ("#dialog").dialog ('option', 'buttons', [ // Define button array
-          {
-            text: "Ja", // Yes
-            "id": "allButt", // Process all
-            click: function () {
-              $ (this).dialog ('close');
-              nextStep (nels);
-            }
-          },
-          {
-            text: "", // Set later, (html tags are killed here)
-            "id": "singButt", // Process only one
-            click: function () {
-              var nodelem = [];       // Redefined since:
-              nodelem [0] = nodelem0; // Else illegal, displays "read-only"!
-              picPaths [0] = picPath;
-              picNames [0] = picName;
-              delNames = picName;
-              nels = 1;
-              $ (this).dialog ('close');
-              nextStep (nels);
-            }
-          }]);
-          resetBorders (); // Reset all borders
-          markBorders (picName); // Mark this one
-          $ ("#singButt").html ('Nej, bara <span  style="color:deeppink">' + picName + '</span>'); // May contain html
-          niceDialogOpen ();
-          $ ("#allButt").focus ();
-        } else {
-          nextStep (nels);
         }
-
-        function nextStep (nels) {
-          /*for (let i=0; i<nels; i++) {
-          console.log ("DELETE", picNames [i], picPaths [i]);
-          }*/
-          var nameText = $ ("#imdbDir").text ().replace (/^(.+[/])+/, "");
-          if (nameText === $ ("#imdbLink").text ()) {nameText = $ ("#imdbRoot").text ();}
-          var eraseText = "Radera i " + nameText + ":";
-          resetBorders (); // Reset all borders, can be first step!
-          markBorders (picName); // Mark this one
-          if (nels === 1) {
-            linked = $ ("#i" + escapeDots (picName)).hasClass ("symlink");
+        $ ("#dialog").html (nelstxt); // i18n
+        var eraseText = $ ("#imdbDir").text ().replace (/^(.+[/])+/, "") + ": Radera...";
+        // Set dialog text content
+        $ ("#dialog").dialog ( { // Initiate dialog
+          title: eraseText,
+          autoOpen: false,
+          draggable: true,
+          modal: true,
+          closeOnEscape: true
+        });
+        // Close button
+        $ ("#dialog").dialog ('option', 'buttons', [ // Define button array
+        {
+          text: "Ja", // Yes
+          "id": "allButt", // Process all
+          click: function () {
+            $ (this).dialog ('close');
+            nextStep (nels);
           }
-          nelstxt = "<b>Vänligen bekräfta:</b><br>" + delNames + "<br>i <b>" + nameText + "<br>ska alltså raderas?</b><br>(<i>kan inte ångras</i>)"; // i18n
-          if (linked) {
-            if (eraseOriginals) {
-              nelstxt += " *<br><span style='color:black;font-weight:bold'>* <span style='color:#d00'>Originalet</span> till <span style='color:green'>länk</span> raderas nu också!</span>"; // #d00 is deep red
-            } else {
-              nelstxt += "<br><span style='color:green;font-size:85%'>Då <span style='color:green;text-decoration:underline'>länk</span> raderas berörs inte originalet</span>"; // i18n
-            }
+        },
+        {
+          text: "", // Set later, (html tags are killed here)
+          "id": "singButt", // Process only one
+          click: function () {
+            var nodelem = [];       // Redefined since:
+            nodelem [0] = nodelem0; // Else illegal, displays "read-only"!
+            picPaths [0] = picPath;
+            picNames [0] = picName;
+            delNames = picName;
+            nels = 1;
+            $ (this).dialog ('close');
+            nextStep (nels);
           }
-          $ ("#dialog").html (nelstxt);
-          $ ("#dialog").dialog ( { // Initiate a new, confirmation dialog
-            title: eraseText,
-            closeText: "×",
-            autoOpen: false,
-            draggable: true,
-            modal: true,
-            closeOnEscape: true
-          });
-          $ ("#dialog").dialog ('option', 'buttons', [ // Define button array
-          {
-            text: "Ja", // Yes
-            "id": "yesBut",
-            click: function () {
-              /*if (!(allow.deleteImg || allow.adminAll)) { // Will never happen
-                userLog ("RADERING FÖRHINDRAD"); // i18n
-                return;
-              }*/
-              console.log ("To be deleted: " + delNames); // delNames is picNames as a string
-              // NOTE: Must be a 'clean' call (no then or <await>):
-              deleteFiles (picNames, nels, picPaths);
-              $ (this).dialog ('close');
-              /*later ( ( () => {
-                userLog ($ ("#temporary").text ()); // From deleteFiles
-                $ ("#temporary").text ("");
-              }), 1000);*/
-              scrollTo (null, $ ("#highUp").offset ().top);
-              $ ("#refresh-1").click ();
-            }
-          },
-          {
-            text: "Nej", // No
-            "id": "noBut",
-            click: function () {
-              console.log ("Untouched: " + delNames);
-              $ (this).dialog ('close');
-            }
-           }]);
-          niceDialogOpen ();
-          $ ("#yesBut").focus ();
-        }
+        }]);
+        resetBorders (); // Reset all borders
+        markBorders (picName); // Mark this one
+        $ ("#singButt").html ('Nej, bara <span  style="color:deeppink">' + picName + '</span>'); // May contain html
+        niceDialogOpen ();
+        $ ("#allButt").focus ();
+      } else {
+        nextStep (nels);
       }
-    },
-    { label: "×", disabled: false, action () {} }, // Spacer
+
+      function nextStep (nels) {
+        /*for (let i=0; i<nels; i++) {
+        console.log ("DELETE", picNames [i], picPaths [i]);
+        }*/
+        var nameText = $ ("#imdbDir").text ().replace (/^(.+[/])+/, "");
+        if (nameText === $ ("#imdbLink").text ()) {nameText = $ ("#imdbRoot").text ();}
+        var eraseText = "Radera i " + nameText + ":";
+        resetBorders (); // Reset all borders, can be first step!
+        markBorders (picName); // Mark this one
+        if (nels === 1) {
+          linked = $ ("#i" + escapeDots (picName)).hasClass ("symlink");
+        }
+        nelstxt = "<b>Vänligen bekräfta:</b><br>" + delNames + "<br>i <b>" + nameText + "<br>ska alltså raderas?</b><br>(<i>kan inte ångras</i>)"; // i18n
+        if (linked) {
+          if (eraseOriginals) {
+            nelstxt += " *<br><span style='color:black;font-weight:bold'>* <span style='color:#d00'>Originalet</span> till <span style='color:green'>länk</span> raderas nu också!</span>"; // #d00 is deep red
+          } else {
+            nelstxt += "<br><span style='color:green;font-size:85%'>Då <span style='color:green;text-decoration:underline'>länk</span> raderas berörs inte originalet</span>"; // i18n
+          }
+        }
+        $ ("#dialog").html (nelstxt);
+        $ ("#dialog").dialog ( { // Initiate a new, confirmation dialog
+          title: eraseText,
+          closeText: "×",
+          autoOpen: false,
+          draggable: true,
+          modal: true,
+          closeOnEscape: true
+        });
+        $ ("#dialog").dialog ('option', 'buttons', [ // Define button array
+        {
+          text: "Ja", // Yes
+          "id": "yesBut",
+          click: function () {
+            /*if (!(allow.deleteImg || allow.adminAll)) { // Will never happen
+              userLog ("RADERING FÖRHINDRAD"); // i18n
+              return;
+            }*/
+            console.log ("To be deleted: " + delNames); // delNames is picNames as a string
+            // NOTE: Must be a 'clean' call (no then or <await>):
+            deleteFiles (picNames, nels, picPaths);
+            $ (this).dialog ('close');
+            /*later ( ( () => {
+              userLog ($ ("#temporary").text ()); // From deleteFiles
+              $ ("#temporary").text ("");
+            }), 1000);*/
+            scrollTo (null, $ ("#highUp").offset ().top);
+            $ ("#refresh-1").click ();
+          }
+        },
+        {
+          text: "Nej", // No
+          "id": "noBut",
+          click: function () {
+            console.log ("Untouched: " + delNames);
+            $ (this).dialog ('close');
+          }
+         }]);
+        niceDialogOpen ();
+        $ ("#yesBut").focus ();
+      }
+    }
+  },
+  { label: "×", disabled: false, action () {} }, // Spacer
   ],
   //contextSelection: [{ paramDum: false }],  // The context menu "selection" parameter (not used)
   contextSelection: () => {return {}},
@@ -1464,7 +1426,7 @@ export default Component.extend (contextMenuMixin, {
             //that.set ("imdbDir", "");
             $ ("#imdbDir").text ("");
           } else {
-            that.set ("albumText", " Valt album:");
+            that.set ("albumText", " Albumåtgärder");
             that.set ("albumName", '<strong class="albumName"> ' + tmpName + '</strong>');
             that.set ("jstreeHdr", "Alla album (albumkarta, albumträd):");
             $ ("#jstreeHdr").attr ("title", htmlSafe ("Visa alla album\n(hela albumträdet)")); //i18n
@@ -1830,7 +1792,7 @@ export default Component.extend (contextMenuMixin, {
       }
       if ($ (".img_mini").length > 1) {
         code += '\n<option value="order">&nbsp;Sortera bilderna efter namn&nbsp;</option>';
-        code += '\n<option value="reverse">&nbsp;Sortera dito men baklänges&nbsp;</option>';
+        code += '\n<option value="reverse">&nbsp;Sortera bilderna baklänges&nbsp;</option>';
       }
       code += '\n</select>';
       infoDia (null, null, album, code, 'Avbryt', true);
@@ -2064,7 +2026,7 @@ export default Component.extend (contextMenuMixin, {
     },
     //============================================================================================
     selectRoot (value, what) { // ##### Select album root dir (to put into imdbLink) from dropdown
-
+//console.log(value, what);
       if (what) {var that = what;} else that = this;
       $ (".mainMenu p:gt(1)").hide ();
       //$ (".mainMenu p:gt(1)").show ();
@@ -2077,10 +2039,12 @@ export default Component.extend (contextMenuMixin, {
       //document.getElementById ("imageList").className = "hide-all";
       document.getElementById ("divDropbox").className = "hide-all";
       if (value.indexOf (" ") > -1) value = ""; // The header line contains space
+//console.log(value, what);
       if (value === "") {
         $ (".mainMenu p:gt(1)").show ();
         return;
       }
+//console.log(value, what);
       $ ("#imdbRoot").text (value);
       that.set ("imdbRoot", value);
       that.set ("albumData", []); // Triggers jstree rebuild in requestDirs
@@ -2112,9 +2076,12 @@ export default Component.extend (contextMenuMixin, {
             $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
             $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_1"));
             userLog ("START " + imdbroot);
+console.log("Start 2");
           }
         }).then ( () => {
-//==          spinnerWait (false) //== onödigt
+          //if ($ ("#imdbRoot").text ()) {
+            startInfoPage ()
+          //}
         });
       }), 2000); // Time needed!
     },
@@ -2799,7 +2766,7 @@ export default Component.extend (contextMenuMixin, {
 
       if ($ ("#navAuto").text () === "true") {
         var title = "Stanna automatisk visning...";
-        var text = ' ... med <span style="color:deeppink;font-family:monospace;font-weight:bold">STOP</span> eller Esc-tangenten och börja visningen igen med <span style="color:deeppink;font-family:monospace;font-weight:bold">AUTO</span> eller A-tangenten!';
+        var text = '<br> ... med <span style="color:deeppink;font-family:monospace;font-weight:bold">STOP</span> eller Esc-tangenten och börja visningen igen med <span style="color:deeppink;font-family:monospace;font-weight:bold">AUTO</span> eller A-tangenten!';
         var yes ="Ok";
         var modal = true;
         infoDia (null, null, title, text, yes, modal);
@@ -2906,7 +2873,7 @@ export default Component.extend (contextMenuMixin, {
             ediTextClosed ();
             return;
           }
-        }), 20);
+        }), 100);
         // NOTE: An ID string for 'getElementById' should have dots unescaped!
         origpic = document.getElementById ("i" + namepic).firstElementChild.firstElementChild.getAttribute ("title"); // With path
         origpic = $ ("#imdbLink").text () + "/" + origpic;
@@ -3278,6 +3245,7 @@ export default Component.extend (contextMenuMixin, {
               let toold = 60; // minutes. NOTE: Also defined in routes.js, please MAKE COMMON!!
               execute ('find -L ' + lnk + ' -type d -name "' + picFound + '*" -amin +' + toold + ' | xargs rm -rf').then ();
               userLog ("START " + $ ("#imdbRoot").text ());
+console.log("Start 3");
               later ( ( () => {
                 $ ("#requestDirs").click ();
                 later ( ( () => {
@@ -3285,6 +3253,15 @@ export default Component.extend (contextMenuMixin, {
                   $ (".ember-view.jstree").jstree ("close_all");
                   $ (".ember-view.jstree").jstree ("open_node", "#j1_1");
                   $ (".ember-view.jstree").jstree ("select_node", "#j1_1");
+                  startInfoPage ()
+                  /*execute ("cat " + $ ("#imdbLink").text () + "/_imdb_intro.txt | egrep '^/'").then (result => {
+                    result = result.split ("\n");
+                    if (result.length < 2 || result [0].indexOf ("Command failed") === 0) {
+                      console.log("    Inga introbilder");
+                    } else {
+                      console.log("result\n", result);
+                    }
+                  });*/
 //==                  spinnerWait (false);
                 }), 1000);
               }), 500);
@@ -3727,6 +3704,72 @@ function stopSpinStopSpin () {
       }), 5000);
     }
   } ());
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function startInfoPage () { // Compose the information display page
+  let iWindow = document.getElementsByTagName("iframe") [0].contentWindow;
+  let iImages = iWindow.document.getElementsByTagName ("img");
+  let nIm = iImages.length;
+  var linktext = window.location.hostname
+  if (linktext === "localhost") {
+    linktext = "http://localhost:3000" + "/";
+  } else {
+    linktext = "https://" + linktext + "/";
+  }
+  execute ("cat " + $ ("#imdbLink").text () + "/_imdb_intro.txt | egrep '^/'").then (result => {
+    $ ("#imdbIntro").text (result);
+    var intro = result.split ("\n");
+    if (intro.length < 2 || intro [0].indexOf ("Command failed") === 0) {
+      $ ("#imdbIntro").text ("");
+      intro = [];
+      console.log("    Inga introbilder");
+    } else {
+      console.log("    Introbilder:\n", intro);
+    }
+    return intro;
+  }).then (intro => {
+    let iText = iWindow.document.querySelectorAll ("span.imtx");
+    // Remove all images except the first
+    for (let i=1; i<nIm; i++) {
+      iImages [i].style.width = "0";
+      iImages [i].style.border = "0";
+      iImages [i].setAttribute ("src", "favicon.ico");
+      iText [i - 1].innerHTML = "";
+    }
+    // Adjust to load only available images
+    if (intro.length > 0) {
+      if (intro.length < nIm) nIm = intro.length + 1;
+      console.log("nIm:",nIm);
+      for (let i=1; i<nIm; i++) { // i=0 is the logo picture
+        let im1 = i - 1;
+        let iAlbum = intro [im1].replace (/^([^ ]+).*/, "$1");
+        let iName = intro [im1].replace (/^[^ ]+[ ]+([^ ]+)/, "$1");
+        console.log("iAlbum iName:",iAlbum,iName);
+        if (iName) {
+          var imgSrc = linktext + $ ("#imdbLink").text () + iAlbum + "_show_" + iName + ".png";
+          console.log("imgSrc:",imgSrc);
+          let tmp = $ ("#imdbDirs").text ().split ("\n");
+          let idx = tmp.indexOf (iAlbum.slice (0, iAlbum.length - 1));
+          iImages [i].parentElement.setAttribute ("onclick","parent.selectJstreeNode("+idx+");parent.gotoMinipic ('" + iName + "')");
+          iImages [i].parentElement.setAttribute ("title", "Gå till " + iName); // i18n
+          iImages [i].parentElement.style.margin ="0";
+          tmp = "I: " + removeUnderscore (iAlbum.slice (1)).replace (/\//g, " > ");
+          tmp = tmp.slice (0, tmp.length - 3);
+          if (tmp.length < 3) tmp = "";
+          iText [im1].innerHTML = tmp;
+          iText [im1].style.fontSize = "90%";
+          iText [im1].style.verticalAlign = "top";
+          iText [im1].style.display = "inline-block";
+          iText [im1].style.width = "20em";
+          iImages [i].style.width = "19em";
+          iImages [i].style.margin = "0.7em 0 0 0";
+          iImages [i].style.border = "1px solid gray";
+          iImages [i].style.borderRadius = "4px";
+        }
+        iImages [i].setAttribute ("src", imgSrc);
+      }
+    }
+  });
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Show a symlink's 'parent' album; tgt is the symlink's green mark picture
@@ -4779,17 +4822,11 @@ let prepSearchDialog = () => {
   $ ( () => {
     let sw = ediTextSelWidth () - 25; // Dialog width
     let tw = sw - 25; // Text width
-    $ ('<div id="searcharea" style="margin:0;padding:0;width:'+sw+'px"><div class="diaMess"> <div class="edWarn" style="font-weight:normal;text-align:right" ></div> \
-    <div class="srchIn">Sök i:&nbsp; <span class="glue"><input id="t1" type="checkbox" name="search1" value="description" checked/><label for="t1">&nbsp;bildtext (övre texten)</label>&nbsp;</span> \
-    <span class="glue"><input id="t2" type="checkbox" name="search2" value="creator" checked/><label for="t2">&nbsp;ursprung (nedre texten)</label>&nbsp;</span> \
-    <span class="glue"><input id="t3" type="checkbox" name="search3" value="source"/><label for="t3">&nbsp;anteckningar</label>&nbsp;</span> \
-    <span class="glue"><input id="t4" type="checkbox" name="search4" value="album"/><label for="t4">&nbsp;album</label>&nbsp;</span> \
-    <span class="glue"><input id="t5" type="checkbox" name="search5" value="name" checked/><label for="t5">&nbsp;namn</label></span></div> \
-    <div class="orAnd">Om blank ska sökas: skriv % (åtskiljer ej) &nbsp; &nbsp; <b style="font-size:75%"><a href="findhelp.html" target="find_help" style="font-family: Arial, Helvetica, sans-serif">SÖKHJÄLP</a></b><br>Välj regel för åtskilda ord/textbitar/sökbegrepp:<br><span class="glue"><input id="r1" type="radio" name="searchmode" value="AND" checked/><label for="r1">&nbsp;alla&nbsp;ska&nbsp;hittas&nbsp;i&nbsp;en&nbsp;bild</label></span>&nbsp; <span class="glue"><input id="r2" type="radio" name="searchmode" value="OR"/><label for="r2">&nbsp;minst&nbsp;ett&nbsp;av&nbsp;dem&nbsp;ska&nbsp;hittas&nbsp;i&nbsp;en&nbsp;bild</label></span></div> <span class="srchMsg"></span></div><textarea name="searchtext" placeholder="(minst tre tecken utöver omgivande blanka)" rows="4" style="min-width:'+tw+'px;background:#f0f0e0"></textarea></div>').dialog ( {
+    $ ("#searcharea").css ("width", sw + "px");
+    $ ("#searcharea textarea").css ("min-width", tw + "px");
+    $ ("#searcharea").dialog ( {
       title: "Finn bilder: Sök i bildtexter",
-      //closeText: "×", // Replaced (why needed?) below, see lines // Close => ×
-      // ANSWER: This way to initiate a dialog brings some anomalies -
-      //         the 'textareas' dialog shows a much better way!
+      closeText: "×",
       autoOpen: false,
       closeOnEscape: true,
       modal: false
@@ -4860,9 +4897,10 @@ let prepSearchDialog = () => {
     if (!(allow.notesView || allow.adminAll)) {
       document.getElementById ("t3").parentElement.style.display = "none";
     }
-    let txt = $ ("button.ui-dialog-titlebar-close").html (); // Close => ×
-    txt.replace (/Close/, "×");                              // Close => ×
-    $ ("button.ui-dialog-titlebar-close").html (txt);        // Close => ×
+    $ ("button.ui-dialog-titlebar-close").attr ("title", "Stäng"); // i18n
+    //let txt = $ ("button.ui-dialog-titlebar-close").html (); // Close => ×
+    //txt.replace (/Close/, "×");                              // Close => ×
+    //$ ("button.ui-dialog-titlebar-close").html (txt);        // Close => ×
     $ ("div[aria-describedby='searcharea'] span.ui-dialog-title")
       .html ('Finn bilder <span style="color:green">(ej länkar)</span>: Sök i bildtexter');
   });
@@ -5390,4 +5428,3 @@ function selectJstreeNode (idx) {
   $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_" + (1 + idx)));
   $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
 }
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
