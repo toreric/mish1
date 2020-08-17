@@ -656,7 +656,7 @@ div[aria-describedby='textareas'] {
   font-size: 190%; /* regulates buttonsize */
   color: lightskyblue;
   border: 1px solid #555;
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
   /* Prevent highlighting: */
   -khtml-user-select: none;
@@ -1073,12 +1073,12 @@ div.img_mini.symlink div.markTrue, div.img_mini.symlink div.markFalse {
 .nav_links .nav_, .nav_ {
   display: inline-block;
   background-color: #333;
-  border-radius: 6px;
+  border-radius: 4px;
   font-family: initial;
 }
 .nav_links .qnav_ {
   padding: 0.1em 0.45em 0em 0.4em;
-  font-family: Arial;
+  font-family: "Arial";
 }
 .nav_links a {
   font-size:2em;
@@ -1115,12 +1115,12 @@ div.img_mini.symlink div.markTrue, div.img_mini.symlink div.markFalse {
 }
 .nav_links #full_size {
   padding: 0.3em 0em 0.45em 0em;
-  font-family: "Arial" !important;
+  font-family: "Arial";
   font-size: 1.5em;
 }
 .nav_links #do_print {
   padding: 0 0.3em 0.1em 0.4em;
-  font-family: "Arial" !important;
+  font-family: sans!important; /* quirk for Chrome */
 }
 input.showTime[type="number"] {
   width: 1.3em;
@@ -1391,18 +1391,18 @@ select {
   left: auto;
   text-align: center;
 }
-#dzclose {
+.dzclose {
   position: absolute;
   top: 0.1em;
   right: 0.1em;
-  cursor: pointer;
-  font-size: 2em;
-  line-height: 0.7em;
-  margin: 0;
-  padding: 2px 4px 6px 4px;
+  cursor: pointer!important;
+  font-size: 2em!important;
+  line-height: 0.7em!important;
+  margin: 0!important;
+  padding: 2px 4px 6px 4px!important;
   border-radius: 4px;
 }
-#dzclose:hover {
+.dzclose:hover {
   color: black;
   background-color: deeppink;
 }

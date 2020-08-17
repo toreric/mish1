@@ -23,7 +23,7 @@
       <a href="https://bygdegardarna.se/savar" target="_blank" title="Gå till hemsidan
 i nytt fönster"><h3 style="line-height:0.8em;vertical-align:top">Sävar Hembygdsförening</h3></a><br>
       <h2>INTRODUKTION<br><span>till fotoalbum</span></h2>
-      <p id="dzclose" class="" onclick="parent.document.getElementsByTagName('iframe')[0].style.display='none'" title="Stäng       [Esc]
+      <p class="dzclose" onclick="parent.document.getElementsByTagName('iframe')[0].style.display='none'" title="Stäng       [Esc]
 introduktionen"> &times; </p>
       <img src="images/savar.png" draggable="false" ondragstart="return false" title="Sävars
 kommuns
@@ -90,7 +90,7 @@ nytt fönster:</pre>
     <script>
       if (!window.parent.frames.length) {
         document.getElementById ("GO").style.display = "block";
-        document.getElementById ("dzclose").style.display = 'none';
+        document.querySelector (".dzclose").style.display = 'none';
       }
     </script>
   </body>

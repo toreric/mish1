@@ -110,12 +110,6 @@ export default Component.extend (contextMenuMixin, {
         this.set ("albumName", "");
       }
     }
-
-    //&&&&& START
-console.log("Start 1");
-    //startInfoPage ()
-    //&&&&&
-
   }),
 
   // CONTEXT MENU Context menu
@@ -2076,12 +2070,9 @@ console.log("Start 1");
             $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
             $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_1"));
             userLog ("START " + imdbroot);
-console.log("Start 2");
           }
         }).then ( () => {
-          //if ($ ("#imdbRoot").text ()) {
-            startInfoPage ()
-          //}
+          startInfoPage ()
         });
       }), 2000); // Time needed!
     },
@@ -3127,9 +3118,7 @@ console.log("Start 2");
         $ ("#title a.proid").focus ();
         zeroSet (); // #allowValue = '000... etc.
         that.actions.setAllow ();
-        //later ( ( () => {
-          //console.log ("Out, allowValue", $ ("#allowValue").text ());
-        //}), 200);
+        $ (".mainMenu p:eq(3) a").hide (); // Hide the album-edit button in mainMenu
         $ ("#showDropbox").hide ();  // Hide upload button
 
         if ($ ("#imdbRoot").text ()) { // If imdb is initiated
@@ -3199,7 +3188,9 @@ console.log("Start 2");
         $ ("#title input.cred.password").val ("");
         $ ("#title input.cred").hide ();
         that.set ("albumData", []); // Triggers jstree rebuild in requestDirs
+        this.set ("loggedIn", false);
         zeroSet (); // #allowValue = '000... etc.
+        that.actions.setAllow ();
 
         // NOTE: The find (picFind) cookie is set by the server when a search
         // is initiated from the browser by .../find/<album>/<text items>
@@ -3245,7 +3236,6 @@ console.log("Start 2");
               let toold = 60; // minutes. NOTE: Also defined in routes.js, please MAKE COMMON!!
               execute ('find -L ' + lnk + ' -type d -name "' + picFound + '*" -amin +' + toold + ' | xargs rm -rf').then ();
               userLog ("START " + $ ("#imdbRoot").text ());
-console.log("Start 3");
               later ( ( () => {
                 $ ("#requestDirs").click ();
                 later ( ( () => {
@@ -3254,14 +3244,6 @@ console.log("Start 3");
                   $ (".ember-view.jstree").jstree ("open_node", "#j1_1");
                   $ (".ember-view.jstree").jstree ("select_node", "#j1_1");
                   startInfoPage ()
-                  /*execute ("cat " + $ ("#imdbLink").text () + "/_imdb_intro.txt | egrep '^/'").then (result => {
-                    result = result.split ("\n");
-                    if (result.length < 2 || result [0].indexOf ("Command failed") === 0) {
-                      console.log("    Inga introbilder");
-                    } else {
-                      console.log("result\n", result);
-                    }
-                  });*/
 //==                  spinnerWait (false);
                 }), 1000);
               }), 500);
@@ -3284,6 +3266,9 @@ console.log("Start 3");
           } else {
             document.getElementById ("t3").parentElement.style.display = "";
           }
+          // Hide or show the album-edit button in mainMenu
+          if (!(allow.albumEdit || allow.adminAll)) $ (".mainMenu p:eq(3) a").hide ()
+          else $ (".mainMenu p:eq(3) a").show ();
           later ( () => {
             if (picFind [1] && status !== "viewer") {
               later ( () => {
@@ -3722,9 +3707,9 @@ function startInfoPage () { // Compose the information display page
     if (intro.length < 2 || intro [0].indexOf ("Command failed") === 0) {
       $ ("#imdbIntro").text ("");
       intro = [];
-      console.log("    Inga introbilder");
+      console.log("Inga introbilder");
     } else {
-      console.log("    Introbilder:\n", intro);
+      console.log("Introbilder: ", intro.length);
     }
     return intro;
   }).then (intro => {
@@ -3739,15 +3724,12 @@ function startInfoPage () { // Compose the information display page
     // Adjust to load only available images
     if (intro.length > 0) {
       if (intro.length < nIm) nIm = intro.length + 1;
-      console.log("nIm:",nIm);
       for (let i=1; i<nIm; i++) { // i=0 is the logo picture
         let im1 = i - 1;
         let iAlbum = intro [im1].replace (/^([^ ]+).*/, "$1");
         let iName = intro [im1].replace (/^[^ ]+[ ]+([^ ]+)/, "$1");
-        console.log("iAlbum iName:",iAlbum,iName);
         if (iName) {
           var imgSrc = linktext + $ ("#imdbLink").text () + iAlbum + "_show_" + iName + ".png";
-          console.log("imgSrc:",imgSrc);
           let tmp = $ ("#imdbDirs").text ().split ("\n");
           let idx = tmp.indexOf (iAlbum.slice (0, iAlbum.length - 1));
           iImages [i].parentElement.setAttribute ("onclick","parent.selectJstreeNode("+idx+");parent.gotoMinipic ('" + iName + "')");
@@ -4183,7 +4165,7 @@ function niceDialogOpen (dialogId) {
   $ (id).parent ().css ("max-height", "");
   $ (id).css ("max-height","");
 //if ($ (id).parent (). css ("display") === "none") $ (id).parent ().css ("top", "38px");
-//later ( ( () => {
+
   $ (id).dialog ("open");
   // For jquery-ui-touch-punch, here maybe useful, may make some dialogs opened here
   // draggable on smartphones. Less useful in other cases (search for them),
@@ -4214,9 +4196,8 @@ function niceDialogOpen (dialogId) {
   $ (id).parent ().css ("max-height", hs + "px");
   $ (id).css ("max-height", hs - up + "px");
   $ (id).parent ().draggable ();
-  //$ (id).parent ().attr ({draggable: "true"}); // wrong draggability!
-  // NOTE, nodes above: JQuery objects
-//}), 200);
+  if (pos.top < 0) $ (id).parent ().css ("top", "2px");
+  // NOTE, nodes above are JQuery objects
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Close the ediText dialog and return false if it wasn't already closed, else return true
@@ -4744,7 +4725,7 @@ function serverShell (anchor) { // Send commands in 'anchor text' to server shel
   if (commands) {
     mexecute (commands).then (result => {
       if (result.toString ().trim ()) {
-        console.log (result);
+          console.log (result);
       }
     });
   }

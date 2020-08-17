@@ -25,7 +25,7 @@ body {
 #GO:hover {
   border-color: white;
 }
-#dzclose { /* NEARLY like in app.css */
+.dzclose { /* NEARLY like in app.css */
   position: fixed;
   top: 0.4em;
   left: 0.4em;
@@ -36,7 +36,7 @@ body {
   padding: 2px 4px 6px 4px;
   border-radius: 4px;
 }
-#dzclose:hover {
+.dzclose:hover {
   color: black;
   background-color: deeppink;
 }
