@@ -463,16 +463,16 @@ export default Component.extend (contextMenuMixin, {
         picName = $ ("#picName").text ().trim ();
       }), 50);
       resetBorders (); // Reset all borders
-      if (!$ ("#i" + escapeDots (picName)).hasClass ("symlink")) { // Leave out symlinks
+      //if (!$ ("#i" + escapeDots (picName)).hasClass ("symlink")) { // Leave out symlinks
         markBorders (picName);
         picNames [0] = picName;
         nels = 1;
         symlinkClicked = false;
-      } else {
+      /*} else {
         symlinkClicked = true;
         nels = 0;
         $ ("#picName").text (""); // Signals non-movable, see "downHere"
-      }
+      }*/
       nodelem0 = document.getElementById ("i" + picName).firstElementChild.nextElementSibling;
       var picMarked = nodelem0.className === "markTrue";
       if (picMarked) {
@@ -480,9 +480,9 @@ export default Component.extend (contextMenuMixin, {
         nodelem = document.getElementsByClassName ("markTrue");
         for (i=0; i<nodelem.length; i++) {
           var tmpName = nodelem [i].nextElementSibling.innerHTML.trim ();
-          if (!$ ("#i" + escapeDots (tmpName)).hasClass ("symlink")) { // Leave out symlinks
+          //if (!$ ("#i" + escapeDots (tmpName)).hasClass ("symlink")) { // Leave out symlinks
             picNames.push (tmpName);
-          }
+          //}
         }
         nels = picNames.length;
         nlns = nodelem.length - nels;
@@ -4291,8 +4291,13 @@ function linkFunc (picNames) { // ===== Execute a link-these-files-to... request
   $ ("select.selectOption").focus ();
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function getlink (pathlink) {
+  return execute ("readlink -n " + pathlink).then (res => {return res});
+}
+getlink ("");
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function moveFunc (picNames) { // ===== Execute a move-this-file-to... request
-  // picNames should also be saved as string in #picNames
+  // When moveFunc is called, picNames should also be saved as string in #picNames
   var albums = $ ("#imdbDirs").text ();
   albums = albums.split ("\n");
   let curr = $ ("#imdbDir").text ().match(/\/.*$/); // Remove imdbLink
@@ -4304,16 +4309,24 @@ function moveFunc (picNames) { // ===== Execute a move-this-file-to... request
       malbum.push (albums [i]);
     }
   }
-  let codeMove = "'let malbum = this.value;let mpath = \"\";if (this.selectedIndex === 0) {return false;}mpath = malbum.replace (/^[^/]*(.*)/, $ (\"#imdbLink\").text () + \"$1\");console.log(\"Move to\",mpath);let picNames = $(\"#picNames\").text ().split (\"\\n\");let cmd=[];for (let i=0; i<picNames.length; i++) {let movefrom = \" \" + $(\"#imdbLink\").text() + \"/\" + document.getElementById (\"i\" + picNames [i]).getElementsByTagName(\"img\")[0].getAttribute (\"title\");let mini = movefrom.replace (/([^\\/]+)(\\.[^\\/.]+)$/, \"_mini_$1.png\");let show = movefrom.replace (/([^\\/]+)(\\.[^\\/.]+)$/, \"_show_$1.png\");let moveto = \" \" + mpath + \"/\";cmd.push (\"mv -fu\" +movefrom+mini+show+moveto);}$ (\"#temporary\").text (mpath);$ (\"#temporary_1\").text (cmd.join(\"\\n\"));$ (\"#checkNames\").click ();'"
+  /*let codeMove = "'let malbum = this.value;let mpath = \"\";if (this.selectedIndex === 0) {return false;}mpath = malbum.replace (/^[^/]*(.*)/, $ (\"#imdbLink\").text () + \"$1\");let lpp=mpat.split(\"/\").length-1;if(lpp>0)lpp=\"../\".repeat (lpp); else lpp=\"./\";console.log(\"Move to\",mpath);let picNames = $(\"#picNames\").text ().split (\"\\n\");let cmd=[];for (let i=0; i<picNames.length; i++) {let movefrom = \" \" + $(\"#imdbLink\").text() + \"/\" + document.getElementById (\"i\" + picNames [i]).getElementsByTagName(\"img\")[0].getAttribute (\"title\");let mini = movefrom.replace (/([^\\/]+)(\\.[^\\/.]+)$/, \"_mini_$1.png\");let show = movefrom.replace (/([^\\/]+)(\\.[^\\/.]+)$/, \"_show_$1.png\");let moveto = \" \" + mpath + \"/\";let lnkfrom = getlink (movefrom);if (lnkfrom) {lnkfrom = lnkfrom.replace (/^[^/]+\\//, lpp);let lnkmini = getlink (mini);if (lnkmini) lnkmini = lnkmini.replace (/^[^/]+\\//, lpp);let lnkshow = getlink (show);if (lnkshow) lnkshow = lnkshow.replace (/^[^/]+\\//, lpp);cmd.push (\"ln -sfn \" + lnkfrom +  + \"; ln -sfn \" + lnkmini + mini + \"; ln -sfn \" + lnkshow + show);}cmd.push (\"mv -fu\" +movefrom+mini+show+moveto);console.log(movefrom,mini,show,moveto);}$ (\"#temporary\").text (mpath);$ (\"#temporary_1\").text (cmd.join(\"\\n\"));$ (\"#checkNames\").click ();'"*/
+
+  var codeMove = "'var malbum=this.value;var mpath=\"\";if(this.selectedIndex===0){return false;}mpath=malbum.replace (/^[^/]*(.*)/,$(\"#imdbLink\").text()+\"$1\");var lpp=mpath.split(\"/\").length-1;if (lpp > 0)lpp=\"../\".repeat(lpp);else lpp=\"./\";console.log(\"Move to\",mpath);var picNames=$(\"#picNames\").text().split(\"\\n\");var cmd=[];for (let i=0;i<picNames.length;i++){var movefrom=$(\"#imdbLink\").text()+\"/\"+document.getElementById(\"i\"+picNames[i]).getElementsByTagName(\"img\")[0].getAttribute(\"title\");var mini=movefrom.replace(/([^/]+)(\\.[^/.]+)$/,\"_mini_$1.png\");var show=movefrom.replace(/([^/]+)(\\.[^/.]+)$/,\"_show_$1.png\");var moveto=mpath+\"/\";cmd.push(\"movefrom=\"+movefrom+\";mini=\"+mini+\";show=\"+show+\";moveto=\"+moveto+\";lpp=\"+lpp+\";lnkfrom=$(readlink -n $movefrom);if [ $lnkfrom != \\\"\\\" ];then lnkfrom=$(echo $lnkfrom|sed -e \\\"s/^\\\\(\\\\.\\\\{1,2\\\\}\\\\/\\\\)*//\\\" -e \\\"s,^,$lpp,\\\");lnkmini=$(echo $lnkfrom|sed -e \\\"s/\\\\([^/]\\\\+\\\\)\\\\(\\\\.[^/.]\\\\+\\\\)\\\\$/_mini_\\\\1\\\\.png/\\\");lnkshow=$(echo $lnkfrom|sed -e \\\"s/\\\\([^/]\\\\+\\\\)\\\\(\\\\.[^/.]\\\\+\\\\)\\\\$/_show_\\\\1\\\\.png/\\\");ln -sfn $lnkfrom $movefrom;ln -sfn $lnkmini $mini;ln -sfn $lnkshow $show;fi;mv -fu \\\"$movefrom\\\" \\\"$mini\\\" \\\"$show\\\" \\\"$moveto\\\"\"); console.log(movefrom,mini,show,moveto);}$(\"#temporary\").text(mpath);$(\"#temporary_1\").text (cmd.join(\"\\n\"));'"
+  // Here checkNames cannot be called (like in linkFunc) since  #temporary_1 is not usable
+
+console.log("codeMove",codeMove);
 
   let r = $ ("#imdbRoot").text ();
-  let codeSelect = '<select class="selectOption" onchange=' + codeMove + '>\n<option value="">Välj ett album:</option>';
+  let codeSelect = '<select class="selectOption" onchange=' + codeMove + '><option value="">Välj ett album:</option>';
   //console.log(codeSelect);
   for (let i=0; i<malbum.length; i++) {
     let v = r + malbum [i];
-    codeSelect += '\n<option value ="' +v+ '">' +v+ '</option>';
+    codeSelect += '<option value ="' +v+ '">' +v+ '</option>';
   }
-  codeSelect += "\n</select>"
+  codeSelect += "</select>"
+
+console.log("codeSelect",codeSelect);
+
   let title = "Flytta till annat album";
   let text = cosp (picNames) +"<br>ska flyttas till<br>" + codeSelect;
   let modal = true;

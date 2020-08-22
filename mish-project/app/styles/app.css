@@ -124,6 +124,9 @@ button {
   border-radius: 3px;
   cursor: pointer;
 }
+button:focus {
+  border: 1.2px solid #666;
+}
 .ui-menu {
   min-width: 50px;
   max-width: 300px;
