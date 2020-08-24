@@ -1168,6 +1168,7 @@ export default Component.extend (contextMenuMixin, {
         that.actions.hideShow ();
         return;
       }
+      if (!tgt.parentElement) return; // impossible
       if (tgt.tagName !=="IMG" && tgt.parentElement.firstElementChild.tagName !== "IMG") return;
 
       // Ctrl + click may replace right-click on Mac
@@ -4291,11 +4292,6 @@ function linkFunc (picNames) { // ===== Execute a link-these-files-to... request
   $ ("select.selectOption").focus ();
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function getlink (pathlink) {
-  return execute ("readlink -n " + pathlink).then (res => {return res});
-}
-getlink ("");
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function moveFunc (picNames) { // ===== Execute a move-this-file-to... request
   // When moveFunc is called, picNames should also be saved as string in #picNames
   var albums = $ ("#imdbDirs").text ();
@@ -4309,12 +4305,17 @@ function moveFunc (picNames) { // ===== Execute a move-this-file-to... request
       malbum.push (albums [i]);
     }
   }
-  /*let codeMove = "'let malbum = this.value;let mpath = \"\";if (this.selectedIndex === 0) {return false;}mpath = malbum.replace (/^[^/]*(.*)/, $ (\"#imdbLink\").text () + \"$1\");let lpp=mpat.split(\"/\").length-1;if(lpp>0)lpp=\"../\".repeat (lpp); else lpp=\"./\";console.log(\"Move to\",mpath);let picNames = $(\"#picNames\").text ().split (\"\\n\");let cmd=[];for (let i=0; i<picNames.length; i++) {let movefrom = \" \" + $(\"#imdbLink\").text() + \"/\" + document.getElementById (\"i\" + picNames [i]).getElementsByTagName(\"img\")[0].getAttribute (\"title\");let mini = movefrom.replace (/([^\\/]+)(\\.[^\\/.]+)$/, \"_mini_$1.png\");let show = movefrom.replace (/([^\\/]+)(\\.[^\\/.]+)$/, \"_show_$1.png\");let moveto = \" \" + mpath + \"/\";let lnkfrom = getlink (movefrom);if (lnkfrom) {lnkfrom = lnkfrom.replace (/^[^/]+\\//, lpp);let lnkmini = getlink (mini);if (lnkmini) lnkmini = lnkmini.replace (/^[^/]+\\//, lpp);let lnkshow = getlink (show);if (lnkshow) lnkshow = lnkshow.replace (/^[^/]+\\//, lpp);cmd.push (\"ln -sfn \" + lnkfrom +  + \"; ln -sfn \" + lnkmini + mini + \"; ln -sfn \" + lnkshow + show);}cmd.push (\"mv -fu\" +movefrom+mini+show+moveto);console.log(movefrom,mini,show,moveto);}$ (\"#temporary\").text (mpath);$ (\"#temporary_1\").text (cmd.join(\"\\n\"));$ (\"#checkNames\").click ();'"*/
-
-  var codeMove = "'var malbum=this.value;var mpath=\"\";if(this.selectedIndex===0){return false;}mpath=malbum.replace (/^[^/]*(.*)/,$(\"#imdbLink\").text()+\"$1\");var lpp=mpath.split(\"/\").length-1;if (lpp > 0)lpp=\"../\".repeat(lpp);else lpp=\"./\";console.log(\"Move to\",mpath);var picNames=$(\"#picNames\").text().split(\"\\n\");var cmd=[];for (let i=0;i<picNames.length;i++){var movefrom=$(\"#imdbLink\").text()+\"/\"+document.getElementById(\"i\"+picNames[i]).getElementsByTagName(\"img\")[0].getAttribute(\"title\");var mini=movefrom.replace(/([^/]+)(\\.[^/.]+)$/,\"_mini_$1.png\");var show=movefrom.replace(/([^/]+)(\\.[^/.]+)$/,\"_show_$1.png\");var moveto=mpath+\"/\";cmd.push(\"movefrom=\"+movefrom+\";mini=\"+mini+\";show=\"+show+\";moveto=\"+moveto+\";lpp=\"+lpp+\";lnkfrom=$(readlink -n $movefrom);if [ $lnkfrom != \\\"\\\" ];then lnkfrom=$(echo $lnkfrom|sed -e \\\"s/^\\\\(\\\\.\\\\{1,2\\\\}\\\\/\\\\)*//\\\" -e \\\"s,^,$lpp,\\\");lnkmini=$(echo $lnkfrom|sed -e \\\"s/\\\\([^/]\\\\+\\\\)\\\\(\\\\.[^/.]\\\\+\\\\)\\\\$/_mini_\\\\1\\\\.png/\\\");lnkshow=$(echo $lnkfrom|sed -e \\\"s/\\\\([^/]\\\\+\\\\)\\\\(\\\\.[^/.]\\\\+\\\\)\\\\$/_show_\\\\1\\\\.png/\\\");ln -sfn $lnkfrom $movefrom;ln -sfn $lnkmini $mini;ln -sfn $lnkshow $show;fi;mv -fu \\\"$movefrom\\\" \\\"$mini\\\" \\\"$show\\\" \\\"$moveto\\\"\"); console.log(movefrom,mini,show,moveto);}$(\"#temporary\").text(mpath);$(\"#temporary_1\").text (cmd.join(\"\\n\"));'"
+  // The following will move even links, where link source is corrected and with even
+  // deletion of the random postfix from picture names for links moved from #picFound.
+  // Beware of the algorithm with all regular expression escapes in the text put into
+  // #temporary_1, a Bash text string containing in the magnitude of 1000 characters,
+  // depending on actual file names, but well within the Bash line length limit.
+  var codeMove = "'var malbum=this.value;var mpath=\"\";if(this.selectedIndex===0){return false;}mpath=malbum.replace (/^[^/]*(.*)/,$(\"#imdbLink\").text()+\"$1\");var lpp=mpath.split(\"/\").length-1;if (lpp > 0)lpp=\"../\".repeat(lpp);else lpp=\"./\";console.log(\"Try move to\",malbum);var picNames=$(\"#picNames\").text().split(\"\\n\");var cmd=[];for (let i=0;i<picNames.length;i++){var move=$(\"#imdbLink\").text()+\"/\"+document.getElementById(\"i\"+picNames[i]).getElementsByTagName(\"img\")[0].getAttribute(\"title\");var mini=move.replace(/([^/]+)(\\.[^/.]+)$/,\"_mini_$1.png\");var show=move.replace(/([^/]+)(\\.[^/.]+)$/,\"_show_$1.png\");var moveto=mpath+\"/\";var picfound=$(\"#picFound\").text();cmd.push(\"picfound=\"+picfound+\";move=\"+move+\";mini=\"+mini+\";show=\"+show+\";orgmove=$move;orgmini=$mini;orgshow=$show;moveto=\"+moveto+\";lpp=\"+lpp+\";lnksave=$(readlink -n $move);if [ $lnksave ];then move=$(echo $move|sed -e \\\"s/\\\\(.*$picfound.*\\\\)\\\\.[^.\\\\/]\\\\+\\\\(\\\\.[^.\\\\/]\\\\+$\\\\)/\\\\1\\\\2/\\\");mini=$(echo $mini|sed -e \\\"s/\\\\(.*$picfound.*\\\\)\\\\.[^.\\\\/]\\\\+\\\\(\\\\.[^.\\\\/]\\\\+$\\\\)/\\\\1\\\\2/\\\");show=$(echo $show|sed -e \\\"s/\\\\(.*$picfound.*\\\\)\\\\.[^.\\\\/]\\\\+\\\\(\\\\.[^.\\\\/]\\\\+$\\\\)/\\\\1\\\\2/\\\");lnkfrom=$(echo $lnksave|sed -e \\\"s/^\\\\(\\\\.\\\\{1,2\\\\}\\\\/\\\\)*//\\\" -e \\\"s,^,$lpp,\\\");lnkmini=$(echo $lnkfrom|sed -e \\\"s/\\\\([^/]\\\\+\\\\)\\\\(\\\\.[^/.]\\\\+\\\\)\\\\$/_mini_\\\\1\\\\.png/\\\");lnkshow=$(echo $lnkfrom|sed -e \\\"s/\\\\([^/]\\\\+\\\\)\\\\(\\\\.[^/.]\\\\+\\\\)\\\\$/_show_\\\\1\\\\.png/\\\");ln -sfn $lnkfrom $move;fi;mv -n $move $moveto;if [ $? -ne 0 ];then if [ $move != $orgmove ];then rm $move;fi;exit;else if [ $lnksave ];then ln -sfn $lnkmini $mini;ln -sfn $lnkshow $show;fi;mv -n $mini $show $moveto;if [ $move != $orgmove ];then rm $orgmove;fi;if [ $mini != $orgmini ];then rm $orgmini;fi;if [ $show != $orgshow ];then rm $orgshow;fi;fi;\");}$(\"#temporary\").text(mpath);$(\"#temporary_1\").text (cmd.join(\"\\n\"));'"
+  // A log ...\");console.log(move,mini,show,moveto);}$...
+  // may be inserted and is printed even at failure (now removed).
   // Here checkNames cannot be called (like in linkFunc) since  #temporary_1 is not usable
 
-console.log("codeMove",codeMove);
+//console.log("codeMove",codeMove);
 
   let r = $ ("#imdbRoot").text ();
   let codeSelect = '<select class="selectOption" onchange=' + codeMove + '><option value="">Välj ett album:</option>';
@@ -4325,7 +4326,7 @@ console.log("codeMove",codeMove);
   }
   codeSelect += "</select>"
 
-console.log("codeSelect",codeSelect);
+//console.log("codeSelect",codeSelect);
 
   let title = "Flytta till annat album";
   let text = cosp (picNames) +"<br>ska flyttas till<br>" + codeSelect;

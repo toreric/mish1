@@ -115,17 +115,6 @@ module.exports = function (app) {
     var stat = fs.statSync (file)
     var lstat = fs.lstatSync (file)
     var linkto = ""
-    function isSymlink (file) {
-      return new Promise (function (resolve, reject) {
-        fs.lstat (file, function (err, stats) {
-          if (err) {
-            console.error ('filestat isSymlink', err.message)
-          } else {
-            resolve (stats.isSymbolicLink ())
-          }
-        })
-      })
-    }
     var syml = await isSymlink (file)
     if (syml) {
       linkto = execSync ("readlink " + file).toString ().trim ()
@@ -531,9 +520,9 @@ module.exports = function (app) {
 
   // ##### #6.5 Update one or more database entries
   app.post ('/sqlupdate', upload.none (), async function (req, res, next) {
-    console.log (req.body)
+    //console.log (req.body)
     let filepaths = req.body.filepaths
-    console.log ('SQLUPDATE', filepaths)
+    //console.log ('SQLUPDATE', filepaths)
     let files = filepaths.trim ().split ('\n')
     for (let i=0; i<files.length; i++) {
       await new Promise (z => setTimeout (z, 888))
@@ -833,18 +822,32 @@ module.exports = function (app) {
     return 'DELETED'
   }
 
+  // ===== Check if a file is a symbolic link
+  function isSymlink (file) {
+    return new Promise (function (resolve, reject) {
+      fs.lstat (file, function (err, stats) {
+        if (err) {
+          console.error ('filestat isSymlink', err.message)
+        } else {
+          resolve (stats.isSymbolicLink ())
+        }
+      })
+    })
+  }
+
   // ===== Check and add|remove|update an image file record in the database
   // Se vidare  #0.1 Get file information  etc.
   // och #10. Search text  etc.
   // Funkar ej om 'filepaths' är mer än en fil ... (async hell)
+  // NOTE: filepaths.length MUST be 1 only, caused by sync/async problem!
   function sqlUpdate_1 (filepaths) {
   return new Promise (async function (resolve, reject) {
     let pathlist = filepaths.trim ().split ("\n")
     for (let i=0; i<pathlist.length; i++) { // forLoop
-      let db = await sqlite.open (IMDB_LINK + '/_imdb_images.sqlite')
-      await db.run ("PRAGMA journal_mode=WAL")
-      // Classify the file as exising or not
       let filePath = pathlist [i]
+      // Symlinks should not be processed
+      if (await isSymlink (filePath)) continue;
+      // Classify the file as exising or not
       let pathArr = filePath.split ("/")
       let xmpParams = [], dbValues = {}
       let fileExists = false
@@ -857,6 +860,8 @@ module.exports = function (app) {
       } catch (err) {
         fileExists = false
       }
+      let db = await sqlite.open (IMDB_LINK + '/_imdb_images.sqlite')
+      await db.run ("PRAGMA journal_mode=WAL")
       let sqlGetId = "SELECT id FROM imginfo WHERE filepath='" + filePath + "'"
       row = await db.get (sqlGetId)
       let recId = -1
