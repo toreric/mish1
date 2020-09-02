@@ -509,7 +509,7 @@ module.exports = function (app) {
     let tmp = rmPic (fileName)
     console.log (' ' + fileName + ' deleted')
     res.send (tmp) // tmp == 'DELETED'
-    //await sqlUpdate_1 (fileName) NOTE: done from refreshing via #6.5 sqlupdate
+    //await sqlUpdate (fileName) NOTE: done from refreshing via #6.5 sqlupdate
   })
 
   // ##### #6. START PAGE start page
@@ -526,7 +526,7 @@ module.exports = function (app) {
     let files = filepaths.trim ().split ('\n')
     for (let i=0; i<files.length; i++) {
       await new Promise (z => setTimeout (z, 888))
-      await sqlUpdate_1 (files [i])
+      await sqlUpdate (files [i])
     }
     res.location ('/')
     res.send ('')
@@ -593,7 +593,7 @@ module.exports = function (app) {
       .then (contents => fs.writeFileAsync (IMDB_PATH + file.originalname, contents, 'binary'))
       .then (async () => {
         await new Promise (z => setTimeout (z, 888))
-        await sqlUpdate_1 (IMDB_DIR + file.originalname)
+        await sqlUpdate (IMDB_DIR + file.originalname)
       }) // Add to the sql DB
       .then (console.log (++n_upl +' TMP: '+ file.path + ' written to' +'\nUPLOADED: '+ IMDB_DIR + file.originalname))
       // Delete showfile and minifile if the main file is refreshed
@@ -711,7 +711,7 @@ module.exports = function (app) {
           execSync ('touch -d "' + mtime + '" "' + fileName + '"')
           res.send ('')
           await new Promise (z => setTimeout (z, 888))
-          await sqlUpdate_1 (fileName) // with path @***
+          await sqlUpdate (fileName) // with path @***
         }
       })
     })
@@ -798,12 +798,13 @@ module.exports = function (app) {
     let pngname = path.parse (fileName).name + '.png'
     let IMDB_DIR = path.parse (fileName).dir + '/'
     let IMDB_PATH = PWD_PATH + '/' + IMDB_DIR
-    let lnk = ''
+    /*let lnk = ''
     try {
       lnk = execSync ('readlink -n ' + PWD_PATH + '/' + fileName).toString ()
     } catch (err) {} // Ignore
-    //console.logn("LINK?", lnk.length, lnk);
+    //console.log ("LINK?", lnk.length, lnk);*/
     fs.unlinkAsync (PWD_PATH + '/' + fileName) // File not found isn't caught!
+    .then (sqlUpdate (fileName))
     .then (fs.unlinkAsync (IMDB_PATH +'_mini_'+ pngname)) // File not found isn't caught!
     .then (fs.unlinkAsync (IMDB_PATH +'_show_'+ pngname)) // File not found isn't caught!
     .then ()
@@ -827,7 +828,8 @@ module.exports = function (app) {
     return new Promise (function (resolve, reject) {
       fs.lstat (file, function (err, stats) {
         if (err) {
-          console.error ('filestat isSymlink', err.message)
+          //console.error ('filestat isSymlink', err.message)
+          resolve (false)
         } else {
           resolve (stats.isSymbolicLink ())
         }
@@ -840,14 +842,21 @@ module.exports = function (app) {
   // och #10. Search text  etc.
   // Funkar ej om 'filepaths' är mer än en fil ... (async hell)
   // NOTE: filepaths.length MUST be 1 only, caused by sync/async problem!
-  function sqlUpdate_1 (filepaths) {
+
+  // Kommentar den 2020-09-02 vid uppload-bekymmer:
+  // Kanhända nya 'sqlite-async' på NPM kan förbättra? Också fenomenet att för 'hastigt
+  // uppladdade' filer ibland inte hinner registreras: 'SQLITE_BUSY: database is locked'?
+
+  function sqlUpdate (filepaths) {
   return new Promise (async function (resolve, reject) {
     let pathlist = filepaths.trim ().split ("\n")
     for (let i=0; i<pathlist.length; i++) { // forLoop
       let filePath = pathlist [i]
-      // Symlinks should not be processed
-      if (await isSymlink (filePath)) continue;
-      // Classify the file as exising or not
+      // No files in the #picFound album (may be occasionally uploaded,
+      // temporary, non-symlinks) nor any symlinks should be processed:
+      if (filePath.indexOf (picFound) > 0 || await isSymlink (filePath)) continue;
+      //console.log("sqlUpdate",filePath)
+      // Classify the file as existing or not
       let pathArr = filePath.split ("/")
       let xmpParams = [], dbValues = {}
       let fileExists = false
@@ -899,7 +908,7 @@ module.exports = function (app) {
           /* RECORD 1  EXISTS 1
           ¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤ */
           //console.log (' sql UPDATE', recId, filePath)
-          // update the table row with id = recId
+          // update the table row where id = recId
           getSqlParams ()
           await db.run ('UPDATE imginfo SET (filepath,name,album,description,creator,source,subject,tcreated,tchanged) = ($filepath,$name,$album,$description,$creator,$source,$subject,$tcreated,$tchanged) WHERE id=' + recId, values = dbValues)
 

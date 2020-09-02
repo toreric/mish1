@@ -469,7 +469,8 @@ export default Component.extend (contextMenuMixin, {
         nels = 1;
         symlinkClicked = false;
       /*} else {
-        symlinkClicked = true;
+        symlinkClicked = true; // Saved old code here:
+        // NOTE: symlinkClicked isn't utilized any longer since symlinks may be moved
         nels = 0;
         $ ("#picName").text (""); // Signals non-movable, see "downHere"
       }*/
@@ -725,10 +726,12 @@ export default Component.extend (contextMenuMixin, {
             // NOTE: Must be a 'clean' call (no then or <await>):
             deleteFiles (picNames, nels, picPaths);
             $ (this).dialog ('close');
-            /*later ( ( () => {
-              userLog ($ ("#temporary").text ()); // From deleteFiles
-              $ ("#temporary").text ("");
-            }), 1000);*/
+            later ( ( () => {
+              document.getElementById("reLd").disabled = false;
+              $ ("#reLd").click ();
+              //userLog ($ ("#temporary").text ()); // From deleteFiles
+              //$ ("#temporary").text ("");
+            }), 750);
             scrollTo (null, $ ("#highUp").offset ().top);
             $ ("#refresh-1").click ();
           }
@@ -1777,17 +1780,21 @@ export default Component.extend (contextMenuMixin, {
       $ ("#temporary").text ("");
       $ ("#temporary_1").text ("");
       // The code in this dialog will indirectly call albumEditOption () onchange:
-      var code = '<span>' + imdbDir + '</span><br>';
-      code += '<select class="selectOption" onchange=';
-      code += "'$ (\"#temporary\").text (this.value);$ (\"#albumEditOption\").click ();return false'>";
-      code += '\n<option value="">&nbsp;Välj åtgärd för albumet&nbsp;</option>';
-      code += '\n<option value="new">&nbsp;Gör ett nytt underalbum  &nbsp;</option>';
-      if (imdbDir !== imdbRoot) {
+      var code0 = '<span>' + imdbDir + '</span><br>';
+      code0 += '<select class="selectOption" onchange=';
+      code0 += "'$ (\"#temporary\").text (this.value);$ (\"#albumEditOption\").click ();return false'>";
+      var code = code0 + '\n<option value="">&nbsp;Välj åtgärd för albumet&nbsp;</option>';
+      if (imdbDir.indexOf (picFound) < 0) {
+        code += '\n<option value="new">&nbsp;Gör ett nytt underalbum  &nbsp;</option>';
+      }
+      if (imdbDir !== imdbRoot && imdbDir.indexOf (picFound) < 0) {
         code += '\n<option value="erase">&nbsp;Radera albumet&nbsp;</option>';
       }
       if ($ (".img_mini").length > 1) {
         code += '\n<option value="order">&nbsp;Sortera bilderna efter namn&nbsp;</option>';
         code += '\n<option value="reverse">&nbsp;Sortera bilderna baklänges&nbsp;</option>';
+      } else if (imdbDir.indexOf (picFound) > -1) {
+        code = code0 + '\n<option value="">&nbsp;Albumet kan inte åtgärdas!&nbsp;</option>';
       }
       code += '\n</select>';
       infoDia (null, null, album, code, 'Avbryt', true);
@@ -3295,7 +3302,7 @@ export default Component.extend (contextMenuMixin, {
                   }, 6000);
                 }, 4000);
               }, 2000);
-            }
+            } // end if
           }, 200);
         }, 2000);
       }
@@ -3796,16 +3803,17 @@ async function parentAlbum (tgt) {
   } // else do nothing
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// Position to a minipic and highlight its border
-window.gotoMinipic = function (namepic) { // for child window
+// Position to a minipic and highlight its border, for child window
+window.gotoMinipic = function (namepic) {
   later ( ( () => {
     gotoMinipic (namepic);
   }), 4000);
   later ( ( () => {
     userLog ("KLICKA FÖR STÖRRE BILD!", true, 6000)
     //infoDia (null, null, "Information", "<br>Klicka på miniatyrbilden så visas den större!Klicka på miniatyrbilden så visas den större!<br>", "Ok", true);
-  }), 10000);
+  }), 6000);
 }
+// Position to a minipic and highlight its border, 'main' function
 function gotoMinipic (namepic) {
   let hs = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
   let spinner = document.querySelector("img.spinner");
@@ -3952,20 +3960,57 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) { // ===== I
       text: yes, // Okay. See below
         id: "yesBut",
       click: function () {
-        if (picName === "") { // Special case: link | move | ..., and then refresh
+        if (picName === "") { // Special case: link || move || ...
           spinnerWait (true);
           serverShell ("temporary_1");
+
+          // Extract/construct sqlUpdate file list if there are any
+          // move=... moveto=... lines in #temporary_1
+          // Note: Files to be moved from #picFound and have got a random
+          // postfix are symlinks and thus ignored in any case by sqlUpdate
+          // (Why I do say that? Since a moved symlink has no random postfix...)
+          let txt = document.getElementById ("temporary_1").innerHTML.split (";");
+          let files = [];
+          for (let i=0; i<txt.length; i++) {
+            if (txt [i].indexOf ("move") === 0) {
+              files.push (txt [i].replace (/^[^=]+=/, ""));
+            }
+          }
+//console.log(files);
+          for (let i=0; i<files.length; i+= 2) {
+            let name = files [i].replace (/^(.*\/)*/, "");
+            files [i + 1] = files [i + 1] + name;
+          }
+//console.log(files);
+          files = files.join ("\n");
+          if (files.length > 0) {
+            later ( ( () => {
+              document.getElementById("reLd").disabled = false;
+              $ ("#reLd").click ();
+            }), 800);
+//console.log("===========\n" + files);
+            later ( ( () => {
+              sqlUpdate (files);
+            }), 5000);
+          }
+        }
+        $ (this).dialog ("close");
+        $ ('#navKeys').text ('true'); // Reset in case L/R arrows have been protected
+        if (flag && !picName) { // Special case: evaluate #temporary, probably for albumEdit
+          console.log ($ ("#temporary").text ());
+          eval ($ ("#temporary").text ());
+          return true;
+        }
+        // If this is the second search (result) dialog:
+        if (yes.indexOf ("Visa i") > -1) {
           later ( ( () => {
             document.getElementById("reLd").disabled = false;
             $ ("#reLd").click ();
           }), 800);
         }
-        $ (this).dialog ("close");
-        $ ('#navKeys').text ('true'); // Reset in case L/R arrows have been protected
-        if (flag && !picName) { // Special case: evaluate #temporary
-          console.log ($ ("#temporary").text ());
-          eval ($ ("#temporary").text ());
-        }
+        later ( ( () => {
+          spinnerWait (false);
+        }), 1600);
         return true;
       }
     }]);
@@ -4310,13 +4355,12 @@ function moveFunc (picNames) { // ===== Execute a move-this-file-to... request
   // Beware of the algorithm with all regular expression escapes in the text put into
   // #temporary_1, a Bash text string containing in the magnitude of 1000 characters,
   // depending on actual file names, but well within the Bash line length limit.
-  var codeMove = "'var malbum=this.value;var mpath=\"\";if(this.selectedIndex===0){return false;}mpath=malbum.replace (/^[^/]*(.*)/,$(\"#imdbLink\").text()+\"$1\");var lpp=mpath.split(\"/\").length-1;if (lpp > 0)lpp=\"../\".repeat(lpp);else lpp=\"./\";console.log(\"Try move to\",malbum);var picNames=$(\"#picNames\").text().split(\"\\n\");var cmd=[];for (let i=0;i<picNames.length;i++){var move=$(\"#imdbLink\").text()+\"/\"+document.getElementById(\"i\"+picNames[i]).getElementsByTagName(\"img\")[0].getAttribute(\"title\");var mini=move.replace(/([^/]+)(\\.[^/.]+)$/,\"_mini_$1.png\");var show=move.replace(/([^/]+)(\\.[^/.]+)$/,\"_show_$1.png\");var moveto=mpath+\"/\";var picfound=$(\"#picFound\").text();cmd.push(\"picfound=\"+picfound+\";move=\"+move+\";mini=\"+mini+\";show=\"+show+\";orgmove=$move;orgmini=$mini;orgshow=$show;moveto=\"+moveto+\";lpp=\"+lpp+\";lnksave=$(readlink -n $move);if [ $lnksave ];then move=$(echo $move|sed -e \\\"s/\\\\(.*$picfound.*\\\\)\\\\.[^.\\\\/]\\\\+\\\\(\\\\.[^.\\\\/]\\\\+$\\\\)/\\\\1\\\\2/\\\");mini=$(echo $mini|sed -e \\\"s/\\\\(.*$picfound.*\\\\)\\\\.[^.\\\\/]\\\\+\\\\(\\\\.[^.\\\\/]\\\\+$\\\\)/\\\\1\\\\2/\\\");show=$(echo $show|sed -e \\\"s/\\\\(.*$picfound.*\\\\)\\\\.[^.\\\\/]\\\\+\\\\(\\\\.[^.\\\\/]\\\\+$\\\\)/\\\\1\\\\2/\\\");lnkfrom=$(echo $lnksave|sed -e \\\"s/^\\\\(\\\\.\\\\{1,2\\\\}\\\\/\\\\)*//\\\" -e \\\"s,^,$lpp,\\\");lnkmini=$(echo $lnkfrom|sed -e \\\"s/\\\\([^/]\\\\+\\\\)\\\\(\\\\.[^/.]\\\\+\\\\)\\\\$/_mini_\\\\1\\\\.png/\\\");lnkshow=$(echo $lnkfrom|sed -e \\\"s/\\\\([^/]\\\\+\\\\)\\\\(\\\\.[^/.]\\\\+\\\\)\\\\$/_show_\\\\1\\\\.png/\\\");ln -sfn $lnkfrom $move;fi;mv -n $move $moveto;if [ $? -ne 0 ];then if [ $move != $orgmove ];then rm $move;fi;exit;else if [ $lnksave ];then ln -sfn $lnkmini $mini;ln -sfn $lnkshow $show;fi;mv -n $mini $show $moveto;if [ $move != $orgmove ];then rm $orgmove;fi;if [ $mini != $orgmini ];then rm $orgmini;fi;if [ $show != $orgshow ];then rm $orgshow;fi;fi;\");}$(\"#temporary\").text(mpath);$(\"#temporary_1\").text (cmd.join(\"\\n\"));'"
+  var codeMove = "'var malbum=this.value;var mpath=\"\";if(this.selectedIndex===0){return false;}mpath=malbum.replace (/^[^/]*(.*)/,$(\"#imdbLink\").text()+\"$1\");var lpp=mpath.split(\"/\").length-1;if (lpp > 0)lpp=\"../\".repeat(lpp);else lpp=\"./\";console.log(\"Try move to\",malbum);var picNames=$(\"#picNames\").text().split(\"\\n\");cmd=[];for (let i=0;i<picNames.length;i++){var move=$(\"#imdbLink\").text()+\"/\"+document.getElementById(\"i\"+picNames[i]).getElementsByTagName(\"img\")[0].getAttribute(\"title\");var mini=move.replace(/([^/]+)(\\.[^/.]+)$/,\"_mini_$1.png\");var show=move.replace(/([^/]+)(\\.[^/.]+)$/,\"_show_$1.png\");var moveto=mpath+\"/\";var picfound=$(\"#picFound\").text();cmd.push(\"picfound=\"+picfound+\";move=\"+move+\";mini=\"+mini+\";show=\"+show+\";orgmove=$move;orgmini=$mini;orgshow=$show;moveto=\"+moveto+\";lpp=\"+lpp+\";lnksave=$(readlink -n $move);if [ $lnksave ];then move=$(echo $move|sed -e \\\"s/\\\\(.*$picfound.*\\\\)\\\\.[^.\\\\/]\\\\+\\\\(\\\\.[^.\\\\/]\\\\+$\\\\)/\\\\1\\\\2/\\\");mini=$(echo $mini|sed -e \\\"s/\\\\(.*$picfound.*\\\\)\\\\.[^.\\\\/]\\\\+\\\\(\\\\.[^.\\\\/]\\\\+$\\\\)/\\\\1\\\\2/\\\");show=$(echo $show|sed -e \\\"s/\\\\(.*$picfound.*\\\\)\\\\.[^.\\\\/]\\\\+\\\\(\\\\.[^.\\\\/]\\\\+$\\\\)/\\\\1\\\\2/\\\");lnkfrom=$(echo $lnksave|sed -e \\\"s/^\\\\(\\\\.\\\\{1,2\\\\}\\\\/\\\\)*//\\\" -e \\\"s,^,$lpp,\\\");lnkmini=$(echo $lnkfrom|sed -e \\\"s/\\\\([^/]\\\\+\\\\)\\\\(\\\\.[^/.]\\\\+\\\\)\\\\$/_mini_\\\\1\\\\.png/\\\");lnkshow=$(echo $lnkfrom|sed -e \\\"s/\\\\([^/]\\\\+\\\\)\\\\(\\\\.[^/.]\\\\+\\\\)\\\\$/_show_\\\\1\\\\.png/\\\");ln -sfn $lnkfrom $move;fi;mv -n $move $moveto;if [ $? -ne 0 ];then if [ $move != $orgmove ];then rm $move;fi;exit;else if [ $lnksave ];then ln -sfn $lnkmini $mini;ln -sfn $lnkshow $show;fi;mv -n $mini $show $moveto;if [ $move != $orgmove ];then rm $orgmove;fi;if [ $mini != $orgmini ];then rm $orgmini;fi;if [ $show != $orgshow ];then rm $orgshow;fi;fi;\");}$(\"#temporary\").text(mpath);$(\"#temporary_1\").text (cmd.join(\"\\n\"));'"
   // A log ...\");console.log(move,mini,show,moveto);}$...
   // may be inserted and is printed even at failure (now removed).
   // Here checkNames cannot be called (like in linkFunc) since  #temporary_1 is not usable
 
-//console.log("codeMove",codeMove);
-
+  //console.log("codeMove",codeMove);
   let r = $ ("#imdbRoot").text ();
   let codeSelect = '<select class="selectOption" onchange=' + codeMove + '><option value="">Välj ett album:</option>';
   //console.log(codeSelect);
@@ -4325,14 +4369,16 @@ function moveFunc (picNames) { // ===== Execute a move-this-file-to... request
     codeSelect += '<option value ="' +v+ '">' +v+ '</option>';
   }
   codeSelect += "</select>"
-
-//console.log("codeSelect",codeSelect);
-
+  //console.log("codeSelect",codeSelect);
   let title = "Flytta till annat album";
   let text = cosp (picNames) +"<br>ska flyttas till<br>" + codeSelect;
   let modal = true;
   infoDia (null, "", title, text, "Ok", modal); // Trigger infoDia run serverShell ("temporary_1")
   $ ("select.selectOption").focus ();
+  /*later ( ( () => { // only after moveFunc (not after linkFunc!)
+    document.getElementById("reLd").disabled = false;
+    $ ("#reLd").click ();
+  }), 3800******/
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const saveOrderFunc = namelist => { // ===== XMLHttpRequest saving the thumbnail order list
@@ -4906,7 +4952,7 @@ let prepSearchDialog = () => {
 // 'sTxt' = whitespace separated search text words/items
 // 'and' and 'sWhr' (searchWhere) are search dialog logical settings
 // When 'exact' is true, the LIKE searched items will not be '%' surrounded
-// Example. Find pictures by image names (file basename):
+// Example. Find pictures by exact matching of image names (file basenames):
 // doFindText ("img_0012 img_0123", false, [false, false, false, false, true], true)
 let doFindText = (sTxt, and, sWhr, exact) => {
   let nameOrder = [];
@@ -4950,7 +4996,7 @@ let doFindText = (sTxt, and, sWhr, exact) => {
     paths = albs;
 
     // Sort the entries according to search items if they correspond to
-    // file base names (else keep the previous sort order) (see there)
+    // exact file base names (else keep the previous sort order) (see there)
     n = paths.length;
     let obj = [];
     let filesFound = 0;
@@ -4978,27 +5024,31 @@ let doFindText = (sTxt, and, sWhr, exact) => {
     obj = null;
 
     paths = [];
-    nameOrder = [];
+    //nameOrder = [];
     cmd = [];
     for (let i=0; i<n; i++) {
       paths.push (sobj [i].path);
-      nameOrder.push (sobj [i].name);
+      //nameOrder.push (sobj [i].name);
       if (i < nLimit) cmd.push (sobj [i].cmd);
     }
     sobj = null;
 
-    nameOrder = nameOrder.join ("\n");
+    nameOrder = nameOrder.sort ().join ("\n");
     $ ("#temporary_1").text (cmd.join ("\n"));
 
     // Regenerate the picFound album: the shell commands must execute in sequence
     let lpath = $ ("#imdbLink").text () + "/" + $ ("#picFound").text ();
     execute ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb").then ();
     userLog (n + " FOUND");
-    let yes ="Visa i <b>" + removeUnderscore ($ ("#picFound").text ().replace (/\.[^.]{4}$/, ""), true) + "</b>";
+    let txt = removeUnderscore ($ ("#picFound").text ().replace (/\.[^.]{4}$/, ""), true);
+    let yes;
+    later ( ( () => {
+      yes ="Visa i <b>" + txt + "</b>";
+    }), 40);
     let modal = false;
     let p3 =  "<p style='margin:-0.3em 1.6em 0.2em 0;background:transparent'>" + sTxt + "</p>Funna i <span style='font-weight:bold'>" + $ ("#imdbRoot").text () + "</span>:&nbsp; " + n + (n>nLimit?" (i listan, bara " + nLimit + " kan visas)":"");
     later ( ( () => {
-      // Run `serverShell ("temporary_1")`, symlink creation, via `infoDia (null, "", ...
+      // Run `serverShell ("temporary_1")` -> symlink creation, via `infoDia (null, "", ...
       let imdbx = new RegExp ($ ("#imdbLink").text () + "/", "g");
       infoDia (null, "", p3, "<div style='text-align:left;margin:0.3em 0 0 2em'>" + paths.join ("<br>").replace (imdbx, "./") + "</div>", yes, modal);
       later ( ( () => {
@@ -5011,7 +5061,7 @@ let doFindText = (sTxt, and, sWhr, exact) => {
       }), 40);
       $ ("button.findText").show ();
       $ ("button.updText").css ("float", "right");
-      selectPicFound ();
+      displayPicFound ();
       // Save 'nameOrder' as the picFound album's namelist:
       later ( ( () => {
         saveOrderFunc (nameOrder.trim ()).then ( () => {
@@ -5028,8 +5078,8 @@ let doFindText = (sTxt, and, sWhr, exact) => {
   });
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// Display found-pictures album link in jstree
-function selectPicFound () {
+// Display found-pictures album link in jstree, and the album
+function displayPicFound () {
   $ ("div[aria-describedby='searcharea']").hide ();
   let index = 1 + $ ("#imdbDirs").text ().split ("\n").indexOf ("/" + $ ("#picFound").text ());
   $ (".ember-view.jstree").jstree ("close_all");
@@ -5038,7 +5088,12 @@ function selectPicFound () {
   $ (".ember-view.jstree").jstree ("deselect_all");
   $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_" + index));
   $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
+  /*later ( ( () => {
+    $ ("#j1_" + index + "_anchor").click ();
+console.log("#j1_" + index + "_anchor");
+}), 4000);*/
 }
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Search the image texts in the current imdbRoot
 function searchText (searchString, and, searchWhere, exact) {

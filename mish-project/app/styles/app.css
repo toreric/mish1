@@ -909,7 +909,7 @@ The jquery ui-tooltip is used elsewere (totip in *.js) */
 .img_mini .img_name {
   display: none;
   font-size: 84%;
-  color: deeppink;
+  color: #fe0;
   text-align: left;
   cursor: default;
 }
@@ -952,7 +952,7 @@ The jquery ui-tooltip is used elsewere (totip in *.js) */
 }
 .img_show .img_name {
   display: none;
-  color: deeppink;
+  color: #fe0;
   text-align: left;
   cursor: default;
   font-size: 95%;
@@ -1372,12 +1372,14 @@ select {
   from, to {border: 2px dashed transparent}
   5% {border: 2px dashed white} /* deeppink replaced */
 }
-.picPresent, img.dotted {
-  border: 2px dashed white; /* deeppink replaced */
+img.dotted {
   -webkit-animation: borderBlink 800ms step-end infinite;
   animation: borderBlink 800ms step-end infinite;
 }
-
+.picPresent {
+  border: 2px dotted deeppink;
+  border-radius: 4px;
+}
 #uploadFinished {
   position: absolute;
   color: #89BC21;
