@@ -769,7 +769,7 @@ button[disabled] {
 .albumsHdr {
   background-color: transparent;
   text-align: left;
-  margin: 0 0 0 1em;
+  margin: 0 0 0 3em;
 }
 .subAlbum {
   background: transparent;
