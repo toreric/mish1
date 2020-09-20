@@ -796,13 +796,8 @@ module.exports = function (app) {
   //       (or deletes at least the primarily named file)
   function rmPic (fileName) {
     let pngname = path.parse (fileName).name + '.png'
-    let IMDB_DIR = path.parse (fileName).dir + '/'
-    let IMDB_PATH = PWD_PATH + '/' + IMDB_DIR
-    /*let lnk = ''
-    try {
-      lnk = execSync ('readlink -n ' + PWD_PATH + '/' + fileName).toString ()
-    } catch (err) {} // Ignore
-    //console.log ("LINK?", lnk.length, lnk);*/
+    let IMDB_dir = path.parse (fileName).dir + '/'
+    let IMDB_PATH = PWD_PATH + '/' + IMDB_dir
     fs.unlinkAsync (PWD_PATH + '/' + fileName) // File not found isn't caught!
     .then (sqlUpdate (fileName))
     .then (fs.unlinkAsync (IMDB_PATH +'_mini_'+ pngname)) // File not found isn't caught!

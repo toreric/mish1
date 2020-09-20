@@ -216,33 +216,33 @@ export default Component.extend({
         onDragEnterLeaveHandler(this);
         document.getElementById("uploadWarning").style.display = "none";
         this.on("addedfile", function(file) {
-          setImdbDir ().then (null); // Set the server imdbDir
-          //setImdbDir ().then (res => {console.log("setImdbDir",res);}); // Set the server imdbDir
-          document.getElementById("uploadPics").style.display = "inline";
-          document.getElementById("removeAll").style.display = "inline";
-          //$ ("#uploadFinished").text ("");
-          if (acceptedFileName (file.name)) {
-            var namepic = file.name.replace (/.[^.]*$/, "");
-            // escapeDots <=> .replace (/\./g, "\\.") NEEDED since jQuery uses CSS:
-            if ($ ("#i" + namepic.replace (/\./g, "\\.")).length > 0) { // If already present in the DOM, upload would replace that file, named equally
-              $ ("#uploadWarning").html ("&nbsp;VARNING FÖR ÖVERSKRIVNING: Lika filnamn finns redan!&nbsp;");
-              document.getElementById("uploadWarning").style.display = "inline";
-              console.log (namepic, file.type, file.size, "ALREADY PRESENT");
-              //console.log(file.previewElement.classList);
-              file.previewElement.classList.add ("picPresent");
-              //console.log(JSON.stringify (file.previewElement.classList));
-              document.getElementById("removeDup").style.display = "inline";
-            } else { // New file to upload
-              console.log (namepic, file.type, file.size, "NEW");
+          setImdbDir ().then ( () => { // Ensure the server imdbDir is set!
+            document.getElementById("uploadPics").style.display = "inline";
+            document.getElementById("removeAll").style.display = "inline";
+            //$ ("#uploadFinished").text ("");
+            if (acceptedFileName (file.name)) {
+              var namepic = file.name.replace (/.[^.]*$/, "");
+              // escapeDots <=> .replace (/\./g, "\\.") NEEDED since jQuery uses CSS:
+              if ($ ("#i" + namepic.replace (/\./g, "\\.")).length > 0) { // If already present in the DOM, upload would replace that file, named equally
+                $ ("#uploadWarning").html ("&nbsp;VARNING FÖR ÖVERSKRIVNING: Lika filnamn finns redan!&nbsp;");
+                document.getElementById("uploadWarning").style.display = "inline";
+                console.log (namepic, file.type, file.size, "ALREADY PRESENT");
+                //console.log(file.previewElement.classList);
+                file.previewElement.classList.add ("picPresent");
+                //console.log(JSON.stringify (file.previewElement.classList));
+                document.getElementById("removeDup").style.display = "inline";
+              } else { // New file to upload
+                console.log (namepic, file.type, file.size, "NEW");
+              }
+            } else {
+              console.log ("Illegal file name: " + file.name);
+              // userLog() unreachable
+              $ ("#uploadFinished").html ('<span style="color:deeppink">OTILLÅTET FILNAMN<br>' + file.name + "</span>");
+              later ( () => {
+                file.previewElement.querySelector ("a.dz-remove").click ();
+              }, 1000);
             }
-          } else {
-            console.log ("Illegal file name: " + file.name);
-            // userLog() unreachable
-            $ ("#uploadFinished").html ('<span style="color:deeppink">OTILLÅTET FILNAMN<br>' + file.name + "</span>");
-            later ( () => {
-              file.previewElement.querySelector ("a.dz-remove").click ();
-            }, 1000);
-          }
+          });
         });
 
         this.on("removedfile", function() {

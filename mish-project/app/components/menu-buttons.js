@@ -2197,7 +2197,9 @@ export default Component.extend (contextMenuMixin, {
                   obj = $ (element).closest ("div.subAlbum");
                   obj.addClass ("BUT_1");
                   if (iz === 2) {
-                    if (nsub < 1) {
+                    if ( $ ("#imdbDir").text ().replace (/^[^/]*\//, "").indexOf (picFound) === 0) {
+                      obj.after ("<div class=\"BUT_2\"> Tillfälligt album utan underalbum</div><br>"); // i18n
+                    } else if (nsub < 1) {
                       obj.after ("<div class=\"BUT_2\"> Har inga underalbum</div><br>"); // i18n
                     } else if (nsub === 1) {
                       obj.after ("<div class=\"BUT_2\"> Har ett underalbum</div><br>"); // i18n
@@ -2220,7 +2222,9 @@ export default Component.extend (contextMenuMixin, {
                   nsub--;
                   obj = $ (element).closest ("div.subAlbum");
                   obj.addClass ("BUT_1");
-                  if (nsub < 1) {
+                  if ( $ ("#imdbDir").text ().replace (/^[^/]*\//, "").indexOf (picFound) === 0) {
+                    obj.after ("<div class=\"BUT_2\"> Tillfälligt album utan underalbum</div><br>"); // i18n
+                  } else if (nsub < 1) {
                     obj.after ("<div class=\"BUT_2\"> Har inga underalbum</div><br>"); // i18n
                   } else if (nsub === 1) {
                     obj.after ("<div class=\"BUT_2\"> Har ett underalbum</div><br>"); // i18n
@@ -2234,7 +2238,9 @@ export default Component.extend (contextMenuMixin, {
           } else {
             obj = $ ("div.subAlbum").first ();
             obj.before (fullAlbumName);
-            if (nsub < 1) {
+            if ( $ ("#imdbDir").text ().replace (/^[^/]*\//, "").indexOf (picFound) === 0) {
+              obj.after ("<div class=\"BUT_2\"> Tillfälligt album utan underalbum</div><br>"); // i18n
+            } else if (nsub < 1) {
               obj.before ("<div class=\"BUT_2\"> Har inga underalbum</div><br>"); // i18n
             } else if (nsub === 1) {
               obj.before ("<div class=\"BUT_2\"> Har ett underalbum</div><br>"); // i18n
@@ -2389,6 +2395,7 @@ export default Component.extend (contextMenuMixin, {
       $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
       if ($ ("#imdbDir").text () === "") return;
       if ($ (".toggleAuto").text () === "STOP") return; // Auto slide show is running
+      $ ("iframe").hide ();
       $ (".mainMenu").hide ();
       $ ("#link_show a").css ('opacity', 0 );
       if (document.getElementById ("divDropbox").className === "hide-all") {
@@ -3438,6 +3445,7 @@ export default Component.extend (contextMenuMixin, {
         $ ("#dialog").dialog ("close");
         return;
       }
+      $ ("iframe").hide ();
       let linktext = window.location.hostname
       if (linktext === "localhost") {
         linktext = "http://localhost:3000";
