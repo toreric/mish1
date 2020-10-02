@@ -322,7 +322,7 @@ rättelser eller andra upplysningar" {{action 'doMail'}}>&#9993;</a>
   <p style="text-align:left;margin-left:1.5em;margin-top:-1em;line-height:1.7em" draggable="false" ondragstart="return false"><br>
     <span style="font-size:0.95em"><b>Bilderna har högerklick-menyer</b> med kommandon/funktioner
     (i stället för <b>högerklick</b> kan du alltid använda <b>Ctrl + klick</b> i stället)<br>
-    <b>Klicka med skifttangent på en miniatyr</b> så markeras/avmarkeras den<br>
+    <b>Klicka med skifttangent på en miniatyrbild</b> så markeras/avmarkeras den<br>
     <b>Då du är inloggad som gäst</b> har du bara vissa rättigheter (gömma, markera och flytta miniatyrer med dra + släpp, gå till originalbild). Med personlig inloggning kan du få fler rättigheter (till exempel <b>klicka på bildtext</b> för att redigera den och spara ändringar).<br>
     <b style="color:#0b0">En bild med grön underkant/markeringsring är länkad</b> från annat album<br>
     <b style="color:#0b0">Gå till originalbilden</b> med högerklick i grön markeringsring</span></p>
@@ -330,12 +330,13 @@ rättelser eller andra upplysningar" {{action 'doMail'}}>&#9993;</a>
     <b>Se FÖRST knappar till vänster</b> (vilka som syns varierar):<br>
     <a id="albSel">☰</a> Huvudmeny: Välj album, sökning, albumöversikt<br>
     <a id="questionMark0">?</a> Visa/dölj den här användarhandledningen<br>
-    <a id="reLd0"><img draggable="false" ondragstart="return false" src="/images/reload.png"></a> Ladda om albumet, återställ eventuella osparade ändringar¹³ (’ångerknapp’, men avser ej textändringar)<br>
+    <a class="helpIcon" id="reLd0"><img draggable="false" ondragstart="return false" src="/images/reload.png"></a> Ladda om albumet, återställ eventuella osparade ändringar¹³ (’ångerknapp’, men avser ej textändringar)<br>
     <a id="toggleName0">N</a> Visa/dölj namn på bilden (filnamn utan .filtyp)<br>
     <a id="toggleHide0"></a> Visa/dölj ’gömda bilder’ (gömda med bildens högerklick-meny)<br>
     <!--a id="upLoad0">U</a> Visa/dölj panelen för uppladdning av (fler) bilder<br -->
-    <a id="saveOrder0">S</a> Spara bildändringar¹ som annars är tillfälliga och kan återställas²<br>
-    <!--a id="goTop0"></a> Gå upp för att välja album med mera --></p>
+    <a class="helpIcon" id="saveOrder0">S</a> Spara bildändringar¹ som annars är tillfälliga och kan återställas²<br>
+    <a class="helpIcon">✉</a> Skicka fråga eller annat meddelande till albumadministratören<br>
+    <a class="helpIcon">↑</a> Gå upp till överst på sidan</p>
   <p style="text-align:left;margin:-0.4em 0 0 3em;line-height:1.5em" draggable="false" ondragstart="return false">
     ¹ Ändringar: Dra-och-släpp-flyttning av miniatyrbilder, göm eller visa med högerklick<br>
     ² Undantag: Efter ’Placera först/sist’ görs ’Spara ändringar’ automatiskt<br>

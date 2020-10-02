@@ -58,9 +58,6 @@ a.jstree-anchor small {
   vertical-align: 4px;
   color: #1ce;
 }
-a.jstree-anchor.jstree-hovered small {
-  color: #000;
-}
 ul.context-menu {
   display: none;
   background-color: #ccc;
@@ -600,7 +597,7 @@ div.settings a:hover {
   font-size: 114%;
 }
 /* In helpText: */
-#questionMark0, #albSel, #reLd0, #saveOrder0, #toggleName0, #toggleHide0, #upLoad0, #goTop0 {
+.helpIcon, #questionMark0, #albSel, #toggleName0, #toggleHide0, #upLoad0, #goTop0 {
   display: inline-block;
   width: 0.9em;
   height: 0.9em;
@@ -1332,9 +1329,10 @@ select {
 .jstree-container-ul {
   margin: 0;
   max-height: 20em;
-  overflow-y: auto;
+  overflow-x: auto;
+  overflow-y: scroll;
   scrollbar-color: #07e #999 !important;
-  scrollbar-width: thin !important;
+  scrollbar-width: auto;
 }
 .jstree-node {
   padding-right: 0.25em; /*prevents scrollbar-y*/
@@ -1342,8 +1340,13 @@ select {
 .jstree-default .jstree-clicked {
   color: #000;
 }
-.jstree-default .jstree-hovered {
-  color: #000;
+.jstree-default .jstree-hovered  {
+  background-color: inherit !important;
+  color: inherit!important;
+}
+.jstree-anchor.jstree-hovered small  {
+  background-color: inherit !important;
+  color: #1ce!important;
 }
 .jstree-default .jstree-icon {
   background-color: #0085ff;

@@ -95,6 +95,7 @@ export default Component.extend (contextMenuMixin, {
       }
       albDat = albDat.replace (/€/g, '"');
       this.set ("albumData", eval (albDat));
+console.log(albDat);console.log(eval(albDat));
       if (tempStore) { // This is not in use (?) ... too sophisticated ...
         //alert ('75 tempStore true'); // borde testa här hur det är ^^^
         $ (".ember-view.jstree").jstree ("close_all");
@@ -1411,7 +1412,8 @@ export default Component.extend (contextMenuMixin, {
             document.title = 'Mish: ' + removeUnderscore (that.get ("imdbRoot"), true);
           } else {
             // Do not display the random suffix if this is the search result album
-            if (tmpName.indexOf (picFound) === 0) {
+            var tmpIndex = tmpName.indexOf (picFound);
+            if (tmpIndex === 0) {
               tmpName = tmpName.replace (/\.[^.]{4}$/, "");
             }
             document.title = 'Mish: ' + removeUnderscore (that.get ("imdbRoot") + " — " + tmpName, true);
@@ -1419,10 +1421,15 @@ export default Component.extend (contextMenuMixin, {
           tmpName = removeUnderscore (tmpName); // Improve readability
           that.set ("jstreeHdr", "");
           if (data === "Error!") {
-            tmpName += " &mdash; <em style=\"color:red;background:transparent\">just nu oåtkomligt</em>" // i18n
-            that.set ("albumName", tmpName);
-            //that.set ("imdbDir", "");
-            $ ("#imdbDir").text ("");
+            if (tmpIndex === 0) { // Regenerate the picFound album since it has probably timed out
+              let lpath = $ ("#imdbLink").text () + "/" + $ ("#picFound").text ();
+              execute ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb").then ();
+            } else {
+              tmpName += " &mdash; <em style=\"color:red;background:transparent\">just nu oåtkomligt</em>" // i18n
+              that.set ("albumName", tmpName);
+              //that.set ("imdbDir", "");
+              $ ("#imdbDir").text
+            }
           } else {
             that.set ("albumText", " Albumåtgärder");
             that.set ("albumName", '<strong class="albumName"> ' + tmpName + '</strong>');
