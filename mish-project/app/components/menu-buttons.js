@@ -95,7 +95,6 @@ export default Component.extend (contextMenuMixin, {
       }
       albDat = albDat.replace (/€/g, '"');
       this.set ("albumData", eval (albDat));
-console.log(albDat);console.log(eval(albDat));
       if (tempStore) { // This is not in use (?) ... too sophisticated ...
         //alert ('75 tempStore true'); // borde testa här hur det är ^^^
         $ (".ember-view.jstree").jstree ("close_all");
@@ -2097,7 +2096,7 @@ console.log(albDat);console.log(eval(albDat));
       let that = this;
       let value = $ ("[aria-selected='true'] a.jstree-clicked");
       if (value && value.length > 0) {
-        value = value.attr ("title").toString ();
+        value = $ ("#imdbLink").text () + value.attr ("title").toString ().slice (1);
       } else {
         value = "";
       }
@@ -2257,7 +2256,6 @@ console.log(albDat);console.log(eval(albDat));
           }
           // Don't show imdbLink (album root symlink name)
           console.log ("Album " + imdbDir.replace (/^[^/]*/, ".") + ", nsub = " + nsub);
-//==          spinnerWait (false); //==
         }), 777);
 
 
@@ -2270,7 +2268,6 @@ console.log(albDat);console.log(eval(albDat));
           }
         }), 50);
       }).then ( () => {
-//==        spinnerWait (false); //==
       }).catch (error => {
         console.error (error.message);
       });
@@ -4752,18 +4749,22 @@ function disableSettings () { // Disables the confirm button, and all checkboxes
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function aData (dirList) { // Construct the jstree data template from dirList
   var d = dirList;  // the dirList vector should be strictly sorted
+  for (i=0; i<dirList.length; i++) {
+    d [i] = d [i].replace (/^[^/]*/, ".");
+  }
   var r = ''; // for resulting data
   if (d.length <1) {return r;}
   var i = 0, j = 0;
   var li_attr = 'li_attr:{onclick:"return false",draggable:"false",ondragstart:"return false"},';
-  // the first element is the root dir without any '/'
-  r = '[ {text:"' + d [0] + '",' + 'a_attr:{title:"' + d [0] + '"},' +li_attr+ '\n';
+  // The first element ('dirList [0]') is the link to the root dir (with no '/'):
+  r = '[ {text:"' + dirList [0] + '",' + 'a_attr:{title:"' + d [0] + '"},' +li_attr+ '\n';
   var nc = -1; // children level counter
-  var b = [d [0]];
+  var b = [dirList [0]];
   for (i=1; i<dirList.length; i++) {
+    // The following elements of 'd' (1, 2, ...):
     var a_attr = 'a_attr:{title:"' + d [i] + '"},'
     var s = b; // branch before
-    b = d [i].split ("/"); // branch
+    b = dirList [i].split ("/"); // branch
     if (b.length > s.length) { // start children
       r += 'children: [\n';
       nc += 1; // always one step up
@@ -4778,7 +4779,6 @@ function aData (dirList) { // Construct the jstree data template from dirList
       r += '},\n';
     }
     r += '{text:"' + b [b.length - 1] + '",' + a_attr + li_attr + '\n';
-    s = b;
   }
   r += '}]}';
   for (i=0; i<nc; i++) {r += ' ]}';}
