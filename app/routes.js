@@ -65,18 +65,24 @@ module.exports = function (app) {
     next () // pass control to the next handler
   })
 
-  // ##### #0 00 Find in browser: .../find/<album>/<text items>
-  app.get ('/:p([^/]+(/[^/]+)*)', function (req, res, next) {
-    let p = req.params.p.toString ().split ("/")
-    if (p [0] === "find") {
+  // ##### #0 00 Find in browser: .../find/<albumdir>[/<picture names>]
+  //             or .../album/<albumdir>[/<album>[/<picture name>]]
+  app.get ('/:p([^/]+(/[^/]*)*)', function (req, res, next) {
+    let p = req.params.p.toString ()
+    p = p.replace (/@/g, "/")
+    p = p.split ("/")
+    if (p [0] === "find" || p [0] === "album") {
+console.log("p1",p);
       var homeDir = imdbHome () // From env.var. $IMDB_HOME or $HOME
       IMDB_ROOT = p [1]
+      if (p[0] === "album") {
+        //p [3] = req.params.p.toString ().replace (/^([^/]*\/*){3}/, "")
+        if (p [2] && p [3]) p [2] = p [2] + "/" + p [3]
+      }
       setRootLink (homeDir, IMDB_ROOT, IMDB_LINK)
       // A few seconds cookie:
-      if (!p [2]) p [2] = ""
-      res.cookie (p [0], p [1] + "/" + p [2], {httpOnly: false, expires: new Date (Date.now () + 9000)})
-      res.redirect ("../..")
-      res.end ()
+      res.cookie (p [0], p [1] + "/" + p [2], {httpOnly: false, expires: new Date (Date.now () + 9000)}).redirect ("../..")
+console.log("p2",p);
     } else {
       next ()
     }
@@ -268,7 +274,7 @@ module.exports = function (app) {
     }, 1000)
   })
 
-  // ##### #0.3 readSubdir to select rootdir...
+  // ##### #0.3 readSubdir (album subdirs) to select rootdir...
   app.get ('/rootdir', function (req, res) {
 
     var homeDir = imdbHome ()

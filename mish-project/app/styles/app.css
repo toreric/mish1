@@ -1288,6 +1288,7 @@ select {
   position: fixed;
   top: 3.2em;
   left: 2px;
+  min-width: 20em;
   margin: 0 0 0 4px;
   padding: 0 2px 0 2px;
   border: 1px solid gray;

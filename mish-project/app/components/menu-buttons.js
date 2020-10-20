@@ -29,8 +29,9 @@ export default Component.extend (contextMenuMixin, {
     let imdbroot = this.get ("imdbRoot");
     document.title = "Mish";
     if (imdbroot === "") {
-      let rootList = yield reqRoot (); //  First, get possible rootdirs ((1))
 
+      let rootList = $ ("#imdbRoots").text (); // Amendment after move to 'init ()'
+      if (!rootList) rootList = yield reqRoot (); //  First, get possible rootdirs ((1))
       if (rootList) {
         rootList = rootList.split ("\n");
         let seltxt = rootList [0];
@@ -50,6 +51,7 @@ export default Component.extend (contextMenuMixin, {
       if (imdbroot === "") {
         // Prepare to select imdbRoot
         $ (".mainMenu").show ();
+        $ ("iframe").hide ();
         $ (".mainMenu p:gt(1)").hide (); // Shown at selectRoot ()
         this.set ("albumData", [])
 //==        spinnerWait (false);
@@ -858,11 +860,34 @@ export default Component.extend (contextMenuMixin, {
         zeroSet ();
         this.actions.setAllow ();
         this.actions.setAllow (true);
-        later ( ( () => {
+        later ( (async () => {
           prepDialog ();
           prepTextEditDialog ();
           prepSearchDialog ();
-        }), 10);
+
+// Also in requestDirs?:
+          let rootList = await reqRoot (); //  Get possible rootdirs
+//console.log("rootList",rootList);
+          if (rootList) {
+            rootList = rootList.split ("\n");
+//console.log("#imdbRoot", $ ("#imdbRoot").text ());
+            let seltxt = rootList [0];
+            rootList.splice (0, 1, "");
+            rootList [0] = "Välj albumkatalog "; // i18n, must have a space
+            let selix = rootList.indexOf (seltxt);
+//console.log("seltxt",seltxt,"| selix",selix);
+//console.log("rootList",rootList);
+            if (selix > 0) {
+              this.set ("imdbRoot", seltxt);
+              $ ("#imdbRoot").text (seltxt);
+              //let imdbRoot = seltxt;
+            }
+            this.set ("imdbRoots", rootList);
+            rootList = rootList.join ("\n");
+            $ ("#imdbRoots").text (rootList);
+          }
+
+        }), 25);
         later ( ( () => { // To top of screen:
           scrollTo (0, 0);
           $ ("#title a.proid").focus ();
@@ -873,14 +898,13 @@ export default Component.extend (contextMenuMixin, {
               $ (".cred.login").click (); // Confirm logIn
               $ (".cred.user").click (); // Prevents FF showing link to saved passwords
               $ ("#title a.proid").focus ();
-              this.actions.selectRoot ("");
-              later ( ( () => {
-              }), 600);
+              //this.actions.selectRoot ("");
             }), 1000);
           }), 1000);
         }), 200);
       }), 200);
     });
+//console.log(document.cookie);
     // Trigger the jQuery tooltip on 'totip="..."' (custom attribute)
     $ (function () {
       $ (document).tooltip ({
@@ -1092,7 +1116,7 @@ export default Component.extend (contextMenuMixin, {
             }
 
             later ( ( () => {
-              if ($ ("strong.albumName") [0].innerHTML.replace (/&nbsp;/g, " ").trim () === $ ("#picFound").text ().replace (/\.[^.]{4}$/, "").replace (/_/g, " ")) {
+              if (document.querySelector("strong.albumName") && document.querySelector ("strong.albumName") [0] && document.querySelector ("strong.albumName") [0].innerHTML.replace (/&nbsp;/g, " ").trim () === $ ("#picFound").text ().replace (/\.[^.]{4}$/, "").replace (/_/g, " ")) {
                 // The search result album
                 $ ("div.BUT_2").html ($.parseHTML ('<span style="color:#0b0";font-weight:bold>Gå till bildens eget album med högerklick i grön ring!</span>'));
               } else {
@@ -1125,7 +1149,7 @@ export default Component.extend (contextMenuMixin, {
               let ntext = $ ("div.BUT_2").text ().replace (/(^[^,]*),.*$/, "$1");
               $ ("div.BUT_2").text (ntext);
               //if ($ ("strong.albumName") [0].innerHTML.replace (/&nbsp;/g, " ") === $ ("#picFound").text ().replace (/_/g, " ")) {
-              if ($ ("strong.albumName") [0].innerHTML.replace (/&nbsp;/g, " ") === $ ("#picFound").text ().replace (/\.[^.]{4}$/, "").replace (/_/g, " ")) {
+              if (document.querySelector("strong.albumName") && document.querySelector ("strong.albumName") [0] && document.querySelector ("strong.albumName") [0].innerHTML.replace (/&nbsp;/g, " ") === $ ("#picFound").text ().replace (/\.[^.]{4}$/, "").replace (/_/g, " ")) {
                 $ ("div.BUT_2").text (""); // The search result album
               }
             }), 777);
@@ -1678,8 +1702,12 @@ export default Component.extend (contextMenuMixin, {
       infoDia (null, null, title, text, yes, false);
     },
     //============================================================================================
+    //subaSelect (subName) { // ##### Sub-album link selected
+
+    //},
+    //============================================================================================
     subaSelect (subName) { // ##### Sub-album link selected
-      subName = subName.replace (/&nbsp;/g, "_"); // Restore readable album name!
+      subName = subName.replace (/&nbsp;/g, "_"); // Restore readable album name
       // NOTE: That restoring may be questionable with " " instead of "&nbsp;"
       spinnerWait (true);
       document.getElementById ("stopSpin").innerHTML = "";
@@ -1707,7 +1735,11 @@ export default Component.extend (contextMenuMixin, {
         $ (".mainMenu").hide ();
         return;
       } else {
+        // NOTE: jstree uses (calls) selectAlbum (see the HBS file)
+        // NOTE!
         selectJstreeNode (idx);
+        // NOTE!
+        // NOTE: jstree uses (calls) selectAlbum (see the HBS file)
       }
     },
     //============================================================================================
@@ -2052,7 +2084,8 @@ export default Component.extend (contextMenuMixin, {
         $ (".mainMenu p:gt(1)").show ();
         return;
       }
-//console.log(value, what);
+//console.log(value, what); YOU HAVE TO set the right OPTION!
+      $ ("#rootSel option[value=" + value + "]").prop('selected', 'selected');
       $ ("#imdbRoot").text (value);
       that.set ("imdbRoot", value);
       that.set ("albumData", []); // Triggers jstree rebuild in requestDirs
@@ -2091,9 +2124,13 @@ export default Component.extend (contextMenuMixin, {
       }), 2000); // Time needed!
     },
     //============================================================================================
+    selectAlbumNew () {
+      if ($ ("#imdbDir").text ()) return;
+      else this.actions.selectAlbum ();
+    },
+    //============================================================================================
     selectAlbum () {
-
-      let that = this;
+//console.log('#1',this);
       let value = $ ("[aria-selected='true'] a.jstree-clicked");
       if (value && value.length > 0) {
         value = $ ("#imdbLink").text () + value.attr ("title").toString ().slice (1);
@@ -2111,7 +2148,7 @@ export default Component.extend (contextMenuMixin, {
 
       $ ("div.ember-view.jstree").attr ("onclick", "return false");
       $ ("ul.jstree-container-ul.jstree-children").attr ("onclick", "return false");
-      new Promise ( (resolve) => {
+      new Promise (resolve => {
         $ ("a.jstree-anchor").blur (); // Important?
         let linLen = $ ("#imdbLink").text ().length
         if (value !== $ ("#imdbDir").text ()) {
@@ -2173,10 +2210,14 @@ export default Component.extend (contextMenuMixin, {
         if (value) {tmp2 = value.split ("/");}
         if (tmp2 [tmp2.length - 1] === "") {tmp2 = tmp2.slice (0, -1)} // removes trailing /
         tmp2 = tmp2.slice (1); // remove symbolic link name
-        if (tmp2.length > 0) {
-          that.set ("albumName", tmp2 [tmp2.length - 1]);
-        } else {
-          that.set ("albumName", that.get ("imdbRoot"));
+        if (typeof this.set === 'function') {
+          if (tmp2.length > 0) {
+//console.log('#2',this);
+//this.actions.settest (this);
+            this.set ("albumName", tmp2 [tmp2.length - 1]);
+          } else {
+            this.set ("albumName", this.get ("imdbRoot"));
+          }
         }
         $ ("#refresh-1").click ();
         if (value) {
@@ -2190,7 +2231,7 @@ export default Component.extend (contextMenuMixin, {
           let nsub = n;
           let z, iz, obj;
           let fullAlbumName= $ ("#imdbRoot").text () + $ ("#imdbDir").text ().replace (/^[^/]*/, "");
-          fullAlbumName = '<span title-1="' + fullAlbumName+ '">' + that.get ("albumName") + ": </span>"
+          fullAlbumName = '<span title-1="' + fullAlbumName+ '">' + this.get ("albumName") + ": </span>"
           if (tmp [0] === "|«") {
             $ ("a.imDir").each (function (index, element) {
               if (index < n) {z = 0;} else {z = n;}
@@ -2254,28 +2295,33 @@ export default Component.extend (contextMenuMixin, {
               obj.before ("<div class=\"BUT_2\"> Har " + nsub + " underalbum</div><br>"); // i18n
             }
           }
+//console.log("¤¤¤",$ ("#imdbRoot").text (),$ ("#imdbDir").text ());
           // Don't show imdbLink (album root symlink name)
           console.log ("Album " + imdbDir.replace (/^[^/]*/, ".") + ", nsub = " + nsub);
+
+          resolve (true);
+          later ( ( () => {
+            // Don't hide login (at top) if we have 0/top position!
+            // If not, adjust the position, login remains hidden at window top.
+            if (0 < window.pageYOffset) {
+              scrollTo (null, $ ("#highUp").offset ().top);
+            }
+          }), 50);
         }), 777);
-
-
-        resolve (true);
-        later ( ( () => {
-          // Don't hide login (at top) if we have 0/top position!
-          // If not, adjust the position, login remains hidden at window top.
-          if (0 < window.pageYOffset) {
-            scrollTo (null, $ ("#highUp").offset ().top);
-          }
-        }), 50);
       }).then ( () => {
-      }).catch (error => {
-        console.error (error.message);
+      /*}).catch (error => {
+        console.error (error.message);*/
       });
+    },
+    //============================================================================================
+    settest (what) {
+      console.log('#3',what);
     },
     //============================================================================================
     toggleMainMenu () {
 
       $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
+      $ ("iframe").hide ();
       document.getElementById ("divDropbox").className = "hide-all";
       //var that = this;
       $ ("div.settings, div.settings div.check").hide ();
@@ -2635,66 +2681,6 @@ export default Component.extend (contextMenuMixin, {
         }
         chkPaths = randIndex (0); // Dummy use of randIndex (=> [])
         chkPaths = [];
-
-//&&&&&imgimgimgimg det här avsnittet bör komma någon annanstans, i t.ex. selectRoot
-//&&&&&imgimgimgimg              Det blev requestDirs
-
-        /* // Present some preview images in the introduction iframe
-        let iWindow = document.getElementsByTagName("iframe") [0].contentWindow;
-
-        // Clear/reset places for sample images (root may have changed)
-        // nIm == number of display nodes for the images (see iframe html file)
-        let nIm = 4;
-        let iImages = iWindow.document.getElementsByTagName ("img");
-        let dIm = iImages.length - nIm;
-        for (let i=0; i<nIm; i++) {
-          iImages [i + dIm].parentElement.style.display = "none";
-        }
-        // Remove duplicates for sample-image-use, i=0 not used, corresponds to root
-        // Remove symlinks is harder (may irritate if they link to hidden albums)
-        var tmp = $ ("#imdbLabels").text ().replace (/[\s]+/g, " ").trim ().split (" ");
-        var tmp1 = [];
-        var name = [];
-        for (var i=1; i<tmp.length; i++) {
-          tmp1.push (tmp [i]);
-          name.push (tmp [i].replace (/^.+_mini_(.+)\.[^.]+$/, "$1"));
-          var kmax = tmp1.length -1;
-          for (var k=0; k<kmax; k++) {
-            if (name [k] === name [kmax]) {
-              tmp1.pop ();
-              name.pop ();
-              break;
-            }
-          }
-        }
-        // Place some random thumbnails on the itroduction iframe page
-        tmp = tmp1;
-        let tmpindex = randIndex (tmp.length);
-        // Make 'find links' for the preview sample imageList
-        let linktext = window.location.hostname
-        if (linktext === "localhost") {
-          linktext = "http://localhost:3000";
-        } else {
-          linktext = "https://" + linktext;
-        }
-        linktext += "/find/" + $ ("#imdbRoot").text ();
-        if (tmp.length < nIm) nIm = tmp.length;
-        name = [];
-        for (let i=0; i<nIm; i++) {
-          iImages [i + dIm].setAttribute ("src", tmp [tmpindex [i + dIm]]);
-          name [i] = tmp [tmpindex [i + dIm]].replace (/^.+_mini_(.+)\.[^.]+$/, "$1");
-          iImages [i + dIm].parentElement.setAttribute ("title", "Testbild " + name [i]);
-          iImages [i + dIm].parentElement.setAttribute ("href", linktext + "/" + name [i]);
-          iImages [i + dIm].parentElement.setAttribute ("target", "_blank");
-          iImages [i + dIm].parentElement.style.display = "";
-        }
-        let iSample = iWindow.document.querySelector ("a.intro.sampleAll");
-        iSample.setAttribute ("title", "Testbilder:\n" + name.join ("\n"));
-        iSample.setAttribute ("href", linktext + "/" + name.join ("%20"));
-        iSample.setAttribute ("target", "_blank");
-        iSample.setAttribute ("style", "display:block"); */
-
-
       }).then ( () => {
         document.getElementById ("stopSpin").innerHTML = "SPIN-END";
         return true;
@@ -3122,7 +3108,7 @@ export default Component.extend (contextMenuMixin, {
         //this.actions.imageList (false);
 //==        spinnerWait (true);
         $ ("#hideFlag").text ("1");// Two lines from 'toggleHideFlagged'
-        that.actions.hideFlagged (true).then (null); // Hide flagged pics if shown
+        this.actions.hideFlagged (true).then (null); // Hide flagged pics if shown
         $ ("#title button.cred").text ("Logga in");
         $ ("#title button.cred").attr ("title", logAdv);
         $ ("#title button.cred").attr ("totip", logAdv);
@@ -3136,7 +3122,7 @@ export default Component.extend (contextMenuMixin, {
         //$ ("#title a.finish").focus ();
         $ ("#title a.proid").focus ();
         zeroSet (); // #allowValue = '000... etc.
-        that.actions.setAllow ();
+        this.actions.setAllow ();
         $ (".mainMenu p:eq(3) a").hide (); // Hide the album-edit button in mainMenu
         $ ("#showDropbox").hide ();  // Hide upload button
 
@@ -3177,7 +3163,7 @@ export default Component.extend (contextMenuMixin, {
         document.getElementById ("t3").parentElement.style.display = "none";
 
         // Assure that the album tree is properly shown after LOGOUT
-        that.set ("albumData", []); // Triggers jstree rebuild in requestDirs
+        this.set ("albumData", []); // Triggers jstree rebuild in requestDirs
         setTimeout (function () { // NOTE: Normally, later replaces setTimeout
           $ ("#requestDirs").click ();
           later ( ( () => {
@@ -3206,15 +3192,17 @@ export default Component.extend (contextMenuMixin, {
         var pwd = $ ("#title input.cred.password").val ().trim (); // Important
         $ ("#title input.cred.password").val ("");
         $ ("#title input.cred").hide ();
-        that.set ("albumData", []); // Triggers jstree rebuild in requestDirs
+        this.set ("albumData", []); // Triggers jstree rebuild in requestDirs
         this.set ("loggedIn", false);
         zeroSet (); // #allowValue = '000... etc.
-        that.actions.setAllow ();
+        this.actions.setAllow ();
 
-        // NOTE: The find (picFind) cookie is set by the server when a search
-        // is initiated from the browser by .../find/<album>/<text items>
-        // and <album> is found in the present album root directory (IMDB_ROOT)
-        var picFind = getCookie ("find");
+
+        var albFind;
+        var picFind;
+
+
+
         loginError ().then (isLoginError => {
           if (isLoginError) {
             // Update aug 2017: will not happen
@@ -3224,7 +3212,7 @@ export default Component.extend (contextMenuMixin, {
             this.set ("loggedIn", false);
             $ ("div.settings, div.settings div.check").hide ();
             userLog ("LOGIN error");
-            that.actions.setAllow ();
+            this.actions.setAllow ();
             //later ( ( () => {
               //console.log ("Err, allowValue", $ ("#allowValue").text ());
             //}), 200);
@@ -3236,17 +3224,25 @@ export default Component.extend (contextMenuMixin, {
             status = $ ("#title span.cred.status").text (); // [<status>]
             userLog ("LOGIN " + usr + " " + status);
             status = status.slice(1,status.length-1); // <status>
-            that.actions.setAllow ();
-            // The getCookie result is used here, detects external "/find/..."
-            if (picFind) picFind = picFind.split ("/");
-            else picFind = ["", ""];
-            if ($ ("#imdbRoots").text ().split ("\n").indexOf (picFind [0]) < 1) picFind = ["", ""];
-            else {
-              if ($ ("#imdbRoot").text () !== picFind [0]) { // Change album root
-                that.actions.selectRoot (picFind [0], that);
-              }
-            }
-            if ($ ("#imdbRoot").text ()) { // If imdbLink is initiated
+            this.actions.setAllow ();
+
+            // NOTE: The server sets an albFind|picFind short time cookie when trig-
+            // gered from the browser by .../album/<albumdir>/[<album>[/<picname>]]
+            // (<album> is found in the present album root directory <albumdir>)
+            // or .../find/<albumdir>[/<picname(s)>]. Sets IMDB_ROOT = <albumdir>.
+            var albFindCoo = getCookie ("album");
+            var picFindCoo = getCookie ("find");
+//console.log("albFindCoo",albFindCoo);
+//console.log("picFindCoo",picFindCoo);
+            let tmpRoot = $ ("#imdbRoot").text ();
+            if (albFindCoo) tmpRoot = albFindCoo.split ("/") [0];
+            if (picFindCoo) tmpRoot = picFindCoo.split ("/") [0];
+            $ ("#imdbRoot").text (tmpRoot);
+            this.set ("imdbRoot", tmpRoot);
+            if (tmpRoot) {
+              this.actions.selectRoot (tmpRoot, this);
+              this.set ("albumData", []); // Triggers jstree rebuild in requestDirs
+              $ ("#requestDirs").click ();
               // Regenerate the picFound album: the shell commands must execute in sequence
               let lpath = $ ("#imdbLink").text () + "/" + $ ("#picFound").text ();
               execute ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb").then ();
@@ -3256,7 +3252,32 @@ export default Component.extend (contextMenuMixin, {
               execute ('find -L ' + lnk + ' -type d -name "' + picFound + '*" -amin +' + toold + ' | xargs rm -rf').then ();
               userLog ("START " + $ ("#imdbRoot").text ());
               later ( ( () => {
-                $ ("#requestDirs").click ();
+
+                // The getCookie result is used here, detects external "/album/..."
+                // and external "/find/...", but NOTE: Only one of them, never both
+                if (albFindCoo) albFind = albFindCoo.split ("/");
+                else albFind = ["", "", ""];
+                if ($ ("#imdbRoots").text ().split ("\n").indexOf (albFind [0]) < 1) albFind = ["", "", ""];
+                /*else {
+                  if ($ ("#imdbRoot").text () !== albFind [0]) { // Change album root
+                    this.actions.selectRoot (albFind [0], this);
+                  }
+                }*/
+                if (picFindCoo) picFind = picFindCoo.split ("/");
+                else picFind = ["", ""];
+        //console.log(picFind);
+        //console.log($ ("#imdbRoots").text ());
+                if ($ ("#imdbRoots").text ().split ("\n").indexOf (picFind [0]) < 1) picFind = ["", ""];
+                /*else {
+                  if ($ ("#imdbRoot").text () !== picFind [0]) { // Change album root
+                    this.actions.selectRoot (picFind [0], this);
+                  }
+                }*/
+
+
+
+
+                //$ ("#requestDirs").click ();
                 later ( ( () => {
                   $ (".ember-view.jstree").jstree ("deselect_all");
                   $ (".ember-view.jstree").jstree ("close_all");
@@ -3277,6 +3298,7 @@ export default Component.extend (contextMenuMixin, {
 //==          spinnerWait (false);
         });
         $ (document).tooltip ("enable");
+
         later ( () => {
           //console.log (usr, "status is", status);
           // At this point, we are always logged in with at least 'viewer' status
@@ -3288,35 +3310,67 @@ export default Component.extend (contextMenuMixin, {
           // Hide or show the album-edit button in mainMenu
           if (!(allow.albumEdit || allow.adminAll)) $ (".mainMenu p:eq(3) a").hide ()
           else $ (".mainMenu p:eq(3) a").show ();
+
           later ( () => {
-            if (picFind [1] && status !== "viewer") {
+//console.log("albFind",albFind);
+if (albFind) {
+            if (albFind [0] && status !== "viewer") {
               later ( () => {
-                console.log ("Find", picFind [1]);
+                console.log ("/album/:", albFind [0], albFind [1]);
+                later ( () => {
+                  $ ("#imdbDir").text ("");
+                  this.actions.subaSelect (albFind [1]);
+                }, 4000);
+                later ( () => {
+                  if (albFind [2]) {
+                    later ( () => {
+                      let idimg = "#i" + escapeDots (albFind [2]);
+                      $ (idimg + " img") [0].click ();
+//console.log(idimg + " img");
+                    }, 8000);
+                  } // end if
+                }, 4000);
+              }, 2000);
+            } // end if
+}
+//console.log("picFind",picFind);
+if (picFind) {
+//console.log("*"+picFind [1]+"*");
+            if (picFind [0] && status !== "viewer") {
+              later ( () => {
+                console.log ("/find/:", picFind [0], picFind [1]);
                 this.actions.findText ();
                 /*let boxes = $ ('.srchIn input[type="checkbox"]');
                 for (let i=0; i<boxes.length; i++) {
                   if (i === boxes.length - 1) boxes [i].checked = true;
                   else boxes [i].checked = false;
                 } USING changed DEFAULT INSTEAD*/
-                document.querySelector ('.orAnd input[type="radio"]').checked = false;
-                document.querySelectorAll ('.orAnd input[type="radio"]') [1].checked = true;
-                $ ("#searcharea textarea").val (picFind [1]);
-                later ( () => {
-                  $ ("button.findText").click ();
+                if (picFind [1]) {
+                  document.querySelector ('.orAnd input[type="radio"]').checked = false;
+                  document.querySelectorAll ('.orAnd input[type="radio"]') [1].checked = true;
+                  $ ("#searcharea textarea").val (picFind [1]);
                   later ( () => {
-                    parentAlbum ();
+                    $ ("button.findText").click ();
                     later ( () => {
-                      let idimg = "#i" + escapeDots (picFind [1]);
-                      $ (idimg + " img") [0].click ();
-                      console.log(idimg + " img");
-                    }, 8000);
-                  }, 6000);
-                }, 4000);
+                      parentAlbum ();
+                      later ( () => {
+                        let idimg = "#i" + escapeDots (picFind [1]);
+                        $ (idimg + " img") [0].click ();
+//console.log(idimg + " img");
+                      }, 8000);
+                    }, 6000);
+                  }, 4000);
+                } // end if
               }, 2000);
             } // end if
-          }, 200);
+}
+spinnerWait (false);
+//console.log("¤end¤",$ ("#imdbRoots").text ());
+//console.log("¤end¤¤",$ ("#imdbRoot").text ());
+
+          }, 2000);
         }, 2000);
-      }
+      } // end Confirm
       //¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
       // When password doesn't match user, return true; [else set 'allowvalue' and return false]
       // NOTE: Update aug 2017: else set anonymous viewer with no credentials, still return true
@@ -3395,7 +3449,7 @@ export default Component.extend (contextMenuMixin, {
               }
               xhr.onerror = function () {
                 reject ({
-                  status: this.status,
+                  status: that.status,
                   statusText: xhr.statusText
                 });
               }
@@ -3729,7 +3783,7 @@ function startInfoPage () { // Compose the information display page
       intro = [];
       console.log("Inga introbilder");
     } else {
-      console.log("Introbilder: ", intro.length);
+      console.log("Introbilder: " + intro.length);
     }
     return intro;
   }).then (intro => {
@@ -4485,20 +4539,23 @@ function reqRoot () { // Propose root directory (requestDirs)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function reqDirs (imdbroot) { // Read the dirs in imdbLink (requestDirs)
   if (imdbroot === undefined) return;
+//console.log(imdbroot);
   spinnerWait (true);
   document.getElementById ("stopSpin").innerHTML = "";
   stopSpinStopSpin ();
   return new Promise ( (resolve, reject) => {
     var xhr = new XMLHttpRequest ();
-    //spinnerWait (true); // Mostly superfluous
+    // Here also #picFound is sent to the server for information/update
     xhr.open ('GET', 'imdbdirs/' + imdbroot + "@" + $ ("#picFound").text (), true, null, null);
     xhr.onload = function () {
       //spinnerWait (false);
       if (this.status >= 200 && this.status < 300) {
         var dirList = xhr.responseText;
+//console.log(dirList);
         dirList = dirList.split ("\n");
         var dim = (dirList.length - 2)/3;
         var dirLabel = dirList.splice (2 + 2*dim, dim);
+//console.log(dirLabel);
         var dirCoco = dirList.splice (2 + dim, dim);
         $ ("#userDir").text (dirList [0].slice (0, dirList [0].indexOf ("@")));
         $ ("#imdbRoot").text (dirList [0].slice (dirList [0].indexOf ("@") + 1));
