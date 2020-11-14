@@ -69,10 +69,11 @@ module.exports = function (app) {
   //             or .../album/<albumdir>[/<album>[/<picture name>]]
   app.get ('/:p([^/]+(/[^/]*)*)', function (req, res, next) {
     let p = req.params.p.toString ()
-    p = p.replace (/@/g, "/")
-    p = p.split ("/")
+    let q = p.replace (/@/g, "/")
+console.log("p1",q);
+    p = q.split ("/")
+    if (p [0] === "awstats" || p [0] === "cgi-bin") res.redirect ("/" + q)
     if (p [0] === "find" || p [0] === "album") {
-console.log("p1",p);
       var homeDir = imdbHome () // From env.var. $IMDB_HOME or $HOME
       IMDB_ROOT = p [1]
       if (p[0] === "album") {

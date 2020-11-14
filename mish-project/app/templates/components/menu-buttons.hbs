@@ -31,13 +31,13 @@ function copyToClipboard (str) {
   <form action="">
     <a class="proid" title="" onclick="window.scrollTo(0,0);$('iframe').toggle();$('.mainMenu').hide();$('#searcharea').dialog('close')">Mish&nbsp;<small>introduktion</small></a>
     <a class="proid toggbkg" style="margin:0.5em 0 0 0" title="" {{action 'toggleBackg'}}><small>MÖRK/LJUS</small></a>
-    <div style="display:inline-block;vertical-align:top;margin:0.5em 0 0 1em">
+    <div style="display:inline-block;vertical-align:top;margin:0.4em 0 0 1em">
       <button type="submit" class="cred login" title="" {{action "logIn"}}>Logga in</button>
       <input type="text" class="cred user" size="10" title="Användare" placeholder="User name" value="">
       <input type="password" class="cred password" size="10" title="Lösenord" placeholder="Password">
       <span class="cred name"></span>
       <span class="cred status" {{action "toggleSettings"}}></span>
-      <span id ="showDropbox" class="picLinker eraseCheck" style="margin:0.5em 0 0 0.5em;display:none" {{action "showDropbox"}}>LADDA UPP</span>
+      <span id ="showDropbox" class="picLinker" style="margin:0 0 0 0.5em;display:none" {{action "showDropbox"}}>LADDA UPP</span>
     </div>
     <div class="settings" draggable="false" ondragstart="return false" style="display:none">
         <div class="check">
@@ -61,18 +61,22 @@ function copyToClipboard (str) {
   </form>
   <div style="display:inline-block;white-space:nowrap;margin-top:0.4em">
 
-  <!-- Get webblink to non-hidden pictures -->
-  <div style="display:inline-block;margin-left:1em" totip="Direktlänk till aktuell bild">
-    <span class="picLinker" style="margin:0.5em 0 0 0" {{action "webLinker"}}>WEBBLÄNK</span>
-  </div>
-  <!-- Erase link+source choice -->
-  <div style="display:inline-block">&nbsp;
-    <span class="eraseCheck" style="display:none" totip="Markera här (MEN BARA OM DU FÖRSTÅR VAD DU SKA GÖRA!) ifall du vill radera även ORIGINAL-bildfilen samtidigt med en LÄNKAD bild (bra för till exempel radering av funna dubletter)">
-      RADERA ÄVEN LÄNKORIGINAL
-      <input id="eraOrig" type="checkbox">
-      <label for="eraOrig"></label>
-    </span>
-  </div>
+    <!-- Get webblink to non-hidden pictures -->
+    <div style="display:inline-block;margin-left:1em" totip="Direktlänk till aktuell bild">
+      <span class="picLinker" style="margin:0.5em 0 0 0" {{action "webLinker"}}>WEBBLÄNK</span>
+    </div>
+    <!-- Show web statistics -->
+    <div id="viSt" style="display:inline-block;margin-left:0.4em" totip="Besöksstatistik i nytt fönster">
+      <span class="picLinker" draggable="false" {{action 'visitStat'}}>AWSTATS</span>
+    </div>
+    <!-- Erase link+source choice -->
+    <div style="display:inline-block">&nbsp;
+      <span class="eraseCheck" style="display:none" totip="Markera här (MEN BARA OM DU FÖRSTÅR VAD DU SKA GÖRA!) ifall du vill radera även ORIGINAL-bildfilen samtidigt med en LÄNKAD bild (bra för till exempel radering av funna dubletter)">
+        RADERA ÄVEN LÄNKORIGINAL
+        <input id="eraOrig" type="checkbox">
+        <label for="eraOrig"></label>
+      </span>
+    </div>
 
   </div>
   <!-- TEST BUTTON -->

@@ -113,7 +113,7 @@ function removeDiacritics (str) {
 //=============================================================================
 // The core program begins here -- load image metadata into _imdb_images.sqlite
 // Transactions is a must-be!
-// NOTE: imdbLink is used hardcoded (perhaps make it argv [3]?)
+// NOTE: albumRoot = argv [3] if present, else assume 'imdb/' points there
 if (process.argv [2] == "-e") {
   loadImageMetadata ()
 } else {
@@ -127,18 +127,20 @@ function loadImageMetadata () {
   let sqlite = require('sqlite3').verbose ()
   let TransactionDatabase = require("sqlite3-transactions").TransactionDatabase
   let execSync = require ('child_process').execSync
+  if (process.argv [3]) let albumRoot = process.argv [3]
+  else albumRoot = "imdb/"
   //    This script (cmd) is subdivided (by |) into 4 tasks:
   // 1. Finds all '.imdb' file paths (with album directories)
   // 2. Removes all file names ('.imdb') from that path list, leaving the directories
   // 3. Uses the list entries as arguments to find all non-"_*|.*" files in each directory (using depth=1)
   // 4. Accepts only files having supported image file endings
-  let cmd = 'find imdb/ -type f -name ".imdb" | sed "s/.imdb$//" | xargs -Ipath find path -maxdepth 1 -type f -not -name "_*" -not -name ".*" | egrep -i "(JPE?G|TIF{1,2}|PNG|GIF)$"'
+  let cmd = 'find ' + albumRoot + ' -type f -name ".imdb" | sed "s/.imdb$//" | xargs -Ipath find path -maxdepth 1 -type f -not -name "_*" -not -name ".*" | egrep -i "(JPE?G|TIF{1,2}|PNG|GIF)$"'
   let pathlist = execSync (cmd)
   //console.log ("  pathlist:\n" + pathlist)
-  execSync ('rm -f imdb/_imdb_images.sqlite')
+  execSync ('rm -f ' + albumRoot + '_imdb_images.sqlite')
   //try {
   let dbtr = new TransactionDatabase (
-    new sqlite.Database ("imdb/_imdb_images.sqlite", sqlite.OPEN_READWRITE | sqlite.OPEN_CREATE)
+    new sqlite.Database (albumRoot + "imdb/_imdb_images.sqlite", sqlite.OPEN_READWRITE | sqlite.OPEN_CREATE)
   )
   dbtr.beginTransaction (function (err,db) {
     db.serialize ( () => {

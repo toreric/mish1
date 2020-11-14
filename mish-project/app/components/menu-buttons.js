@@ -112,7 +112,7 @@ export default Component.extend (contextMenuMixin, {
         this.set ("albumName", "");
       }
     }
-  }),
+  }).drop (),
 
   // CONTEXT MENU Context menu
   /////////////////////////////////////////////////////////////////////////////////////////
@@ -826,7 +826,7 @@ export default Component.extend (contextMenuMixin, {
     this._super (...arguments);
     $ (document).ready ( () => {
       spinnerWait (true); //== testing
-      $ ("#imdbLink").text ("imdb"); // <<<<<<<<<< === IMDB_LINK in routes.js
+      $ ("#imdbLink").text ("imdb"); // <<<<<<<<<< == IMDB_LINK in routes.js
       $ ("#menuButton").attr ("title", htmlSafe ("Öppna\nmenyn")); // i18n
       // Remember update *.hbs
       $ ("#bkgrColor").text ("rgb(59, 59, 59)"); // #333
@@ -836,6 +836,7 @@ export default Component.extend (contextMenuMixin, {
       $ ("body").addClass ("BACKG TEXTC");
       $ ("body").css ("background", BACKG);
       $ ("body").css ("color", TEXTC);
+      $ ("#viSt").hide ();
       later ( ( () => {
         if (!getCookie("bgtheme")) {
           setCookie("bgtheme", "light", 0);
@@ -2721,11 +2722,13 @@ export default Component.extend (contextMenuMixin, {
         newOrder = newOrder.trim ();
         //$ ("#sortOrder").text (newOrder);
         later ( ( () => {
-          saveOrderFunc (newOrder).then ( () => { // Save on server disk
-            document.getElementById ("saveOrder").blur ();
-            resetBorders (); // Reset all borders
-            spinnerWait (false);
-          });
+          if (saveOrderFunc) {
+            saveOrderFunc (newOrder).then ( () => { // Save on server disk
+              document.getElementById ("saveOrder").blur ();
+              resetBorders (); // Reset all borders
+            });
+          }
+          spinnerWait (false);
         }), 1500);
         resolve (true);
       }).catch (error => {
@@ -2994,6 +2997,27 @@ export default Component.extend (contextMenuMixin, {
       }).catch (error => {
         console.error (error.message);
       });
+    },
+    //============================================================================================
+    visitStat () { // ##### Show web visit statistics
+
+      fileWR ("/usr/lib/cgi-bin/awstats.pl").then (acc => {
+        if (acc) {
+          execute ("/usr/lib/cgi-bin/awstats.pl -config=mish.hopto.org -output > /var/www/mish/public/awstats/index.html").then ( () => {
+            var statwind = window.open ('/awstats', 'statwind');
+            if (statwind) {statwind.focus ();} else {
+              userLog ("POPUP blocked by browser", true, 5000);
+            }
+          });
+        } else {
+          //console.log ("NO AWSTATS");
+          var title = "Information";
+          var text = "<br>Här saknas<br>besöksstatistik"; // i18n
+          var yes = "Ok" // i18n
+          infoDia (null, null, title, text, yes, true);
+        }
+      });
+
     },
     //============================================================================================
     downLoad () { // ##### Download an image
@@ -3310,6 +3334,9 @@ export default Component.extend (contextMenuMixin, {
           // Hide or show the album-edit button in mainMenu
           if (!(allow.albumEdit || allow.adminAll)) $ (".mainMenu p:eq(3) a").hide ()
           else $ (".mainMenu p:eq(3) a").show ();
+          // Hide or show the web traffic statistics button
+          if (allow.deleteImg || allow.adminAll) $ ("#viSt").show ()
+          else $ ("#viSt").hide ();
 
           later ( () => {
 //console.log("albFind",albFind);
@@ -3554,7 +3581,7 @@ spinnerWait (false);
           lite += "ses. Var därför gärna inloggad som ”gäst” när du gör en webblänk till andra!";
         }
       }
-      infoDia (null, null, "Länk för webbläsare", lite, "OK");
+      infoDia (null, null, "Länk för webbläsare", lite, "OK – stäng");
     },
     //============================================================================================
     seeFavorites () {
@@ -4448,10 +4475,12 @@ function moveFunc (picNames) { // ===== Execute a move-this-file-to... request
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const saveOrderFunc = namelist => { // ===== XMLHttpRequest saving the thumbnail order list
-  if (!(allow.saveChanges || allow.adminAll || albumFindResult ()) || $ ("#imdbDir").text () === "") return;
+  if (!(allow.saveChanges || allow.adminAll || albumFindResult ()) || $ ("#imdbDir").text () === "") Promise.resolve (true);
   document.getElementById ("divDropbox").className = "hide-all"; // If shown...
   return new Promise ( (resolve, reject) => {
     $ ("#sortOrder").text (namelist); // Save in the DOM
+    // If, at login, the IMDB_DIR isn't yet reloaded, it should become = imdbLink:
+    if (!$ ("#imdbDir").text ()) $ ("#imdbDir").text ($ ("#imdbLink").text ());
     var IMDB_DIR =  $ ('#imdbDir').text ();
     if (IMDB_DIR.slice (-1) !== "/") {IMDB_DIR = IMDB_DIR + "/";}
     IMDB_DIR = IMDB_DIR.replace (/\//g, "@"); // For sub-directories
@@ -4459,7 +4488,7 @@ const saveOrderFunc = namelist => { // ===== XMLHttpRequest saving the thumbnail
     xhr.open ('POST', 'saveorder/' + IMDB_DIR); // URL matches server-side routes.js
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {
-        userLog ("SAVE", false, 3000);
+        userLog ("SAVE", false, 1000);
         resolve (true); // Can we forget 'resolve'?
       } else {
         userLog ("SAVE error", false, 5000);
