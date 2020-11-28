@@ -113,34 +113,40 @@ function removeDiacritics (str) {
 //=============================================================================
 // The core program begins here -- load image metadata into _imdb_images.sqlite
 // Transactions is a must-be!
-// NOTE: albumRoot = argv [3] if present, else assume 'imdb/' points there
 if (process.argv [2] == "-e") {
+  // argv [3] = absolute albumRoot path if present, else assumed symlink 'imdb/'
   loadImageMetadata ()
 } else {
-  console.log ("Usage: " + process.argv [1] + " -e")
-  console.log ("  Reloads image file text metadata into _imdb_images.sqlite")
-  console.log ("  from the album tree after removing diacritic symbols")
-  console.log ("  Note: This program must run in the www-album-roots root")
-  console.log ("  Needs: nodejs")
+  console.log ("  This program regenerates texts in a Mish metadata database")
+  console.log ("Usage: " + process.argv [1] + " -e [<absolute path to albumroot>]")
+  console.log ("  Reloads image file text metadata into imdb/_imdb_images.sqlite")
+  console.log ("  or (preferred) <absolute path to albumroot>_imdb_images.sqlite")
+  console.log ("  from the images of the album tree after removing diacritic symbols")
+  console.log ("Needs: nodejs, xmpget")
+  console.log ("Note: This program is assumed to run in the www-album-roots root")
+  console.log ("  catalog if an imdb/ symlink is assumed")
 }
 function loadImageMetadata () {
   let sqlite = require('sqlite3').verbose ()
   let TransactionDatabase = require("sqlite3-transactions").TransactionDatabase
   let execSync = require ('child_process').execSync
-  if (process.argv [3]) let albumRoot = process.argv [3]
-  else albumRoot = "imdb/"
-  //    This script (cmd) is subdivided (by |) into 4 tasks:
-  // 1. Finds all '.imdb' file paths (with album directories)
-  // 2. Removes all file names ('.imdb') from that path list, leaving the directories
-  // 3. Uses the list entries as arguments to find all non-"_*|.*" files in each directory (using depth=1)
-  // 4. Accepts only files having supported image file endings
+
+  let imdbLink = "imdb/" // <<<<<<<<<< NOTE: must equal the init() setting + '/'
+  let albumRoot
+  if (process.argv [3]) albumRoot = process.argv [3] // Absolute path, preferred
+  else albumRoot = imdbLink // Default symlink, relative path (NOTE: may vary!?!)
+  //    This Bash script (cmd) is subdivided (by |) into 4 tasks:
+  // 1. Find all '.imdb' file paths (with album directories)
+  // 2. Remove all file names ('.imdb') from that path list, leaving the directories
+  // 3. Use the list entries as arguments to find all non-"_*|.*" files in each directory (using depth=1)
+  // 4. Accept only files having supported image file endings
   let cmd = 'find ' + albumRoot + ' -type f -name ".imdb" | sed "s/.imdb$//" | xargs -Ipath find path -maxdepth 1 -type f -not -name "_*" -not -name ".*" | egrep -i "(JPE?G|TIF{1,2}|PNG|GIF)$"'
   let pathlist = execSync (cmd)
   //console.log ("  pathlist:\n" + pathlist)
   execSync ('rm -f ' + albumRoot + '_imdb_images.sqlite')
   //try {
   let dbtr = new TransactionDatabase (
-    new sqlite.Database (albumRoot + "imdb/_imdb_images.sqlite", sqlite.OPEN_READWRITE | sqlite.OPEN_CREATE)
+    new sqlite.Database (albumRoot + "_imdb_images.sqlite", sqlite.OPEN_READWRITE | sqlite.OPEN_CREATE)
   )
   dbtr.beginTransaction (function (err,db) {
     db.serialize ( () => {
@@ -151,11 +157,14 @@ function loadImageMetadata () {
       })
       pathlist = pathlist.toString ().trim ().split ("\n")
       for (let i=0; i<pathlist.length; i++) {
+        let filePath = pathlist [i]
+        // Replace albumRoot with imdbLink:
+        pathlist [i] = imdbLink + pathlist [i].slice (albumRoot.length);
         let tmp = pathlist [i].split ("/")
         let param = []
         let xmpkey = ['description', 'creator', 'source']
         for (let j=0; j<xmpkey.length; j++) {
-          let cmd = 'xmpget ' + xmpkey [j] + ' ' + pathlist [i] // [!]
+          let cmd = 'xmpget ' + xmpkey [j] + ' ' + filePath // [!]
           param [j] = removeDiacritics (execSync (cmd).toString ()).toLowerCase ()
         }
         db.run ('INSERT INTO imginfo (filepath,name,album,description,creator,source,subject,tcreated,tchanged) VALUES ($filepath,$name,$album,$description,$creator,$source,$subject,$tcreated,$tchanged)', {

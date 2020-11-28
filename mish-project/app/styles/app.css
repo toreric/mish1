@@ -282,6 +282,9 @@ div.ui-dialog div#textareas textarea {
   color: #000;
   font: normal 1.05em/1.2em Georgia, serif;
 }
+div.ui-dialog div#searcharea textarea {
+  background: #eee;
+}
 span.blue {
   color: blue !important;
 }
@@ -913,6 +916,7 @@ The jquery ui-tooltip is used elsewere (totip in *.js) */
 .img_txt1, .img_txt2 {
   cursor: text;
   text-align: left;
+  line-height: 1.19em;
   margin: 0;
   color: #fff;
 }

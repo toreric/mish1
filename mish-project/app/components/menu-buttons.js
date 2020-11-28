@@ -826,7 +826,10 @@ export default Component.extend (contextMenuMixin, {
     this._super (...arguments);
     $ (document).ready ( () => {
       spinnerWait (true); //== testing
+
+      // Here is the base IMDB_LINK setting, used for imdbLink in ld_imdb.js:
       $ ("#imdbLink").text ("imdb"); // <<<<<<<<<< == IMDB_LINK in routes.js
+
       $ ("#menuButton").attr ("title", htmlSafe ("Öppna\nmenyn")); // i18n
       // Remember update *.hbs
       $ ("#bkgrColor").text ("rgb(59, 59, 59)"); // #333
@@ -980,7 +983,7 @@ export default Component.extend (contextMenuMixin, {
         $ ("div.ember-view.jstree").attr ("onclick", "return false");
 
         if (allow.imgHidden || allow.adminAll) { // Qualified if at least Guest
-          $ (".img_mini.symlink [alt='MARKER']").attr("title", "Markera, eller med högerklick: Gå till källan");
+          $ (".img_mini.symlink [alt='MARKER']").attr("title", "Klick = markera; med Ctrl eller högerklick = gå till källan");
         }
       }), 10);
     });
@@ -3872,7 +3875,7 @@ async function parentAlbum (tgt) {
       result = result.replace (/(<br>)+/g, "\n");
       result = result.replace(/<(?:.|\n)*?>/gm, ""); // Remove <tags>
       //console.log (result.split ("\n") [1]);
-      file = result.split ("\n") [1].replace (/^[^/]*\/(\.\.\/)*/, $ ("#imdbLink").text () + "/");
+      file = result.split ("\n") [0].replace (/^[^/]*\/(\.\.\/)*/, $ ("#imdbLink").text () + "/");
       albumDir = file.replace (/^[^/]+(.*)\/[^/]+$/, "$1").trim ();
       let idx = $ ("#imdbDirs").text ().split ("\n").indexOf (albumDir);
       if (idx < 0) {
@@ -4096,14 +4099,15 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) { // ===== I
         }
         // If this is the second search (result) dialog:
         if (yes.indexOf ("Visa i") > -1) {
+          spinnerWait (true);
           later ( ( () => {
             document.getElementById("reLd").disabled = false;
             $ ("#reLd").click ();
           }), 800);
         }
-        later ( ( () => {
+        /* later ( ( () => {
           spinnerWait (false);
-        }), 1600);
+        }), 1600); */
         return true;
       }
     }]);
@@ -5066,10 +5070,14 @@ let doFindText = (sTxt, and, sWhr, exact) => {
     let n = 0, paths = [], albs = [];
     // Maximum number of pictures from the search results to show:
     let nLimit = 100;
+//console.log("searchText result:\n" + result);
     if (result) {
       paths = result.split ("\n").sort (); // Sort entries (see there)
       let chalbs = $ ("#imdbDirs").text ().split ("\n");
+//console.log("searchText paths:", paths);
+//console.log("searchText chalbs:", chalbs);
       n = paths.length;
+//console.log("a)",n);
       let lpath = $ ("#imdbLink").text () + "/" + $ ("#picFound").text ();
       for (let i=0; i<n; i++) {
         let chalb = paths [i].replace (/^[^/]+(.*)\/[^/]+$/, "$1");
@@ -5099,6 +5107,7 @@ let doFindText = (sTxt, and, sWhr, exact) => {
     // Sort the entries according to search items if they correspond to
     // exact file base names (else keep the previous sort order) (see there)
     n = paths.length;
+//console.log("b)",n);
     let obj = [];
     let filesFound = 0;
     let srchTxt = sTxt.split (" ");
@@ -5239,6 +5248,7 @@ function searchText (searchString, and, searchWhere, exact) {
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {
         let data = xhr.responseText.trim ();
+//console.log("response data:\n" + data);
         //data.sort
         resolve (data);
       } else {
@@ -5539,10 +5549,14 @@ function allowFunc () { // Called from setAllow (which is called from init(), lo
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Disable browser back button
-history.pushState (null, null, location.href);
+history.pushState (null, null);
 window.onpopstate = function () {
-  history.go(1);
-  infoDia (null, null, "M E D D E L A N D E", "<b style='color:#060'><br>Du använder just nu en webb-app<br>med bara en enda sida som det inte går att<br>backa ifrån på det sättet.<br><br>Använd i stället appens egna navigerings-<br>menyer, -knappar och/eller -länkar!<br><br>Självklart kan du även avsluta appen genom att<br>stänga sidan eller gå till något helt annat<br>i webbläsarens adressfält.<br>&nbsp;</b>", "Ok, jag förstår!", true);
+  if ($ ("div[aria-describedby='dialog']").is (":visible")) {
+    $ ("#dialog").dialog ("close");
+  } else {
+    infoDia (null, null, "M E D D E L A N D E", "<b style='color:#060'><br>Du använder just nu en webb-app<br>med bara en enda sida som det inte går att<br>backa ifrån på det sättet.<br><br>Använd i stället appens egna navigerings-<br>menyer, -knappar och/eller -länkar!<br><br>Självklart kan du även avsluta appen genom att<br>stänga sidan eller gå till något helt annat<br>i webbläsarens adressfält.<br>&nbsp;</b>", "Ok, jag förstår!", true);
+    history.go(1);
+  }
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function showFileInfo () {
@@ -5553,7 +5567,8 @@ function showFileInfo () {
   getFilestat (picOrig).then (result => {
     $ ("#temporary").text (result);
   }).then ( () => {
-    var txt = '<i>Namn</i>: <span style="color:deeppink">' + picName + '</span><br>';
+    if ($ ("#imdbDir").text ().indexOf (picFound) > -1) picName = picName.replace (/^(.+)\.[^.]+$/, "$1");
+    var txt = '<i>Namn</i>: <span style="color:black">' + picName + '</span><br>';
     txt += $ ("#temporary").text ();
     var tmp = $ ("#download").attr ("href");
     if (tmp && tmp.toString () != "null") {

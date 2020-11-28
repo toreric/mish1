@@ -34,7 +34,7 @@ module.exports = function (app) {
   // ----- Image data(base) directory
   let IMDB_DIR = null // Must be set in route
   // ----- Name of symlink pointing to IMDB_ROOT
-  let IMDB_LINK = "imdb"    // <<<<<<<<<< must equal init () setting!
+  let IMDB_LINK = "imdb"    // <<<<<<<<<< NOTE: must equal init () setting!
   // ----- Base name of search result albums
   let picFound = ""
   // ----- Max lifetime (minutes) after last access of a search result album
@@ -128,14 +128,14 @@ console.log("p2",p);
       if (linkto [0] !== '.') {linkto = './' + linkto}
     }
     // Exclude the imdbLink name, nov 2019, in order to difficultize direct
-    // access to the original pictures from the server. This could be made even
+    // access to the original pictures on the server. This could be made even
     // better, e.g., by selection of a random symlink name at program restart -
-    // remember though, the database 'filepath' contains the imdbLink name!!!
+    // remember though, the database 'filepath' column contains the imdbLink name!!!
     var filex = file.replace (/^[^/]+\//, "./")
     var fileStat = "<i>Filnamn</i>: " + filex + "<br><br>"
     if (linkto) {
-      fileStat = "<i>Filnamn</i>: <span style='color:#0a4'>" + filex + "</span><br><br>"
-      fileStat += "<i>Original</i>: " + linkto + "<br><br>"
+      fileStat = "<i>Filnamn</i>: " + linkto + "<br><br>"
+      fileStat += "<i>Länknamn</i>: <span style='color:#0a4'>" + filex + "</span><br><br>"
     }
     fileStat += "<i>Storlek</i>: " + stat.size/1000000 + " Mb<br>"
     var tmp = execSync ("exif_dimension " + file).toString ().trim ()
@@ -265,7 +265,7 @@ console.log("p2",p);
           dirtext = homeDir +"@"+ IMDB_ROOT + "\n" + dirtext + "\nNodeJS " + process.version.trim ()
           res.location ('/')
           res.send (dirtext + "\n" + dircoco + "\n" + dirlabel)
-          res.end ()
+          //res.end ()
           console.log ('Directory information sent from server')
         })
       }).catch (function (error) {
@@ -288,7 +288,7 @@ console.log("p2",p);
 //console.log (dirlist)
       res.location ('/')
       res.send (dirlist)
-      res.end ()
+      //res.end ()
     })
     .catch ( (err) => {
       console.error ("RRR", err.message)
@@ -313,7 +313,7 @@ console.log("p2",p);
       //console.log(namelist)
       res.location ('/')
       res.send (namelist)
-      res.end ()
+      //res.end ()
     }).catch (function (error) {
       res.location ('/')
       res.send (error.message)
@@ -333,7 +333,7 @@ console.log("p2",p);
 //console.log ("execSync (" + cmd.trim ().replace (/(^[^ ]+ [^ ]+ [^ ]+).*/, "$1 ..."))
       res.location ('/')
       res.send (resdata)
-      res.end ()
+      //res.end ()
     } catch (err) {
       console.error ("`" + cmd + "`")
       console.error (err.message)
@@ -377,7 +377,7 @@ console.log("p2",p);
             //console.log ("Login attempt " + name + " (" + status + ")")
             res.location ('/')
             res.send (password +"\n"+ status +"\n"+ allow)
-            res.end ()
+            //res.end ()
           })
         })
       })
@@ -431,7 +431,7 @@ console.log("p2",p);
           if (!allfiles) {allfiles = ''}
           res.location ('/')
           res.send (allfiles)
-          res.end ()
+          //res.end ()
           console.log ('...file information sent from server') // Remaining message
         }).catch (function (error) {
           res.location ('/')
@@ -455,7 +455,7 @@ console.log("p2",p);
       res.location ('/')
       //res.send (err.message)
       res.send ("Error!") // Keyword!
-      res.end ()
+      //res.end ()
       console.log (IMDB_DIR + ' not found')
     }
     fs.readFileAsync (imdbtxtpath)
@@ -463,7 +463,7 @@ console.log("p2",p);
       //console.log (names) // <buffer>
       //??res.location ('/')
       res.send (names) // Sent buffer arrives as text
-      res.end ()
+      //res.end ()
       //console.log ('\n'+names.toString ()+'\n')
     }).then (console.info ('File order sent from server'))
   })
@@ -476,13 +476,13 @@ console.log("p2",p);
     } catch (err) {
       res.location ('/')
       res.send ("Error!") // Keyword!
-      res.end ()
+      //res.end ()
       console.error ('Found no favorites')
     }
     fs.readFileAsync (favPath)
     .then (names => {
       res.send (names) // Sent buffer arrives as text
-      res.end ()
+      //res.end ()
     }).then (console.info ('Favorites list sent from server'))
   })
 
@@ -497,7 +497,7 @@ console.log("p2",p);
     var tmpName = execSync ('mkpng ' + fileName)
     res.location ('/')
     res.send (tmpName)
-    res.end ()
+    //res.end ()
     console.log ('Started fullsize image generation')
   })
 
@@ -506,7 +506,7 @@ console.log("p2",p);
     var fileName = req.params[0] // with path
     console.log ('Download of ' + fileName + " initiated")
     res.location ('/')
-    res.send (fileName)
+    //res.send (fileName)
   })
 
   // ##### #5. Delete an original file, or a symlink, and its mini and show files
@@ -537,7 +537,7 @@ console.log("p2",p);
     }
     res.location ('/')
     res.send ('')
-    res.end ()
+    //res.end ()
   })
 
   // ##### #6.6 Multiple shell commands executed using Bluebird promise mapSeries
@@ -577,7 +577,7 @@ console.log("p2",p);
   app.post ('/setimdbdir/:imagedir', function (req, res) {
     IMDB_DIR = req.params.imagedir.replace (/@/g, "/")
     res.send (IMDB_DIR)
-    res.end ()
+    //res.end ()
   })
 
   // ##### #7.2 Image upload, using Multer multifile and Bluebird promise upload
@@ -737,42 +737,45 @@ console.log("p2",p);
     // The removeDiacritics funtion may bypass some characters (e.g. Sw. åäöÅÄÖ)
     let like = removeDiacritics (req.body.like).toLowerCase ()
     let cols = eval ("[" + req.body.cols + "]")
-    //console.log ("SEARCH1", like) // SQL search items
-    //console.log ("SEARCH2", cols) // Search colunns checkboxes
+//console.log ("SEARCH1", like) // SQL search items
+//console.log ("SEARCH2", cols) // Search columns checkboxes
     let taco = ["description", "creator", "source", "album", "name"]
     let columns = ""
     for (let i=0; i<cols.length; i++) {
       if (cols [i]) {columns += "||" + taco [i]}
     }
     columns = columns.slice (2)
-    //console.log ("SEARCH3", columns) // Search colunns names logic
+//console.log ("SEARCH3", columns) // Search columns names logic
 
     try { // Start try ----------
       let db = new sqlite3.Database (IMDB_LINK + '/_imdb_images.sqlite', function (err) {
         if (err) {
           console.error (err.message)
           res.send (err.message)
-          res.end ()
+          //res.end ()
         }
       })
       db.serialize ( () => {
         let sql = 'SELECT id, filepath, ' + columns + ' AS txtstr FROM imginfo WHERE ' + like
+//console.log("sql:",sql);
         db.all (sql, [], function (err, rows) {
           foundpath = ""
+//console.log("rows:",rows);
           if (rows) {
             tempstore = rows
             setTimeout ( () => {
               tempstore.forEach( (row) => {
                 foundpath += row.filepath.trim () + "\n"
               })
+//console.log("foundpath:\n" + foundpath);
               res.send (foundpath.trim ())
-              res.end ()
+              //res.end ()
             }, 1000)
           } else {
             err = "Error: The images database is out of order"
             console.error (err)
             res.send (err)
-            res.end ()
+            //res.end ()
           }
         })
         db.close ()
