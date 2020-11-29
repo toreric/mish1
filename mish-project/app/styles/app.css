@@ -736,7 +736,7 @@ div[aria-describedby='textareas'] {
   /*position: fixed;
   top: 1em;
   z-index: 99;*/
-  margin-left: 0 6px;
+  margin: 0 1em 0 2em;
   background-color: white;
   border-radius: 4px;
 }

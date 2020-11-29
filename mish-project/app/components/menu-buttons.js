@@ -2457,7 +2457,7 @@ export default Component.extend (contextMenuMixin, {
         $ ("div.settings, div.settings div.check").hide ();
         this.actions.hideShow ();
         $ ("#dzinfo").html ("VÄLJ FOTOGRAFIER FÖR UPPLADDNING"); // i18n
-        scrollTo (null, $ ("#highUp").offset ().top);
+        scrollTo (null, 0);
         if (allow.imgUpload || allow.adminAll) {
           document.getElementById("uploadPics").disabled = false;
         } else {
@@ -2468,7 +2468,6 @@ export default Component.extend (contextMenuMixin, {
         document.getElementById ("divDropbox").className = "hide-all";
         document.getElementById("reLd").disabled = false;
         document.getElementById("saveOrder").disabled = false;
-        scrollTo (null, $ ("#highUp").offset ().top);
       }
     },
     //============================================================================================

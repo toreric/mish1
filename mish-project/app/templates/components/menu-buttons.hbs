@@ -84,6 +84,12 @@ function copyToClipboard (str) {
   <br><span class="usrlg"></span><!-- User information log -->
 </div>
 
+<!-- ///// DROPBOX  CONTAINER ///// -->
+<div id="divDropbox" class="">
+  {{#drop-zone url='/upload' autoProcessQueue=false  acceptedFiles='image/jpeg,image/tiff,image/png,image/gif'}}
+  {{/drop-zone}}
+</div>
+
 <!-- ///// JQUERY DIALOGS ///// -->
 <div id="dialog" style="display:none">DIALOG</div>
 
@@ -329,7 +335,7 @@ rättelser eller andra upplysningar" {{action 'doMail'}}>&#9993;</a>
     <b>Klicka med skifttangent på en miniatyrbild</b> så markeras/avmarkeras den<br>
     <b>Då du är inloggad som gäst</b> har du bara vissa rättigheter (gömma, markera och flytta miniatyrer med dra + släpp, gå till originalbild). Med personlig inloggning kan du få fler rättigheter (till exempel <b>klicka på bildtext</b> för att redigera den och spara ändringar).<br>
     <b style="color:#0b0">En bild med grön underkant/markeringsring är länkad</b> från annat album<br>
-    <b style="color:#0b0">Gå till originalbilden</b> med högerklick i grön markeringsring</span></p>
+    <b style="color:#0b0">Gå till originalbilden</b> med högerklick (eller Ctrl + klick) i grön markeringsring</span></p>
   <p style="text-align:left;margin-left:1.5em;line-height:1.7em" draggable="false" ondragstart="return false">
     <b>Se FÖRST knappar till vänster</b> (vilka som syns varierar):<br>
     <a id="albSel">☰</a> Huvudmeny: Välj album, sökning, albumöversikt<br>
@@ -371,13 +377,8 @@ rättelser eller andra upplysningar" {{action 'doMail'}}>&#9993;</a>
   <button id="checkNames" {{action 'checkNames'}}></button>
 </p>
 
-<!-- ///// START OF DROPBOX AND MINI-LIST CONTAINER ///// -->
+<!-- ///// START OF MINI-LIST CONTAINER ///// -->
 <div id="imageList" class="show-block" onclick={{perform rstBrdrs}}><!-- THUMBNAIL CONTAINER -->
-<!-- ///// DROPBOX  CONTAINER ///// -->
-<div id="divDropbox" class="">
-  {{#drop-zone url='/upload' autoProcessQueue=false  acceptedFiles='image/jpeg,image/tiff,image/png,image/gif'}}
-  {{/drop-zone}}
-</div>
 
 <!-- ///// SHOW MINI IMAGES (thumbnails) ///// -->
 <!-- Uses subaList and allNames from menu-buttons.js -->
