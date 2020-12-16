@@ -40,20 +40,20 @@ function copyToClipboard (str) {
       <span id ="showDropbox" class="picLinker" style="margin:0 0 0 0.5em;display:none" {{action "showDropbox"}}>LADDA UPP</span>
     </div>
     <div class="settings" draggable="false" ondragstart="return false" style="display:none">
-        <div class="check">
-          <div>
-            <span>
-              Dina rättigheter (<a onclick="$ ('#title button.viewSettings').click ()">se mer</a>):
-              <button {{action 'toggleSettings'}}>×</button>
-            </span>
-            <div id="setAllow">
-              Insert checkboxes here
-            </div>
+      <div class="check">
+        <div>
+          <span>
+            Dina rättigheter (<a onclick="$ ('#title button.viewSettings').click ()">se mer</a>):
+            <button {{action 'toggleSettings'}}>×</button>
+          </span>
+          <div id="setAllow">
+            Insert checkboxes here
           </div>
-          <button class="confirm" {{action 'setAllow' true}}>Bekräfta</button>
-          <button {{action 'toggleSettings'}}>Stäng</button>
         </div>
+        <button class="confirm" {{action 'setAllow' true}}>Bekräfta</button>
+        <button {{action 'toggleSettings'}}>Stäng</button>
       </div>
+    </div>
     <!-- Settings button, not visible but used -->
     <div style="display: none">
       <button type="submit" class="viewSettings" title="" {{action "infStatus"}}>settings</button>
@@ -85,7 +85,7 @@ function copyToClipboard (str) {
 </div>
 
 <!-- ///// DROPBOX  CONTAINER ///// -->
-<div id="divDropbox" class="">
+<div id="divDropbox" class="hide-all">
   {{#drop-zone url='/upload' autoProcessQueue=false  acceptedFiles='image/jpeg,image/tiff,image/png,image/gif'}}
   {{/drop-zone}}
 </div>
@@ -101,7 +101,7 @@ function copyToClipboard (str) {
   <textarea name="creator" rows="1" />
 </div>
 
-<div id="searcharea" style="margin:0;padding:0;width:">
+<div id="searcharea" style="margin:0;padding:0;display:none;width:">
   <div class="diaMess">
     <div class="edWarn" style="font-weight:normal;text-align:right" ></div>
     <div class="srchIn"> Sök i:&nbsp;

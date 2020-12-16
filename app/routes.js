@@ -72,6 +72,7 @@ module.exports = function (app) {
     let q = p.replace (/@/g, "/")
 console.log("p1",q);
     p = q.split ("/")
+    if (p [0] === "phpmyadmin") res.redirect ("/" + q)
     if (p [0] === "awstats" || p [0] === "cgi-bin") res.redirect ("/" + q)
     if (p [0] === "find" || p [0] === "album") {
       var homeDir = imdbHome () // From env.var. $IMDB_HOME or $HOME
@@ -506,7 +507,7 @@ console.log("p2",p);
     var fileName = req.params[0] // with path
     console.log ('Download of ' + fileName + " initiated")
     res.location ('/')
-    //res.send (fileName)
+    res.send (fileName)
   })
 
   // ##### #5. Delete an original file, or a symlink, and its mini and show files
