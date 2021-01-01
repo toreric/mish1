@@ -687,11 +687,15 @@ export default Component.extend (contextMenuMixin, {
       }
 
       function nextStep (nels) {
-        /*for (let i=0; i<nels; i++) {
-        console.log ("DELETE", picNames [i], picPaths [i]);
-        }*/
+        // From the full album relative path <imdbDir>:
+        // 1 remove "<imdbLink>/" and all following "<album>/"s, leaving the last
+        // 2 if still "<imdbLink>", change to "<imdbRoot>"
+        // 3 if "<picFound>", remove the disturbing distinguishing random extension
+        //   from most GUI labels but NOTE: Use it also, e.g. in the Jstree label!
         var nameText = $ ("#imdbDir").text ().replace (/^(.+[/])+/, "");
         if (nameText === $ ("#imdbLink").text ()) {nameText = $ ("#imdbRoot").text ();}
+        if (nameText.indexOf (picFound) > -1) nameText = nameText.replace (/^(.+)\.[^.]+$/, "$1");
+
         var eraseText = "Radera i " + nameText + ":";
         resetBorders (); // Reset all borders, can be first step!
         markBorders (picName); // Mark this one
@@ -813,6 +817,7 @@ export default Component.extend (contextMenuMixin, {
   //imdbDir: "",  // Current picture directory, selected from imdbDirs
   imdbDirs: () => {return ['Albums?']}, // Reset in requestDirs
   imdbPics: () => {return ['Alpics?']}, // Reset in requestDirs
+  isLoading: false,
   jstreeHdr: "",
   albumName: "",
   albumText: "",
@@ -855,6 +860,7 @@ export default Component.extend (contextMenuMixin, {
         $ ("#title button.cred").attr ("title", logAdv);
         $ ("#title button.cred").attr ("totip", logAdv);
         // Initialize settings:
+        // Search result album names will have unique random extensions.
         // This #picFound search result album will, harmlessly, have identical
         // name within a session for any #imdbRoot (if you switch between them)
         let rnd = "." + Math.random().toString(36).substr(2,4);
@@ -986,7 +992,7 @@ export default Component.extend (contextMenuMixin, {
   //----------------------------------------------------------------------------------------------
   refreshAll () {
     // ===== Updates allNames and the sortOrder tables by locating all images and
-    // their metadata in the "imdbDir" dir (name is DOM saved) on the server disk.
+    // their metadata in the <imdbDir> dir (name is DOM saved) on the server disk.
     // This will trigger the template to restore the DOM elements. Prepare the didRender hook
     // to further restore all details!
     return new Promise (resolve => {
@@ -1000,7 +1006,6 @@ export default Component.extend (contextMenuMixin, {
             document.getElementById ("imdbError").className = "show-inline";
           }
           $ ('.showCount').hide ();
-          //this.set ("imdbDir", "");
           $ ("#imdbDir").text ("");
           $ ("#sortOrder").text ("");
           $ ('#navKeys').text ('true');
@@ -1353,10 +1358,7 @@ export default Component.extend (contextMenuMixin, {
       !$ ("input.cred.user").is (":focus") &&
       !$ ("input.cred.password").is (":focus")) {
         if (!($ ("#imdbDir").text () === "")) {
-          //$ ("#dialog").dialog ("close");
-          //$ ("#navAuto").text ("true");
           later ( ( () => {
-            //$ (".nav_links .toggleAuto").text ("STOP");
             that.actions.findText ();
           }), 250);
           if (Z) {console.log ('*j');}
@@ -1442,11 +1444,10 @@ export default Component.extend (contextMenuMixin, {
           if (data === "Error!") {
             if (tmpIndex === 0) { // Regenerate the picFound album since it has probably timed out
               let lpath = $ ("#imdbLink").text () + "/" + $ ("#picFound").text ();
-              execute ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb").then ();
+              execute ("rm -rf " +lpath+ "&&mkdir -m0775 " +lpath+ "&&touch " +lpath+ "/.imdb&&chmod 664 " +lpath+ "/.imdb").then ();
             } else {
               tmpName += " &mdash; <em style=\"color:red;background:transparent\">just nu oåtkomligt</em>" // i18n
               that.set ("albumName", tmpName);
-              //that.set ("imdbDir", "");
               $ ("#imdbDir").text
             }
           } else {
@@ -1908,10 +1909,8 @@ export default Component.extend (contextMenuMixin, {
                     document.querySelector ("input.nameNew").disabled = true;
                     var tmp = document.querySelector ("input.nameNew").getAttribute ("style");
                     document.querySelector ("input.nameNew").setAttribute ("style", tmp + ";background:#dfd");
-                    //$ ("input.nameNew").attr ("background-color", "#efe");
                   }), 100);
                 }), 100);
-                //console.log ("Nytt album: " + $ ("#imdbDir").text () + "/" + nameNew);
               } else {
                 console.log ("Improper name: " + nameNew);
                 $ ("#temporary_1").text (nameNew);
@@ -1922,7 +1921,7 @@ export default Component.extend (contextMenuMixin, {
               }
 
             } else if (opt === "checked") {
-              nameNew = $ ("#temporary_1").text ();
+              nameNew = $ ("#temporary_1").text (); // Regenerate the picFound album
               var cmd = "mkdir " + pathNew + nameNew + " && touch " + pathNew + nameNew + "/.imdb";
               console.log (cmd);
               mexecute (cmd).then (result => {
@@ -2064,6 +2063,8 @@ export default Component.extend (contextMenuMixin, {
     selectRoot (value, what) { // ##### Select album root dir (to put into imdbLink) from dropdown
 //console.log(value, what);
       if (what) {var that = what;} else that = this;
+      if(that.get('isLoading')) return;
+      that.set('isLoading', true);
       $ (".mainMenu p:gt(1)").hide ();
       //$ (".mainMenu p:gt(1)").show ();
       // Close all dialogs/windows
@@ -2118,6 +2119,9 @@ export default Component.extend (contextMenuMixin, {
           startInfoPage ()
         });
       }), 2000); // Time needed!
+      later ( ( () => {
+        that.set('isLoading', false);
+      }), 4000); // Time needed!
     },
     //============================================================================================
     selectAlbumNew () {
@@ -2155,7 +2159,6 @@ export default Component.extend (contextMenuMixin, {
           $ ("#picOrig").text ("");
           $ ("#sortOrder").text ("");
           $ (".showCount").hide ();
-//          $ (".miniImgs").hide (); // NOTE: Vad är detta?????
         }
         let imdbDir = value;
         $ ("#imdbDir").text (value);
@@ -2682,7 +2685,9 @@ export default Component.extend (contextMenuMixin, {
       });
     },
     //============================================================================================
-    saveOrder () { // ##### Save, in imdbDir on server, the ordered name list for the thumbnails on the screen. Note that they may, by user's drag-and-drop, have an unknown sort order (etc.)
+    saveOrder () { // #####
+    // Save, in <imdbDir> on the server, the ordered name list for the thumbnails on the
+    // screen. Note that they may, by user's drag-and-drop, have an unknown sort order (etc.)
 
       if ($ (".toggleAuto").text () === "STOP") return; // Auto slide show is running
       if (!(allow.saveChanges || allow.adminAll) || $ ("#imdbDir").text () === "") return;
@@ -3154,7 +3159,8 @@ export default Component.extend (contextMenuMixin, {
         if ($ ("#imdbRoot").text ()) { // If imdb is initiated
           // Regenerate the picFound album: the shell commands must execute in sequence
           let lpath = $ ("#imdbLink").text () + "/" + $ ("#picFound").text ();
-          execute ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb").then ();
+          //execute ("rm -rf " +lpath+ " && mkdir -m0775 " +lpath+ " && touch " +lpath+ "/.imdb").then ();
+          execute ("rm -rf " +lpath+ "&&mkdir -m0775 " +lpath+ "&&touch " +lpath+ "/.imdb&&chmod 664 " +lpath+ "/.imdb").then ();
         }
         // Inform about login/logout i18n
         let text = "Du kan fortsätta att se på bilder utan att logga in, ";
@@ -3272,7 +3278,8 @@ export default Component.extend (contextMenuMixin, {
               $ ("#requestDirs").click ();
               // Regenerate the picFound album: the shell commands must execute in sequence
               let lpath = $ ("#imdbLink").text () + "/" + $ ("#picFound").text ();
-              execute ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb").then ();
+              //execute ("rm -rf " +lpath+ " && mkdir -m0775 " +lpath+ " && touch " +lpath+ "/.imdb").then ();
+              execute ("rm -rf " +lpath+ "&&mkdir -m0775 " +lpath+ "&&touch " +lpath+ "/.imdb&&chmod 664 " +lpath+ "/.imdb").then ();
               // Remove all too old picFound album catalogs:
               let lnk = this.get ("imdbLink"); // NOTE: Remember the added random <.01yz>
               let toold = 60; // minutes. NOTE: Also defined in routes.js, please MAKE COMMON!!
@@ -3295,15 +3302,6 @@ export default Component.extend (contextMenuMixin, {
         //console.log(picFind);
         //console.log($ ("#imdbRoots").text ());
                 if ($ ("#imdbRoots").text ().split ("\n").indexOf (picFind [0]) < 1) picFind = ["", ""];
-                /*else {
-                  if ($ ("#imdbRoot").text () !== picFind [0]) { // Change album root
-                    this.actions.selectRoot (picFind [0], this);
-                  }
-                }*/
-
-
-
-
                 //$ ("#requestDirs").click ();
                 later ( ( () => {
                   $ (".ember-view.jstree").jstree ("deselect_all");
@@ -3529,26 +3527,7 @@ export default Component.extend (contextMenuMixin, {
         linktext = "https://" + linktext;
       }
       linktext += "/find/" + $ ("#imdbRoot").text () + "/";
-      /*let names = $ (".img_mini .img_name").text ();
-      names = names.toString ().trim ().replace (/\s+/g, " ");
-      names = names.split (" ");
-      let tmp = document.getElementsByClassName ("img_mini");
-      let numTotal = tmp.length;
-      let linkarr = [];
-      for (let i=0; i<numTotal; i++) {
-        if (tmp [i].style.backgroundColor !== $ ("#hideColor").text ()) {
-          if ($ ("#imdbDir").text () === $ ("#imdbLink").text () + "/" + $ ("#picFound").text ()) {
-            names [i] = names [i].replace (/\.[^.]{4}$/, "");
-          }
-          //linktext += names [i] + "%20";
-          linkarr.push (names [i]);
-        }
-      }*/
       let pixt = "bilden"; // i18n
-      //if (linkarr.length > 1) pixt = "bilderna";
-      //linktext += linkarr.join ("%20");
-      //console.log(linktext);
-      //let lite = "<br>Just nu visas inga albumbilder";
       let name = $ ("#picName").text (); // Link to a single picture
       if ($ ("#imdbDir").text () === $ ("#imdbLink").text () + "/" + $ ("#picFound").text ()) {
         name = name.replace (/\.[^.]{4}$/, "");
@@ -3673,7 +3652,7 @@ function pause (ms) { // or use 'await new Promise (z => setTimeout (z, 2000))'
 // This album has less write restrictions etc.
 let albumFindResult = () => $ ("#imdbDir").text ().replace (/^[^/]*\//, "") === $ ("#picFound").text ();
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// Get the 'true' album path (imdbx is the symbolic link to the actual root of albums)
+// Get the "true" album path (imdbx is the symbolic link to the actual root of albums)
 function albumPath () {
   let imdbx = new RegExp($ ("#imdbLink").text ());
   return $ ("#imdbDir").text ().replace (imdbx, $ ("#imdbRoot").text ());
@@ -4080,6 +4059,7 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) { // ===== I
               sqlUpdate (files);
             }), 5000);
           }
+          document.getElementById ("stopSpin").innerHTML = "SPIN-END";/**/
         }
         $ (this).dialog ("close");
         $ ('#navKeys').text ('true'); // Reset in case L/R arrows have been protected
@@ -4639,11 +4619,10 @@ function reqDirs (imdbroot) { // Read the dirs in imdbLink (requestDirs)
           document.getElementById ("imageList").className = "hide-all";
           $ ("#imdbDir").text (""); // Remove active album
         } else { // ... but save for selection if present in dirList:
-          tempStore = ix + 1; // ELSEWHERE:
-          //$ (".ember-view.jstree").jstree ("select_node", $ ("#j1_" + tempStore));
+          tempStore = ix + 1;
         }
         dirList = dirList.join ("\n");
-        $ ("#imdbDirs").text (dirList);//här
+        $ ("#imdbDirs").text (dirList);
         dirCoco = dirCoco.join ("\n");
         $ ("#imdbCoco").text (dirCoco);
         dirLabel = dirLabel.join ("\n"); // Don't trim!
@@ -5138,7 +5117,8 @@ let doFindText = (sTxt, and, sWhr, exact) => {
 
     // Regenerate the picFound album: the shell commands must execute in sequence
     let lpath = $ ("#imdbLink").text () + "/" + $ ("#picFound").text ();
-    execute ("rm -rf " +lpath+ " && mkdir " +lpath+ " && touch " +lpath+ "/.imdb").then ();
+    //execute ("rm -rf " +lpath+ " && mkdir -m0775 " +lpath+ " && touch " +lpath+ "/.imdb").then ();
+    execute ("rm -rf " +lpath+ "&&mkdir -m0775 " +lpath+ "&&touch " +lpath+ "/.imdb&&chmod 664 " +lpath+ "/.imdb").then ();
     userLog (n + " FOUND");
     let txt = removeUnderscore ($ ("#picFound").text ().replace (/\.[^.]{4}$/, ""), true);
     let yes;

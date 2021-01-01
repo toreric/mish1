@@ -216,33 +216,32 @@ export default Component.extend({
         onDragEnterLeaveHandler(this);
         document.getElementById("uploadWarning").style.display = "none";
         this.on("addedfile", function(file) {
-          setImdbDir ().then ( () => { // Ensure the server imdbDir is set!
-            document.getElementById("uploadPics").style.display = "inline";
-            document.getElementById("removeAll").style.display = "inline";
-            //$ ("#uploadFinished").text ("");
-            if (acceptedFileName (file.name)) {
-              var namepic = file.name.replace (/.[^.]*$/, "");
-              // escapeDots <=> .replace (/\./g, "\\.") NEEDED since jQuery uses CSS:
-              if ($ ("#i" + namepic.replace (/\./g, "\\.")).length > 0) { // If already present in the DOM, upload would replace that file, named equally
-                $ ("#uploadWarning").html ("&nbsp;VARNING FÖR ÖVERSKRIVNING: Lika filnamn finns redan!&nbsp;");
-                document.getElementById("uploadWarning").style.display = "inline";
-                console.log (namepic, file.type, file.size, "ALREADY PRESENT");
-                //console.log(file.previewElement.classList);
-                file.previewElement.classList.add ("picPresent");
-                //console.log(JSON.stringify (file.previewElement.classList));
-                document.getElementById("removeDup").style.display = "inline";
-              } else { // New file to upload
-                console.log (namepic, file.type, file.size, "NEW");
-              }
-            } else {
-              console.log ("Illegal file name: " + file.name);
-              // userLog() unreachable
-              $ ("#uploadFinished").html ('<span style="color:deeppink">OTILLÅTET FILNAMN<br>' + file.name + "</span>");
-              later ( () => {
-                file.previewElement.querySelector ("a.dz-remove").click ();
-              }, 1000);
+          $ ("#uploadFinished").text ("");
+          document.getElementById("uploadPics").style.display = "inline";
+          document.getElementById("removeAll").style.display = "inline";
+          //$ ("#uploadFinished").text ("");
+          if (acceptedFileName (file.name)) {
+            var namepic = file.name.replace (/.[^.]*$/, "");
+            // escapeDots <=> .replace (/\./g, "\\.") NEEDED since jQuery uses CSS:
+            if ($ ("#i" + namepic.replace (/\./g, "\\.")).length > 0) { // If already present in the DOM, upload would replace that file, named equally
+              $ ("#uploadWarning").html ("&nbsp;VARNING FÖR ÖVERSKRIVNING: Lika filnamn finns redan!&nbsp;");
+              document.getElementById("uploadWarning").style.display = "inline";
+              console.log (namepic, file.type, file.size, "ALREADY PRESENT");
+              //console.log(file.previewElement.classList);
+              file.previewElement.classList.add ("picPresent");
+              //console.log(JSON.stringify (file.previewElement.classList));
+              document.getElementById("removeDup").style.display = "inline";
+            } else { // New file to upload
+              console.log (namepic, file.type, file.size, "NEW");
             }
-          });
+          } else {
+            console.log ("Illegal file name: " + file.name);
+            // userLog() unreachable
+            $ ("#uploadFinished").html ('<span style="color:deeppink">OTILLÅTET FILNAMN<br>' + file.name + "</span>");
+            later ( () => {
+              file.previewElement.querySelector ("a.dz-remove").click ();
+            }, 1000);
+          }
         });
 
         this.on("removedfile", function() {
@@ -364,25 +363,27 @@ export default Component.extend({
     },
 
     processQueue() {
-      return new Promise ( () => {
-        this.myDropzone.options.autoProcessQueue = false;
-        qlen = this.myDropzone.getQueuedFiles().length;
-        if (qlen > 0) {
-          $ (".spinner").show ();
-          document.getElementById("reLd").disabled = true;
-          document.getElementById("saveOrder").disabled = true;
-          document.getElementById("showDropbox").disabled = true;
-          this.myDropzone.options.autoProcessQueue = true;
-          console.log (secNow (), "drop-zone processQueue:", qlen); // Upload begin
-          this.myDropzone.processQueue ();
-        }
-      }).then (null);
+      setImdbDir ().then ( (result) => { // Ensure the server imdbDir is set!
+        return new Promise ( () => {
+          this.myDropzone.options.autoProcessQueue = false;
+          qlen = this.myDropzone.getQueuedFiles().length;
+          if (qlen > 0) {
+            $ (".spinner").show ();
+            document.getElementById("reLd").disabled = true;
+            document.getElementById("saveOrder").disabled = true;
+            document.getElementById("showDropbox").disabled = true;
+            this.myDropzone.options.autoProcessQueue = true;
+            console.log (secNow (), "drop-zone processQueue:", qlen); // Upload begin
+            this.myDropzone.processQueue ();
+          }
+        }).then (null);
+      });
     }
 
   },
 
 });
-var qlen = 0;
+var qlen = 0; // Queue length
 
 function secNow () { // Local time stamp in milliseconds
   let tmp = new Date ();
@@ -402,7 +403,7 @@ function acceptedFileName (name) {
 function setImdbDir () { // Set the server imdbDir
   return new Promise ( (resolve, reject) => {
     later ( () => { // Wait in case imdbDir is changing
-      var IMDB_DIR =  $ ('#imdbDir').text ();
+      var IMDB_DIR = $ ('#imdbDir').text ();
       if (IMDB_DIR.slice (-1) !== "/") {IMDB_DIR = IMDB_DIR + "/";}
       IMDB_DIR = IMDB_DIR.replace (/\//g, "@"); // For sub-directories
       var xhr = new XMLHttpRequest ();
@@ -420,7 +421,7 @@ function setImdbDir () { // Set the server imdbDir
         }
       };
       xhr.send ();
-    }, 1000);
+    }, 4);
   }).catch (error => {
     console.error (error.message);
   });

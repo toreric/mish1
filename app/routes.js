@@ -451,7 +451,7 @@ console.log("p2",p);
     }
     var imdbtxtpath = IMDB_DIR + '_imdb_order.txt'
     try {
-      execSync ('touch ' + imdbtxtpath) // In case not yet created
+      execSync ('touch ' + imdbtxtpath + '&&chmod 664 ' + imdbtxtpath) // In case not yet created
     } catch (err) {
       res.location ('/')
       //res.send (err.message)
@@ -630,7 +630,7 @@ console.log("p2",p);
       console.log ("saveorder", req.params.imagedir, "=>", IMDB_DIR)
     }
     var file = IMDB_DIR + "_imdb_order.txt"
-    execSync ('touch ' + file) // In case not yet created
+    execSync ('touch ' + file + '&&chmod 664 ' + file) // In case not yet created
     var body = []
     req.on ('data', (chunk) => {
       //console.log(chunk)
@@ -1144,13 +1144,13 @@ console.log("p2",p);
         console.error(`exec error: ${error}`)
         return
       }
-      if (filepath1 !== filepath) { // Rename to 'fake PNG'
-        try {
-          execSync ("mv " + filepath1 + " " + filepath)
+      //if (filepath1 !== filepath) {
+        try { // Rename to 'fake PNG' and adjust mode
+          execSync ("mv " + filepath1 + " " + filepath + "&&chmod 664 " + filepath)
         } catch (err) {
           console.error (err.message)
         }
-      }
+      //}
       console.log (' ' + filepath + ' created')
     })
     return
