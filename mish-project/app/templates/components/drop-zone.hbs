@@ -4,19 +4,20 @@
   <div style="margin: 0 0 0.2em 0"><p id="uploadWarning"></p></div>
 
 <form method="post" enctype="multipart/form-data" action="." class="">
-  <button id="uploadPics" style="cursor:pointer;background:#eee;display:none"
+  <button id="uploadPics" style="cursor:pointer;background:#ddd;display:none"
   type="submit" class="btn-std" {{action 'processQueue'}}>&nbsp;Ladda upp&nbsp;</button>
 
-  <button id="removeAll" style="cursor:pointer;background:#eee;display:none"
+  <button id="removeAll" style="cursor:pointer;background:#ddd;display:none"
   type="submit" class="btn-std" {{action 'removeAllFiles'}} title="...från den här panelen">&nbsp;Ta bort allt&nbsp;</button>
 
-  <button id="removeDup" style="cursor:pointer;background:#eee;display:none"
+  <button id="removeDup" style="cursor:pointer;background:#ddd;display:none"
   type="submit" class="btn-std" {{action 'removeDupFiles'}} title="...från den här panelen">&nbsp;Ta bort dubletter&nbsp;</button>
 </form>
 
 </div>
 
-<p id="dzinfo">upload textinfo</p>
+<p id="dzinfo">upload textinfo</p><button id="helpUpload" style="cursor:pointer;color:blue;background:#ddd"
+type="submit" class="btn-std" {{action ''}} title="Hur ladda upp bilder?">&nbsp;HJÄLP&nbsp;</button>
 <p id="uploadFinished"></p>
 <p class="dzclose" {{action 'closeThis'}}> &times; </p>
 

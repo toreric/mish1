@@ -814,7 +814,7 @@ export default Component.extend (contextMenuMixin, {
   imdbLink: "", // Name of the symbolic link to the imdb root directory (from server)
   imdbRoot: "", // The imdb directory (initial default = env.variable $IMDB_ROOT)
   imdbRoots: () => {return []}, // For imdbRoot selection
-  //imdbDir: "",  // Current picture directory, selected from imdbDirs
+  imdbDir: "",  // Current picture directory, selected from imdbDirs
   imdbDirs: () => {return ['Albums?']}, // Reset in requestDirs
   imdbPics: () => {return ['Alpics?']}, // Reset in requestDirs
   isLoading: false,
@@ -1448,7 +1448,7 @@ export default Component.extend (contextMenuMixin, {
             } else {
               tmpName += " &mdash; <em style=\"color:red;background:transparent\">just nu oåtkomligt</em>" // i18n
               that.set ("albumName", tmpName);
-              $ ("#imdbDir").text
+              $ ("#imdbDir").text ("");
             }
           } else {
             that.set ("albumText", " Albumåtgärder");
@@ -1698,10 +1698,6 @@ export default Component.extend (contextMenuMixin, {
       var yes = "Ok" // i18n
       infoDia (null, null, title, text, yes, false);
     },
-    //============================================================================================
-    //subaSelect (subName) { // ##### Sub-album link selected
-
-    //},
     //============================================================================================
     subaSelect (subName) { // ##### Sub-album link selected
       subName = subName.replace (/&nbsp;/g, "_"); // Restore readable album name
@@ -3027,6 +3023,7 @@ export default Component.extend (contextMenuMixin, {
 
       if (!(allow.imgOriginal || allow.adminAll)) return;
       let name = $ ("#picName").text ();
+// om bildens title startswith Funna bilder, ta bort suffixet!
       // Only selected user classes may view or download protected images
       if ( (name.startsWith ("Vbm") || name.startsWith ("CPR")) && ["admin", "editall", "edit"].indexOf (loginStatus) < 0) {
         userLog ("COPYRIGHT©protected", true);
@@ -3046,35 +3043,45 @@ export default Component.extend (contextMenuMixin, {
           resetBorders (); // Reset all borders
           markBorders (tmp); // Mark this one
         }), 50);
-        var origpic = $ ('#i' + escapeDots (tmp) + ' img.left-click').attr ("title"); // With path
+        var edt = escapeDots (tmp);
+        var origpic = $ ('#i' + edt + ' img.left-click').attr ("title"); // With path
         origpic = $ ("#imdbLink").text () + "/" + origpic;
-        xhr.open ('GET', 'download/' + origpic, true, null, null); // URL matches routes.js with *?
-        xhr.onload = function () {
-          if (this.status >= 200 && this.status < 300) {
-            //console.log (this.responseURL); // Contains http://<host>/download/...
-            var host = this.responseURL.replace (/download.+$/, "");
-            $ ("#download").attr ("href", host + this.responseText); // Is just 'origpic'(!)
-            later ( ( () => {
-              //$ ("#download").click (); //DOES NOT WORK
-              document.getElementById ("download").click (); // Works
-            }), 250);
-            document.getElementById ("stopSpin").innerHTML = "SPIN-END";
-            userLog ("DOWNLOAD");
-            resolve (true);
-          } else {
+        // If origpic is a symlink then resolve the target: important for a #picFound
+        // at least, must not be downloaded with a temporary name suffix
+        if ($ ("#i" + edt).hasClass ("symlink")) {
+          execute ("readlink -n " + origpic).then (res => {
+            origpic = res.replace (/^(\.{1,2}\/)*/, $ ("#imdbLink").text () + "/");
+          });
+        }
+        later ( ( () => {
+          xhr.open ('GET', 'download/' + origpic, true, null, null); // URL matches routes.js with *?
+          xhr.onload = function () {
+            if (this.status >= 200 && this.status < 300) {
+              //console.log (this.responseURL); // Contains http://<host>/download/...
+              var host = this.responseURL.replace (/download.+$/, "");
+              $ ("#download").attr ("href", host + this.responseText); // Is just 'origpic'(!), outdated?
+              later ( ( () => {
+                //$ ("#download").click (); //DOES NOT WORK
+                document.getElementById ("download").click (); // Works
+              }), 250);
+              document.getElementById ("stopSpin").innerHTML = "SPIN-END";
+              userLog ("DOWNLOAD");
+              resolve (true);
+            } else {
+              reject ({
+                status: this.status,
+                statusText: xhr.statusText
+              });
+            }
+          };
+          xhr.onerror = function () {
             reject ({
               status: this.status,
               statusText: xhr.statusText
             });
-          }
-        };
-        xhr.onerror = function () {
-          reject ({
-            status: this.status,
-            statusText: xhr.statusText
-          });
-        };
-        xhr.send ();
+          };
+          xhr.send ();
+        }), 200); // In order to get time if readlink was executed
       }).catch (error => {
         console.error (error.message);
       });

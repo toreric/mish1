@@ -19,7 +19,7 @@ export default Component.extend({
   url: null,
   withCredentials: null,
   method: 'POST',
-  parallelUploads: 4,
+  parallelUploads: 1,  // <= must be ONE if run with PM2 in cluster mode!
   maxFilesize: null,
   filesizeBase: null,
   paramName: null,
@@ -363,20 +363,22 @@ export default Component.extend({
     },
 
     processQueue() {
-      setImdbDir ().then ( (result) => { // Ensure the server imdbDir is set!
-        return new Promise ( () => {
-          this.myDropzone.options.autoProcessQueue = false;
-          qlen = this.myDropzone.getQueuedFiles().length;
-          if (qlen > 0) {
-            $ (".spinner").show ();
-            document.getElementById("reLd").disabled = true;
-            document.getElementById("saveOrder").disabled = true;
-            document.getElementById("showDropbox").disabled = true;
-            this.myDropzone.options.autoProcessQueue = true;
-            console.log (secNow (), "drop-zone processQueue:", qlen); // Upload begin
-            this.myDropzone.processQueue ();
-          }
-        }).then (null);
+      setImdbDir ().then (imdbDir => { // Ensure the server imdbDir is set!
+        if (imdbDir) {
+          return new Promise ( () => {
+            this.myDropzone.options.autoProcessQueue = false;
+            qlen = this.myDropzone.getQueuedFiles().length;
+            if (qlen > 0) {
+              $ (".spinner").show ();
+              document.getElementById("reLd").disabled = true;
+              document.getElementById("saveOrder").disabled = true;
+              document.getElementById("showDropbox").disabled = true;
+              this.myDropzone.options.autoProcessQueue = true;
+              console.log (secNow (), "drop-zone processQueue:", qlen); // Upload begin
+              this.myDropzone.processQueue ();
+            }
+          }).then (null);
+        }
       });
     }
 
