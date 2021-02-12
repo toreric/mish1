@@ -29,7 +29,7 @@ function copyToClipboard (str) {
 <!-- ///// HEADER AND ALSO THE LOGIN AND SETTINGS BUTTON ///// -->
 <div id="title" class="BACKG BLUET" draggable="false" ondragstart="return false">
   <form action="">
-    <a class="proid" title="" onclick="window.scrollTo(0,0);$('iframe').toggle();$('.mainMenu').hide();$('#searcharea').dialog('close')">Mish&nbsp;<small>introduktion</small></a>
+    <a class="proid" title="" onclick="window.scrollTo(0,0);$('iframe.intro').toggle();$('.mainMenu').hide();$('#searcharea').dialog('close')">Mish&nbsp;<small>introduktion</small></a>
     <a class="proid toggbkg" style="margin:0.5em 0 0 0" title="" {{action 'toggleBackg'}}><small>MÖRK/LJUS</small></a>
     <div style="display:inline-block;vertical-align:top;margin:0.4em 0 0 1em">
       <button type="submit" class="cred login" title="" {{action "logIn"}}>Logga in</button>
@@ -37,7 +37,7 @@ function copyToClipboard (str) {
       <input type="password" class="cred password" size="10" title="Lösenord" placeholder="Password">
       <span class="cred name"></span>
       <span class="cred status" {{action "toggleSettings"}}></span>
-      <span id ="showDropbox" class="picLinker" style="margin:0 0 0 0.5em;display:none" {{action "showDropbox"}}>LADDA UPP</span>
+      <span id ="showDropbox" class="picLinker" style="margin:0 0 0 0.5em;display:none" {{action "showDropbox"}}>UPPLADDNING</span>
     </div>
     <div class="settings" draggable="false" ondragstart="return false" style="display:none">
       <div class="check">
@@ -171,7 +171,7 @@ function copyToClipboard (str) {
 <div id="stopSpin" style="display:none" title="spinner stop flag"></div>
 <div id="temporary" style="display:none"></div>
 <div id="temporary_1" style="display:none"></div>
-<div id="topMargin" title="pixels above slide shown" style="display:none">15</div>
+<div id="topMargin" title="pixels above slide shown" style="display:none">18</div>
 <div id="uploadNames" title="last uploaded" style="display:none"></div>
 <div id="userDir" title="user's home or choice" style="display:none"></div>
 
@@ -224,7 +224,7 @@ eller bildtextrad">&nbsp;per<br>&nbsp;text-&nbsp;<br>&nbsp;rad</a>
   <a class="nav_ qnav_" draggable="false" {{action 'toggleNav'}}>?</a> &nbsp;<br>
   <!-- FULL SIZE -->
   <a class="nav_" id="full_size" draggable="false" {{action 'fullSize'}} title="Full storlek
-i nytt fönster">↕↔↕</a> &nbsp; <br>
+i nytt fönster" style="font-size:200%;line-height:80%;padding:0.3em 0.33em 0.25em 0.3em">&#9974;</a> &nbsp; <br>
 <a class="nav_ pnav_" id="do_print" title="Skriv ut" {{action 'doPrint'}}>&#9997;</a> &nbsp;
 </div>
 
@@ -235,18 +235,19 @@ i nytt fönster">↕↔↕</a> &nbsp; <br>
 
     <div id="wrap_show" draggable="false"><!-- IMAGE AND TEXT CONTAINER -->
       <tab style="background:transparent" draggable="false">
+        <span class="BACKG" style="color:gray;text-align:center;padding:0 50%">×</span>
         <tr style="background:transparent" draggable="false">
           <td style="background:transparent" draggable="false">
             <div id="link_show" draggable="false">
               <img src="" draggable="false" ondragstart="return false"> <!-- Need both? -->
 
-              <a style="top:50%; left:-3em; width:1%; border:0;" draggable="false" ondragstart="return false" {{action 'hideShow'}}><p>stäng<br><span style="font:normal 1em Arial!important">[esc]</span></p></a>
+              <a style="top:-2.1em; left:0%; width:100%; border:0;" draggable="false" ondragstart="return false" {{action 'hideShow'}}><p>stäng <span style="font:normal 1em Arial!important">[esc]</span></p></a>
 
               <a style="top: 0%; left: 0%; width: 50%; height: 100%;" draggable="false" ondragstart="return false" {{action 'showNext' false}}><p>föregående<br><span style="font:normal 1em Arial!important">[&lt;]</span></p><br>&nbsp;<br>&nbsp;</a>
 
               <a style="top: 0%; left: 50%; width: 50%; height: 100%; border-left:0;" draggable="false" ondragstart="return false" {{action 'showNext' true}}><p>nästa<br><span style="font:normal 1em Arial!important">[&gt;]</span></p><br>&nbsp;<br>&nbsp;</a>
 
-              <a style="top:50%; right:-3em; width:1%; border:0;" draggable="false" ondragstart="return false" {{action 'hideShow'}}><p>stäng<br><span style="font:normal 1em Arial!important">[esc]</span></p></a>
+              <!--a style="bottom:-2.1em; right:40%; width:20%; border:0;" draggable="false" ondragstart="return false" {{action 'hideShow'}}><p>stäng <span style="font:normal 1em Arial!important">[esc]</span></p></a-->
 
               <div id="markShow" class="markFalseShow" alt="MARKSHOW" title="Markera" {{action 'toggleMark'}} draggable="false" ondragstart="return false"><img src="/images/markericon.svg" draggable="false" ondragstart="return false" class="mark"></div>
 
@@ -308,21 +309,26 @@ i nytt fönster">↕↔↕</a> &nbsp; <br>
   </div>
 
   <!-- Start "home" page: the Information page-->
-  <iframe src="start.html" style="display:none"></iframe>
+  <iframe class="intro" src="start.html" style="display:none"></iframe>
+  <!--iframe class="jitsi" allow="camera; microphone; fullscreen; display-capture" src="" style="height:100%;width:90%;top:0;left:4%;border:0px;display:none"></iframe-->
 
+  <!-- SMALLBUTTONS -->
   <a id="questionMark" class="smBu" title="Användarhandledning" draggable="false" ondragstart="return false" {{action 'toggleHelp'}}>?</a>
   <a id="reLd" class="smBu" title="Ladda om albumet
 (återställ osparade ändringar)" draggable="false" ondragstart="return false" {{action 'refresh'}} src="/images/reload.png"></a>
   <a id="toggleName" class="smBu" title="Bildnamnen" draggable="false" ondragstart="return false" style="display:none" {{action 'toggleNameView'}}>N</a>
   <a id="toggleHide" class="smBu" title="Visa/dölj
 gömda bilder" draggable="false" ondragstart="return false" style="display:none" {{action 'toggleHideFlagged'}}></a>
-  <a class="smBu" title="Ladda upp...NOT USED" draggable="false" ondragstart="return false" {{action 'showDropbox'}} style="display:none">U</a>
   <a id="saveOrder" class="smBu" title="Spara ändringar" draggable="false" ondragstart="return false" {{action 'saveOrder'}}>S</a>
   <a class="smBu" id="do_mail" title="Fråga oss om något eller skicka
 ett meddelande med kommentarer,
 rättelser eller andra upplysningar" {{action 'doMail'}}>&#9993;</a>
+  <a id="meeting" class="smBu" title="Mötesknapp:
+Här träffas vi
+på Internet i
+ett nytt fönster" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dalenochHolm%C3%B6n" target="jitsi_window" draggable="false" ondragstart="return false" style="display:none;padding:0 0.25em 0.2em 0.15em;">&#9635;</a>
   <a class="smBu" draggable="false" ondragstart="return false" title="Gå upp (visa
-översta raden)" style="font:bold 190% sans-serif" {{action 'goTop'}}>&uarr;</a>
+översta raden)" style="font:bold 190% sans-serif" {{action 'goTop'}}>&Uarr;</a>
 </div>
 
 <img src="/images/snurra.svg" class="spinner" draggable="false" ondragstart="return false" {{action 'hideSpinner'}} style="display:none">

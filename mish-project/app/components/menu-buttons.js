@@ -51,7 +51,7 @@ export default Component.extend (contextMenuMixin, {
       if (imdbroot === "") {
         // Prepare to select imdbRoot
         $ (".mainMenu").show ();
-        $ ("iframe").hide ();
+        $ ("iframe.intro").hide ();
         $ (".mainMenu p:gt(1)").hide (); // Shown at selectRoot ()
         this.set ("albumData", [])
 //==spinnerWait (false);
@@ -117,13 +117,7 @@ export default Component.extend (contextMenuMixin, {
   // CONTEXT MENU Context menu
   /////////////////////////////////////////////////////////////////////////////////////////
   contextItems: [
-    { label: "×", disabled: false, action () {} }, // Spacer
-    /*{ label: 'Frågor? Kontakta oss...',
-      disabled: false,
-      action () {
-      document.getElementById('do_mail').click();
-    }
-    },*/
+    { label: "×", disabled: false, action () {} }, // Spacer closes menu
     { label: 'Information',
       disabled: false,
       action () {
@@ -224,7 +218,7 @@ export default Component.extend (contextMenuMixin, {
       }
     }
   },
-  { label: "───────────────", disabled: false, action () {} }, // Spacer
+  { label: "───────────────", disabled: false, action () {} }, // Spacer closes menu
   { label: 'Markera/avmarkera alla',
     disabled: false,
     action () {
@@ -332,7 +326,7 @@ export default Component.extend (contextMenuMixin, {
       }), 50);
     }
   },
-  { label:  "───────────────", disabled: false, action () {} }, // Spacer
+  { label:  "───────────────", disabled: false, action () {} }, // Spacer closes menu
   { label: 'Ladda ned...',
     disabled: () => {
       return !(["admin", "editall", "edit"].indexOf (loginStatus) > -1 && (allow.imgOriginal || allow.adminAll));
@@ -341,7 +335,6 @@ export default Component.extend (contextMenuMixin, {
       $ ("#downLoad").click (); // Call via DOM since "this" is ...where?
     }
   },
-  //{ label: ' ', disabled: false, action () {} }, // Spacer
   { label: 'Länka till...', // i18n
     disabled: () => {
       return !(allow.delcreLink || allow.adminAll);
@@ -755,7 +748,7 @@ export default Component.extend (contextMenuMixin, {
       }
     }
   },
-  { label: "×", disabled: false, action () {} }, // Spacer
+  { label: "×", disabled: false, action () {} }, // Spacer closes menu
   ],
   //contextSelection: [{ paramDum: false }],  // The context menu "selection" parameter (not used)
   contextSelection: () => {return {}},
@@ -822,7 +815,7 @@ export default Component.extend (contextMenuMixin, {
   albumName: "",
   albumText: "",
   albumData: () => {return []}, // Directory structure for the selected imdbRoot
-  loggedIn: false,
+  //loggedIn: false, Moved to globals!
   subaList: [],
   // HOOKS, that is, Ember "hooks" in the execution cycle
   /////////////////////////////////////////////////////////////////////////////////////////
@@ -950,11 +943,6 @@ export default Component.extend (contextMenuMixin, {
     }
     execute ("head -n1 LICENSE.txt").then (a => {
       $ (".copyright").text (a);
-    /*}).then ( () => {
-      later ( ( () => {
-        if (allow.textEdit || allow.adminAll) $ (".img_txt1, .img_txt2").css ("cursor","pointer");
-        else $ (".img_txt1, .img_txt2").css ("cursor","text");
-      }), 4000);*/
      });
   },
   //----------------------------------------------------------------------------------------------
@@ -1262,7 +1250,7 @@ export default Component.extend (contextMenuMixin, {
         // (with no dialogs open). Else, #navAuto SHOULD be false, anyhow!
         $ ("#navAuto").text ("false");
         $ (".mainMenu").hide ();
-        $ ("iframe").hide ();
+        $ ("iframe.intro").hide ();
         $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
         if ($ ("div.settings").is (":visible")) { // Hide settings
           $ ("div.settings, div.settings div.check").hide ();
@@ -1708,12 +1696,12 @@ export default Component.extend (contextMenuMixin, {
       let names = $ ("#imdbDirs").text ().split ("\n");
       let name = $ ("#imdbDir").text ().slice ($ ("#imdbLink").text ().length); // Remove imdbLink
       let here, idx;
-      if (subName === "|«") { // go to top in tree
+      if (subName === "⤒") { // go to top in tree
         idx = 0;
-      } else if (subName === "«") { // go up in tree
+      } else if (subName === "↖") { // go up in tree
         name = name.replace (/((\/[^/])*)(\/[^/]*$)/, "$1");
         idx = names.indexOf (name);
-      } else if (subName === "‹›") { // go to most recent
+      } else if (subName === "⇆") { // go to most recent
         idx = savedAlbumIndex;
       } else {
         here = names.indexOf (name);
@@ -1798,7 +1786,7 @@ export default Component.extend (contextMenuMixin, {
         return;
       }
       $ (".mainMenu").hide ();
-      $ ("iframe").hide ();
+      $ ("iframe.intro").hide ();
       $ (".img_show").hide ();
       $ (".nav_links").hide ();
       var imdbRoot = $ ("#imdbRoot").text ();
@@ -2135,7 +2123,7 @@ export default Component.extend (contextMenuMixin, {
       }
       // Do not hide the introduction page at very first view
       if (value !== $ ("#imdbLink").text ()) {
-        $ ("iframe").hide ();
+        $ ("iframe.intro").hide ();
       }
       ediTextClosed ();
       spinnerWait (true);
@@ -2164,7 +2152,7 @@ export default Component.extend (contextMenuMixin, {
         let tmp = [""]; // root
         let tmp1 = [""];
         if (selDir) { // not root
-          tmp = ["|«", "«", "‹›"];
+          tmp = ["⤒", "↖", "⇆"];
           tmp1 = ["", "", ""];
         }
         let i0 = selDirs.indexOf (selDir);
@@ -2182,7 +2170,7 @@ export default Component.extend (contextMenuMixin, {
         }
         if (tmp [0] === "") {
           if (savedAlbumIndex > 0) {
-            tmp [0] = "‹›";
+            tmp [0] = "⇆";
           } else {
             tmp = tmp.slice (1); // at root
             tmp1 = tmp1.slice (1); // at root
@@ -2227,7 +2215,7 @@ export default Component.extend (contextMenuMixin, {
           let z, iz, obj;
           let fullAlbumName= $ ("#imdbRoot").text () + $ ("#imdbDir").text ().replace (/^[^/]*/, "");
           fullAlbumName = '<span title-1="' + fullAlbumName+ '">' + this.get ("albumName") + ": </span>"
-          if (tmp [0] === "|«") {
+          if (tmp [0] === "⤒") {
             $ ("a.imDir").each (function (index, element) {
               if (index < n) {z = 0;} else {z = n;}
               iz = index - z;
@@ -2253,7 +2241,7 @@ export default Component.extend (contextMenuMixin, {
                 }
               }
             });
-          } else if (tmp [0] === "‹›") {
+          } else if (tmp [0] === "⇆") {
             $ ("a.imDir").each (function (index, element) {
               if (index < n) {z = 0;} else {z = n;}
               iz = index - z;
@@ -2316,7 +2304,7 @@ export default Component.extend (contextMenuMixin, {
     toggleMainMenu () {
 
       $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
-      $ ("iframe").hide ();
+      $ ("iframe.intro").hide ();
       document.getElementById ("divDropbox").className = "hide-all";
       //var that = this;
       $ ("div.settings, div.settings div.check").hide ();
@@ -2402,12 +2390,10 @@ export default Component.extend (contextMenuMixin, {
       if (yes) {
         $ ('.showCount .numShown').text (" " + (n - h));
         $ ('.showCount .numHidden').text (" " + h);
-        //$ ('#toggleHide').css ('color', 'lightskyblue');
         $ ('#toggleHide').css ('background-image', 'url(/images/eyes-blue.png)');
       } else {
         $ ('.showCount .numShown').text (" " + n);
         $ ('.showCount .numHidden').text (' 0');
-        //$ ('#toggleHide').css ('color', 'white');
         $ ('#toggleHide').css ('background-image', 'url(/images/eyes-white.png)');
         $ (".img_mini").show (); // Show all pics
       }
@@ -2440,7 +2426,7 @@ export default Component.extend (contextMenuMixin, {
       $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
       if ($ ("#imdbDir").text () === "") return;
       if ($ (".toggleAuto").text () === "STOP") return; // Auto slide show is running
-      $ ("iframe").hide ();
+      $ ("iframe.intro").hide ();
       $ (".mainMenu").hide ();
       $ ("#link_show a").css ('opacity', 0 );
       if (document.getElementById ("divDropbox").className === "hide-all") {
@@ -2660,7 +2646,7 @@ export default Component.extend (contextMenuMixin, {
       //}
 
       $ ("#link_show a").css ('opacity', 0 );
-      //$ ("iframe").hide ();
+      //$ ("iframe.intro").hide ();
       $ (".img_show").hide ();
       $ (".nav_links").hide ();
       this.refreshAll ().then ( () => {
@@ -2767,9 +2753,9 @@ export default Component.extend (contextMenuMixin, {
         var modal = true;
         infoDia (null, null, title, text, yes, modal);
       } else if ($ ("#link_show a").css ('opacity') === '0' ) {
-        $ ("#link_show a").css ('opacity', 1 );
+        $ ("#link_show a").css ('opacity', 1);
       } else {
-        $ ("#link_show a").css ('opacity', 0 );
+        $ ("#link_show a").css ('opacity', 0);
       }
       devSpec ();
 
@@ -2814,7 +2800,7 @@ export default Component.extend (contextMenuMixin, {
           userLog ("VÄLJ ALBUMKATALOG", true); //i18n
           return;
         }
-        $ ("iframe").hide ();
+        $ ("iframe.intro").hide ();
         $ (".mainMenu").hide ();
         ediTextClosed ();
         $ (diaSrch).show ();
@@ -3141,8 +3127,6 @@ export default Component.extend (contextMenuMixin, {
       }
       //¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
       if (btnTxt === "Logga ut") { // Log out
-        //this.actions.imageList (false);
-//==spinnerWait (true);
         $ ("#hideFlag").text ("1");// Two lines from 'toggleHideFlagged'
         this.actions.hideFlagged (true).then (null); // Hide flagged pics if shown
         $ ("#title button.cred").text ("Logga in");
@@ -3151,7 +3135,8 @@ export default Component.extend (contextMenuMixin, {
         $ ("#title span.cred.name").text ("");
         $ ("#title span.cred.status").text ("");
         $ ("#title span.cred.status").hide ();
-        this.set ("loggedIn", false);
+        loggedIn = false;
+        //this.set ("loggedIn", false);
         $ ("div.settings, div.settings div.check").hide ();
         //$ ("#title button.viewSettings").hide ();
         userLog ("LOGOUT");
@@ -3162,11 +3147,11 @@ export default Component.extend (contextMenuMixin, {
         $ (".mainMenu p:eq(3) a").hide (); // Hide the album-edit button in mainMenu
         $ ("#showDropbox").hide ();  // Hide upload button
         $ ("#viSt").hide (); // Hide visit statistics button
+        $ ("#meeting").hide (); // Hide meeting button
 
         if ($ ("#imdbRoot").text ()) { // If imdb is initiated
           // Regenerate the picFound album: the shell commands must execute in sequence
           let lpath = $ ("#imdbLink").text () + "/" + $ ("#picFound").text ();
-          //execute ("rm -rf " +lpath+ " && mkdir -m0775 " +lpath+ " && touch " +lpath+ "/.imdb").then ();
           execute ("rm -rf " +lpath+ "&&mkdir -m0775 " +lpath+ "&&touch " +lpath+ "/.imdb&&chmod 664 " +lpath+ "/.imdb").then ();
         }
         // Inform about login/logout i18n
@@ -3191,11 +3176,10 @@ export default Component.extend (contextMenuMixin, {
         text += "Om du misslyckas med inloggningen (alltså gör fel, visas ej här!) blir ";
         text += "du inloggad som <b style='font-family:monospace'>anonym</b> som är likvärdigt med att vara utloggad. ";
         text += "Börja om med att logga ut och så vidare.";
-        $ ("iframe").hide ();
+        $ ("iframe.intro").hide ();
         $ (".mainMenu").hide ();
         if (notLoggedOutEver) infoDia ("", "", '<b style="background:transparent">ÄR DU UTLOGGAD?</b>', text, "Jag förstår!", false, false);
         notLoggedOutEver = false;
-        //(dialogId, picName, title, text, yes, modal, flag)";
         later ( ( () => { // Do not hide the top logon line:
           $ ("#dialog").parent ().css ("top", "4em");
         }), 200);
@@ -3210,14 +3194,6 @@ export default Component.extend (contextMenuMixin, {
             $ (".ember-view.jstree").jstree ("close_all");
             $ (".ember-view.jstree").jstree ("open_node", "#j1_1");
             $ (".ember-view.jstree").jstree ("select_node", "#j1_1");
-            // Next line is a BUG SAVER only. In some way, an initial hide is generated, WHERE?
-            //if (this.actions) this.actions.imageList (true);
-            // Side effect (minor): Deactivation of the "active album" link in the main menu
-            // (next to last entry), but it will be reset as soon as the jstree is revisited.
-            //$ (".ember-view.jstree").jstree ("select_node", $ ("#j1_1"));
-            /*later ( ( () => {
-              $ ("#j1_1_anchor").click ();
-            }), 2000);*/
           }), 2000);
         }, 2000);                 // *NOTE: Preserved here just as an example
         document.getElementById ("stopSpin").innerHTML = "SPIN-END";
@@ -3233,7 +3209,8 @@ export default Component.extend (contextMenuMixin, {
         $ ("#title input.cred.password").val ("");
         $ ("#title input.cred").hide ();
         this.set ("albumData", []); // Triggers jstree rebuild in requestDirs
-        this.set ("loggedIn", false);
+        loggedIn = false;
+        //this.set ("loggedIn", false);
         zeroSet (); // #allowValue = '000... etc.
         this.actions.setAllow ();
 
@@ -3249,7 +3226,8 @@ export default Component.extend (contextMenuMixin, {
             $ ("#title button.cred").text ("Logga in");
             $ ("#title button.cred").attr ("title", logAdv);
             $ ("#title button.cred").attr ("totip", logAdv);
-            this.set ("loggedIn", false);
+            loggedIn = false;
+            //this.set ("loggedIn", false);
             $ ("div.settings, div.settings div.check").hide ();
             userLog ("LOGIN error");
             this.actions.setAllow ();
@@ -3260,7 +3238,8 @@ export default Component.extend (contextMenuMixin, {
             if (usr !== "anonym") {$ ("#dialog").dialog ("close");}
             $ ("#title button.cred").text ("Logga ut");
             //$ ("#title button.cred").attr ("title", "Du är inloggad ..."); // more below
-            this.set ("loggedIn", true);
+            loggedIn = true;
+            //this.set ("loggedIn", true);
             status = $ ("#title span.cred.status").text (); // [<status>]
             userLog ("LOGIN " + usr + " " + status);
             status = status.slice(1,status.length-1); // <status>
@@ -3389,6 +3368,8 @@ export default Component.extend (contextMenuMixin, {
             } // end if
             if (allow.deleteImg || allow.adminAll) $ ("#viSt").show ()
             else $ ("#viSt").hide ();
+            if (allow.textEdit || allow.adminAll) $ ("#meeting").show ()
+            else $ ("#meeting").hide ();
 
           }, 2000);
           document.getElementById ("stopSpin").innerHTML = "SPIN-END";
@@ -3454,7 +3435,7 @@ export default Component.extend (contextMenuMixin, {
             } else {
               $ ("#showDropbox").show ();
             }
-            // Next line is a BUG SAVER only. In some way, an initial hide is generated, WHERE?
+            // Next line is an ATTEMPT only. In some way, an initial hide is generated, WHERE?
             /*later ( ( () => {
               $ ("#j1_1_anchor").click ();
             }), 2000);*/
@@ -3488,7 +3469,8 @@ export default Component.extend (contextMenuMixin, {
     toggleSettings () { // ##### Show/change settings
 
       $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
-      if (!this.get ("loggedIn") || $ ("div.settings").is (":visible")) {
+      if (!loggedIn || $ ("div.settings").is (":visible")) {
+      //if (!this.get ("loggedIn") || $ ("div.settings").is (":visible")) {
         $ ("div.settings, div.settings div.check").hide ();
         return;
       }
@@ -3526,7 +3508,7 @@ export default Component.extend (contextMenuMixin, {
         $ ("#dialog").dialog ("close");
         return;
       }
-      $ ("iframe").hide ();
+      $ ("iframe.intro").hide ();
       let linktext = window.location.hostname
       if (linktext === "localhost") {
         linktext = "http://localhost:3000";
@@ -3568,7 +3550,7 @@ export default Component.extend (contextMenuMixin, {
         $ (".mainMenu").hide ();
         return;
       }
-      $ ("iframe").hide ();
+      $ ("iframe.intro").hide ();
       let favList = getCookie ("favorites").replace (/[ ]+/g, "\n");
       favDia (favList, "Lägg till markerade", "Spara", "Visa", "Stäng");
       $ (".mainMenu").hide ();
@@ -3599,6 +3581,7 @@ let cmsg = "Får inte laddas ned/förstoras utan särskilt medgivande: Vänligen
 let eraseOriginals = false;
 let homeTip = "I N T R O D U K T I O N";
 let logAdv = "Logga in för att kunna se inställningar: Anonymt utan namn och lösenord, eller med namnet ’gäst’ utan lösenord som ger vissa redigeringsrättigheter"; // i18n
+let loggedIn = false;
 let mailAdmin = "tore.ericsson@tores.se"
 let nosObs = "Du får skriva men kan ej spara text utan annan inloggning"; // i18n
 let notLoggedOutEver = true;
@@ -3704,6 +3687,9 @@ function load_imdb_images () {
   return new Promise (resolve => {
     spinnerWait (true);
     userLog ("Det här kan ta några minuter ...", true)
+
+execute ("pwd").then ( res => {console.log(res);});
+
     let cmd = './ld_imdb.js -e';
     execute (cmd).then ( () => {
       document.getElementById ("stopSpin").innerHTML = "SPIN-END";
@@ -3712,8 +3698,8 @@ function load_imdb_images () {
       $ ("button.updText").css ("float", "right");
       $ ("button.updText").hide ();
       resolve ("Done")
-    })
-  })
+    });
+  });
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Hide the show image element, called by hideShow ()
@@ -3771,7 +3757,7 @@ function prepareStopSpin () {
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function startInfoPage () { // Compose the information display page
-  let iWindow = document.getElementsByTagName("iframe") [0].contentWindow;
+  let iWindow = document.querySelector("iframe.intro").contentWindow;
   let iImages = iWindow.document.getElementsByTagName ("img");
   let nIm = iImages.length;
   var linktext = window.location.hostname
@@ -4207,7 +4193,7 @@ function notesDia (picName, filePath, title, text, save, saveClose, close) { // 
   function notesSave () { // NOTE: This way to save metadata is probably the most efficient, and
     // 'xmpset' should perhaps ultimately replace 'set_xmp_creatior' and 'set_xmp_description'?
     // Remove extra spaces and convert to <br> for saving metadata in server image:
-    text = $ ('textarea[name="notes"]').val ().replace (/ +/g, " ").replace (/\n /g, "<br>").replace (/\n/g, "<br>").trim ();
+    text = $ ('textarea[name="notes"]').val ().replace (/  */g, " ").replace (/\n /g, "<br>").replace (/\n/g, "<br>").trim ();
     fileWR (filePath).then (acc => {
       if (acc !== "WR") {
         userLog ("NOT written");
@@ -5153,7 +5139,8 @@ let doFindText = (sTxt, and, sWhr, exact) => {
       later ( ( () => {
         saveOrderFunc (nameOrder.trim ()).then ( () => {
 //==spinnerWait (false);
-          if (n && n <= 100 && loginStatus === "guest") { // Simply show the search result at once...
+          if (n && n <= 100 && (loginStatus === "guest" || loginStatus === "viewer" || !loggedIn)) {
+            // then simply show the search result at once...
             later ( ( () => {
               $ ("div[aria-describedby='dialog'] button#yesBut").click ();
               //if (n === 1) {parentAlbum ();} // go directly to the album it links to
@@ -5348,8 +5335,8 @@ var prepTextEditDialog = () => {
 //}), 800);
 //((()))
   function storeText (namepic, text1, text2) {
-    text1 = text1.replace (/ +/g, " ").replace (/\n /g, "<br>").replace (/\n/g, "<br>").trim ();
-    text2 = text2.replace (/ +/g, " ").replace (/\n /g, "<br>").replace (/\n/g, "<br>").trim ();
+    text1 = text1.replace (/  */g, " ").replace (/\n /g, "<br>").replace (/\n/g, "<br>").trim ();
+    text2 = text2.replace (/  */g, " ").replace (/\n /g, "<br>").replace (/\n/g, "<br>").trim ();
     // Show what was saved:
     $ ('textarea[name="description"]').val (text1.replace (/<br>/g, "\n"));
     $ ('textarea[name="creator"]').val (text2.replace (/<br>/g, "\n"));
@@ -5528,11 +5515,12 @@ function allowFunc () { // Called from setAllow (which is called from init(), lo
 // Disable browser back button
 history.pushState (null, null);
 window.onpopstate = function () {
+  // subaSelect ("⇆"); i stället, gör den först global!
   if ($ ("div[aria-describedby='dialog']").is (":visible")) {
     $ ("#dialog").dialog ("close");
   } else {
 
-    infoDia (null, null, "M E D D E L A N D E", "<b style='color:#060'><br>Du använder just nu en webb-app med bara en sida där du inte kan backa som vanligt<br>(använd bara egna navigeringsmenyer, -knappar och/eller -länkar)<br><br>Om du <i>måste</i> backa: Håll ned pilen och försök välja <i>nedanför</i> Mish!<br><br>Självklart kan du även avsluta appen genom att stänga sidan<br>eller gå till något helt annat i webbläsarens adressfält<br>&nbsp;</b>", "Ok, jag förstår!", true);
+    infoDia (null, null, "M E D D E L A N D E", "<b style='color:#060'><br>Du använder just nu en webb-app med bara en sida där du inte kan backa som vanligt (eller håll ned och välj något annat än Mish i pil-menyn om det finns). Använd appens egna navigeringsmenyer, -knappar och/eller -länkar!<br><br>Eller avsluta genom att stänga sidan eller gå till något annat med webbläsaren.<br>&nbsp;</b>", "Ok, jag förstår!", true);
     history.go(1);
   }
 }

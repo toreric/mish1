@@ -265,9 +265,19 @@ export default Component.extend({
           $ ("#uploadFinished").text ("UPPLADDNINGEN FÄRDIG");
           this.options.autoProcessQueue = false;
           //err $ ("#re F resh-1").click (); // Update the page, via DOM..
+          let n = this.files.length;
           later ( () => {
             console.log (secNow (), "drop-zone queuecomplete"); // Upload end
-          }, 200);
+            // Mark the uploaded files
+            for (let i=0; i<n; i++) {
+              // This local 'name' is 1) without extension 2) with escaoed dots if any
+              let name = this.files [i].name.replace (/\.[^.]*$/, "").replace (/\./g, "\\.");
+              $ ("#i" + name + " div[alt='MARKER']").removeClass ();
+              $ ("#i" + name + " div[alt='MARKER']").addClass ("markTrue");
+            }
+            document.getElementById ("toggleHide").click (); // This will update the display
+            document.getElementById ("toggleHide").click (); // This will update the display
+          }, 2000*qlen);
           // Refresh after file upload
           var ms = 1000; // The interval may be a setting?
           (function (j, t) {
@@ -315,7 +325,7 @@ export default Component.extend({
           type: file.get('type'),
           size: file.get('size'),
           status: Dropzone.ADDED,
-          //add support for id  in files object so that it can be access in addedFile,removedFile callbacks for files identified by id
+          //add support for id  in files object so it can be access in addedFile,removedFile callbacks for files identified by id
           id: file.get('id')
         };
         let thumbnail = file.get('thumbnail');
@@ -377,7 +387,9 @@ export default Component.extend({
               console.log (secNow (), "drop-zone processQueue:", qlen); // Upload begin
               this.myDropzone.processQueue ();
             }
-          }).then (null);
+          }).then ( () => {
+            // Kanske här?
+          });
         }
       });
     }

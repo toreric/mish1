@@ -322,6 +322,7 @@ console.log("p2",p);
   })
   // ##### #0.5 Execute a shell command
   app.get ('/execute/:command', (req, res) => {
+    console.log("pwd =",execSync ("pwd").toString ().trim ())
     //console.log(req.params.command)
     //console.log(decodeURIComponent (req.params.command))
     var cmd = decodeURIComponent (req.params.command).replace (/@/g, "/")
@@ -886,9 +887,12 @@ console.log("p2",p);
       function getSqlParams () {
         let xmpkey = ['description', 'creator', 'source']
         for (let j=0; j<xmpkey.length; j++) {
+          // Important NOTE: this loop must correspond in both routes.js and ld_imdb.js
           let cmd = 'xmpget ' + xmpkey [j] + ' ' + filePath
           // The removeDiacritics funtion may bypass some characters (e.g. Sw. åäöÅÄÖ)
+          // Remove diacritics and make lowercase. Remove tags and double spaces.
           xmpParams [j] = removeDiacritics (execSync (cmd).toString ()).toLowerCase ()
+          xmpParams [j] = xmpParams [j].replace(/<[^>]+>/g, " ").replace (/  */g, " ")
         }
         dbValues =
         { $filepath:  filePath,

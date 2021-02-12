@@ -32,7 +32,7 @@ iframe {
 #wrap_pad {
   position: relative;
   text-align: center;
-  margin: 0.95em 0 auto 3.3em;
+  margin: 0.95em 0 auto 1.9em;
   padding-top: 1em;     /* click-back area above .img_show */
   padding-bottom: 20em; /* and below .img_txt2             */
   background: transparent!important;
@@ -788,7 +788,7 @@ strong.albumName {
   width: 1.1em;
   border: 2px solid #888;
   border-radius: 4px;
-  padding: 0 0.1em 0.2em 0.4em;
+  padding: 0.1em 0.1em 0.15em 0.4em;
   margin: 0 0.7em 0 0;
   cursor: pointer;
   font-size: 1.7em;
@@ -1234,16 +1234,13 @@ select {
   background: transparent;
 }
 #link_show a {
-  display: flex;
-  justify-content: center; /* align horizontal */
-  align-items: center; /* align vertical */
   position: absolute;
   cursor: default;
   color: white;
   border: 2px dashed white;
   background: transparent;
   border-radius: 3px;
-  font-size: 1.8em;
+  font-size: 1.25em;
   font-weight: bold;
 }
 #link_show a:hover {

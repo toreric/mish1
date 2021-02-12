@@ -1,4 +1,5 @@
-#!/usr/bin/env node
+#!/usr/local/bin/node
+// NOTE: The shabang must be uppdated to reflect the node-js installation
 // Load image metadata into _imdb_images.sqlite (DB file)
 // Converts all texts using 'removeDiacritics' and 'toLowerCase'
 // in order to search case-insensitively (can eventually be
@@ -164,8 +165,12 @@ function loadImageMetadata () {
         let param = []
         let xmpkey = ['description', 'creator', 'source']
         for (let j=0; j<xmpkey.length; j++) {
+          // Important NOTE: this loop must correspond in both routes.js and ld_imdb.js
           let cmd = 'xmpget ' + xmpkey [j] + ' ' + filePath // [!]
+          // The removeDiacritics funtion may bypass some characters (e.g. Sw. åäöÅÄÖ)
+          // Remove diacritics and make lowercase. Remove tags and double spaces.
           param [j] = removeDiacritics (execSync (cmd).toString ()).toLowerCase ()
+          param [j] = param [j].replace(/<[^>]+>/g, " ").replace (/  */g, " ")
         }
         db.run ('INSERT INTO imginfo (filepath,name,album,description,creator,source,subject,tcreated,tchanged) VALUES ($filepath,$name,$album,$description,$creator,$source,$subject,$tcreated,$tchanged)', {
           $filepath:  pathlist [i],
