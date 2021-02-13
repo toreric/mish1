@@ -182,14 +182,14 @@ function copyToClipboard (str) {
 <div class="shortMessage blackBorder" style="display:none">RT-log-message</div>
 <a href="null" id="download" style="display:none" download>DOWNLOAD-AREA</a>
 
-<div id="highUp" style="margin-bottom:0.7em"></div>
+<div id="highUpSpacer" style="margin-bottom:0.7em"></div>
 
 <!-- ///// LINKS TO SUBALBUMS ///// -->
 <p class='albumsHdr' draggable="false" ondragstart="return false">
   <div class="miniImgs">
     {{#each subaList as |suba|}}
-      <div class="subAlbum" {{action 'subaSelect' suba.album}}>
-        <a class="imDir BACKG BLUET">
+      <div class="subAlbum" {{action 'subalbumSelect' suba.album}} style="display:none">
+        <a class="imDir BLUET" style="background:transparent">
           {{#if suba.image}}
             <img src={{suba.image}}><br>
           {{/if}}
@@ -200,6 +200,7 @@ function copyToClipboard (str) {
     {{/each}}
   </div>
 </p>
+<div id="highUp" style=""></div>
 
 <!-- ///// RIGHT BUTTONS (NOTE: without href attributes) /////  -->
 <div class="nav_links" draggable="false" ondragstart="return false">
@@ -328,7 +329,7 @@ Här träffas vi
 på Internet i
 ett nytt fönster" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dalenochHolm%C3%B6n" target="jitsi_window" draggable="false" ondragstart="return false" style="display:none;padding:0 0.25em 0.2em 0.15em;">&#9635;</a>
   <a class="smBu" draggable="false" ondragstart="return false" title="Gå upp (visa
-översta raden)" style="font:bold 190% sans-serif" {{action 'goTop'}}>&Uarr;</a>
+översta raden)" style="font:bold 190% sans-serif" {{action 'goTop'}}>⤒</a>
 </div>
 
 <img src="/images/snurra.svg" class="spinner" draggable="false" ondragstart="return false" {{action 'hideSpinner'}} style="display:none">
@@ -442,7 +443,7 @@ ett nytt fönster" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
   (<span class="numMarked BACKG" title="marked">0</span>&nbsp;markerade)
   <br>
   {{#each subaList as |suba|}}
-  <a class="imDir BACKG BLUET" {{action 'subaSelect' suba.album}}>
+  <a class="imDir BLUET" {{action 'subalbumSelect' suba.album}}>
     <span> {{{suba.name}}} &nbsp;</span>
     {{#if (eq suba subaList.lastObject)}}
       <script>
