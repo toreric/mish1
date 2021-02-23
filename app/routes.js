@@ -506,7 +506,7 @@ console.log("p2",p);
   // ##### #4. Download full-size original image file: Get the host name in responseURL
   app.get ('/download/*?', function (req, res) {
     var fileName = req.params[0] // with path
-    console.log ('Download of ' + fileName + " initiated")
+    console.log ('Download of ' + fileName + " requested")
     res.location ('/')
     res.send (fileName)
   })

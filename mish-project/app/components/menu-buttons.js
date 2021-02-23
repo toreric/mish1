@@ -157,63 +157,56 @@ export default Component.extend (contextMenuMixin, {
       }), 50);
       picName = $ ("#picName").text ().trim ();
       picNames [0] = picName;
-      nodelem0 = document.getElementById ("i" + picName).firstElementChild.nextElementSibling;
+      resetBorders (); // Reset all borders
+      markBorders (picName); // Mark this one
       nels = 1;
+      nelstxt = "";
+      nodelem0 = document.getElementById ("i" + picName).firstElementChild.nextElementSibling;
       var picMarked = nodelem0.className === "markTrue";
       if (picMarked) {
         picNames = [];
         nodelem = document.getElementsByClassName ("markTrue");
         nels = nodelem.length;
-        nelstxt = "alla " + nels;
-        if (nels === 2) {nelstxt = "båda två";}
+        if (nels === 2) nelstxt = " båda två";
+        if (nels > 2) nelstxt = " alla " + nels;
         for (i=0; i<nodelem.length; i++) {
           picNames.push (nodelem [i].nextElementSibling.innerHTML.trim ());
+          markBorders (picNames [i]); // Mark borders
         }
       }
       //console.log (nodelem0.parentNode.style.backgroundColor); // Check representation!
       if (nodelem0.parentNode.style.backgroundColor === $ ("#hideColor").text ())
         {act = 0;} else {act = 1;} // 0 = show, 1 = hide (it's the hide flag!)
-      var actxt1 = ["Vill du visa ", "Vill du gömma "];
-      var actxt2 = ["ska visas ", "ska gömmas "];
-      if (nels > 1) {
-        resetBorders (); // Reset all borders
-        markBorders (picName); // Mark this one
-        $ ("#dialog").html ("<b>" + actxt1 [act] + nelstxt + "?</b><br>" + cosp (picNames) + "<br>" + actxt2 [act]); // Set dialog text content
-        $ ("#dialog").dialog ( { // Initiate dialog
-          title: "Göm eller visa...",
-          autoOpen: false,
-          draggable: true,
-          modal: true,
-          closeOnEscape: true
-        });
-        // Define button array
-        $ ("#dialog").dialog ('option', 'buttons', [
-        {
-          text: "Ja", // Yes
-          "id": "allButt", // Process all
-          click: function () {
-            hideFunc (picNames, nels, act);
-            $ (this).dialog ('close');
-          }
-        },
-        {
-          text: "", // Set later, in order to include html tags (illegal here)
-          "id": "singButt", // Process only one
-          click: function () {
-            var nodelem = [];       // Redefined since:
-            nodelem [0] = nodelem0; // Else illegal, displays "read-only"!
-            picNames [0] = picName;
-            nels = 1;
-            hideFunc (picNames, nels, act);
-            $ (this).dialog ('close');
-          }
-        }]);
-        $ ("#singButt").html ('Nej, bara <span  style="color:deeppink">' + picName + '</span>'); // 'text:', here we may include html tags
-        niceDialogOpen ();
-        $ ("#allButt").focus ();
-      } else {
-        hideFunc (picNames, nels, act);
-      }
+      var actxt1 = ["Vill du visa", "Vill du gömma"];
+      var actxt2 = ["ska visas", "ska gömmas"];
+      $ ("#dialog").html ("<b>" + actxt1 [act] + nelstxt + "?</b><br>" + cosp (picNames) + "<br>" + actxt2 [act]); // Set dialog text content
+      $ ("#dialog").dialog ( { // Initiate dialog
+        title: "Göm eller visa...",
+        autoOpen: false,
+        draggable: true,
+        modal: true,
+        closeOnEscape: true
+      });
+      // Define button array
+      $ ("#dialog").dialog ('option', 'buttons', [
+      {
+        text: "Ja", // Yes
+        "id": "allButt", // Process all
+        click: function () {
+          hideFunc (picNames, nels, act);
+          $ (this).dialog ('close');
+        }
+      },
+      {
+        text: "", // Set later, in order to include html tags (illegal here)
+        "id": "noButt",
+        click: function () {
+          $ (this).dialog ('close');
+        }
+      }]);
+      $ ("#noButt").html ("<b>Nej, avbryt</b>"); // i18n
+      niceDialogOpen ();
+      $ ("#allButt").focus ();
     }
   },
   { label: "───────────────", disabled: false, action () {} }, // Spacer closes menu
@@ -338,39 +331,39 @@ export default Component.extend (contextMenuMixin, {
       return !(allow.delcreLink || allow.adminAll);
     },
     action () {
-      var picName, nels, nlns, nelstxt, linktxt, picNames = [], nodelem = [], nodelem0, i;
-      let symlinkClicked;
+      var picName, nels, nlns, nelstxt, linktxt, picNames = [], tmpNames = [], i;
+      //await new Promise (z => setTimeout (z, 2000));
       picName = $ ("#picName").text ().trim ();
-      later ( ( () => { // Picname needs time to settle...
-        picName = $ ("#picName").text ().trim ();
-      }), 50);
       resetBorders (); // Reset all borders
-      if (!$ ("#i" + escapeDots (picName)).hasClass ("symlink")) { // Leave out symlinks
+      if (document.getElementById ("i" + picName).classList.contains ("symlink")) { // Leave out symlinks
+        nels = 0;
+      } else {
         markBorders (picName);
         picNames [0] = picName;
         nels = 1;
-        symlinkClicked = false;
-      } else {
-        symlinkClicked = true;
-        nels = 0;
-        $ ("#picName").text (""); // Signals non-linkable, see "downHere"
       }
-      nodelem0 = document.getElementById ("i" + picName).firstElementChild.nextElementSibling;
-      var picMarked = nodelem0.className === "markTrue";
+      let picMarked = document.getElementById ("i" + picName).firstElementChild.nextElementSibling.className === "markTrue";
       if (picMarked) {
+        var tmpMarked = document.getElementsByClassName ("markTrue");
+        for (i=0; i<tmpMarked.length; i++) {
+          tmpNames [i] = tmpMarked [i].nextElementSibling.innerHTML.trim ();
+        }
         picNames = [];
-        nodelem = document.getElementsByClassName ("markTrue");
-        for (i=0; i<nodelem.length; i++) {
-          var tmpName = nodelem [i].nextElementSibling.innerHTML.trim ();
-          if (!$ ("#i" + escapeDots (tmpName)).hasClass ("symlink")) { // Leave out symlinks
+        for (i=0; i<tmpNames.length; i++) {
+          var tmpName = tmpNames [i];
+          //if ($ ("#i" + escapeDots (tmpName)).hasClass ("symlink")) { // Leave out symlinks
+          if (document.getElementById ("i" + tmpName).classList.contains ("symlink")) { // Leave out symlinks
+            document.getElementById ("i" + tmpName).firstElementChild.nextElementSibling.className = "markFalse";
+          } else {
             picNames.push (tmpName);
+            markBorders (tmpName);
           }
         }
         nels = picNames.length;
-        nlns = nodelem.length - nels;
+        nlns = tmpNames.length - nels;
         linktxt = "";
-        if (nlns > 0) {linktxt = "En är redan länk, övriga:<br>";} // i18n
-        if (nlns > 1) {linktxt = nlns + " är länkar och kan inte användas; övriga:<br>";} // i18n
+        if (nlns > 0) {linktxt = "En är länk och kan inte länkas, övriga:<br>";} // i18n
+        if (nlns > 1) {linktxt = nlns + " är länkar och kan inte länkas; övriga:<br>";} // i18n
         nelstxt = "Vill du länka alla " + nels; // i18n
         if (nels === 2) {nelstxt = "Vill du länka båda två";} // i18n
       }
@@ -381,7 +374,6 @@ export default Component.extend (contextMenuMixin, {
         infoDia (null, null, title, text, yes, true);
         return;
       }
-      //console.log (nodelem0.parentNode.style.backgroundColor); // <- Checks this text content
       $ ("#picNames").text (picNames.join ("\n"));
       if (nels > 1) {
         var lnTxt = "<br>ska länkas till visning också i annat album"; // i18n
@@ -397,7 +389,7 @@ export default Component.extend (contextMenuMixin, {
         $ ("#dialog").dialog ('option', 'buttons', [
         {
           text: "Ja", // Yes i18n
-          "id": "allButt", // Process all
+          "id": "allButt", // Process (all)
           click: function () {
             $ (this).dialog ('close');
             linkFunc (picNames);
@@ -405,41 +397,21 @@ export default Component.extend (contextMenuMixin, {
           }
         },
         {
-          text: "", // Set later, in order to include html tags (illegal here)
-          "id": "singButt", // Process only one
+          text: "No", // Set later, in order to include html tags (illegal here)
+          "id": "noButt",
           click: function () {
-            if (picName === "") {
-              $ (this).dialog ('close');
-            } else {
-              var nodelem = [];       // Redefined since:
-              nodelem [0] = nodelem0; // Else illegal, displays "read-only"!
-              picNames = [];
-              picNames [0] = picName;
-              nels = 1;
-              $ ("#picNames").text (picNames.join ("\n"));
-              $ (this).dialog ('close');
-              linkFunc (picNames);
-              document.getElementById ("stopSpin").innerHTML = "SPIN-END";
-            }
+            $ (this).dialog ('close');
+            resetBorders ();
+            markBorders (picName);
           }
         }]);
-        if (symlinkClicked) {
-          picName = "";
-          $ ("#singButt").html ("Nej");
-        } else {
-          $ ("#singButt").html ('Nej, bara <span  style="color:deeppink">' + picName + '</span>'); // 'text:', here we may include html tags
-        }
+        $ ("#noButt").html ("<b>Nej, avbryt</b>"); // i18n
         niceDialogOpen ();
-        $ ("#singButt").removeClass ("ui-button-disabled ui-state-disabled");
-        if ($ ("#picName").text () === "") { // "downHere", referenced above
-          $ ("#singButt").addClass ("ui-button-disabled ui-state-disabled");
-        }
         $ ("#allButt").focus ();
-      } else {
+      } else { // only when nels === 1
         $ (this).dialog ('close');
         markBorders (picNames [0]); // Mark this single one, even if it wasn't clicked
         linkFunc (picNames);
-        niceDialogOpen ();
         document.getElementById ("stopSpin").innerHTML = "SPIN-END";
       }
     }
@@ -449,24 +421,12 @@ export default Component.extend (contextMenuMixin, {
       return !(allow.delcreLink || allow.adminAll);
     },
     action () {
-      var picName, nels, nlns, nelstxt, movetxt, picNames = [], nodelem = [], nodelem0, i;
-      let symlinkClicked;
+      var picName, nels, nelstxt, movetxt, picNames = [], nodelem = [], nodelem0, i;
       picName = $ ("#picName").text ().trim ();
-      later ( ( () => { // Picname needs time to settle...
-        picName = $ ("#picName").text ().trim ();
-      }), 50);
       resetBorders (); // Reset all borders
-      //if (!$ ("#i" + escapeDots (picName)).hasClass ("symlink")) { // Leave out symlinks
-        markBorders (picName);
-        picNames [0] = picName;
-        nels = 1;
-        symlinkClicked = false;
-      /*} else {
-        symlinkClicked = true; // Saved old code here:
-        // NOTE: symlinkClicked isn't utilized any longer since symlinks may be moved
-        nels = 0;
-        $ ("#picName").text (""); // Signals non-movable, see "downHere"
-      }*/
+      markBorders (picName);
+      picNames [0] = picName;
+      nels = 1;
       nodelem0 = document.getElementById ("i" + picName).firstElementChild.nextElementSibling;
       var picMarked = nodelem0.className === "markTrue";
       if (picMarked) {
@@ -474,19 +434,17 @@ export default Component.extend (contextMenuMixin, {
         nodelem = document.getElementsByClassName ("markTrue");
         for (i=0; i<nodelem.length; i++) {
           var tmpName = nodelem [i].nextElementSibling.innerHTML.trim ();
-          //if (!$ ("#i" + escapeDots (tmpName)).hasClass ("symlink")) { // Leave out symlinks
-            picNames.push (tmpName);
-          //}
+          picNames.push (tmpName);
+          markBorders (tmpName);
         }
-        nels = picNames.length;
-        nlns = nodelem.length - nels;
-        movetxt = "";
-        if (nlns > 0) {movetxt = "En är länk och kan inte flyttas; övriga:<br>";} // i18n
-        if (nlns > 1) {movetxt = nlns + " är länkar som inte kan flyttas; övriga:<br>";} // i18n
-        nelstxt = "Vill du flytta alla " + nels; // i18n
-        if (nels === 2) {nelstxt = "Vill du flytta båda två";} // i18n
       }
-      if (nels === 0) {
+      nels = picNames.length;
+      movetxt = "";
+      nelstxt = "Vill du flytta alla " + nels; // i18n
+      if (nels === 1) {nelstxt = "Ska " + picName + " flyttas";} // i18n new when symlinks may be moved
+      if (nels === 2) {nelstxt = "Vill du flytta båda två";} // i18n
+
+      if (nels === 0) { // does never happen, since now symlinks may be moved
         var title = "Ingenting att flytta"; // i18n
         var text = "<br><b>Omöjligt att flytta länkar!</b>"; // i18n
         var yes = "Uppfattat" // i18n
@@ -495,62 +453,35 @@ export default Component.extend (contextMenuMixin, {
       }
       //console.log (nodelem0.parentNode.style.backgroundColor); // <- Checks this text content
       $ ("#picNames").text (picNames.join ("\n"));
-      if (nels > 1) {
-        var mvTxt = "<br>ska flyttas till annat album"; // i18n
-        $ ("#dialog").html (movetxt + "<b>" + nelstxt + "?</b><br>" + cosp (picNames) + mvTxt); // Set dialog text content
-        $ ("#dialog").dialog ( { // Initiate dialog
-          title: "Flytta till... ", // i18n
-          autoOpen: false,
-          draggable: true,
-          modal: true,
-          closeOnEscape: true
-        });
-        // Define button array
-        $ ("#dialog").dialog ('option', 'buttons', [
-        {
-          text: "Ja", // Yes i18n
-          "id": "allButt", // Process all
-          click: function () {
-            $ (this).dialog ('close');
-            moveFunc (picNames);
-          }
-        },
-        {
-          text: "", // Set later, in order to include html tags (illegal here)
-          "id": "singButt", // Process only one
-          click: function () {
-            if (picName === "") {
-              $ (this).dialog ('close');
-            } else {
-              var nodelem = [];       // Redefined since:
-              nodelem [0] = nodelem0; // Else illegal, displays "read-only"!
-              picNames = [];
-              picNames [0] = picName;
-              nels = 1;
-              $ ("#picNames").text (picNames.join ("\n"));
-              $ (this).dialog ('close');
-              moveFunc (picNames);
-            }
-          }
-        }]);
-        if (symlinkClicked) {
-          picName = "";
-          $ ("#singButt").html ("Nej");
-        } else {
-          $ ("#singButt").html ('Nej, bara <span  style="color:deeppink">' + picName + '</span>'); // 'text:', here we may include html tags
+      var mvTxt = "<br>ska flyttas till annat album"; // i18n
+      $ ("#dialog").html (movetxt + "<b>" + nelstxt + "?</b><br>" + cosp (picNames) + mvTxt); // Set dialog text content
+      $ ("#dialog").dialog ( { // Initiate dialog
+        title: "Flytta till... ", // i18n
+        autoOpen: false,
+        draggable: true,
+        modal: true,
+        closeOnEscape: true
+      });
+      // Define button array
+      $ ("#dialog").dialog ('option', 'buttons', [
+      {
+        text: "Ja", // Yes i18n
+        "id": "allButt", // Process all
+        click: function () {
+          $ (this).dialog ('close');
+          moveFunc (picNames);
         }
-        niceDialogOpen ();
-        $ ("#singButt").removeClass ("ui-button-disabled ui-state-disabled");
-        if ($ ("#picName").text () === "") { // "downHere", referenced above
-          $ ("#singButt").addClass ("ui-button-disabled ui-state-disabled");
+      },
+      {
+        text: "", // Set later, in order to include html tags (illegal here)
+        "id": "noButt", // Process only one
+        click: function () {
+          $ (this).dialog ('close');
         }
-        $ ("#allButt").focus ();
-      } else {
-        $ (this).dialog ('close');
-        markBorders (picNames [0]); // Mark this single one, even if it wasn't clicked
-        moveFunc (picNames);
-        niceDialogOpen ();
-      }
+      }]);
+      $ ("#noButt").html ("<b>Nej, avbryt</b>");
+      niceDialogOpen ();
+      $ ("#allButt").focus ();
     }
   },
   { label: 'RADERA...',
@@ -560,7 +491,7 @@ export default Component.extend (contextMenuMixin, {
     action () {
       // Decide whether also the ORIGINAL will be erased when a LINKED PICTURE is erased
       if (allow.deleteImg && $ ("#eraOrig") [0].checked === true) {
-        eraseOriginals = true;
+        eraseOriginals = true; // global
       } else {
         eraseOriginals = false;
       }
@@ -570,7 +501,7 @@ export default Component.extend (contextMenuMixin, {
       picPath = $ ("#imdbLink").text () + "/" + $ ("#i" + escapeDots (picName) + " a img").attr ("title");
       // Non-symlink clicked:
       var title = "Otillåtet"; // i18n
-      var text = "<br>— du får bara radera länkar —"; // i18n
+      var text = "<br><b>—— du får bara radera länkar ——</b>"; // i18n
       var yes = "Uppfattat" // i18n
       let symlink = document.getElementById ("i" + picName).classList.contains ('symlink');
       if (!symlink && !allow.deleteImg) {
@@ -592,8 +523,11 @@ export default Component.extend (contextMenuMixin, {
         nelstxt = nels; // To be used as text...
         if (nels === 2) {all = "båda "; nelstxt = "två";}
       }
+      resetBorders (); // Reset all borders
       for (let i=0; i<nels; i++) {
-        picNames.push (nodelem [i].nextElementSibling.innerHTML.trim ());
+        let tmpName = nodelem [i].nextElementSibling.innerHTML.trim ();
+        picNames.push (tmpName);
+        markBorders (tmpName); // Mark this one
       }
       for (let i=0; i<nodelem.length; i++) {
           symlink = document.getElementById ("i" + picNames [i]).classList.contains ('symlink');
@@ -656,7 +590,7 @@ export default Component.extend (contextMenuMixin, {
         },
         {
           text: "", // Set later, (html tags are killed here)
-          "id": "singButt", // Process only one
+          "id": "noButt", // Process only one
           click: function () {
             var nodelem = [];       // Redefined since:
             nodelem [0] = nodelem0; // Else illegal, displays "read-only"!
@@ -665,12 +599,9 @@ export default Component.extend (contextMenuMixin, {
             delNames = picName;
             nels = 1;
             $ (this).dialog ('close');
-            nextStep (nels);
           }
         }]);
-        resetBorders (); // Reset all borders
-        markBorders (picName); // Mark this one
-        $ ("#singButt").html ('Nej, bara <span  style="color:deeppink">' + picName + '</span>'); // May contain html
+        $ ("#noButt").html ("<b>Nej, avbryt</b>"); // May contain html
         niceDialogOpen ();
         $ ("#allButt").focus ();
       } else {
@@ -682,13 +613,12 @@ export default Component.extend (contextMenuMixin, {
         // 1 remove "<imdbLink>/" and all following "<album>/"s, leaving the last
         // 2 if still "<imdbLink>", change to "<imdbRoot>"
         // 3 if "<picFound>", remove the disturbing distinguishing random extension
-        //   from most GUI labels but NOTE: Use it also, e.g. in the Jstree label!
+        //   from most GUI labels but, NOTE: Use it also, e.g. in the Jstree label!
         var nameText = $ ("#imdbDir").text ().replace (/^(.+[/])+/, "");
         if (nameText === $ ("#imdbLink").text ()) {nameText = $ ("#imdbRoot").text ();}
         if (nameText.indexOf (picFound) > -1) nameText = nameText.replace (/^(.+)\.[^.]+$/, "$1");
 
         var eraseText = "Radera i " + nameText + ":";
-        resetBorders (); // Reset all borders, can be first step!
         markBorders (picName); // Mark this one
         if (nels === 1) {
           linked = $ ("#i" + escapeDots (picName)).hasClass ("symlink");
@@ -715,10 +645,6 @@ export default Component.extend (contextMenuMixin, {
           text: "Ja", // Yes
           "id": "yesBut",
           click: function () {
-            /*if (!(allow.deleteImg || allow.adminAll)) { // Will never happen
-              userLog ("RADERING FÖRHINDRAD"); // i18n
-              return;
-            }*/
             console.log ("To be deleted: " + delNames); // delNames is picNames as a string
             // NOTE: Must be a 'clean' call (no then or <await>):
             deleteFiles (picNames, nels, picPaths);
@@ -726,8 +652,6 @@ export default Component.extend (contextMenuMixin, {
             later ( ( () => {
               document.getElementById("reLd").disabled = false;
               $ ("#reLd").click ();
-              //userLog ($ ("#temporary").text ()); // From deleteFiles
-              //$ ("#temporary").text ("");
             }), 750);
             scrollTo (null, $ ("#highUp").offset ().top);
             $ ("#refresh-1").click ();
@@ -741,6 +665,7 @@ export default Component.extend (contextMenuMixin, {
             $ (this).dialog ('close');
           }
          }]);
+        $ ("#noBut").html ("<b>Nej, avbryt</b>");
         niceDialogOpen ();
         $ ("#yesBut").focus ();
       }
@@ -813,7 +738,6 @@ export default Component.extend (contextMenuMixin, {
   albumName: "",
   albumText: "",
   albumData: () => {return []}, // Directory structure for the selected imdbRoot
-  //loggedIn: false, Moved to globals!
   subaList: [],
   // HOOKS, that is, Ember "hooks" in the execution cycle
   /////////////////////////////////////////////////////////////////////////////////////////
@@ -2490,13 +2414,7 @@ export default Component.extend (contextMenuMixin, {
         $ ("#link_show a").blur ();
         return;
       }
-
-      /*if ($ ("#navAuto").text () !== "true") {
-      //if ($ ("div[aria-describedby='textareas']").css ("display") === "none") {
-        $ ("#dialog").dialog ("close");
-      }*/
       $ ("#link_show a").css ('opacity', 0 );
-
       var namehere = $ (".img_show .img_name").text ();
       var namepic, minipic, origpic;
       var tmp = document.getElementsByClassName ("img_mini");
@@ -2588,14 +2506,11 @@ export default Component.extend (contextMenuMixin, {
       if ($ ("#imdbDir").text () === "") return;
       if ($ (".toggleAuto").text () === "STOP") return; // Auto slide show is running
 
-      //if (!nospin) {
-        spinnerWait (true);
-        document.getElementById ("stopSpin").innerHTML = "";
-        prepareStopSpin ();
-      //}
+      spinnerWait (true);
+      document.getElementById ("stopSpin").innerHTML = "";
+      prepareStopSpin ();
 
       $ ("#link_show a").css ('opacity', 0 );
-      //$ ("iframe.intro").hide ();
       $ (".img_show").hide ();
       $ (".nav_links").hide ();
       this.refreshAll ().then ( () => {
@@ -2652,7 +2567,6 @@ export default Component.extend (contextMenuMixin, {
           }
         }
         newOrder = newOrder.trim ();
-        //$ ("#sortOrder").text (newOrder);
         later ( ( () => {
           if (saveOrderFunc) {
             saveOrderFunc (newOrder).then ( () => { // Save on server disk
@@ -2737,10 +2651,6 @@ export default Component.extend (contextMenuMixin, {
     //============================================================================================
     findText () { // ##### Open dialog to search Xmp metadata text in the current imdbRoot
 
-      /*if (!(allow.imgHidden || allow.adminAll)) {
-        userLog ("LOCKED", true);
-        return;
-      }*/
       let diaSrch = "div[aria-describedby='searcharea']"
       if ($ (diaSrch).css ("display") !== "none") {
         $ ("#searcharea").dialog ("close");
@@ -2838,13 +2748,6 @@ export default Component.extend (contextMenuMixin, {
       later ( ( () => {
         $ ("#textareas").dialog ("open");
         $ ("div[aria-describedby='textareas']").show ();
-        /*$ ("div[aria-describedby='textareas'] span.ui-dialog-title span").on ("click", () => { // Open if the name is clicked NOT USED
-          later ( ( () => {
-            var showpic = origpic.replace (/\/[^/]*$/, '') +'/'+ '_show_' + namepic + '.png';
-            this.actions.showShow(showpic, namepic, origpic);
-          }), 7);
-        });*/
-
         $ ('textarea[name="description"]').attr ("placeholder", "Skriv bildtext: När var vad vilka (för Xmp.dc.description)");
         $ ('textarea[name="creator"]').attr ("placeholder", "Skriv ursprung: Foto upphov källa (för Xmp.dc.creator)");
       }), 50);
@@ -3048,7 +2951,6 @@ export default Component.extend (contextMenuMixin, {
       var usr = "", status = "";
       $ ("#title span.eraseCheck").css ("display", "none");
       $ ("div[aria-describedby='textareas']").css ("display", "none");
-      //$ ("#dialog").dialog ("close");
       $ ("#searcharea").dialog ("close");
       document.getElementById ("divDropbox").className = "hide-all";
       ediTextClosed ();
@@ -3061,16 +2963,12 @@ export default Component.extend (contextMenuMixin, {
       //¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
       if (btnTxt === "Logga in") { // Log in (should be buttonText[0] ... i18n)
         $ ("#title input.cred").show ();
-        //$ ("#title input.cred.user").focus ();
-        //$ ("#title input.cred.user").select ();
         $ ("#title button.cred").text ("Bekräfta");
         $ ("#title button.cred").attr ("title", "Bekräfta inloggning");
         later ( ( () => {
           $ ("#title input.cred").blur ();
-          //$ ("#title button.cred").focus (); // Prevents FF showing link to saved passwords
           $ ("#title a.proid").focus (); // Prevents FF showing link to saved passwords
         }),100);
-        //spinnerWait (false);
         return;
       }
       //¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
@@ -3084,11 +2982,8 @@ export default Component.extend (contextMenuMixin, {
         $ ("#title span.cred.status").text ("");
         $ ("#title span.cred.status").hide ();
         loggedIn = false;
-        //this.set ("loggedIn", false);
         $ ("div.settings, div.settings div.check").hide ();
-        //$ ("#title button.viewSettings").hide ();
         userLog ("LOGOUT");
-        //$ ("#title a.finish").focus ();
         $ ("#title a.proid").focus ();
         zeroSet (); // #allowValue = '000... etc.
         this.actions.setAllow ();
@@ -3155,30 +3050,20 @@ export default Component.extend (contextMenuMixin, {
         $ ("#title input.cred").hide ();
         this.set ("albumData", []); // Triggers jstree rebuild in requestDirs
         loggedIn = false;
-        //this.set ("loggedIn", false);
         zeroSet (); // #allowValue = '000... etc.
         this.actions.setAllow ();
-
-
         var albFind;
         var picFind;
-
-
-
         loginError ().then (isLoginError => {
           if (isLoginError) {
-            // Update aug 2017: will not happen
+            // Update aug 2017: will never happen!
             $ ("#title button.cred").text ("Logga in");
             $ ("#title button.cred").attr ("title", logAdv);
             $ ("#title button.cred").attr ("totip", logAdv);
             loggedIn = false;
-            //this.set ("loggedIn", false);
             $ ("div.settings, div.settings div.check").hide ();
             userLog ("LOGIN error");
             this.actions.setAllow ();
-            //later ( ( () => {
-              //console.log ("Err, allowValue", $ ("#allowValue").text ());
-            //}), 200);
           } else {
             if (usr !== "anonym") {$ ("#dialog").dialog ("close");}
             $ ("#title button.cred").text ("Logga ut");
@@ -3221,15 +3106,9 @@ export default Component.extend (contextMenuMixin, {
                 if (albFindCoo) albFind = albFindCoo.split ("/");
                 else albFind = ["", "", ""];
                 if ($ ("#imdbRoots").text ().split ("\n").indexOf (albFind [0]) < 1) albFind = ["", "", ""];
-                /*else {
-                  if ($ ("#imdbRoot").text () !== albFind [0]) { // Change album root
-                    this.actions.selectRoot (albFind [0], this);
-                  }
-                }*/
                 if (picFindCoo) picFind = picFindCoo.split ("/");
                 else picFind = ["", ""];
                 if ($ ("#imdbRoots").text ().split ("\n").indexOf (picFind [0]) < 1) picFind = ["", ""];
-                //$ ("#requestDirs").click ();
                 later ( ( () => {
                   $ (".ember-view.jstree").jstree ("deselect_all");
                   $ (".ember-view.jstree").jstree ("close_all");
@@ -3374,10 +3253,6 @@ export default Component.extend (contextMenuMixin, {
             } else {
               $ ("#showDropbox").show ();
             }
-            // Next line is an ATTEMPT only. In some way, an initial hide is generated, WHERE?
-            /*later ( ( () => {
-              $ ("#j1_1_anchor").click ();
-            }), 2000);*/
           }).catch (error => {
             console.error (error.message);
           });
@@ -3409,7 +3284,6 @@ export default Component.extend (contextMenuMixin, {
 
       $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
       if (!loggedIn || $ ("div.settings").is (":visible")) {
-      //if (!this.get ("loggedIn") || $ ("div.settings").is (":visible")) {
         $ ("div.settings, div.settings div.check").hide ();
         return;
       }
@@ -3482,7 +3356,6 @@ export default Component.extend (contextMenuMixin, {
     },
     //============================================================================================
     seeFavorites () {
-      //console.info ("seeFavorites function called");
       if ($ ("textarea.favorites").is (":visible")) {
         $ ("#dialog").dialog ("close");
         $ (".mainMenu").hide ();
@@ -3776,10 +3649,8 @@ async function parentAlbum (tgt) {
     tmp = $ ("#imdbLink").text () + "/" + tmp;
     // ...then go to the linked picture:
     getFilestat (tmp).then (result => {
-      //console.log ("Link:", tmp);
       result = result.replace (/(<br>)+/g, "\n");
       result = result.replace(/<(?:.|\n)*?>/gm, ""); // Remove <tags>
-      //console.log (result.split ("\n") [1]);
       file = result.split ("\n") [0].replace (/^[^/]*\/(\.\.\/)*/, $ ("#imdbLink").text () + "/");
       albumDir = file.replace (/^[^/]+(.*)\/[^/]+$/, "$1").trim ();
       let idx = $ ("#imdbDirs").text ().split ("\n").indexOf (albumDir);
@@ -3811,7 +3682,6 @@ window.gotoMinipic = function (namepic) {
   }), 4000);
   later ( ( () => {
     userLog ("KLICKA FÖR STÖRRE BILD!", true, 6000)
-    //infoDia (null, null, "Information", "<br>Klicka på miniatyrbilden så visas den större!Klicka på miniatyrbilden så visas den större!<br>", "Ok", true);
   }), 6000);
 }
 // Position to a minipic and highlight its border, 'main' function
@@ -3883,15 +3753,10 @@ function deleteFile (picPath) { // ===== Delete an image
   return new Promise ( (resolve, reject) => {
     // ===== XMLHttpRequest deleting 'picName'
     var xhr = new XMLHttpRequest ();
-    //var origpic = $ ('#i' + escapeDots (picName) + ' img.left-click').attr ("title"); // With path
-    //origpic = $ ("#imdbLink").text () + "/" + origpic;
     var origpic = picPath;
     xhr.open ('GET', 'delete/' + origpic, true, null, null); // URL matches routes.js with *?
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {
-        //console.log (xhr.responseText);
-        //userLog (xhr.responseText);
-        //resolve (picName);
         resolve (xhr.responseText);
       } else {
         reject ({
@@ -3907,7 +3772,6 @@ function deleteFile (picPath) { // ===== Delete an image
       });
     };
     xhr.send ();
-    //console.log ('Deleted: ' + picName);
   }).catch (error => {
     console.error (error.message);
   });
@@ -4155,14 +4019,14 @@ function notesDia (picName, filePath, title, text, save, saveClose, close) { // 
       text: save,
       //"id": "saveBut",
       class: "saveNotes",
-      click: function () { // ***duplicate***
+      click: function () {
         notesSave ();
       }
     },
     {
       text: saveClose,
       class: "saveNotes",
-      click: function () { // ***duplicate***
+      click: function () {
         notesSave ();
         $ (this).dialog ("close");
       }
@@ -4185,7 +4049,6 @@ function notesDia (picName, filePath, title, text, save, saveClose, close) { // 
   $ ('textarea[name="notes"]').html ("");
   niceDialogOpen ("notes");
   later ( ( () => {
-    //$ ("#notes").dialog ("open"); // Reopen
     niceDialogOpen ("notes");
     $ ('textarea[name="notes"]').focus (); // Positions to top *
     if (!(allow.notesEdit || allow.adminAll)) {
@@ -4223,9 +4086,7 @@ function niceDialogOpen (dialogId) {
   let sw = parseInt ( (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth)*0.95);
   $ (id).parent ().css ("min-width", "300px");
   $ (id).parent ().css ("max-width", sw+"px");
-  //$ (id).parent ().width ("auto");
   $ (id).width ("auto");
-  //$ (id).parent ().css ("top", "38px"); // added
 
   let tmp = $ (id).parent ().parent ().outerWidth (); // helpText??
   let pos = $ (id).parent ().position ();
@@ -4273,7 +4134,7 @@ function hideFunc (picNames, nels, act) { // ===== Execute a hide request
     var hideFlag = ('z' + act).slice (1); // Set 1 or 0 and convert to string
     sortOrder = part1 + hideFlag + part2.slice (k); // Insert the new flag
     $ ("#i" + escapeDots (picName)).css ('background-color', $ ("#bkgrColor").text ());
-    $ ("#wrap_show").css ('background-color', $ ("#bkgrColor").text ()); // *Just in case the show image is visible     $ ("#i" + escapeDots (picName)).show ();
+    $ ("#wrap_show").css ('background-color', $ ("#bkgrColor").text ());
     if (hideFlag === "1") { // If it's going to be hidden: arrange its CSS ('local hideFlag')
       $ ("#i" + escapeDots (picName)).css ('background-color', $ ("#hideColor").text ());
       $ ("#wrap_show").css ('background-color', $ ("#hideColor").text ()); // *Just in case -
@@ -4327,6 +4188,7 @@ function linkFunc (picNames) { // ===== Execute a link-these-files-to... request
     codeSelect += '\n<option value ="' +v+ '">' +v+ '</option>';
   }
   codeSelect += "\n</select>"
+  codeSelect += '<br>(eller avbryt med "Ok" utan att välja album)';
   var title = "Länka till annat album";
   var text = cosp (picNames) +"<br>ska länkas till<br>" + codeSelect;
   var modal = true;
@@ -4366,16 +4228,13 @@ function moveFunc (picNames) { // ===== Execute a move-this-file-to... request
     codeSelect += '<option value ="' +v+ '">' +v+ '</option>';
   }
   codeSelect += "</select>"
+  codeSelect += '<br>(eller avbryt med "Ok" utan att välja album)';
   //console.log("codeSelect",codeSelect);
   let title = "Flytta till annat album";
   let text = cosp (picNames) +"<br>ska flyttas till<br>" + codeSelect;
   let modal = true;
   infoDia (null, "", title, text, "Ok", modal); // Trigger infoDia run serverShell ("temporary_1")
   $ ("select.selectOption").focus ();
-  /*later ( ( () => { // only after moveFunc (not after linkFunc!)
-    document.getElementById("reLd").disabled = false;
-    $ ("#reLd").click ();
-  }), 3800******/
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const saveOrderFunc = namelist => { // ===== XMLHttpRequest saving the thumbnail order list
@@ -4844,7 +4703,6 @@ function ediTextSelWidth () { // Selects a useful edit dialog width within avail
 var prepDialog = () => {
     $ ("#helpText").dialog ({autoOpen: false, resizable: true, title: "Användarhandledning"}); // Initiate a dialog...
     $ (".ui-dialog .ui-dialog-titlebar-close").text ("×");
-    //$ ("#helpText").dialog ("close"); // and close it
     // Initiate a dialog, ready to be used:
     $ ("#dialog").dialog ({resizable: true}); // Initiate a dialog...
     $ (".ui-dialog .ui-dialog-titlebar-close").text ("×");
@@ -5138,15 +4996,6 @@ var prepTextEditDialog = () => {
 //$ ( () => {
   var sw = ediTextSelWidth (); // Selected dialog width
   var tw = sw - 25; // Text width
-  /*$ ('<div id="textareas" style="margin:0;padding:0;width:'+sw+'px"><div class="diaMess"><span class="edWarn"></span></div><textarea name="description" rows="6" style="min-width:'+tw+'px" /><br><textarea name="creator" rows="1" style="min-width:'+tw+'px" /></div>').dialog ( {
-    title: "Bildtexter",
-    //closeText: "×", // Replaced (why needed?) below by // Close => ×
-    autoOpen: false,
-    draggable: true,
-    closeOnEscape: false, // NOTE: handled otherwise
-    modal: false
-  });*/
-
   $ ("#textareas").dialog ({
     title: "Bildtexter",
     closeText: "×", // Set title below

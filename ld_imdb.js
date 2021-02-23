@@ -1,8 +1,8 @@
 #!/usr/local/bin/node
 // NOTE: The shabang must be uppdated to reflect the node-js installation
-// Load image metadata into _imdb_images.sqlite (DB file)
-// Converts all texts using 'removeDiacritics' and 'toLowerCase'
-// in order to search case-insensitively (can eventually be
+// Loads image metadata into _imdb_images.sqlite (DB file),
+// converting all texts using 'removeDiacritics' and 'toLowerCase',
+// thus preparing to be searched case-insensitively (can eventually be
 // rewritten to make the uppercase part below superfluous)
 
 // Data for the removeDiacritics function (see below)
@@ -208,9 +208,9 @@ function loadImageMetadata () {
       */
       db.commit (function (err) {
         if (err) {
-          console.log('Image search texts update failed', err.message)
+          console.log(albumRoot + ' image search texts update failed', err.message)
         } else {
-          console.log ('Image search texts updated')
+          console.log (albumRoot + ' image search texts updated')
         }
       })
     })
