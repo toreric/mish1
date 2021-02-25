@@ -354,6 +354,7 @@ export default Component.extend (contextMenuMixin, {
           //if ($ ("#i" + escapeDots (tmpName)).hasClass ("symlink")) { // Leave out symlinks
           if (document.getElementById ("i" + tmpName).classList.contains ("symlink")) { // Leave out symlinks
             document.getElementById ("i" + tmpName).firstElementChild.nextElementSibling.className = "markFalse";
+            $ ('.showCount .numMarked').text ($ (".markTrue").length + " ");
           } else {
             picNames.push (tmpName);
             markBorders (tmpName);
@@ -3407,7 +3408,7 @@ let loginStatus = "";
 let tempStore = "";
 let chkPaths = []; // For DB picture paths to be soon updated (or removed)
 let savedAlbumIndex = 0;
-let returnTitles = ["Gå TILL ROT-albumet", "Gå MOT ROT-albumet", "Gå TILL SENASTE album"]; // i18n
+let returnTitles = ["Gå hem TILL ROT-albumet", "Gå MOT ROT-albumet", "Gå TILL SENASTE album"]; // i18n
 let navButtons = ["", "none", "none"]; // Display extra navigation buttons ["⌂", "↖", "⇆"]
 //  The "⇆" button is triggered/pressed by the browser's navigation arrows, visibility-independent
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
