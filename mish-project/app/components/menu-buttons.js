@@ -2991,7 +2991,7 @@ export default Component.extend (contextMenuMixin, {
         $ (".mainMenu p:eq(3) a").hide (); // Hide the album-edit button in mainMenu
         $ ("#showDropbox").hide ();  // Hide upload button
         $ ("#viSt").hide (); // Hide visit statistics button
-        $ ("#meeting").hide (); // Hide meeting button
+        $ ("#netMeeting").hide (); // Hide meeting button
 
         if ($ ("#imdbRoot").text ()) { // If imdb is initiated
           // Regenerate the picFound album: the shell commands must execute in sequence
@@ -3187,8 +3187,9 @@ export default Component.extend (contextMenuMixin, {
             } // end if
             if (allow.deleteImg || allow.adminAll) $ ("#viSt").show ()
             else $ ("#viSt").hide ();
-            if (allow.textEdit || allow.adminAll) $ ("#meeting").show ()
-            else $ ("#meeting").hide ();
+            //if (allow.textEdit || allow.adminAll) $ ("#netMeeting").show ()
+            if (loggedIn) $ ("#netMeeting").show ()
+            else $ ("#netMeeting").hide ();
 
           }, 2000);
           document.getElementById ("stopSpin").innerHTML = "SPIN-END";
@@ -3408,7 +3409,7 @@ let loginStatus = "";
 let tempStore = "";
 let chkPaths = []; // For DB picture paths to be soon updated (or removed)
 let savedAlbumIndex = 0;
-let returnTitles = ["Gå hem TILL ROT-albumet", "Gå MOT ROT-albumet", "Gå TILL SENASTE album"]; // i18n
+let returnTitles = ["Gå HEM till ROT-albumet", "Gå MOT ROT-albumet", "Gå TILL SENASTE album"]; // i18n
 let navButtons = ["", "none", "none"]; // Display extra navigation buttons ["⌂", "↖", "⇆"]
 //  The "⇆" button is triggered/pressed by the browser's navigation arrows, visibility-independent
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -4864,21 +4865,25 @@ let doFindText = (sTxt, and, sWhr, exact) => {
     }
     let sobj;
     if (filesFound < 3) { // Since ...?
-      sobj = obj.sort ( (a, b) => {return a.sortIndex - b.sortIndex})
-    } else {
       sobj = obj;
+    } else {
+      sobj = obj.sort ( (a, b) => {return a.sortIndex - b.sortIndex})
     }
     obj = null;
 
     paths = [];
+    nameOrder = [];
     cmd = [];
     for (let i=0; i<n; i++) {
-      paths.push (sobj [i].path);
-      if (i < nLimit) cmd.push (sobj [i].cmd);
+      if (i < nLimit) {
+        paths.push (sobj [i].path);
+        nameOrder.push (sobj [i].name);
+        cmd.push (sobj [i].cmd);
+      }
     }
     sobj = null;
 
-    nameOrder = nameOrder.sort ().join ("\n");
+    nameOrder = nameOrder.join ("\n");
     $ ("#temporary_1").text (cmd.join ("\n"));
 
     // Regenerate the picFound album: the shell commands must execute in sequence
