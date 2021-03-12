@@ -322,17 +322,15 @@ console.log("p2",p);
   })
   // ##### #0.5 Execute a shell command
   app.get ('/execute/:command', (req, res) => {
-    console.log("pwd =",execSync ("pwd").toString ().trim ())
+    //console.log("pwd =",execSync ("pwd").toString ().trim ())
     //console.log(req.params.command)
     //console.log(decodeURIComponent (req.params.command))
     var cmd = decodeURIComponent (req.params.command).replace (/@/g, "/")
-//console.log("Kommandolängd", cmd.length)
     try {
       // NOTE: execSync seems to use ``-ticks, not $()
       // Hence "`" don't pass if you don't escape them
       cmd = cmd.replace (/`/g, "\\`")
       var resdata = execSync (cmd)
-//console.log ("execSync (" + cmd.trim ().replace (/(^[^ ]+ [^ ]+ [^ ]+).*/, "$1 ..."))
       res.location ('/')
       res.send (resdata)
       //res.end ()
@@ -424,7 +422,7 @@ console.log("p2",p);
       // Next to them, two '\n-free' metadata lines follow:
       // 5 Xmp.dc.description
       // 6 Xmp.dc.creator
-      // 7 Last is '' or 'symlink'
+      // 7 Last is '&' or the path to the origin if this is a symlink
       ////////////////////////////////////////////////////////
       // pkgfilenames prints initial console.log message
       //var pkgfilenamesWrap
@@ -1170,7 +1168,7 @@ console.log("p2",p);
     return homeDir
   }
 
-  // ===== Make a package of orig, show, mini, and plain filenames, metadata, and symlink flag
+  // ===== Make a package of orig, show, mini, and plain filenames, metadata, and symlink flag=origin
   async function pkgfilenames (origlist) {
     if (origlist) {
       let files = origlist.split ('\n')
@@ -1194,7 +1192,7 @@ console.log("p2",p);
     if (namefile.length === 0) {return null}
     let showfile = path.join (fileObj.dir, '_show_' + namefile + '.png')
     let minifile = path.join (fileObj.dir, '_mini_' + namefile + '.png')
-    if (symlink !== 'symlink') {
+    if (symlink === '&') {
       resizefileAsync (origfile, showfile, "'640x640>'")
       .then (resizefileAsync (origfile, minifile, "'150x150>'")).then ()
     } else {
@@ -1206,10 +1204,6 @@ console.log("p2",p);
       .then (
       await cmdasync ("ln -sfn " + linkObj.dir + "/" +"_mini_"+ linkObj.name + ".png " + minifile))
       .then ()
-
-      /*linkto = path.dirname (linkto) // Extract path and create links:
-      await cmdasync ("ln -sfn " + linkto + "/" + path.basename (showfile) + " " + showfile)
-      .then (await cmdasync ("ln -sfn " + linkto + "/" + path.basename (minifile) + " " + minifile)).then ()*/
     }
     let cmd = []
     let tmp = '--' // Should never show up
@@ -1229,9 +1223,9 @@ console.log("p2",p);
     }
     // Triggers browser autorefresh but no meaning to refresh symlinks:
     let qrn = '?' + Math.random ().toString (36).substr (2,4)
-    if (symlink === 'symlink') {qrn = ''}
+    if (symlink !== '&') {qrn = ''}
     // origfile without root-link-name, nov 2014, e.g. imdb/aa/bb => aa/bb :
-    return (origfile.replace (/^[^/]+\//, "") +'\n'+ showfile + qrn +'\n'+ minifile + qrn +'\n'+ namefile +'\n'+ txt12.trim () +'\n'+ symlink).trim () // NOTE: returns 7 rows
+    return (origfile.replace (/^[^/]+\//, "") +'\n'+ showfile + qrn +'\n'+ minifile + qrn +'\n'+ namefile +'\n'+ txt12.trim ()).trim () +'\n'+ symlink // NOTE: returns 7 rows, the last often '&'
   }
 
   // ===== Make a shell command asyncronous
@@ -1243,16 +1237,17 @@ console.log("p2",p);
     return execSync ("find '" + item + "' -maxdepth 0 -xtype l 2>/dev/null").toString ()
   }
 
-  // ===== Return a symlink flag value
+  // ===== Return a symlink flag value, value = & or source file
   function symlinkFlag (file) {
     return new Promise (function (resolve, reject) {
       fs.lstat (file, function (err, stats) {
         if (err) {
           console.error ('symlinkFlag', err.message)
         } else if (stats.isSymbolicLink ()) {
-          resolve ('symlink')
+          resolve (execSync ("readlink " + file).toString ().trim ())
+          //resolve ('symlink')
         } else {
-          resolve ('false')
+          resolve ('&') // normal file
         }
       })
     })

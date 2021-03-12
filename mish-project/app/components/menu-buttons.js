@@ -84,10 +84,6 @@ export default Component.extend (contextMenuMixin, {
       // Substitute the first name (in '{text:"..."') into the root name:
       albDat = albDat.split (","); // else too long a string (??)
       albDat [0] = albDat [0].replace (/{text:".*"/, '{text:"' + ' <span style=\'font-family:Arial;font-weight:bold;font-size:80%\'>ROT: </span>" + this.get ("imdbRoot")');
-
-      //              let txt = $("#j1_1_anchor").html ();
-      //              $("#j1_1_anchor").html (txt + ' (<span style="font:bold Verdana">ROT</span>)');
-
       albDat = albDat.join (",");
       let count = $ ("#imdbCoco").html ().split ("\n");
       for (let i=0; i<count.length; i++) {
@@ -892,7 +888,7 @@ export default Component.extend (contextMenuMixin, {
         $ ("div.ember-view.jstree").attr ("onclick", "return false");
 
         if (allow.imgHidden || allow.adminAll) { // Qualified if at least Guest
-          $ (".img_mini.symlink [alt='MARKER']").attr("title", "Klick = markera; med Ctrl eller högerklick = gå till källan");
+          $ (".img_mini.symlink [alt='MARKER']").attr("title", "Klick = markera; med Ctrl eller högerklick = till originalet");
         }
       }), 10);
     });
@@ -999,6 +995,18 @@ export default Component.extend (contextMenuMixin, {
             namedata.removeAt (0, 1);
           }
 
+          var n = newdata.length;
+          // Transform the elements for HBS template use:
+          for (i=0; i<n; i++) {
+            newdata [i].linkto = newdata [i].orig; // Added, see requestNames, 'row number eight'
+            if (newdata [i].symlink === "&") {
+              newdata [i].symlink = "";
+            } else {
+              newdata [i].orig = newdata [i].symlink;
+              newdata [i].symlink = "symlink";
+            }
+          }
+
           newsort = newsort.trim (); // Important
           test ='E0';
           this.set ("allNames", newdata); // The minipics reload is triggered here (RELOAD)
@@ -1006,7 +1014,6 @@ export default Component.extend (contextMenuMixin, {
           //console.log("NOTE: newsort is the true list of images in the actual directory:",newsort.split("\n"));
           //console.log("NOTE: newdata will trigger the thumbnails reload:",this.get ("allNames"));
           preloadShowImg = []; // Preload show images:
-          var n = newdata.length;
           let nWarn = 100;
           for (i=0; i<n; i++) {
             preloadShowImg [i] = new Image();
@@ -1019,7 +1026,7 @@ export default Component.extend (contextMenuMixin, {
             $ (".numMarked").text (" " + $ (".markTrue").length);
             if ($ ("#hideFlag") === "1") {
               $ (".numHidden").text (" " + $ (".img_mini [backgroundColor=$('#hideColor')]").length);
-              // DOES THIS WORK OR MAY IT BE REMOVED??
+              // DOES THIS WORK OR MAY IT BE REMOVED? It seems to work.
               $ (".numShown").text (" " + $ (".img_mini [backgroundColor!=$('#hideColor')]").length);
             } else {
               $ (".numHidden").text ("0");
@@ -1028,7 +1035,7 @@ export default Component.extend (contextMenuMixin, {
 
             later ( ( () => {
               if (document.querySelector("strong.albumName") && document.querySelector ("strong.albumName") [0] && document.querySelector ("strong.albumName") [0].innerHTML.replace (/&nbsp;/g, " ").trim () === $ ("#picFound").text ().replace (/\.[^.]{4}$/, "").replace (/_/g, " ")) {
-                // The search result album
+                // The search result album. Seems to fail, may be removed since also superfluous?
                 $ ("div.BUT_2").html ($.parseHTML ('<span style="color:#0b0";font-weight:bold>Gå till bildens eget album med högerklick i grön ring!</span>'));
               } else {
                 let ntot = $ (".img_mini").length;
@@ -1130,7 +1137,7 @@ export default Component.extend (contextMenuMixin, {
         return;
       }
       if ($ (tgt).hasClass ("mark")) {
-        if ( (allow.imgHidden || allow.adminAll) && evnt.button === 2) {
+        if ( evnt.button === 2 && (allow.imgHidden || allow.adminAll)) {
           // Right click on the marker area of a thumbnail...
           parentAlbum (tgt);
         }
@@ -1411,7 +1418,8 @@ export default Component.extend (contextMenuMixin, {
             name: '',  // Orig-file base name without extension
             txt1: 'description', // for metadata
             txt2: 'creator',     // for metadata
-            symlink: 'false'           // else 'symlink'
+            symlink: ' ',        // SPACE, else the value for linkto
+            linkto: ''           //   which is set in refreshAll
           });
           var NEPF = 7; // Number of properties in Fobj
           var result = xhr.responseText;
@@ -2029,7 +2037,7 @@ export default Component.extend (contextMenuMixin, {
         let tmp = [""]; // root
         let tmp1 = [""];
         if (selDir) { // not root
-          tmp = ["⌂", "↖", "⇆"];
+          tmp = ["⌂", "↖", "⇆"]; // navButtons
           tmp1 = ["", "", ""];
         }
         let i0 = selDirs.indexOf (selDir);
@@ -3140,8 +3148,9 @@ export default Component.extend (contextMenuMixin, {
           // Hide or show the album-edit button in mainMenu
           if (!(allow.albumEdit || allow.adminAll)) $ (".mainMenu p:eq(3) a").hide ()
           else $ (".mainMenu p:eq(3) a").show ();
-          // Hide or show the web traffic statistics button
 
+          // Check albumfind and picturefind cookies, they support navigation
+          // by web address, in a "very preliminary & primitive way"
           later ( () => {
             if (albFind) {
               if (albFind [0] && status !== "viewer") {
@@ -3185,9 +3194,11 @@ export default Component.extend (contextMenuMixin, {
                 }, 2000);
               } // end if
             } // end if
+
+            // Hide or show the web traffic statistics button
             if (allow.deleteImg || allow.adminAll) $ ("#viSt").show ()
             else $ ("#viSt").hide ();
-            //if (allow.textEdit || allow.adminAll) $ ("#netMeeting").show ()
+            // Hide or show the net meeting button
             if (loggedIn) $ ("#netMeeting").show ()
             else $ ("#netMeeting").hide ();
 
@@ -3375,6 +3386,12 @@ export default Component.extend (contextMenuMixin, {
       $ ("#dialog").dialog ("close");
     },
     //============================================================================================
+    parAlb (name) { // #### Go to a (in DOM) linked picture's original (source) album
+      let tmp = escapeDots (name);
+      let   tgt = $ ("#i" + tmp + " img");
+      parentAlbum (tgt);
+    },
+    //============================================================================================
     subalbumSelect (subal) {
       subaSelect (subal);
     }
@@ -3409,7 +3426,7 @@ let loginStatus = "";
 let tempStore = "";
 let chkPaths = []; // For DB picture paths to be soon updated (or removed)
 let savedAlbumIndex = 0;
-let returnTitles = ["Gå HEM till ROT-albumet", "Gå MOT ROT-albumet", "Gå TILL SENASTE album"]; // i18n
+let returnTitles = ["HEM till ROT-albumet", "MOT ROT-albumet", "TILL SENASTE album"]; // i18n
 let navButtons = ["", "none", "none"]; // Display extra navigation buttons ["⌂", "↖", "⇆"]
 //  The "⇆" button is triggered/pressed by the browser's navigation arrows, visibility-independent
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -3638,19 +3655,19 @@ function startInfoPage () { // Compose the information display page
   });
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// Show a symlink's 'parent' album; tgt is the symlink's green mark picture
+// Show a symlink's 'parent' album; tgt is a mini-IMG, hopefully a linked one...
 async function parentAlbum (tgt) {
   if (!tgt) {
     await new Promise (z => setTimeout (z, 4000));
     tgt = document.getElementsByClassName ("img_mini") [0].getElementsByTagName ("img") [1];
   }
   let classes = $ (tgt).parent ("div").parent ("div").attr("class");
-  let albumDir, file, tmp;
-  if (classes && -1 < classes.split (" ").indexOf ("symlink")) { // ...of a symlink...
+  let albumDir, file, tmp, imgs;
+  if (classes && -1 < classes.split (" ").indexOf ("symlink")) { // ...yes! a symlink...
     tmp = $ (tgt).parent ("div").parent ("div").find ("img").attr ("title");
     tmp = $ ("#imdbLink").text () + "/" + tmp;
     // ...then go to the linked picture:
-    getFilestat (tmp).then (result => {
+    getFilestat (tmp).then (async result => {
       result = result.replace (/(<br>)+/g, "\n");
       result = result.replace(/<(?:.|\n)*?>/gm, ""); // Remove <tags>
       file = result.split ("\n") [0].replace (/^[^/]*\/(\.\.\/)*/, $ ("#imdbLink").text () + "/");
@@ -3660,6 +3677,12 @@ async function parentAlbum (tgt) {
         infoDia (null, null, "Tyvärr ...", "<br>Albumet <b>" + albumDir.replace (/^(.*\/)+/, "") + "</b> med den här bilden kan inte visas<br>(rätt till gömda album saknas)", "Ok", true);
         return "";
       }
+      // Get the number of imgs in the album; open and read it from the jstree node
+      $ (".ember-view.jstree").jstree ("_open_to", "#j1_" + (1 + idx));
+      await new Promise (z => setTimeout (z, 400));
+      imgs = $ ("#j1_" + (1 + idx) + " a small").text ();
+      imgs = Number (imgs.replace (/^.*\(([0-9]+)\).*$/, "$1"));
+      if (imgs < 2) imgs = 2; // for a minimum wait time
       spinnerWait (true);
       document.getElementById ("stopSpin").innerHTML = "";
       prepareStopSpin ();
@@ -3671,10 +3694,10 @@ async function parentAlbum (tgt) {
       let namepic = file.replace (/^(.*\/)*(.+)\.[^.]*$/, "$2");
       return namepic;
     }).then (async (namepic) => {
-      //await new Promise (z => setTimeout (z, 12000));
+      await new Promise (z => setTimeout (z, 85*imgs));
       if (namepic) gotoMinipic (namepic);
     });
-  } // else do nothing
+  } // ...else do nothing
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Position to a minipic and highlight its border, for child window
@@ -5264,7 +5287,7 @@ function allowFunc () { // Called from setAllow (which is called from init(), lo
   }*/
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function subaSelect (subName) { // ##### Sub-album link selected
+function subaSelect (subName, path) { // ##### Sub-album link selected
   subName = subName.replace (/&nbsp;/g, "_"); // Restore readable album name
   // NOTE: That restoring may be questionable with " " instead of "&nbsp;"
   spinnerWait (true);
@@ -5273,7 +5296,9 @@ function subaSelect (subName) { // ##### Sub-album link selected
   let names = $ ("#imdbDirs").text ().split ("\n");
   let name = $ ("#imdbDir").text ().slice ($ ("#imdbLink").text ().length); // Remove imdbLink
   let here, idx;
-  if (subName === "⌂") { // go to top in tree = home
+  if (path) { // subName has full path except that '..' and similar is removed
+    idx = names.indexOf (subName);
+  } else if (subName === "⌂") { // go to top in tree = home
     idx = 0;
   } else if (subName === "↖") { // go up in tree
     name = name.replace (/((\/[^/])*)(\/[^/]*$)/, "$1");
