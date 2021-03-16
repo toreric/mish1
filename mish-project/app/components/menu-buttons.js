@@ -2103,7 +2103,7 @@ export default Component.extend (contextMenuMixin, {
             $ ("a.imDir").each (function (index, element) {
               if (index < n) {z = 0;} else {z = n;}
               iz = index - z;
-              if (iz < 3) {
+              if (iz < 3) { // the first 3 are nav link symbols
                 $ (element).attr ("title", returnTitles [iz]);
                 $ (element).closest ("div.subAlbum").attr ("title", returnTitles [iz]);
                 $ (element).closest ("div.subAlbum").css ("display", navButtons [iz]); // added later
@@ -2126,6 +2126,8 @@ export default Component.extend (contextMenuMixin, {
                 }
               }
             });
+            // special style to lower the "⌂" link (perhaps temporary)
+            document.querySelectorAll ("a.imDir span") [0].style.verticalAlign="sub";
           } else if (tmp [0] === "⇆") {
             $ ("a.imDir").each (function (index, element) {
               if (index < n) {z = 0;} else {z = n;}
@@ -5327,7 +5329,7 @@ function subaSelect (subName, path) { // ##### Sub-album link selected
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Disable browser back button
-history.pushState (null, null);
+window.history.pushState (null, "");
 window.onpopstate = function () {
   subaSelect ("⇆");
 }

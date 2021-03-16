@@ -890,7 +890,7 @@ The jquery ui-tooltip is used elsewere (totip in *.js) */
   height: 1.2em;
   font-weight: normal;
   text-align: left;
-  white-space: nowrap;
+  white-space: normal;
   overflow: hidden;
   text-overflow: ellipsis;
   -o-text-overflow: ellipsis;
@@ -1050,11 +1050,13 @@ img.mark {
 button.goAlbum {
   display: none;
   position: absolute;
-  left: -12.25em;
+  left: -137.5px;
   top: 0.55em;
   font-family: Verdana, Geneva, Tahoma, sans-serif;
   font-size: 80%;
   padding: 0 0.25em 0.15em 0.25em;
+  text-align: left;
+  width: 7.7em;
   color: #0b0;
   border: 0;
   background: transparent;

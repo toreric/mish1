@@ -18,11 +18,12 @@ npm-debug.log*
 testem.log
 
 *~
-/_learnstuff
-/.coop*
+/.*
 /allow_*
 
 # image files
 012345*
 *.xmp
 /imdb*
+
+/!.gitignore
