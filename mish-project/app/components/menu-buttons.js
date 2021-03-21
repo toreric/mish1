@@ -437,8 +437,8 @@ export default Component.extend (contextMenuMixin, {
       }
       nels = picNames.length;
       movetxt = "";
-      nelstxt = "Vill du flytta alla " + nels; // i18n
-      if (nels === 1) {nelstxt = "Ska " + picName + " flyttas";} // i18n new when symlinks may be moved
+      if (nels === 1) {moveFunc (picNames); return;}
+      nelstxt = "Vill du flytta alla " + nels; // i18n new when symlinks may be moved
       if (nels === 2) {nelstxt = "Vill du flytta båda två";} // i18n
 
       if (nels === 0) { // does never happen, since now symlinks may be moved
@@ -887,9 +887,9 @@ export default Component.extend (contextMenuMixin, {
         $ ("span#showSpeed").hide ();
         $ ("div.ember-view.jstree").attr ("onclick", "return false");
 
-        if (allow.imgHidden || allow.adminAll) { // Qualified if at least Guest
+        /*if (allow.imgHidden || allow.adminAll) { // Qualified if at least Guest
           $ (".img_mini.symlink [alt='MARKER']").attr("title", "Klick = markera; med Ctrl eller högerklick = till originalet");
-        }
+        }*/
       }), 10);
     });
   },
@@ -1136,13 +1136,13 @@ export default Component.extend (contextMenuMixin, {
         $ ("div.context-menu-container").css ("left", (viewLeft + tmpLeft) + "px");
         return;
       }
-      if ($ (tgt).hasClass ("mark")) {
+      /*if ($ (tgt).hasClass ("mark")) {
         if ( evnt.button === 2 && (allow.imgHidden || allow.adminAll)) {
           // Right click on the marker area of a thumbnail...
           parentAlbum (tgt);
         }
         return;
-      }
+      }*/
       if (evnt.button === 2) return; // ember-context-menu should take it
       var namepic = tgt.parentElement.parentElement.id.slice (1);
 
@@ -2639,7 +2639,7 @@ export default Component.extend (contextMenuMixin, {
 
       let bgtheme = getCookie ("bgtheme");
       if (bgtheme === "light") {
-        BACKG = "non0";
+        BACKG = "#cbcbcb";
       } else {
         BACKG = "#000";
       }
@@ -4963,7 +4963,6 @@ function displayPicFound () {
   $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_" + index));
   $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
 }
-
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Search the image texts in the current imdbRoot
 function searchText (searchString, and, searchWhere, exact) {
