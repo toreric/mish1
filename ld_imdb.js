@@ -1,5 +1,4 @@
-#!/usr/local/bin/node
-// NOTE: The shabang must be uppdated to reflect the node-js installation
+#!/usr/bin/env node
 // Loads image metadata into _imdb_images.sqlite (DB file),
 // converting all texts using 'removeDiacritics' and 'toLowerCase',
 // thus preparing to be searched case-insensitively (can eventually be

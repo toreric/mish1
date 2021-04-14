@@ -165,9 +165,10 @@ function copyToClipboard (str) {
 <div id="picFound" title="album name for found pictures" style="display:none">Found_pictures</div>
 <div id="picName" style="display:none"></div>
 <div id="picNames" style="display:none"></div>
+<div id="picOrder" title="picNames without random extension for move" style="display:none"></div>
 <div id="picOrig" style="display:none"></div>
 <div id="showFactor" title="initial seconds/picture" style="display:none">2</div>
-<div id="sortOrder" style="display:none"></div>
+<div id="sortOrder" title="for imdDir's file order information table" style="display:none"></div>
 <div id="stopSpin" style="display:none" title="spinner stop flag"></div>
 <div id="temporary" style="display:none"></div>
 <div id="temporary_1" style="display:none"></div>
@@ -182,9 +183,9 @@ function copyToClipboard (str) {
 <div class="shortMessage blackBorder" style="display:none">RT-log-message</div>
 <a href="null" id="download" style="display:none" download>DOWNLOAD-AREA</a>
 
+<div id="highUp" style=""></div>
 <div id="highUpSpacer" style="margin-bottom:0.7em"></div>
 
-<div id="highUp" style=""></div>
 <!-- ///// LINKS TO SUBALBUMS ///// -->
 <p class='albumsHdr' draggable="false" ondragstart="return false">
   <div class="miniImgs">
@@ -314,13 +315,13 @@ i nytt fönster" style="font-size:200%;line-height:80%;padding:0.3em 0.33em 0.25
   <!--iframe class="jitsi" allow="camera; microphone; fullscreen; display-capture" src="" style="height:100%;width:90%;top:0;left:4%;border:0px;display:none"></iframe-->
 
   <!-- SMALLBUTTONS -->
-  <a id="questionMark" class="smBu" title="Användarhandledning" draggable="false" ondragstart="return false" {{action 'toggleHelp'}}>?</a>
+  <a id="questionMark" class="smBu" title="Användarhandledning [F1]" draggable="false" ondragstart="return false" {{action 'toggleHelp'}}>?</a>
   <a id="reLd" class="smBu" title="Ladda om albumet
 (återställ osparade ändringar)" draggable="false" ondragstart="return false" {{action 'refresh'}} src="/images/reload.png"></a>
   <a id="toggleName" class="smBu" title="Bildnamnen" draggable="false" ondragstart="return false" style="display:none" {{action 'toggleNameView'}}>N</a>
   <a id="toggleHide" class="smBu" title="Visa/dölj
 gömda bilder" draggable="false" ondragstart="return false" style="display:none" {{action 'toggleHideFlagged'}}></a>
-  <a id="saveOrder" class="smBu" title="Spara ändringar" draggable="false" ondragstart="return false" {{action 'saveOrder'}}>S</a>
+  <a id="saveOrder" class="smBu" title="Spara ändringar" draggable="false" ondragstart="return false" {{action 'saveOrder' true}}>S</a>
   <a class="smBu" id="do_mail" title="Fråga oss om något eller skicka
 ett meddelande med kommentarer,
 rättelser eller andra upplysningar" {{action 'doMail'}}>&#9993;</a>
@@ -344,7 +345,7 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
     <b>Klicka med skifttangent på en miniatyrbild</b> så markeras/avmarkeras den<br>
     <b>Då du är inloggad som gäst</b> har du bara vissa rättigheter (gömma, markera och flytta miniatyrer med dra + släpp, gå till originalbild). Med personlig inloggning kan du få fler rättigheter (till exempel <b>klicka på bildtext</b> för att redigera den och spara ändringar).<br>
     <b style="color:#0b0">En bild med grön underkant är länkad</b> från annat album<br>
-    <b style="color:#0b0">Gå till originalbilden</b> med högerklick (eller Ctrl + klick) i grön markeringsring</span></p>
+    <b style="color:#0b0">Gå till originalbilden</b> med klick på den gröna Till albumet...-länken</span></p>
   <p style="text-align:left;margin-left:1.5em;line-height:1.7em" draggable="false" ondragstart="return false">
     <b>Se först knapparna till vänster</b> (vilka som syns varierar):<br>
     <a id="albSel">☰</a> Huvudmeny: Välj album, sökning, albumöversikt<br>
@@ -378,8 +379,6 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
 <p style="display:none">
   <button id="refresh" style="font-weight:bold;cursor:pointer;padding:0.5em 0;"
     type="submit" class="btn-std" {{action 'refresh' true}}>Uppdatera</button>
-  <button id="refresh-1" style="font-weight:bold;cursor:pointer;padding:0.5em 0;"
-    type="submit" class="btn-std" {{action 'refresh' false}}>Uppdatera (spinner)</button>
   <!-- These are called from the context menu exclusively: -->
   <button id="downLoad" type="submit" class="show-inline btn-std" {{action 'downLoad'}}>Download...</button>
   <button id="deleteFile" type="submit" class="show-inline btn-std" {{action 'deleteFile'}}>DELETE</button>
@@ -390,7 +389,7 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
 <div id="imageList" class="show-block" onclick={{perform rstBrdrs}}><!-- THUMBNAIL CONTAINER -->
 
 <!-- ///// SHOW MINI IMAGES (thumbnails) ///// -->
-<!-- Uses subaList and allNames from menu-buttons.js -->
+<!-- Uses allNames from menu-buttons.js -->
 <p class="showCount BACKG" draggable="false" ondragstart="return false">
   <span class="imDir path BACKG">{{{albumName}}}</span>
   <span class="imDir ifZero BACKG">
@@ -446,6 +445,7 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
   <span class="numHidden BACKG" title="invisible">0</span>&nbsp;dolda
   (<span class="numMarked BACKG" title="marked">0</span>&nbsp;markerade)
   <br>
+ <!-- Extra minimal subalbum list at bottom -->
   {{#each subaList as |suba|}}
   <a class="imDir BLUET" {{action 'subalbumSelect' suba.album}}>
     <span> {{{suba.name}}} &nbsp;</span>
