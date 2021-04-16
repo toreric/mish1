@@ -126,7 +126,7 @@ export default Component.extend (contextMenuMixin, {
       // NOTE: Also search for TEXTPREVIEW for another change needed!
       action: () => {
         // Mimic click on the text of the mini-picture (thumbnail)
-        $ ("#i" + escapeDots ($ ("#picName").text ().trim ()) + " a").next ().next ().next ().click ();
+        $ ("#i" + escapeDots ($ ("#picName").text ().trim ()) + " a").next ().next ().next ().trigger ("click");
       }
     },
     { label: 'Redigera bild...', // i18n
@@ -283,7 +283,7 @@ export default Component.extend (contextMenuMixin, {
       sortOrder = line.trim () + "\n" + sortOrder.trim ();
       $ ("#sortOrder").text (sortOrder);
       saveOrderFunc (sortOrder) // Save on server disk
-      .then ($ ("#refresh").click ()); // Call via DOM... REFRESH
+      .then ($ ("#reLd").trigger ("click")); // Call via DOM... REFRESH
       later ( ( () => {
         scrollTo (null, $ (".showCount:first").offset ().top);
       }), 50);
@@ -306,7 +306,7 @@ export default Component.extend (contextMenuMixin, {
       sortOrder = sortOrder.trim () + "\n" + line.trim ();
       $ ("#sortOrder").text (sortOrder);
       saveOrderFunc (sortOrder) // Save on server disk
-      .then ($ ("#refresh").click ()); // Call via DOM... REFRESH
+      .then ($ ("#reLd").trigger ("click")); // Call via DOM... REFRESH
       later ( ( () => {
         scrollTo (null, $ ("#lowDown").offset ().top - window.screen.height*0.85);
       }), 50);
@@ -318,7 +318,7 @@ export default Component.extend (contextMenuMixin, {
       return !(["admin", "editall", "edit"].indexOf (loginStatus) > -1 && (allow.imgOriginal || allow.adminAll));
     },
     action () {
-      $ ("#downLoad").click (); // Call via DOM since "this" is ...where?
+      $ ("#downLoad").trigger ("click"); // Call via DOM since "this" is ...where?
     }
   },
   { label: 'Länka till...', // i18n
@@ -657,10 +657,9 @@ export default Component.extend (contextMenuMixin, {
             $ (this).dialog ('close');
             later ( ( () => {
               document.getElementById("reLd").disabled = false;
-              $ ("#reLd").click ();
+              $ ("#reLd").trigger ("click"); // REFRESH
+              scrollTo (null, $ ("#highUp").offset ().top);
             }), 750);
-            scrollTo (null, $ ("#highUp").offset ().top);
-            $ ("#refresh").click (); // REFRESH
           }
         },
         {
@@ -818,10 +817,10 @@ export default Component.extend (contextMenuMixin, {
           $ ("#title a.proid").focus ();
           later ( ( () => { // Auto log in the default guest user:
             $ (".cred.user").attr ("value", "gäst"); // i18n
-            $ (".cred.login").click ();
+            $ (".cred.login").trigger ("click");
             later ( ( () => {
-              $ (".cred.login").click (); // Confirm logIn
-              $ (".cred.user").click (); // Prevents FF showing link to saved passwords
+              $ (".cred.login").trigger ("click"); // Confirm logIn
+              $ (".cred.user").trigger ("click"); // Prevents FF showing link to saved passwords
               $ ("#title a.proid").focus ();
               //this.actions.selectRoot ("");
             }), 1000);
@@ -914,7 +913,7 @@ export default Component.extend (contextMenuMixin, {
     // to further restore all details!
     return new Promise (resolve => {
       var test = 'A1';
-      this.requestOrder ().then (async sortnames => {
+      this.requestOrder ().then (sortnames => {
         if (sortnames === undefined) {sortnames = "";}
         if (sortnames === "Error!") {
           $ (".mainMenu").show ();
@@ -1092,20 +1091,18 @@ export default Component.extend (contextMenuMixin, {
             }
           }), 20);
           later ( ( () => {
-            $ ("#saveOrder").click ();
+            $ ("#saveOrder").trigger ("click");
           }), 200);
         }).catch (error => {
           console.error (test + ' in function refreshAll: ' + error.message);
         });
-        await new Promise (z => setTimeout (z, 200*n)); // Proportional pause
       }).catch ( () => {
         console.log ("Not found");
       });
       $ ('#navKeys').text ('true');
-      if ($ ("#imdbDir").text () !== "") {
-        this.actions.imageList (true);
-      }
       resolve ();
+    }).then (async (n) => {
+      await new Promise (z => setTimeout (z, 20*n*n)); // proportional pause
     });
   },
   //----------------------------------------------------------------------------------------------
@@ -1295,10 +1292,10 @@ export default Component.extend (contextMenuMixin, {
       if (that.savekey === 17 && event.keyCode === 83) { // Ctrl + S (for saving texts)
         event.preventDefault(); // Important!
         if ($ ("button.saveNotes").is (":visible")) {
-          $ ("button.saveNotes").click ();
+          $ ("button.saveNotes").trigger ("click");
         } else
         if ($ ("button.saveTexts").is (":visible") && !$ ("button.saveTexts").attr ("disabled")) {
-          $ ("button.saveTexts:first").click ();
+          $ ("button.saveTexts:first").trigger ("click");
         }
         that.savekey = event.keyCode;
       } else {
@@ -1702,7 +1699,7 @@ export default Component.extend (contextMenuMixin, {
       // The code in this dialog will indirectly call albumEditOption () onchange:
       var code0 = '<span>' + imdbDir + '</span><br>';
       code0 += '<select class="selectOption" onchange=';
-      code0 += "'$ (\"#temporary\").text (this.value);$ (\"#albumEditOption\").click ();return false'>";
+      code0 += "'$ (\"#temporary\").text (this.value);$ (\"#albumEditOption\").trigger (\"click\");return false'>";
       var code = code0 + '\n<option value="">&nbsp;Välj åtgärd för albumet&nbsp;</option>';
       if (imdbDir.indexOf (picFound) < 0) {
         code += '\n<option value="new">&nbsp;Gör ett nytt underalbum  &nbsp;</option>';
@@ -1789,7 +1786,7 @@ export default Component.extend (contextMenuMixin, {
                 $ ("#temporary_1").text (nameNew);
                 $ (this).dialog ("close");
                 later ( ( () => {
-                  $ ("#albumEditOption").click ();
+                  $ ("#albumEditOption").trigger ("click");
                   later ( ( () => {
                     document.querySelector ("input.nameNew").disabled = true;
                     var tmp = document.querySelector ("input.nameNew").getAttribute ("style");
@@ -1801,7 +1798,7 @@ export default Component.extend (contextMenuMixin, {
                 $ ("#temporary_1").text (nameNew);
                 $ (this).dialog ("close");
                 later ( ( () => {
-                  $ ("#albumEditOption").click ();
+                  $ ("#albumEditOption").trigger ("click");
                 }), 100);
               }
 
@@ -1855,12 +1852,12 @@ export default Component.extend (contextMenuMixin, {
             } else if (opt === "order" || opt === "reverse") {
               let sortop = "sort -f "; // -f is ignore case
               if (opt === "reverse") sortop = "sort -rf "
-              $ ("#saveOrder").click ();
+              $ ("#saveOrder").trigger ("click");
               later ( ( () => {
                 cmd = sortop + $ ("#imdbDir").text () + "/_imdb_order.txt > /tmp/tmp && cp /tmp/tmp " + $ ("#imdbDir").text () + "/_imdb_order.txt";
                 execute (cmd).then ( () => {
                   later ( ( () => {
-                    $ ("#reLd").click ();
+                    $ ("#reLd").trigger ("click");
                   }), 500);
                 });
               }), 2000);
@@ -1878,7 +1875,7 @@ export default Component.extend (contextMenuMixin, {
               $ ("#temporary").text ("new");
               $ (this).dialog ("close");
               later ( ( () => {
-                $ ("#albumEditOption").click ();
+                $ ("#albumEditOption").trigger ("click");
                 later ( ( () => {
                   document.querySelector ("input.nameNew").value = $ ("#temporary_1").text ();
                 }), 100);
@@ -1957,7 +1954,6 @@ export default Component.extend (contextMenuMixin, {
       ediTextClosed ();
       $ (".img_show").hide ();
       $ (".nav_links").hide ();
-      //document.getElementById ("imageList").className = "hide-all";
       document.getElementById ("divDropbox").className = "hide-all";
       if (value.indexOf (" ") > -1) value = ""; // The header line contains space
       if (value === "") {
@@ -1970,7 +1966,7 @@ export default Component.extend (contextMenuMixin, {
       that.set ("albumData", []); // Triggers jstree rebuild in requestDirs
       $ ("#imdbDirs").text ("");
       $ ("#imdbDir").text ($ ("#imdbLink").text ());
-      $ ("#requestDirs").click (); // perform ...
+      $ ("#requestDirs").trigger ("click"); // perform ...
       later ( ( () => {
         // Send #imdbRoot and picFound to the server with this GET:
         // (the server needs #picFound base name for old file cleaning)
@@ -2098,7 +2094,7 @@ export default Component.extend (contextMenuMixin, {
         }
         this.set ("subaList", a); // triggers load of subalbum links into menu-buttons.hbs
         later ( ( () => {
-          $ ("#refresh").trigger ("click"); // REFRESH the displayed album
+          $ ("#reLd").trigger ("click"); // REFRESH the displayed album
           $ ("div.subAlbum").show ();
           $ ("a.imDir").attr ("title", "Album");
           let n = $ ("a.imDir").length/2; // there is also a page bottom link line...
@@ -2516,7 +2512,8 @@ export default Component.extend (contextMenuMixin, {
 
       if ($ ("#imdbDir").text () === "") return;
       if ($ (".toggleAuto").text () === "STOP") return; // Auto slide show is running
-
+      this.actions.imageList (false);
+      $ ("#imageList").hide ();
 
       spinnerWait (true);
       document.getElementById ("stopSpin").innerHTML = "";
@@ -2525,7 +2522,7 @@ export default Component.extend (contextMenuMixin, {
       $ ("#link_show a").css ('opacity', 0 );
       $ (".img_show").hide ();
       $ (".nav_links").hide ();
-      this.refreshAll ().then ( () => {
+      this.refreshAll ().then (async () => {
         // Do not insert this temporary search result into the sql DB table:
         if (imdbDir_is_picFound ()) {
           document.getElementById ("stopSpin").innerHTML = "SPIN-END";
@@ -2533,11 +2530,13 @@ export default Component.extend (contextMenuMixin, {
         }
         // Perform pending DB updates
         if (chkPaths.length > 0) {
-          sqlUpdate (chkPaths.join ("\n"));
+          await sqlUpdate (chkPaths.join ("\n"));
         }
         chkPaths = randIndex (0); // Dummy use of randIndex (=> [])
         chkPaths = [];
       }).then ( () => {
+        this.actions.imageList (true);
+        $ ("#imageList").show ();
         document.getElementById ("stopSpin").innerHTML = "SPIN-END";
         return true;
       });
@@ -2908,8 +2907,8 @@ export default Component.extend (contextMenuMixin, {
               var host = this.responseURL.replace (/download.+$/, "");
               $ ("#download").attr ("href", host + this.responseText); // Is just 'origpic'(!), outdated?
               later ( ( () => {
-                //$ ("#download").click (); //DOES NOT WORK
-                document.getElementById ("download").click (); // Works
+                //$ ("#download").trigger ("click"); //DOES NOT WORK
+                document.getElementById ("download").trigger ("click"); // Works
               }), 250);
               document.getElementById ("stopSpin").innerHTML = "SPIN-END";
               userLog ("DOWNLOAD");
@@ -3041,7 +3040,7 @@ export default Component.extend (contextMenuMixin, {
         // Assure that the album tree is properly shown after LOGOUT
         this.set ("albumData", []); // Triggers jstree rebuild in requestDirs
         setTimeout (function () { // *NOTE: Normally, later replaces setTimeout
-          $ ("#requestDirs").click ();
+          $ ("#requestDirs").trigger ("click");
           later ( ( () => {
             $ (".ember-view.jstree").jstree ("deselect_all");
             $ (".ember-view.jstree").jstree ("close_all");
@@ -3099,7 +3098,7 @@ export default Component.extend (contextMenuMixin, {
             if (tmpRoot) {
               this.actions.selectRoot (tmpRoot, this);
               this.set ("albumData", []); // Triggers jstree rebuild in requestDirs
-              $ ("#requestDirs").click ();
+              $ ("#requestDirs").trigger ("click");
               // Regenerate the picFound album: the shell commands must execute in sequence
               let lpath = $ ("#imdbLink").text () + "/" + $ ("#picFound").text ();
               //execute ("rm -rf " +lpath+ " && mkdir -m0775 " +lpath+ " && touch " +lpath+ "/.imdb").then ();
@@ -3130,7 +3129,7 @@ export default Component.extend (contextMenuMixin, {
               // Next lines are a 'BUG SAVER'. Else, is all not initiated...?
               // And the delay appears to be important, 2000 is too little.
               later ( ( () => {
-                $ ("#j1_1_anchor").click ();
+                $ ("#j1_1_anchor").trigger ("click");
               }), 6000);
             }
             $ ("#title a.proid").focus ();
@@ -3165,7 +3164,7 @@ export default Component.extend (contextMenuMixin, {
                     if (albFind [2]) {
                       later ( () => {
                         let idimg = "#i" + escapeDots (albFind [2]);
-                        $ (idimg + " img") [0].click ();
+                        $ (idimg + " img") [0].trigger ("click");
                       }, 8000);
                     } // end if
                   }, 4000);
@@ -3182,12 +3181,12 @@ export default Component.extend (contextMenuMixin, {
                     document.querySelectorAll ('.orAnd input[type="radio"]') [1].checked = true;
                     $ ("#searcharea textarea").val (picFind [1]);
                     later ( () => {
-                      $ ("button.findText").click ();
+                      $ ("button.findText").trigger ("click");
                       later ( () => {
                         parentAlbum ();
                         later ( () => {
                           let idimg = "#i" + escapeDots (picFind [1]);
-                          $ (idimg + " img") [0].click ();
+                          $ (idimg + " img") [0].trigger ("click");
                         }, 8000);
                       }, 6000);
                     }, 4000);
@@ -3240,7 +3239,7 @@ export default Component.extend (contextMenuMixin, {
             that.set ("albumData", []); // Triggers jstree rebuild in requestDirs
             that.actions.setAllow ();
             later ( ( () => {
-              $ ("#requestDirs").click ();
+              $ ("#requestDirs").trigger ("click");
               setTimeout (function () { // NOTE: Normally, later replaces setTimeout
                 $ (".ember-view.jstree").jstree ("deselect_all");
                 $ (".ember-view.jstree").jstree ("close_all");
@@ -3692,7 +3691,7 @@ async function parentAlbum (tgt) {
       let namepic = file.replace (/^(.*\/)*(.+)\.[^.]*$/, "$2");
       return namepic;
     }).then (async (namepic) => {
-      await new Promise (z => setTimeout (z, 85*imgs)); // Proportional pause
+      await new Promise (z => setTimeout (z, 85*imgs)); // proportional pause
       if (namepic) gotoMinipic (namepic);
     });
   } // ...else do nothing
@@ -3765,9 +3764,9 @@ async function deleteFiles (picNames, nels, picPaths) { // ===== Delete image(s)
     }
     later ( ( () => {
       document.getElementById("reLd").disabled = false;
-      $ ("#reLd").click ();
+      $ ("#reLd").trigger ("click");
       document.getElementById("saveOrder").disabled = false;
-      $ ("#saveOrder").click ();
+      $ ("#saveOrder").trigger ("click");
     }), 200);
   }), 2000);
 }
@@ -3859,7 +3858,7 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) { // ===== I
           // move=... moveto=... lines in #temporary_1
           // Note: Files to be moved from #picFound and have got a random
           // postfix are symlinks and thus ignored in any case by sqlUpdate
-          // (Why I do say that? Since a moved symlink has no random postfix...)
+          // (Why I do say that? Since a moved symlink has lost its random postfix...)
           let txt = document.getElementById ("temporary_1").innerHTML.split (";");
           let files = [];
           for (let i=0; i<txt.length; i++) {
@@ -3875,7 +3874,7 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) { // ===== I
           if (files.length > 0) {
             later ( ( () => {
               document.getElementById("reLd").disabled = false;
-              $ ("#reLd").click ();
+              $ ("#reLd").trigger ("click");
             }), 800);
             later ( ( () => {
               sqlUpdate (files);
@@ -3897,7 +3896,7 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) { // ===== I
           prepareStopSpin ();
           later ( ( () => {
             document.getElementById("reLd").disabled = false;
-            $ ("#reLd").click ();
+            $ ("#reLd").trigger ("click");
           }), 800);
         }
         return true;
@@ -4203,7 +4202,7 @@ function linkFunc (picNames) { // ===== Execute a link-these-files-to... request
     if (albums [i] !== curr) {lalbum.push (albums [i]);}
   }
   //var rex = /^[^/]*\//;
-  var codeLink = "'var lalbum=this.value;var lpath = \"\";if (this.selectedIndex === 0) {return false;}lpath = lalbum.replace (/^[^/]*(.*)/, $ (\"#imdbLink\").text () + \"$1\");console.log(\"Link to\",lpath);var picNames = $(\"#picNames\").text ().split (\"\\n\");var cmd=[];for (var i=0; i<picNames.length; i++) {var linkfrom = document.getElementById (\"i\" + picNames [i]).getElementsByTagName(\"img\")[0].getAttribute (\"title\");linkfrom = \"../\".repeat (lpath.split (\"/\").length - 1) + linkfrom;var linkto = lpath + \"/\" + picNames [i];linkto += linkfrom.match(/\\.[^.]*$/);cmd.push(\"ln -sf \"+linkfrom+\" \"+linkto);}$ (\"#temporary\").text (lpath);$ (\"#temporary_1\").text (cmd.join(\"\\n\"));$ (\"#checkNames\").click ();'";
+  var codeLink = "'var lalbum=this.value;var lpath = \"\";if (this.selectedIndex === 0) {return false;}lpath = lalbum.replace (/^[^/]*(.*)/, $ (\"#imdbLink\").text () + \"$1\");console.log(\"Link to\",lpath);var picNames = $(\"#picNames\").text ().split (\"\\n\");var cmd=[];for (var i=0; i<picNames.length; i++) {var linkfrom = document.getElementById (\"i\" + picNames [i]).getElementsByTagName(\"img\")[0].getAttribute (\"title\");linkfrom = \"../\".repeat (lpath.split (\"/\").length - 1) + linkfrom;var linkto = lpath + \"/\" + picNames [i];linkto += linkfrom.match(/\\.[^.]*$/);cmd.push(\"ln -sf \"+linkfrom+\" \"+linkto);}$ (\"#temporary\").text (lpath);$ (\"#temporary_1\").text (cmd.join(\"\\n\"));$ (\"#checkNames\").trigger (\"click\");'";
 
   var r = $ ("#imdbRoot").text ();
   var codeSelect = '<select class="selectOption" onchange=' + codeLink + '>\n<option value="">Välj ett album:</option>';
