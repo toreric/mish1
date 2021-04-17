@@ -3,7 +3,6 @@
 // (cannot use ember-context-menu with the 'leaking-state' rule)
 import Component from '@ember/component'
 import EmberObject from '@ember/object';
-import { Promise } from 'rsvp';
 import $ from 'jquery';
 import { later } from '@ember/runloop';
 import Ember from 'ember';
@@ -1101,9 +1100,7 @@ export default Component.extend (contextMenuMixin, {
       });
       $ ('#navKeys').text ('true');
       resolve ();
-    }).then (async (n) => {
-      await new Promise (z => setTimeout (z, 20*n*n)); // proportional pause
-    });
+    }).then ( () => {});
   },
   //----------------------------------------------------------------------------------------------
   setNavKeys () { // ===== Trigger actions.showNext when key < or > is pressed etc...
@@ -2002,7 +1999,7 @@ export default Component.extend (contextMenuMixin, {
       }), 4000); // Time needed!
     },
     //============================================================================================
-    selectAlbum () {
+    selectAlbum () { // ##### triggered by a click within the JStree
       let value = $ ("[aria-selected='true'] a.jstree-clicked");
       if (value && value.length > 0) {
         value = $ ("#imdbLink").text () + value.attr ("title").toString ().slice (1); // skip dot
@@ -2329,17 +2326,6 @@ export default Component.extend (contextMenuMixin, {
       }
     },
     //============================================================================================
-    imageList (yes) { // ##### Display or hide the thumbnail page
-
-      $ ("#link_show a").css ('opacity', 0 );
-      //if (yes || document.getElementById ("imageList").className === "hide-all") {
-      if (yes) {
-        document.getElementById ("imageList").className = "show-block";
-      } else {
-        document.getElementById ("imageList").className = "hide-all";
-      }
-    },
-    //============================================================================================
     showShow (showpic, namepic, origpic) { // ##### Render a 'show image' in its <div>
 
       $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
@@ -2508,12 +2494,11 @@ export default Component.extend (contextMenuMixin, {
       }
     },
     //============================================================================================
-    refresh () { // ##### Reload the imageList and update the sort order
+    async refresh () { // ##### Reload the imageList and update the sort order
 
       if ($ ("#imdbDir").text () === "") return;
       if ($ (".toggleAuto").text () === "STOP") return; // Auto slide show is running
-      this.actions.imageList (false);
-      $ ("#imageList").hide ();
+      document.getElementById ("imageList").className = "hide-all";
 
       spinnerWait (true);
       document.getElementById ("stopSpin").innerHTML = "";
@@ -2522,7 +2507,7 @@ export default Component.extend (contextMenuMixin, {
       $ ("#link_show a").css ('opacity', 0 );
       $ (".img_show").hide ();
       $ (".nav_links").hide ();
-      this.refreshAll ().then (async () => {
+      await this.refreshAll ().then (async () => {
         // Do not insert this temporary search result into the sql DB table:
         if (imdbDir_is_picFound ()) {
           document.getElementById ("stopSpin").innerHTML = "SPIN-END";
@@ -2535,8 +2520,6 @@ export default Component.extend (contextMenuMixin, {
         chkPaths = randIndex (0); // Dummy use of randIndex (=> [])
         chkPaths = [];
       }).then ( () => {
-        this.actions.imageList (true);
-        $ ("#imageList").show ();
         document.getElementById ("stopSpin").innerHTML = "SPIN-END";
         return true;
       });
@@ -3558,7 +3541,7 @@ function spinnerWait (runWait) {
     $ (".mainMenu").hide ();
     $ ("div.settings, div.settings div.check").hide ();
     document.getElementById("menuButton").disabled = true;
-    document.getElementById("reLd").disabled = true;
+    document.getElementById("reLd").disabled = false; // Important! Must be always available
     document.getElementById("saveOrder").disabled = true;
     document.getElementById ("divDropbox").className = "hide-all";
   } else { // End waiting
@@ -3749,11 +3732,11 @@ async function deleteFiles (picNames, nels, picPaths) { // ===== Delete image(s)
       }
     }
   }
-  later ( ( () => {
+  later ( (async () => {
     userLog (delPaths.length + " DELETED")
     // Delete database entries
     if (delPaths.length > 0) {
-      sqlUpdate (delPaths.join ("\n"));
+      await sqlUpdate (delPaths.join ("\n"));
     }
     if (keep.length > 0) {
       console.log ("No delete permission for " + cosp (keep, true));
@@ -3876,8 +3859,8 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) { // ===== I
               document.getElementById("reLd").disabled = false;
               $ ("#reLd").trigger ("click");
             }), 800);
-            later ( ( () => {
-              sqlUpdate (files);
+            later ( (async () => {
+              await sqlUpdate (files);
             }), 5000);
           }
           document.getElementById ("stopSpin").innerHTML = "SPIN-END";/**/
@@ -4411,7 +4394,6 @@ function reqRoot () { // Propose root directory (requestDirs)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function reqDirs (imdbroot) { // Read the dirs in imdbLink (requestDirs)
   if (imdbroot === undefined) return;
-//console.log(imdbroot);
   spinnerWait (true);
   document.getElementById ("stopSpin").innerHTML = "";
   prepareStopSpin ();
@@ -5091,7 +5073,6 @@ function searchText (searchString, and, searchWhere, exact) {
 // https://stackoverflow.com/questions/30605298/jquery-dialog-with-input-textbox etc.
 // Prepare the dialog for the image texts editor
 var prepTextEditDialog = () => {
-//$ ( () => {
   var sw = ediTextSelWidth (); // Selected dialog width
   var tw = sw - 25; // Text width
   $ ("#textareas").dialog ({
@@ -5432,6 +5413,6 @@ function selectJstreeNode (idx) {
   $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_" + (1 + idx))); // calls selectAlbum
   $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
 }
-window.selectJstreeNode = function (idx) { // for child window
+window.selectJstreeNode = function (idx) { // for child window (iframe)
   selectJstreeNode (idx);
 }

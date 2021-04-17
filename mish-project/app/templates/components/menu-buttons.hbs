@@ -1,7 +1,7 @@
 {{! template-lint-disable }}
 
 <script>
-function copyToClipboard (str) {
+function copyToClipboard (str) {    // Copies a filename (below mini-pic) to the clipboard 
   const el = document.createElement('textarea');  // Create a <textarea> element
   document.body.appendChild(el);                  // Append the <textarea> element to the HTML document
   el.value = str.trim ();                         // Set its value to the string that you want copied
