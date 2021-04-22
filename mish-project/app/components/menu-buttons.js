@@ -4024,7 +4024,6 @@ function notesDia (picName, filePath, title, text, save, saveClose, close) { // 
   $ ("#notes").dialog ("option", "buttons", [
     {
       text: save,
-      //"id": "saveBut",
       class: "saveNotes",
       click: function () {
         notesSave ();
@@ -4696,6 +4695,7 @@ function aData (dirList) { // Construct the jstree data template from dirList
   return r; // Don't removeUnderscore here!
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 async function serverShell (anchor) { // Send commands in 'anchor text' to server shell
   var cmds = $ ("#"+anchor).text ();
   cmds = cmds.split ("\n");
@@ -4706,18 +4706,17 @@ async function serverShell (anchor) { // Send commands in 'anchor text' to serve
     }
   }
 
-  for (let i=0; i<commands.length; i++) {
-    await execute (commands [i]);
-  }
-
-  //commands = commands.join ("\n").trim ();
-  //if (commands) {
-    //mexecute (commands).then (result => {
-      //if (result.toString ().trim ()) {
-        //console.log (result);
-      //}
-    //});
+  //for (let i=0; i<commands.length; i++) {
+    //await execute (commands [i]);
   //}
+
+  commands = commands.join ("\n").trim ();
+  if (commands) {
+    var result = await mexecute (commands);
+    if (result.toString ().trim ()) {
+      console.log (result);
+    }
+  }
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function mexecute (commands) { // Execute on the server, return a promise
@@ -4803,7 +4802,6 @@ let prepSearchDialog = () => {
     $ ("#searcharea").dialog ('option', 'buttons', [
       {
         text: " Sök ", // findText should update
-        //"id": "findBut",
         class: "findText",
         click: function () {
           // Replace [ \n]+ with a single space
@@ -4846,7 +4844,6 @@ let prepSearchDialog = () => {
       {
         text: "reload", // findText should update
         title: "",
-        //"id": "updBut",
         class: "updText",
         click: function () {
           $ ("div[aria-describedby='searcharea']").hide ();
@@ -4862,9 +4859,6 @@ let prepSearchDialog = () => {
       document.getElementById ("t3").parentElement.style.display = "none";
     }
     $ ("button.ui-dialog-titlebar-close").attr ("title", "Stäng"); // i18n
-    //let txt = $ ("button.ui-dialog-titlebar-close").html (); // Close => ×
-    //txt.replace (/Close/, "×");                              // Close => ×
-    //$ ("button.ui-dialog-titlebar-close").html (txt);        // Close => ×
     $ ("div[aria-describedby='searcharea'] span.ui-dialog-title")
       .html ('Finn bilder <span style="color:green">(ej länkar)</span>: Sök i bildtexter');
   });
@@ -4879,7 +4873,7 @@ let prepSearchDialog = () => {
 // doFindText ("img_0012 img_0123", false, [false, false, false, false, true], true)
 let doFindText = (sTxt, and, sWhr, exact) => {
   let nameOrder = [];
-  searchText (sTxt, and, sWhr, exact).then (result => {
+  searchText (sTxt, and, sWhr, exact).then (async result => {
     // replace '<' and '>' for presentation in the header below
     sTxt = sTxt.replace (/</g, "&lt;").replace (/>/g, "&gt;");
     $ ("#temporary_1").text ("");
@@ -4888,6 +4882,7 @@ let doFindText = (sTxt, and, sWhr, exact) => {
     let n = 0, paths = [], albs = [];
     // Maximum number of pictures from the search results to show:
     let nLimit = 100;
+    let filesFound = 0;
     if (result) {
       paths = result.split ("\n").sort (); // Sort entries (see there)
       let chalbs = $ ("#imdbDirs").text ().split ("\n");
@@ -4896,6 +4891,9 @@ let doFindText = (sTxt, and, sWhr, exact) => {
       for (let i=0; i<n; i++) {
         let chalb = paths [i].replace (/^[^/]+(.*)\/[^/]+$/, "$1");
         if (!(chalbs.indexOf (chalb) < 0)) {
+
+console.log(chalb); //** här kan man räkna album, antal bilder per album, de är sorterade!!!
+
           let fname = paths [i].replace (/^.*\/([^/]+$)/, "$1");
           let linkfrom = paths [i];
           linkfrom = "../".repeat (lpath.split ("/").length - 1) + linkfrom.replace (/^[^/]*\//, "");
@@ -4906,13 +4904,13 @@ let doFindText = (sTxt, and, sWhr, exact) => {
           let n2 = fname.replace (/(.+)(\.[^.]*$)/, "$2");
           let r4 = Math.random().toString(36).substr(2,4);
           fname = n1 + "." + r4 + n2;
-          nameOrder.push (n1 + "." + r4 + ",0,0");
-
-          let linkto = lpath + "/" + fname;
-          cmd.push ("ln -sf " + linkfrom + " " + linkto);
-          //if (albs.length < nLimit) {
-          //}
-          albs.push (paths [i]);
+          if (filesFound < nLimit) {
+            filesFound++;
+            nameOrder.push (n1 + "." + r4 + ",0,0");
+            let linkto = lpath + "/" + fname;
+            cmd.push ("ln -sf " + linkfrom + " " + linkto);
+          }
+          albs.push (paths [i])
         }
       }
     }
@@ -4923,7 +4921,7 @@ let doFindText = (sTxt, and, sWhr, exact) => {
       // Sort the entries according to search items if they correspond to
       // exact file base names (else keep the previous sort order) (see there)
       let obj = [];
-      let filesFound = 0;
+      filesFound = 0;
       let srchTxt = sTxt.split (" ");
       for (let i=0; i<n; i++) {
         obj [i] = ({"path": paths [i], "name": "_NA_", "cmd": cmd [i], "sortIndex": 9999});
@@ -4949,10 +4947,10 @@ let doFindText = (sTxt, and, sWhr, exact) => {
       cmd = [];
       for (let i=0; i<n; i++) {
         if (i < nLimit) {
-          paths.push (sobj [i].path);
           nameOrder.push (sobj [i].name);
           cmd.push (sobj [i].cmd);
         }
+        paths.push (sobj [i].path);
       }
       sobj = null;
     }
@@ -4962,7 +4960,7 @@ let doFindText = (sTxt, and, sWhr, exact) => {
 
     // Regenerate the picFound album: the shell commands must execute in sequence
     let lpath = $ ("#imdbLink").text () + "/" + $ ("#picFound").text ();
-    execute ("rm -rf " +lpath+ "&&mkdir -m0775 " +lpath+ "&&touch " +lpath+ "/.imdb&&chmod 664 " +lpath+ "/.imdb").then ();
+    await execute ("rm -rf " +lpath+ "&&mkdir -m0775 " +lpath+ "&&touch " +lpath+ "/.imdb&&chmod 664 " +lpath+ "/.imdb");
     userLog (n + " FOUND");
     let txt = removeUnderscore ($ ("#picFound").text ().replace (/\.[^.]{4}$/, ""), true);
     let yes;
@@ -4972,9 +4970,12 @@ let doFindText = (sTxt, and, sWhr, exact) => {
     let modal = false;
     let p3 =  "<p style='margin:-0.3em 1.6em 0.2em 0;background:transparent'>" + sTxt + "</p>Funna i <span style='font-weight:bold'>" + $ ("#imdbRoot").text () + "</span>:&nbsp; " + n + (n>nLimit?" (i listan, bara " + nLimit + " kan visas)":"");
     later ( ( () => {
-      // Run `serverShell ("temporary_1")` -> symlink creation, via `infoDia (null, "", ...
+
       let imdbx = new RegExp ($ ("#imdbLink").text () + "/", "g");
+
+      // Run `serverShell ("temporary_1")` -> symlink creation, via `infoDia (null, "", ...
       infoDia (null, "", p3, "<div style='text-align:left;margin:0.3em 0 0 2em'>" + paths.join ("<br>").replace (imdbx, "./") + "</div>", yes, modal);
+
       later ( ( () => {
         if (n === 0) {
           document.getElementById("yesBut").disabled = true;
@@ -4993,7 +4994,6 @@ let doFindText = (sTxt, and, sWhr, exact) => {
             // then simply show the search result at once...
             later ( ( () => {
               $ ("div[aria-describedby='dialog'] button#yesBut").trigger ("click");
-              //if (n === 1) {parentAlbum ();} // go directly to the album it links to
             }), 200);
           } // ...else inspect and decide whether to click the show button
         });
@@ -5119,7 +5119,6 @@ var prepTextEditDialog = () => {
     },
     {
       text: " Spara ",
-      //"id": "saveBut",
       class: "saveTexts block",
       click: function () {
         var namepic = $ ("div[aria-describedby='textareas'] span.ui-dialog-title span").html ();
