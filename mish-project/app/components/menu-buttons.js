@@ -4883,17 +4883,19 @@ let doFindText = (sTxt, and, sWhr, exact) => {
     // Maximum number of pictures from the search results to show:
     let nLimit = 100;
     let filesFound = 0;
+    let countAlbs = [];
     if (result) {
       paths = result.split ("\n").sort (); // Sort entries (see there)
       let chalbs = $ ("#imdbDirs").text ().split ("\n");
+      // -- Prepare counters for all albums
+      let counts = "0".repeat (chalbs.length).split ("").map (Number);
       n = paths.length;
       let lpath = $ ("#imdbLink").text () + "/" + $ ("#picFound").text ();
-      for (let i=0; i<n; i++) {
+      for (let i=0; i<n; i++) {   
         let chalb = paths [i].replace (/^[^/]+(.*)\/[^/]+$/, "$1");
-        if (!(chalbs.indexOf (chalb) < 0)) {
-
-console.log(chalb); //** här kan man räkna album, antal bilder per album, de är sorterade!!!
-
+        let idx = chalbs.indexOf (chalb);
+        if (idx > -1) {
+          counts [idx]++; // -- A hit in this album
           let fname = paths [i].replace (/^.*\/([^/]+$)/, "$1");
           let linkfrom = paths [i];
           linkfrom = "../".repeat (lpath.split ("/").length - 1) + linkfrom.replace (/^[^/]*\//, "");
@@ -4913,7 +4915,16 @@ console.log(chalb); //** här kan man räkna album, antal bilder per album, de �
           albs.push (paths [i])
         }
       }
+      for (let i=0; i<chalbs.length; i++) {
+        if (counts [i]) {
+          let tmp = ("     " + counts [i]).slice (-6) + "   i   " + $ ("#imdbRoot").text () + chalbs [i]
+          tmp = tmp.replace (/ /g, "&nbsp;");
+          countAlbs.push (tmp);
+        }
+      }
     }
+    countAlbs.sort ();
+    countAlbs.reverse ();
     paths = albs;
     n = paths.length;
 
@@ -4968,7 +4979,7 @@ console.log(chalb); //** här kan man räkna album, antal bilder per album, de �
       yes ="Visa i <b>" + txt + "</b>";
     }), 40);
     let modal = false;
-    let p3 =  "<p style='margin:-0.3em 1.6em 0.2em 0;background:transparent'>" + sTxt + "</p>Funna i <span style='font-weight:bold'>" + $ ("#imdbRoot").text () + "</span>:&nbsp; " + n + (n>nLimit?" (i listan, bara " + nLimit + " kan visas)":"");
+    let p3 =  "<p style='margin:-0.3em 1.6em 0.2em 0;background:transparent'>" + sTxt + "</p>Funna i <span style='font-weight:bold'>" + $ ("#imdbRoot").text () + "</span>:&nbsp; " + n + (n>nLimit?" (bara " + nLimit + " kan visas)":"");
     later ( ( () => {
 
       let imdbx = new RegExp ($ ("#imdbLink").text () + "/", "g");
@@ -4982,6 +4993,12 @@ console.log(chalb); //** här kan man räkna album, antal bilder per album, de �
           let btFind ="<br><button style=\"border:solid 2px white;background:moccasin;\" onclick='$(\"#dialog\").dialog(\"close\");$(\"div.subAlbum[title=SENASTE]\").click();$(\"a.search\").click();'>TILLBAKA</button>";
           document.getElementById("dialog").innerHTML = btFind;
           $("#dialog button") [0].focus();
+        } else if (n > nLimit) {
+          document.getElementById("yesBut").disabled = true;
+          let btFind = "<div style=\"text-align:left\"> Fann:<br>" + countAlbs.join ("<br>") + "</div><br><button style=\"border:solid 2px white;background:moccasin;\" onclick='$(\"#dialog\").dialog(\"close\");$(\"div.subAlbum[title=SENASTE]\").click();$(\"a.search\").click();'>TILLBAKA</button>";
+          document.getElementById("dialog").innerHTML = btFind;
+          //$ ("#dialog").text (btFind);
+          $("#dialog button") [0].focus();
         }
       }), 40);
       $ ("button.findText").show ();
@@ -4990,7 +5007,7 @@ console.log(chalb); //** här kan man räkna album, antal bilder per album, de �
       // Save 'nameOrder' as the picFound album's namelist:
       later ( ( () => {
         saveOrderFunc (nameOrder.trim ()).then ( () => {
-          if (n && n <= 100 && (loginStatus === "guest" || loginStatus === "viewer" || !loggedIn)) {
+          if (n && n <= nLimit && (loginStatus === "guest" || loginStatus === "viewer" || !loggedIn)) {
             // then simply show the search result at once...
             later ( ( () => {
               $ ("div[aria-describedby='dialog'] button#yesBut").trigger ("click");
