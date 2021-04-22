@@ -2499,6 +2499,7 @@ export default Component.extend (contextMenuMixin, {
       if ($ ("#imdbDir").text () === "") return;
       if ($ (".toggleAuto").text () === "STOP") return; // Auto slide show is running
       document.getElementById ("imageList").className = "hide-all";
+      $ (".miniImgs").hide ();
 
       spinnerWait (true);
       document.getElementById ("stopSpin").innerHTML = "";
