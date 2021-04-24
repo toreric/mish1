@@ -3675,7 +3675,7 @@ async function parentAlbum (tgt) {
       let namepic = file.replace (/^(.*\/)*(.+)\.[^.]*$/, "$2");
       return namepic;
     }).then (async (namepic) => {
-      await new Promise (z => setTimeout (z, 85*imgs)); // proportional pause
+      await new Promise (z => setTimeout (z, 111*imgs)); // proportional pause
       if (namepic) gotoMinipic (namepic);
     });
   } // ...else do nothing
