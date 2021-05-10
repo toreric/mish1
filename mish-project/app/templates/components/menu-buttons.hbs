@@ -407,7 +407,7 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
           <img src="{{file.mini}}" class="left-click" title="{{file.linkto}}" draggable="false" ondragstart="return false">
         </a>
         <div id="" class="markFalse" alt="MARKER" title="Markera" {{action 'toggleMark' file.name}}  draggable="false" ondragstart="return false"><img src="/images/markericon.svg" draggable="false" ondragstart="return false" class="mark">
-          <!-- The action of this button triggers a parent (!, marking) click: toggle it back! --> 
+          <!-- The action of this button triggers a parent (!, marking) click: toggle it back! -->
           <button class="goAlbum" title="...med originalbilden" onclick="this.parentElement.click ()" {{action 'parAlb' file.name}}>Till albumet...</button>
         </div>
         <div class="img_name" title="Click = Copy!" totip="Click = Copy!" onclick="copyToClipboard(this.innerHTML)">

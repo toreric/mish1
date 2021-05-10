@@ -3360,7 +3360,7 @@ export default Component.extend (contextMenuMixin, {
       }
       $ ("iframe.intro").hide ();
       let favList = getCookie ("favorites").replace (/[ ]+/g, "\n");
-      favDia (favList, "Lägg till markerade", "Spara", "Visa", "Stäng");
+      favDia (favList, "Öppna sparade", "Lägg till markerade", "Spara", "Visa", "Stäng");
       $ (".mainMenu").hide ();
     },
     //============================================================================================
@@ -3895,7 +3895,7 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) { // ===== I
   }), 333);
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function favDia (text, add, save, show, close) { // ===== Show favorites dialog
+function favDia (text, file, add, save, show, close) { // ===== Show favorites dialog
   // the arguments = the favorite text list and four button texts
   $ ("#dialog").dialog ('destroy').remove ();
   let favs = "Favoritbilder"; // i18n
@@ -3913,6 +3913,14 @@ function favDia (text, add, save, show, close) { // ===== Show favorites dialog
   // Define button array
   $ ("#dialog").dialog ("option", "buttons", [
     {
+      text: file,
+      class: "fileFavs",
+      click: function () {
+        $ ("#favName") [0].value = "";
+        $ ("#favFile").trigger ("click");
+      }
+    },
+    {
       text: add,
       class: "addFavs",
       click: function () {
@@ -3927,7 +3935,6 @@ function favDia (text, add, save, show, close) { // ===== Show favorites dialog
         }
         let text = $ ('textarea[name="favorites"]').val ().trim ();
         var texar = $ ('textarea[name="favorites"]') [0];
-        //var texar = document.querySelector('textarea[name="favorites"]');
         $ ('textarea[name="favorites"]').val ( (text + "\n" + newfav).trim ());
         texar.scrollTop = texar.scrollHeight;
         texar.focus ();
@@ -3937,7 +3944,7 @@ function favDia (text, add, save, show, close) { // ===== Show favorites dialog
       text: save,
       class: "saveFavs",
       click: function () {
-        let text = $ ('textarea[name="favorites"]').val ();
+        let text = $ ('textarea[name="favorites"]').val ().trim ();
         saveFavorites (text);
         $ ('textarea[name="favorites"]').focus ();
       }
@@ -3971,15 +3978,37 @@ function favDia (text, add, save, show, close) { // ===== Show favorites dialog
   //$ ("#dialog").dialog ("open");
   niceDialogOpen ();
   var tmp = $ ("#dialog").prev ().html ();
-  //tmp = tmp.replace (/<span([^>]*)>/, "<span$1><span>" + picName + "</span> &nbsp ");
   // Why doesn't the close button work? Had to add next line to get it function:
-  tmp = tmp.replace (/<button/,'<button onclick="$(\'#dialog\').dialog(\'close\');"');
+  tmp = tmp.replace (/<button/,'<button onclick="$(\'#dialog\').dialog(\'close\')" title="' + close + '"');
   $ ("#dialog").prev ().html (tmp);
-  $ ('textarea[name="favorites"]').html ("");
+  $ ('textarea[name="favorites"]').val ("");
   niceDialogOpen ("dialog");
+  // Unvisible file input + iframe as file text content storage
+  $ (".fileFavs").before ('<input id="favFile" type="file" accept=".txt" style="display:none"><iframe id="txtDispl" style="display:none"></iframe>');
+  // Visible file name text field
+  $ (".fileFavs").parent ().after ('<input id="favName" type="text" style="width:95%;text-align:center;border:0">');
+  //if (loginStatus === "guest") $ (".fileFavs").css ("display", "none"); // temporary
+
+  const inputElement = document.getElementById("favFile");
+  inputElement.addEventListener("change", handleFiles, false);
+  function handleFiles() {
+    const fileList = this.files; /* now you can work with the file list */
+    $ ("#favName") [0].value = fileList [0].name + "     " + fileList [0].size;
+    const oURL = URL.createObjectURL(fileList [0]);
+    const txtDispl = document.getElementById ("txtDispl");
+    txtDispl.setAttribute ("src", oURL); // use the path (oURL) here ...
+    URL.revokeObjectURL (oURL); // clean up
+    // Since this is an iframe, must use ´contentWindow´:
+    later ( ( () => {
+      text = txtDispl.contentWindow.document.querySelector ("body pre").innerText;
+      $ ('textarea[name="favorites"]').val (text.trim ());
+      console.log(text);
+    }), 40);
+  }
+
   $ ('textarea[name="favorites"]').focus ();
   later ( ( () => {
-    $ ('textarea[name="favorites"]').html (text);
+    $ ('textarea[name="favorites"]').val (text.trim ());
   }), 40);
   $ ("#dialog").css ("padding", "0");
 }
