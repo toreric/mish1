@@ -3883,16 +3883,15 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) { // ===== I
             $ ("#reLd").trigger ("click");
           }), 800);
         }
+    $ ("#yesBut").html (yes);
         return true;
       }
     }]);
     $ ("div[aria-describedby='" + dialogId + "'] span.ui-dialog-title").html (title); //#
     niceDialogOpen (dialogId);
-  }), 33);
-  later ( ( () => {
-    $ ("#yesBut").focus ();
     $ ("#yesBut").html (yes);
-  }), 333);
+  }), 33);
+  $ ("#yesBut").focus ();
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function favDia (text, addfile, addmarked, savecook, closeit, savefile, findshow, cleanup) { // ===== Show favorites dialog
