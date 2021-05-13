@@ -1501,7 +1501,7 @@ export default Component.extend (contextMenuMixin, {
   /////////////////////////////////////////////////////////////////////////////////////////
   actions: {
     //============================================================================================
-    doPrint () { // PDF print a show picture and its text (A4 portrait only)
+    doPrint () { // PDF print a show picture and its text (for A4 portrait)
       const selector = "#wrap_pad";
       const options = {
         debug: false,
@@ -3360,7 +3360,7 @@ export default Component.extend (contextMenuMixin, {
       }
       $ ("iframe.intro").hide ();
       let favList = getCookie ("favorites").replace (/[ ]+/g, "\n");
-      favDia (favList, "Öppna sparade", "Lägg till markerade", "Spara", "Visa", "Stäng");
+      favDia (favList, "Hämta fil", "Lägg till markerade", "Spara", "Stäng", "Spara fil", "Finn och visa", "Töm listan");
       $ (".mainMenu").hide ();
     },
     //============================================================================================
@@ -3895,7 +3895,7 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) { // ===== I
   }), 333);
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function favDia (text, file, add, save, show, close) { // ===== Show favorites dialog
+function favDia (text, addfile, addmarked, savecook, closeit, savefile, findshow, cleanup) { // ===== Show favorites dialog
   // the arguments = the favorite text list and four button texts
   $ ("#dialog").dialog ('destroy').remove ();
   let favs = "Favoritbilder"; // i18n
@@ -3906,14 +3906,20 @@ function favDia (text, file, add, save, show, close) { // ===== Show favorites d
     draggable: true,
     modal: false,
     closeOnEscape: true,
-    resizable: false
+    resizable: false,
+    close: () => { // clean up:
+      $ ("#favFile").remove ();
+      $ ("#txtDispl").remove ();
+      $ ("#favName").remove ();
+      $ ("button.fileFavs").parent ().removeAttr('style');
+    }
   });
   // Improve 'dialog title':
   $ ("div[aria-describedby='dialog'] span.ui-dialog-title").html (" <span class='blue'>" + favs + "</span>");
   // Define button array
   $ ("#dialog").dialog ("option", "buttons", [
     {
-      text: file,
+      text: addfile,
       class: "fileFavs",
       click: function () {
         $ ("#favName") [0].value = "";
@@ -3921,7 +3927,7 @@ function favDia (text, file, add, save, show, close) { // ===== Show favorites d
       }
     },
     {
-      text: add,
+      text: addmarked,
       class: "addFavs",
       click: function () {
         let newfav = "";
@@ -3941,8 +3947,8 @@ function favDia (text, file, add, save, show, close) { // ===== Show favorites d
       }
     },
     {
-      text: save,
-      class: "saveFavs",
+      text: savecook,
+      class: "cookFavs",
       click: function () {
         let text = $ ('textarea[name="favorites"]').val ().trim ();
         saveFavorites (text);
@@ -3950,10 +3956,23 @@ function favDia (text, file, add, save, show, close) { // ===== Show favorites d
       }
     },
     {
-      text: show,
+      text: closeit,
+      class: "closeFavs",
+      click: function () {
+        $ (this).dialog ("close");
+      }
+    },
+    {
+      text: savefile,
+      class: "saveFavs",
+      click: function () {
+        alert ("Oklart!");
+      }
+    },
+    {
+      text: findshow,
       class: "showFavs",
       click: function () {
-        $ ("#dialog").dialog ("close");
         let text = $ ('textarea[name="favorites"]').val ().trim (); // Important!
         saveFavorites (text);
         $ (this).dialog ("close");
@@ -3968,12 +3987,12 @@ function favDia (text, file, add, save, show, close) { // ===== Show favorites d
       }
     },
     {
-      text: close,
-      class: "closeFavs",
+      text: cleanup,
+      class: "eraseFavs",
       click: function () {
-        $ (this).dialog ("close");
+        $ ('textarea[name="favorites"]').val ("");
       }
-    }
+    },
   ]);
   //$ ("#dialog").dialog ("open");
   niceDialogOpen ();
@@ -3986,8 +4005,15 @@ function favDia (text, file, add, save, show, close) { // ===== Show favorites d
   // Unvisible file input + iframe as file text content storage
   $ (".fileFavs").before ('<input id="favFile" type="file" accept=".txt" style="display:none"><iframe id="txtDispl" style="display:none"></iframe>');
   // Visible file name text field
-  $ (".fileFavs").parent ().after ('<input id="favName" type="text" style="width:95%;text-align:center;border:0">');
-  //if (loginStatus === "guest") $ (".fileFavs").css ("display", "none"); // temporary
+  $ (".fileFavs").parent ().after ('<input id="favName" type="text" style="width:99%;text-align:left;border:0">');
+  $ ("button.closeFavs").after ("<br>");
+  $ ("button.fileFavs").parent ().css ("text-align", "left");
+  $ ("button.saveFavs").parent ().css ("padding-left", "0.2em");
+  
+  $ ("button.fileFavs").css ("width", "10em");
+  $ ("button.fileFavs").css ("color", "blue");
+  $ ("button.saveFavs").css ("width", "10em");
+  $ ("button.saveFavs").css ("color", "blue");
 
   const inputElement = document.getElementById("favFile");
   inputElement.addEventListener("change", handleFiles, false);
@@ -3997,7 +4023,7 @@ function favDia (text, file, add, save, show, close) { // ===== Show favorites d
     const oURL = URL.createObjectURL(fileList [0]);
     const txtDispl = document.getElementById ("txtDispl");
     txtDispl.setAttribute ("src", oURL); // use the path (oURL) here ...
-    URL.revokeObjectURL (oURL); // clean up
+    URL.revokeObjectURL (oURL); // release
     // Since this is an iframe, must use ´contentWindow´:
     later ( ( () => {
       text = txtDispl.contentWindow.document.querySelector ("body pre").innerText;

@@ -693,6 +693,13 @@ div[aria-describedby='textareas'] {
   background-repeat: no-repeat!important;
   background-position: center!important;
 }
+#smallButtons a#do_mail, #do_mail0 {
+  background-color: #444;
+  background-image: url(/images/mail.svg);
+  background-size: 0.8em 0.8em!important;
+  background-repeat: no-repeat!important;
+  background-position: center!important;
+}
 #smallButtons a#goTop:hover, #smallButtons a#toggleHide:hover, #smallButtons a#reLd:hover {
   background-color: #555;
 }
@@ -1148,8 +1155,14 @@ button.goAlbum:hover {
   font-size: 1.5em;
 }
 .nav_links #do_print {
+  height: 1.2em;
+  width: 0.8em;
   padding: 0 0.3em 0.1em 0.4em;
-  font-family: sans!important; /* quirk for Chrome */
+  background-image: url(/images/printer.svg);
+  background-size: 0.9em 0.9em!important;
+  background-repeat: no-repeat!important;
+  background-position: center!important;
+  /*font-family: sans!important; /* quirk for Chrome */
 }
 input.showTime[type="number"] {
   width: 1.3em;

@@ -227,17 +227,19 @@ eller bildtextrad">&nbsp;per<br>&nbsp;text-&nbsp;<br>&nbsp;rad</a>
   <!-- FULL SIZE -->
   <a class="nav_" id="full_size" draggable="false" {{action 'fullSize'}} title="Full storlek
 i nytt fönster" style="font-size:200%;line-height:80%;padding:0.3em 0.33em 0.25em 0.3em">&#9974;</a> &nbsp; <br>
-<a class="nav_ pnav_" id="do_print" title="Skriv ut" {{action 'doPrint'}}>&#9997;</a> &nbsp;
+<a class="nav_ pnav_" id="do_print" title="Skriv ut" {{action 'doPrint'}} src="/images/printer.svg"> </a> &nbsp;
 </div>
 
 <!-- ///// DISPLAY THE (SLIDE) SHOW IMAGE ///// -->
-<div class="img_show" style="display:none" draggable="false"><br>
+<div class="img_show" style="display:none" draggable="false">
   <span class="imDir path BACKG">{{{albumName}}}</span>
+
   <div id="wrap_pad" class="BACKG" draggable="false">
+
+    <span class="centerMark" style="width:auto;background:transparent;color:gray;text-align:center;padding-right:4.5em">×</span><br>
 
     <div id="wrap_show" draggable="false"><!-- IMAGE AND TEXT CONTAINER -->
       <tab style="background:transparent" draggable="false">
-        <span class="BACKG" style="color:gray;text-align:center;padding:0 50%">×</span>
         <tr style="background:transparent" draggable="false">
           <td style="background:transparent" draggable="false">
             <div id="link_show" draggable="false">
@@ -254,7 +256,8 @@ i nytt fönster" style="font-size:200%;line-height:80%;padding:0.3em 0.33em 0.25
               <div id="markShow" class="markFalseShow" alt="MARKSHOW" title="Markera" {{action 'toggleMark'}} draggable="false" ondragstart="return false"><img src="/images/markericon.svg" draggable="false" ondragstart="return false" class="mark"></div>
 
             </div>
-            <div class="markDummy"></div><!-- Substitutes markShow, moved up ^ -->
+            <div class="markDummy" style="background:transparent"></div>
+            <!-- div.markDummy substitutes markShow which is moved up ^ -->
             <div class="img_name" title="Click = Copy!" totip="Click = Copy!" onclick="copyToClipboard(this.innerHTML)"></div>
             <div class="img_txt1" draggable="false" ondragstart="return false" {{action 'ediText'}}></div>
             <div class="img_txt2" draggable="false" ondragstart="return false" {{action 'ediText'}}></div>
@@ -265,6 +268,7 @@ i nytt fönster" style="font-size:200%;line-height:80%;padding:0.3em 0.33em 0.25
     </div>
 
   </div>
+
 </div>
 
 <!-- ///// LEFT BUTTONS (NOTE: without href attributes) /////  -->
@@ -322,9 +326,9 @@ i nytt fönster" style="font-size:200%;line-height:80%;padding:0.3em 0.33em 0.25
   <a id="toggleHide" class="smBu" title="Visa/dölj
 gömda bilder" draggable="false" ondragstart="return false" style="display:none" {{action 'toggleHideFlagged'}}></a>
   <a id="saveOrder" class="smBu" title="Spara ändringar" draggable="false" ondragstart="return false" {{action 'saveOrder' true}}>S</a>
-  <a class="smBu" id="do_mail" title="Fråga oss om något eller skicka
+  <a id="do_mail" class="smBu" title="Fråga oss om något eller skicka
 ett meddelande med kommentarer,
-rättelser eller andra upplysningar" {{action 'doMail'}}>&#9993;</a>
+rättelser eller andra upplysningar" {{action 'doMail'}} src="/images/mail.svg"></a>
 <a class="smBu" draggable="false" ondragstart="return false" title="Gå upp (visa
 översta raden)" style="font:bold 190% sans-serif" {{action 'goTop'}}>↑</a>
   <a id="netMeeting" class="smBu" title="Mötesknapp:
@@ -350,12 +354,12 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
     <b>Se först knapparna till vänster</b> (vilka som syns varierar):<br>
     <a id="albSel">☰</a> Huvudmeny: Välj album, sökning, albumöversikt<br>
     <a id="questionMark0">?</a> Visa/dölj den här användarhandledningen<br>
-    <a class="helpIcon" id="reLd0"><img draggable="false" ondragstart="return false" src="/images/reload.png"></a> Ladda om albumet, återställ eventuella osparade ändringar¹³ (’ångerknapp’, men avser ej textändringar)<br>
+    <a id="reLd0" class="helpIcon"><img draggable="false" ondragstart="return false" src="/images/reload.png"></a> Ladda om albumet, återställ eventuella osparade ändringar¹³ (’ångerknapp’, men avser ej textändringar)<br>
     <a id="toggleName0">N</a> Visa/dölj namn på bilden (filnamn utan .filtyp)<br>
     <a id="toggleHide0"></a> Visa/dölj ’gömda bilder’ (gömda med bildens högerklick-meny)<br>
     <!--a id="upLoad0">U</a> Visa/dölj panelen för uppladdning av (fler) bilder<br -->
-    <a class="helpIcon" id="saveOrder0">S</a> Spara bildändringar¹ som annars är tillfälliga och kan återställas²<br>
-    <a class="helpIcon">✉</a> Skicka fråga eller annat meddelande till albumadministratören<br>
+    <a id="saveOrder0" class="helpIcon">S</a> Spara bildändringar¹ som annars är tillfälliga och kan återställas²<br>
+    <a id="do_mail0" class="helpIcon" src="/images/mail.svg"></a> Skicka fråga eller annat meddelande till albumadministratören<br>
     <a class="helpIcon">↑</a> Gå upp till överst på sidan</p>
   <p style="text-align:left;margin:-0.4em 0 0 3em;line-height:1.5em" draggable="false" ondragstart="return false">
     ¹ Ändringar: Dra-och-släpp-flyttning av miniatyrbilder, göm eller visa med högerklick<br>
