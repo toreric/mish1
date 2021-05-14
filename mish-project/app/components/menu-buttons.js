@@ -3977,17 +3977,16 @@ function favDia (text, addfile, addmarked, savecook, closeit, savefile, findshow
       text: savefile,
       class: "saveFavs",
       click: function () {
-        alert ("Oklart!");
-        //$ (this).dialog ("close");
         let fileAdvice = "<br>Ännu finns ingen standard för att <i>spara lokala filer</i> från webbläsare.";
-        fileAdvice += "<br>Du måste därför spara favoriter manuellt &mdash; i textfiler.";
-        fileAdvice += "<br>Gör så här:<br>";
-        fileAdvice += "1. Markera och kopiera listan i favoritfönstret (med&nbsp;till&nbsp;exempel&nbsp;Ctrl+c).";
+        fileAdvice += "<br>Om du inte nöjer dig med att spara en enda lista av favoriter (med den <i>lilla</i>";
+        fileAdvice += "<br>Spara-knappen) så måste du spara dem manuellt &mdash; i textfiler.";
+        fileAdvice += " Gör så här:<br>";
+        fileAdvice += "<br>1. Markera och kopiera listan i favoritfönstret (med&nbsp;till&nbsp;exempel&nbsp;Ctrl+c).";
         fileAdvice += "<br>2. Spara den med hjälp av en textredigerare (typ&nbsp;Notepad) som textfil";
         fileAdvice += "<br>med det namn och i den katalog (folder) som du själv väljer.<br>";
-        fileAdvice += "<br>Sedan kan du hämta favoritlistan därifrån.<br>Du kan spara olika favoritlistor att välja bland i samma katalog!<br>";
+        fileAdvice += "<br>Sedan kan du Hämta fil med favoritlista därifrån.<br>Du kan spara olika favoritlistor att välja bland i samma katalog!<br>";
         fileAdvice += "<br>OBSERVERA att det måste vara textfiler med namnslut '.txt' eller '.text'!";
-        infoDia ("dummydiv", "dummydiv", "Meddelande", fileAdvice, "Ok", true);
+        infoDia ("dummydiv", "dummydiv", '<b>Spara favoriter permanent</b>', fileAdvice, "Ok", true);
       }
     },
     {

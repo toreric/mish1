@@ -38,6 +38,7 @@ iframe {
   background: transparent!important;
   z-index: 0;
 }
+span.ui-dialog-title b, i {background: transparent;}
 /* Correcting these tags against the introduced
 spacing when they occur in inserted picture texts! */
 .img_txt1 a, .img_txt1 b, .img_txt1 strong, .img_txt1 i, .img_txt1 em, .img_txt1 u {
