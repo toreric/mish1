@@ -3805,11 +3805,23 @@ function sqlUpdate (picPaths) {
   });
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Information dialog, bordermarks an image if mentioned
+ * @param {string} dialogId Jquery ´dialog name´, defaults to "dialog" if !\<dialogId\> is true
+ * @param {string} picName  Name (file base name) of the image that is concerned.
+ * If !\<picName\> is true (and \<flag\> false): yes/ok button runs ´serverShell ("temporary_1")´,
+ * primarily used for the ´Link to...´ and ´Move to...´ entries on the context menu.
+ * @param {string} title  The dialog title (may have HTML tags)
+ * @param {string} text   The dialog body information text (may have HTML tags)
+ * @param {string} yes    The label for the yes/ok button
+ * @param {boolean} modal If true: make the dialog modal, else (or if omitted) don't.
+ * @param {boolean} flag  If omitted: false, else if true and picname is ´null´,
+ * runs ´eval (<content of #temporary>)´, mostly for the function ´albumEdit´.
+ */
 function infoDia (dialogId, picName, title, text, yes, modal, flag) { // ===== Information dialog
   // NOTE: if (picName ===
-  //                  "name") { show info for that picture }
+  //                  "name") { show info for that image }
   //                      "") { run serverShell ("temporary_1") ... }
-  //   null && flag === true) { evaluate #temporary, probably for albumEdit }
+  //   null && flag === true) { evaluate #temporary, probably for f }
   if (!dialogId) {dialogId = "dialog";}
   var id = "#" + dialogId;
   if (picName) { //
@@ -3842,7 +3854,7 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) { // ===== I
           // move=... moveto=... lines in #temporary_1
           // Note: Files to be moved from #picFound and have got a random
           // postfix are symlinks and thus ignored in any case by sqlUpdate
-          // (Why I do say that? Since a moved symlink has lost its random postfix...)
+          // (Why I do say that? Since a moved symlink has lost its random name postfix...)
           let txt = document.getElementById ("temporary_1").innerHTML.split (";");
           let files = [];
           for (let i=0; i<txt.length; i++) {
@@ -3966,6 +3978,16 @@ function favDia (text, addfile, addmarked, savecook, closeit, savefile, findshow
       class: "saveFavs",
       click: function () {
         alert ("Oklart!");
+        //$ (this).dialog ("close");
+        let fileAdvice = "<br>Ännu finns ingen standard för att <i>spara lokala filer</i> från webbläsare.";
+        fileAdvice += "<br>Du måste därför spara favoriter manuellt &mdash; i textfiler.";
+        fileAdvice += "<br>Gör så här:<br>";
+        fileAdvice += "1. Markera och kopiera listan i favoritfönstret (med&nbsp;till&nbsp;exempel&nbsp;Ctrl+c).";
+        fileAdvice += "<br>2. Spara den med hjälp av en textredigerare (typ&nbsp;Notepad) som textfil";
+        fileAdvice += "<br>med det namn och i den katalog (folder) som du själv väljer.<br>";
+        fileAdvice += "<br>Sedan kan du hämta favoritlistan därifrån.<br>Du kan spara olika favoritlistor att välja bland i samma katalog!<br>";
+        fileAdvice += "<br>OBSERVERA att det måste vara textfiler med namnslut '.txt' eller '.text'!";
+        infoDia ("dummydiv", "dummydiv", "Meddelande", fileAdvice, "Ok", true);
       }
     },
     {
@@ -4002,13 +4024,13 @@ function favDia (text, addfile, addmarked, savecook, closeit, savefile, findshow
   $ ('textarea[name="favorites"]').val ("");
   niceDialogOpen ("dialog");
   // Unvisible file input + iframe as file text content storage
-  $ (".fileFavs").before ('<input id="favFile" type="file" accept=".txt" style="display:none"><iframe id="txtDispl" style="display:none"></iframe>');
+  $ (".fileFavs").before ('<input id="favFile" type="file" accept="text/plain" style="display:none"><iframe id="txtDispl" style="display:none" draggable="false" ondragstart="return false"></iframe>');
   // Visible file name text field
   $ (".fileFavs").parent ().after ('<input id="favName" type="text" style="width:99%;text-align:left;border:0">');
   $ ("button.closeFavs").after ("<br>");
   $ ("button.fileFavs").parent ().css ("text-align", "left");
   $ ("button.saveFavs").parent ().css ("padding-left", "0.2em");
-  
+
   $ ("button.fileFavs").css ("width", "10em");
   $ ("button.fileFavs").css ("color", "blue");
   $ ("button.saveFavs").css ("width", "10em");
@@ -4027,7 +4049,6 @@ function favDia (text, addfile, addmarked, savecook, closeit, savefile, findshow
     later ( ( () => {
       text = txtDispl.contentWindow.document.querySelector ("body pre").innerText;
       $ ('textarea[name="favorites"]').val (text.trim ());
-      console.log(text);
     }), 40);
   }
 
@@ -4283,7 +4304,7 @@ function moveFunc (picNames, picOrder) { // ===== Execute a move-these-files-to.
   // Beware of the algorithm with all regular expression escapes in the text put into
   // #temporary_1, a Bash text string containing in the magnitude of 1000 characters,
   // depending on actual file names, but well within the Bash line length limit.
- 
+
   !picOrder; !moveOrder; // Dummy calls, for names only referenced in codeMove:
 
   var codeMove = "'var malbum=this.value;var mpath=\"\";if(this.selectedIndex===0){return false;}mpath=malbum.replace (/^[^/]*(.*)/,$(\"#imdbLink\").text()+\"$1\");var lpp=mpath.split(\"/\").length-1;if (lpp > 0)lpp=\"../\".repeat(lpp);else lpp=\"./\";console.log(\"Trying move to\",malbum);var picNames=$(\"#picNames\").text().split(\"\\n\");var picOrder=$(\"#picOrder\").text().split(\"\\n\");console.log(picNames,picOrder);cmd=[];for (let i=0;i<picNames.length;i++){var move=$(\"#imdbLink\").text()+\"/\"+document.getElementById(\"i\"+picNames[i]).getElementsByTagName(\"img\")[0].getAttribute(\"title\");var mini=move.replace(/([^/]+)(\\.[^/.]+)$/,\"_mini_$1.png\");var show=move.replace(/([^/]+)(\\.[^/.]+)$/,\"_show_$1.png\");var moveto=mpath+\"/\";var picfound=$(\"#picFound\").text();cmd.push(\"picfound=\"+picfound+\";move=\"+move+\";mini=\"+mini+\";show=\"+show+\";orgmove=$move;orgmini=$mini;orgshow=$show;moveto=\"+moveto+\";lpp=\"+lpp+\";lnksave=$(readlink -n $move);if [ $lnksave ];then move=$(echo $move|sed -e \\\"s/\\\\(.*$picfound.*\\\\)\\\\.[^.\\\\/]\\\\+\\\\(\\\\.[^.\\\\/]\\\\+$\\\\)/\\\\1\\\\2/\\\");mini=$(echo $mini|sed -e \\\"s/\\\\(.*$picfound.*\\\\)\\\\.[^.\\\\/]\\\\+\\\\(\\\\.[^.\\\\/]\\\\+$\\\\)/\\\\1\\\\2/\\\");show=$(echo $show|sed -e \\\"s/\\\\(.*$picfound.*\\\\)\\\\.[^.\\\\/]\\\\+\\\\(\\\\.[^.\\\\/]\\\\+$\\\\)/\\\\1\\\\2/\\\");lnkfrom=$(echo $lnksave|sed -e \\\"s/^\\\\(\\\\.\\\\{1,2\\\\}\\\\/\\\\)*//\\\" -e \\\"s,^,$lpp,\\\");lnkmini=$(echo $lnkfrom|sed -e \\\"s/\\\\([^/]\\\\+\\\\)\\\\(\\\\.[^/.]\\\\+\\\\)\\\\$/_mini_\\\\1\\\\.png/\\\");lnkshow=$(echo $lnkfrom|sed -e \\\"s/\\\\([^/]\\\\+\\\\)\\\\(\\\\.[^/.]\\\\+\\\\)\\\\$/_show_\\\\1\\\\.png/\\\");ln -sfn $lnkfrom $move;fi;mv -n $move $moveto;if [ $? -ne 0 ];then if [ $move != $orgmove ];then rm $move;fi;exit;else if [ $lnksave ];then ln -sfn $lnkmini $mini;ln -sfn $lnkshow $show;fi;mv -n $mini $show $moveto;if [ $move != $orgmove ];then rm $orgmove;fi;if [ $mini != $orgmini ];then rm $orgmini;fi;if [ $show != $orgshow ];then rm $orgshow;fi;fi;\");console.log(move,mini,show,moveto);}$(\"#temporary\").text(mpath);$(\"#temporary_1\").text (cmd.join(\"\\n\"));'"
@@ -4867,7 +4888,7 @@ let prepSearchDialog = () => {
           } else {
             $ ("button.updText").hide ();
             $ ("button.findText").show ();
-            age_imdb_images (); // Show the time since the data was collected
+            age_imdb_images (); // Show the time since data was collected from images
             let and = $ ('input[type="radio"]') [0].checked;
             let boxes = $ ('.srchIn input[type="checkbox"]');
             let sWhr = [];
@@ -4918,13 +4939,16 @@ let prepSearchDialog = () => {
   });
 } // end prepSearchDialog
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// Find texts in the database (file _imdb_images.sqlite) and
-// populate the #picFound album with the corresponding images
-// 'sTxt' = whitespace separated search text words/items
-// 'and' and 'sWhr' (searchWhere) are search dialog logical settings
-// When 'exact' is true, the LIKE searched items will not be '%' surrounded
-// Example. Find pictures by exact matching of image names (file basenames):
-// doFindText ("img_0012 img_0123", false, [false, false, false, false, true], true)
+/** Find texts in the database (file _imdb_images.sqlite) and populate
+ * the #picFound album with the corresponding images (cf. prepSearchDialog)
+ * @param {string} sTxt whitespace separated search text words/items
+ * @param {boolean} and  true=>AND | false=>OR
+ * @param {boolean} sWhr (searchWhere) array = checkboxes for selected texts
+ * @param {boolean} exact when true, the LIKE searched items will not be '%' surrounded
+ * NOTE: ´exact´ means "Only search for file base names!":
+ * Find pictures by exact matching of image names (file basenames), e.g.
+ *   doFindText ("img_0012 img_0123", false, [false, false, false, false, true], true)
+ */
 let doFindText = (sTxt, and, sWhr, exact) => {
   let nameOrder = [];
   searchText (sTxt, and, sWhr, exact).then (async result => {
@@ -4939,13 +4963,13 @@ let doFindText = (sTxt, and, sWhr, exact) => {
     let filesFound = 0;
     let countAlbs = [];
     if (result) {
-      paths = result.split ("\n").sort (); // Sort entries (see there)
+      paths = result.split ("\n").sort (); // Sort entries (see there below)
       let chalbs = $ ("#imdbDirs").text ().split ("\n");
       // -- Prepare counters for all albums
       let counts = "0".repeat (chalbs.length).split ("").map (Number);
       n = paths.length;
       let lpath = $ ("#imdbLink").text () + "/" + $ ("#picFound").text ();
-      for (let i=0; i<n; i++) {   
+      for (let i=0; i<n; i++) {
         let chalb = paths [i].replace (/^[^/]+(.*)\/[^/]+$/, "$1");
         let idx = chalbs.indexOf (chalb);
         if (idx > -1) {
@@ -4984,7 +5008,7 @@ let doFindText = (sTxt, and, sWhr, exact) => {
 
     if (exact) {
       // Sort the entries according to search items if they correspond to
-      // exact file base names (else keep the previous sort order) (see there)
+      // exact file base names (else keep the previous sort order) (see there above)
       let obj = [];
       filesFound = 0;
       let srchTxt = sTxt.split (" ");
@@ -5083,7 +5107,7 @@ function displayPicFound () {
 /** Search the image texts in the current imdbRoot (cf. prepSearchDialog)
  * @param {string} searchString space separated search items
  * @param {boolean} and true=>AND | false=>OR
- * @param {boolean} searchWhere array = checkboxes for selected texts 
+ * @param {boolean} searchWhere array = checkboxes for selected texts
  * @param {boolean} exact true will remove SQL %s
  * @returns {string} \n-separated file paths
  */
@@ -5474,8 +5498,8 @@ function emailOk(email) {
   return re.test(email);
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Open an album, in the current JStree album tree, by its zero origin index 
- *  @param {number} idx The index of the album in the JStree catalog tree 
+/** Open an album, in the current JStree album tree, by its zero origin index
+ *  @param {number} idx The index of the album in the JStree catalog tree
  */
 function selectJstreeNode (idx) {
   $ (".ember-view.jstree").jstree ("close_all");
