@@ -140,10 +140,10 @@ function copyToClipboard (str) {    // Copies a filename (below mini-pic) to the
     </div>
     <span class="srchMsg"></span>
   </div>
-  <textarea name="searchtext" placeholder="(minst tre tecken utöver omgivande blanka)" rows="4" style="min-width:" />
+  <textarea name="searchtext" placeholder="Skriv här sökbegrepp, åtskilda av blanktecken, på en eller flera rader, små eller stora bokstäver utan betydelse (välj överst i vilka texter du ska söka)" rows="4" style="min-width:" />
 </div>
 
-<!-- ///// PARAMETER STORE ///// -->
+<!- ///// PARAMETER STORE ///// -->
 <div id="allowValue" title="permissions" style="display:none"></div>
 <div id="backImg" style="display:none"></div>
 <div id="bkgrColor" style="display:none">rgb(59, 59, 59)</div>
@@ -168,7 +168,6 @@ function copyToClipboard (str) {    // Copies a filename (below mini-pic) to the
 <div id="picOrig" style="display:none"></div>
 <div id="showFactor" title="initial seconds/picture" style="display:none">2</div>
 <div id="sortOrder" title="for imdDir's file order information table" style="display:none"></div>
-<div id="stopSpin" style="display:none" title="spinner stop flag"></div>
 <div id="temporary" style="display:none"></div>
 <div id="temporary_1" style="display:none"></div>
 <div id="topMargin" title="pixels above slide shown" style="display:none">18</div>
@@ -229,12 +228,12 @@ i nytt fönster" style="font-size:200%;line-height:80%;padding:0.3em 0.33em 0.25
 <a class="nav_ pnav_" id="do_print" title="Skriv ut" {{action 'doPrint'}} src="/images/printer.svg"> </a> &nbsp;
 </div>
 
-<!-- ///// DISPLAY THE (SLIDE) SHOW IMAGE ///// -->
+<!-- ///// DISPLAY THE 'SLIDE SHOW' IMAGE ///// -->
 <div class="img_show" style="display:none" draggable="false">
   <span class="imDir path BACKG">{{{albumName}}}</span>
 
   <div id="wrap_pad" class="BACKG" draggable="false">
-    <span class="centerMark" style="width:auto;background:transparent;color:gray;text-align:center;padding-right:4.5em">×</span><br>
+    <span class="centerMark BACKG" style="width:auto;background:transparent;text-align:center;padding-right:4.5em">×</span><br>
 
     <div id="wrap_show" draggable="false"><!-- IMAGE AND TEXT CONTAINER -->
       <tab style="background:transparent" draggable="false">
@@ -423,7 +422,7 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
         </div>
         {{#if (eq file allNames.lastObject)}}
           <script>
-            document.getElementById ("stopSpin").innerHTML = "SPIN-END";
+            $.spinnerWait (false, 6000);
           </script>
         {{/if}}
       </div>
@@ -452,7 +451,7 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
     <span> {{{suba.name}}} &nbsp;</span>
     {{#if (eq suba subaList.lastObject)}}
       <script>
-        document.getElementById ("stopSpin").innerHTML = "SPIN-END";
+        $.spinnerWait (false, 6000);
       </script>
     {{/if}}
   </a>

@@ -737,15 +737,12 @@ console.log("p2",p);
     // The removeDiacritics funtion may bypass some characters (e.g. Sw. åäöÅÄÖ)
     let like = removeDiacritics (req.body.like).toLowerCase ()
     let cols = eval ("[" + req.body.cols + "]")
-//console.log ("SEARCH1", like) // SQL search items
-//console.log ("SEARCH2", cols) // Search columns checkboxes
     let taco = ["description", "creator", "source", "album", "name"]
     let columns = ""
     for (let i=0; i<cols.length; i++) {
       if (cols [i]) {columns += "||" + taco [i]}
     }
     columns = columns.slice (2)
-//console.log ("SEARCH3", columns) // Search columns names logic
 
     try { // Start try ----------
       let db = new sqlite3.Database (IMDB_LINK + '/_imdb_images.sqlite', function (err) {
@@ -757,17 +754,14 @@ console.log("p2",p);
       })
       db.serialize ( () => {
         let sql = 'SELECT id, filepath, ' + columns + ' AS txtstr FROM imginfo WHERE ' + like
-//console.log("sql:",sql);
         db.all (sql, [], function (err, rows) {
           foundpath = ""
-//console.log("rows:",rows);
           if (rows) {
             tempstore = rows
             setTimeout ( () => {
               tempstore.forEach( (row) => {
                 foundpath += row.filepath.trim () + "\n"
               })
-//console.log("foundpath:\n" + foundpath);
               res.send (foundpath.trim ())
               //res.end ()
             }, 1000)

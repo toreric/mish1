@@ -119,11 +119,14 @@ li.context-menu__item--disabled span, ul.context-menu--left li.context-menu__ite
 }
 button {
   border: 0.5px;
-  border-radius: 3px;
+  border-radius: 4px;
   cursor: pointer;
 }
 button:focus {
   border: 1.2px solid #666;
+}
+div.ui-dialog-buttonset button:hover {
+  background:#b0c4deaa!important;
 }
 .ui-menu {
   min-width: 50px;
@@ -799,7 +802,7 @@ strong.albumName {
   border: 1px solid #888;
   border-radius: 4px;
   padding: 0.15em;
-  margin: 0.1em 0.2em 0 -0.1em;
+  margin: 0.1em 3em 0 -0.1em;
   cursor: pointer;
   font-size: 1.2em;
   height: 0.7em;
