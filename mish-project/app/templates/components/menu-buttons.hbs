@@ -420,9 +420,12 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
         <div class="img_txt2" draggable="false" ondragstart="return false" title="{{file.txt2}}" totip="{{file.txt2}}" {{action 'ediText' file.name}}>
           {{file.txt2}}
         </div>
+        <script>
+          $.spinnerWait (true, 1);
+        </script>
         {{#if (eq file allNames.lastObject)}}
           <script>
-            $.spinnerWait (false, 6000);
+            $.spinnerWait (false, 4014);
           </script>
         {{/if}}
       </div>
@@ -448,11 +451,11 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
  <!-- Extra minimal subalbum list at bottom -->
   {{#each subaList as |suba|}}
   <a class="imDir BLUET" {{action 'subalbumSelect' suba.album}}>
+    <script>
+      $.spinnerWait (true, 2);
+    </script>
     <span> {{{suba.name}}} &nbsp;</span>
     {{#if (eq suba subaList.lastObject)}}
-      <script>
-        $.spinnerWait (false, 6000);
-      </script>
     {{/if}}
   </a>
   {{else}}

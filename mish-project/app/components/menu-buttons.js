@@ -389,7 +389,7 @@ export default Component.extend (contextMenuMixin, {
           click: function () {
             $ (this).dialog ('close');
             linkFunc (picNames);
-            $.spinnerWait (false, 2000);
+            $.spinnerWait (false, 2012);
           }
         },
         {
@@ -408,7 +408,7 @@ export default Component.extend (contextMenuMixin, {
         $ (this).dialog ('close');
         markBorders (picNames [0]); // Mark this single one, even if it wasn't clicked
         linkFunc (picNames);
-        $.spinnerWait (false, 2000);
+        $.spinnerWait (false, 2013);
       }
     }
   },
@@ -697,7 +697,7 @@ export default Component.extend (contextMenuMixin, {
         // Set the target image name, which is in the second parent sibling in both cases:
         var namepic = nodelem.parentElement.nextElementSibling.nextElementSibling.innerHTML.trim ();
         $ ("#picName").text (namepic);
-
+console.log("¤¤¤");
         // Ascertain that the minipic is shown (maybe autocreated just now?)
         var toshow = document.getElementById ("i" + namepic).firstElementChild.firstElementChild;
         var minipic = toshow.getAttribute ("src");
@@ -907,6 +907,7 @@ export default Component.extend (contextMenuMixin, {
     // to further restore all details!
     return new Promise (resolve => {
       var test = 'A1';
+      //$.spinnerWait (true);console.log(test);
       this.requestOrder ().then (sortnames => {
         if (sortnames === undefined) {sortnames = "";}
         if (sortnames === "Error!") {
@@ -923,6 +924,7 @@ export default Component.extend (contextMenuMixin, {
           $ ("#sortOrder").text (sortnames); // Save in the DOM
         }
         test = 'A2';
+        //$.spinnerWait (true);console.log(test);
         var n=0;
         // Use sortOrder (as far as possible) to reorder namedata ERROR
         // First pick out namedata (allNames) against sortnames (SN), then any remaining
@@ -966,6 +968,7 @@ export default Component.extend (contextMenuMixin, {
             snams.push (snamsvec [i].split (",") [0]);
           }
           // --- END prepare sortnames
+          //$.spinnerWait (true);console.log(test);
           // --- Pull out the plain dir list file names: name <=> namedata (undefined order)
           if (namedata === undefined) {namedata = [];}
           var name = [];
@@ -992,6 +995,7 @@ export default Component.extend (contextMenuMixin, {
           // --- Move remaining 'namedata' objects (e.g. uploads) into 'newdata' until empty.
           // --- Place them first to get better noticed. Update newsort for sortnames.
           // --- The names, of such (added) 'namedata' objects, are kept remaining in 'name'??
+          //$.spinnerWait (true);console.log(test);
           while (namedata.length > 0) {
             newsort = namedata [0].name + ",0,0\n" + newsort;
             //newdata.pushObject (namedata [0]); instead:
@@ -1001,6 +1005,7 @@ export default Component.extend (contextMenuMixin, {
 
           n = newdata.length;
           // Transform the elements for HBS template use:
+          //$.spinnerWait (true);console.log(test);
           for (i=0; i<n; i++) {
             newdata [i].linkto = newdata [i].orig; // Added, see requestNames, 'row number eight'
             if (newdata [i].symlink === "&") {
@@ -1014,7 +1019,7 @@ export default Component.extend (contextMenuMixin, {
           newsort = newsort.trim (); // Important
           test ='E0';
           this.set ("allNames", newdata); // The minipics reload is triggered here (RELOAD)
-          $.spinnerWait (true);
+          //$.spinnerWait (true);console.log(test);
           $ ('#sortOrder').text (newsort); // Save in the DOM
           //console.log("NOTE: newsort is the true list of images in the actual directory:",newsort.split("\n"));
           //console.log("NOTE: newdata will trigger the thumbnails reload:",this.get ("allNames"));
@@ -1024,6 +1029,7 @@ export default Component.extend (contextMenuMixin, {
             preloadShowImg [i] = new Image();
             preloadShowImg [i].src = newdata [i].show;
           }
+          //$.spinnerWait (true);console.log(test);
           if ( (n > nWarn) && (allow.imgUpload || allow.adminAll)) {
             infoDia (null, null, "M Ä N G D V A R N I N G", "<b>Ett album bör av alla möjliga <br>praktiska och tekniska skäl inte ha <br>särskilt många fler än etthundra bilder. <br>Försök att dela på det här albumet ...</b>", "... uppfattat!", true);
           }
@@ -1038,6 +1044,7 @@ export default Component.extend (contextMenuMixin, {
               $ (".numShown").text ($ (".img_mini").length);
             }
 
+            //$.spinnerWait (true);console.log(test);
             later ( ( () => {
               if (document.querySelector("strong.albumName") && document.querySelector ("strong.albumName") [0] && document.querySelector ("strong.albumName") [0].innerHTML.replace (/&nbsp;/g, " ").trim () === $ ("#picFound").text ().replace (/\.[^.]{4}$/, "").replace (/_/g, " ")) {
                 // The search result album. Seems to fail, may be removed since also superfluous?
@@ -1064,8 +1071,10 @@ export default Component.extend (contextMenuMixin, {
                 } // i18n
                 $ ("div.BUT_2").text (ntext);
               }
+              //$.spinnerWait (true);console.log(test);
             }), 777);
 
+            //$.spinnerWait (true);console.log(test);
             userLog ("RELOAD");
           } else {
             later ( ( () => {
@@ -1075,7 +1084,9 @@ export default Component.extend (contextMenuMixin, {
               if (document.querySelector("strong.albumName") && document.querySelector ("strong.albumName") [0] && document.querySelector ("strong.albumName") [0].innerHTML.replace (/&nbsp;/g, " ") === $ ("#picFound").text ().replace (/\.[^.]{4}$/, "").replace (/_/g, " ")) {
                 $ ("div.BUT_2").text (""); // The search result album
               }
+              //$.spinnerWait (true);console.log(test);
             }), 777);
+            //$.spinnerWait (true);console.log(test);
           }
           test = 'E1';
           later ( ( () => {
@@ -1085,8 +1096,10 @@ export default Component.extend (contextMenuMixin, {
               $ (".img_name").show ();
             }
           }), 20);
+          //$.spinnerWait (true);console.log(test);
           later ( ( () => {
             $ ("#saveOrder").trigger ("click");
+            //$.spinnerWait (true);console.log(test);
           }), 200);
         }).catch (error => {
           console.error (test + ' in function refreshAll: ' + error.message);
@@ -1095,8 +1108,8 @@ export default Component.extend (contextMenuMixin, {
         console.log ("Not found");
       });
       $ ('#navKeys').text ('true');
-      resolve ();
-    }).then ( () => {});
+      resolve (test);
+    });
   },
   //----------------------------------------------------------------------------------------------
   setNavKeys () { // ===== Trigger actions.showNext when key < or > is pressed etc...
@@ -1996,6 +2009,7 @@ export default Component.extend (contextMenuMixin, {
     },
     //============================================================================================
     selectAlbum () { // ##### triggered by a click within the JStree
+      $.spinnerWait (true, 101);
       let value = $ ("[aria-selected='true'] a.jstree-clicked");
       if (value && value.length > 0) {
         value = $ ("#imdbLink").text () + value.attr ("title").toString ().slice (1); // skip dot
@@ -2082,8 +2096,11 @@ export default Component.extend (contextMenuMixin, {
           $ (".imDir.path").attr ("title-1", albumPath ());
         }
         this.set ("subaList", a); // triggers load of subalbum links into menu-buttons.hbs
+        $.spinnerWait (true, 102);
         later ( ( () => {
-          $ ("#reLd").trigger ("click"); // REFRESH the displayed album
+          $.spinnerWait (true, 103);
+          // REFRESH the displayed album
+          $ ("#reLd").trigger ("click");
           $ ("div.subAlbum").show ();
           $ ("a.imDir").attr ("title", "Album");
           let n = $ ("a.imDir").length/2; // there is also a page bottom link line...
@@ -2163,6 +2180,7 @@ export default Component.extend (contextMenuMixin, {
           else $ ("span.centerMark").text ("×"); // reset ´favorites' header´
 
           resolve (true);
+          $.spinnerWait (true, 104);
           later ( ( () => {
             // Don't hide login (at top) if we now have 0/top position!
             // If not, adjust the position, login remains hidden at window top.
@@ -2171,7 +2189,9 @@ export default Component.extend (contextMenuMixin, {
             }
           }), 50);
         }), 777);
-      }).then ( () => {});
+      }).then ( () => {
+        $.spinnerWait (true, 105);
+      });
     },
     //============================================================================================
     toggleMainMenu () {
@@ -2496,24 +2516,27 @@ export default Component.extend (contextMenuMixin, {
       document.getElementById ("imageList").className = "hide-all";
       $ (".miniImgs").hide ();
 
-      $.spinnerWait (true);
+      $.spinnerWait (true, 106);
       $ ("#link_show a").css ('opacity', 0);
       $ (".img_show").hide ();
       $ (".nav_links").hide ();
       await this.refreshAll ().then (async () => {
-        // Do not insert this temporary search result into the sql DB table:
-        if (imdbDir_is_picFound ()) {
-          $.spinnerWait (false, 2000);
-          return true;
+
+        // Do not insert a temporary search result into the sql DB table:
+        if (!imdbDir_is_picFound ()) {
+          // Perform pending DB updates
+          if (chkPaths.length > 0) {
+            await sqlUpdate (chkPaths.join ("\n"));
+            chkPaths = randIndex (0); // Dummy use of randIndex (=> [])
+            chkPaths = [];
+          }
         }
-        // Perform pending DB updates
-        if (chkPaths.length > 0) {
-          await sqlUpdate (chkPaths.join ("\n"));
-        }
-        chkPaths = randIndex (0); // Dummy use of randIndex (=> [])
-        chkPaths = [];
-      }).then ( () => {
-        $.spinnerWait (false, 2000);
+
+        // await this.refreshAll... DOES NOT WAIT!
+        // As a compensation, this pause seems reasonable:
+        await new Promise (z => setTimeout (z, 6000));
+
+        $.spinnerWait (false, 1002);
         return true;
       });
     },
@@ -2527,7 +2550,7 @@ export default Component.extend (contextMenuMixin, {
 
       $ ("#link_show a").css ('opacity', 0);
       new Promise (resolve => {
-        if (spinTrue) $.spinnerWait (true);
+        if (spinTrue) $.spinnerWait (true, 107);
         var i =0, k = 0, SName = [], names, SN;
         SN = $ ('#sortOrder').text ().trim ().split ('\n'); // Take it from the DOM storage
         for (i=0; i<SN.length; i++) {
@@ -2559,7 +2582,7 @@ export default Component.extend (contextMenuMixin, {
               resetBorders (); // Reset all borders
             });
           }
-          if (spinTrue) $.spinnerWait (false, 1000);
+          if (spinTrue) $.spinnerWait (false, 1003);
         }), 1500);
         resolve (true);
       }).catch (error => {
@@ -2798,7 +2821,7 @@ export default Component.extend (contextMenuMixin, {
             if (dejavu) {dejavu.focus ();} else {
               userLog ("POPUP blocked by browser", true, 5000); // 5 s
             }
-            $.spinnerWait (false, 2000);
+            $.spinnerWait (false, 2004);
             resolve (true);
           } else {
             reject ({
@@ -2881,7 +2904,7 @@ export default Component.extend (contextMenuMixin, {
               later ( ( () => {
                 //$ ("#download").trigger ("click"); //DOES NOT WORK
                 document.getElementById ("download").trigger ("click"); // Works
-                $.spinnerWait (false, 2000);
+                $.spinnerWait (false, 2005);
                 userLog ("DOWNLOAD");
                 resolve (true);
               }), 400);
@@ -3020,7 +3043,7 @@ export default Component.extend (contextMenuMixin, {
             $ (".ember-view.jstree").jstree ("select_node", "#j1_1"); // calls selectAlbum
           }), 2000);
         }, 2000);                 // *NOTE: Preserved here just as an example
-        $.spinnerWait (false, 4000);
+        $.spinnerWait (false, 4006);
         return;
       }
       //¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
@@ -3175,7 +3198,7 @@ export default Component.extend (contextMenuMixin, {
             else $ ("#netMeeting").hide ();
 
           }, 2000);
-          $.spinnerWait (false, 2000);
+          $.spinnerWait (false, 2007);
         }, 2000);
       } // end Confirm
       //¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
@@ -3501,7 +3524,7 @@ function load_imdb_images () {
     userLog ("Det här kan ta några minuter ...", true, 5000)
     let cmd = '$( pwd )/ld_imdb.js -e';
     execute (cmd).then ( () => {
-      $.spinnerWait (false, 5000);
+      $.spinnerWait (false, 5008);
       userLog ("Image search texts updated");
       $ ("div[aria-describedby='searcharea']").show ();
       $ ("button.updText").css ("float", "right");
@@ -3530,18 +3553,20 @@ $.spinnerWait = function (runWait, delay) {
   if (!delay) delay = 0;
   $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
   if (runWait) {
+    //console.log(" Startspin",delay); // Here only used as debug id-number
     $ (".spinner").show ();
     clearInterval (BLINK); // Unlock if occasionaly in use ...
     BLINK_TAG = "#menuButton";
     BLINK = setInterval (blink_text, 600);
     $ (".mainMenu").hide ();
     $ ("div.settings, div.settings div.check").hide ();
-    document.getElementById("menuButton").disabled = true;
+    //document.getElementById("menuButton").disabled = true;
     document.getElementById("reLd").disabled = false; // Important! Must be always available
     document.getElementById("saveOrder").disabled = true;
     document.getElementById ("divDropbox").className = "hide-all";
   } else { // End waiting
     later ( ( () => {
+    //console.log("Stopspin",delay);
       $ (".spinner").hide ();
       clearInterval (BLINK);
     }), delay);
@@ -3555,23 +3580,6 @@ $.spinnerWait = function (runWait, delay) {
     }), 100);
   }
 }
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*function prepareStopSpin () {
-console.log("Timer INIT");
-  let timer;
-  (function repeater () {
-    timer = setTimeout (repeater, 1000)
-console.log("Timer CHECK");
-    if (document.getElementById ("stopSpin").innerHTML) {
-console.log("Timer STOP");
-      document.getElementById ("stopSpin").innerHTML = "";
-      later ( ( () => {
-        clearTimeout (timer);
-        $.spinnerWait (false);
-      }), 77);
-    }
-  } ());
-}*/
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function startInfoPage () { // Compose the information display page
   let iWindow = document.querySelector("iframe.intro").contentWindow;
@@ -3638,10 +3646,12 @@ function startInfoPage () { // Compose the information display page
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Show a symlink's 'parent' album; tgt is a mini-IMG, hopefully a linked one...
 async function parentAlbum (tgt) {
+  $.spinnerWait (true);
   if (!tgt) {
     await new Promise (z => setTimeout (z, 4000));
     tgt = document.getElementsByClassName ("img_mini") [0].getElementsByTagName ("img") [1];
   }
+  $.spinnerWait (true);
   let classes = $ (tgt).parent ("div").parent ("div").attr("class");
   let albumDir, file, tmp, imgs;
   if (classes && -1 < classes.split (" ").indexOf ("symlink")) { // ...yes! a symlink...
@@ -3664,7 +3674,6 @@ async function parentAlbum (tgt) {
       imgs = $ ("#j1_" + (1 + idx) + " a small").text ();
       imgs = Number (imgs.replace (/^.*\(([0-9]+)\).*$/, "$1"));
       if (imgs < 2) imgs = 2; // for a minimum wait time
-      $.spinnerWait (true);
       $ (".ember-view.jstree").jstree ("close_all");
       $ (".ember-view.jstree").jstree ("_open_to", "#j1_" + (1 + idx));
       $ (".ember-view.jstree").jstree ("deselect_all");
@@ -3673,6 +3682,7 @@ async function parentAlbum (tgt) {
       let namepic = file.replace (/^(.*\/)*(.+)\.[^.]*$/, "$2");
       return namepic;
     }).then (async (namepic) => {
+      $.spinnerWait (true);
       await new Promise (z => setTimeout (z, 111*imgs)); // proportional pause
       if (namepic) gotoMinipic (namepic);
     });
@@ -3707,7 +3717,7 @@ function gotoMinipic (namepic) {
       if (t > y) {y = t;}
       scrollTo (null, y);
       resetBorders (); // Reset all borders
-      $.spinnerWait (false, 3000)
+      $.spinnerWait (false, 3009)
       markBorders (namepic); // Mark this one
     }
   } ());
@@ -3839,8 +3849,8 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) { // ===== I
       text: yes, // Okay. See below
         id: "yesBut",
       click: function () {
-        if (picName === "") { // Special case: link || move || ...
-          $.spinnerWait (true);
+          if (picName === "") { // Special case: link || move || ...
+          $.spinnerWait (true, 108);
           serverShell ("temporary_1");
 
           // Extract/construct sqlUpdate file list if there are any
@@ -3869,7 +3879,7 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) { // ===== I
               await sqlUpdate (files);
             }), 5000);
           }
-          $.spinnerWait (false, 2000)
+          $.spinnerWait (false, 2010)
         }
         $ (this).dialog ("close");
         $ ('#navKeys').text ('true'); // Reset in case L/R arrows have been protected
@@ -3880,7 +3890,7 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) { // ===== I
         }
         // If this is the second search (result) dialog:
         if (yes.indexOf ("Visa i") > -1) {
-          $.spinnerWait (true);
+          $.spinnerWait (true, 109);
           document.getElementById("reLd").disabled = false;
           later ( ( () => {
             $ ("#reLd").trigger ("click");
@@ -4005,7 +4015,7 @@ function favDia (text, addfile, addmarked, savecook, closeit, savefile, findshow
         $ ("#imdbDir").text ($ ("#imdbLink").text () +"/"+ $ ("#picFound").text ());
         // Populate the picFound album with favorites in namelist order:
         doFindText (text, false, [false, false, false, false, true], true);
-        $.spinnerWait (true);
+        $.spinnerWait (true, 110);
       }
     },
     {
@@ -4331,7 +4341,7 @@ function moveFunc (picNames, picOrder) { // ===== Execute a move-these-files-to.
   $ ("select.selectOption").focus ();
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-var moveOrder = async (mpath, picNames) => { // ===== Sort order list "from outside"
+var moveOrder = async (mpath, picNames) => { // ===== Sort-order-list "from outside"
   console.log("mpath",mpath,"picOrder",picNames);
   if (!mpath) return;
   let spath = $ ("#imdbDir").text ();
@@ -4343,7 +4353,8 @@ var moveOrder = async (mpath, picNames) => { // ===== Sort order list "from outs
   }
   olist = alist.join ("\n");
   await saveOrderFunc (olist).then ( () => {return});
-  $ ("#imdbDir").text (spath); // Maube remove?? try it
+  $ ("#imdbDir").text (spath); // Maybe remove?? try it [this line is dubious!]
+
   function getOrder () { // This function was built on an exerpt from "requestOrder ()"
     return new Promise ( (resolve, reject) => {
       var IMDB_DIR = $ ('#imdbDir').text ();
@@ -4477,7 +4488,7 @@ function reqRoot () { // Propose root directory (requestDirs)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function reqDirs (imdbroot) { // Read the dirs in imdbLink (requestDirs)
   if (imdbroot === undefined) return;
-  $.spinnerWait (true);
+  $.spinnerWait (true, 111);
   return new Promise ( (resolve, reject) => {
     var xhr = new XMLHttpRequest ();
     // Here also #picFound is sent to the server for information/update
@@ -4907,7 +4918,7 @@ let prepSearchDialog = () => {
             if (!n) {
               boxes [0].checked = true;
             }
-            $.spinnerWait (true);
+            $.spinnerWait (true, 112);
             doFindText (sTxt, and, sWhr);
 
           }
@@ -5052,9 +5063,9 @@ let doFindText = (sTxt, and, sWhr, exact) => {
     $ ("#temporary_1").text (cmd.join ("\n"));
 
     if (n > 0 && n < nLimit) {
-      // Only if the picFound album is going to be immediately reused, regenerate
-      // the picFound album: the shell commands must execute in sequence
       let lpath = $ ("#imdbLink").text () + "/" + $ ("#picFound").text ();
+      // Only if the picFound album is supposed to be immediately reused, regenerate
+      // the picFound album: the shell commands must execute in sequence (don't split)
       await execute ("rm -rf " +lpath+ "&&mkdir -m0775 " +lpath+ "&&touch " +lpath+ "/.imdb&&chmod 664 " +lpath+ "/.imdb");
     }
     userLog (n + " FOUND");
@@ -5101,7 +5112,7 @@ let doFindText = (sTxt, and, sWhr, exact) => {
 
       $ ("div[aria-describedby='searcharea']").hide ();
       if (n > 0 && n < nLimit) displayPicFound ();
-      else $.spinnerWait (false, 100);
+      else $.spinnerWait (false, 111);
 
       let noDisplay = n && n <= nLimit && (loginStatus === "guest" || loginStatus === "viewer" || !loggedIn);
       if (noDisplay) $ ("div[aria-describedby='dialog']").hide ();
@@ -5124,7 +5135,6 @@ let doFindText = (sTxt, and, sWhr, exact) => {
 function displayPicFound () {
   let idx = $ ("#imdbDirs").text ().split ("\n").indexOf ("/" + $ ("#picFound").text ());
   selectJstreeNode (idx);
-  //$ ("#reLd").trigger ("click");
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Search the image texts in the current imdbRoot (cf. prepSearchDialog)
@@ -5454,7 +5464,7 @@ function allowFunc () { // Called from setAllow (which is called from init(), lo
 function subaSelect (subName, path) { // ##### Sub-album link selected
   subName = subName.replace (/&nbsp;/g, "_"); // Restore readable album name
   // NOTE: That restoring may be questionable with " " instead of "&nbsp;"
-  $.spinnerWait (true);
+  $.spinnerWait (true, 113);
   let names = $ ("#imdbDirs").text ().split ("\n");
   let name = $ ("#imdbDir").text ().slice ($ ("#imdbLink").text ().length); // Remove imdbLink
   let here, idx;
