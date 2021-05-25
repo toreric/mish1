@@ -697,7 +697,7 @@ export default Component.extend (contextMenuMixin, {
         // Set the target image name, which is in the second parent sibling in both cases:
         var namepic = nodelem.parentElement.nextElementSibling.nextElementSibling.innerHTML.trim ();
         $ ("#picName").text (namepic);
-console.log("¤¤¤");
+
         // Ascertain that the minipic is shown (maybe autocreated just now?)
         var toshow = document.getElementById ("i" + namepic).firstElementChild.firstElementChild;
         var minipic = toshow.getAttribute ("src");
@@ -2343,6 +2343,8 @@ console.log("¤¤¤");
     //============================================================================================
     showShow (showpic, namepic, origpic) { // ##### Render a 'show image' in its <div>
 
+      document.getElementById ("imageList").className = "hide-all";
+
       $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
       $ (".mainMenu").hide ();
       $ ("div.settings, div.settings div.check").hide ();
@@ -3536,6 +3538,9 @@ function load_imdb_images () {
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Hide the show image element, called by hideShow ()
 function hideShow_g () {
+
+  document.getElementById ("imageList").className = "show-block";
+
   $ ("ul.context-menu").hide (); // if open
   $ ("#link_show a").css ('opacity', 0);
   $ (".img_show div").blur ();
@@ -3987,7 +3992,8 @@ function favDia (text, addfile, addmarked, savecook, closeit, savefile, findshow
         fileAdvice += "2.  Spara den med hjälp av en textredigerare (Anteckningar/Notepad eller liknande) som textfil med det namn och i den ";
         fileAdvice += "katalog (folder) som du själv väljer.\n\n";
         fileAdvice += "Sedan kan du med  [ Hämta fil ]  hämta din favoritlista därifrån — du kan spara olika favoritlistor att välja bland i samma katalog.\n\n";
-        fileAdvice += "OBSERVERA: Det måste vara textfiler med namnslut ´.txt´ eller ´.text´!";
+        fileAdvice += "OBSERVERA: Det måste vara textfiler med namnslut ´.txt´ eller ´.text´!\n\n";
+        fileAdvice += "TIPS: Första raden blir visningsrubrik om den börjar med ett #-tecken.";
         alert (fileAdvice);
       }
     },

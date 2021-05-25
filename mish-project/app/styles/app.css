@@ -1158,15 +1158,20 @@ button.goAlbum:hover {
   font-family: "Arial";
   font-size: 1.5em;
 }
-.nav_links #do_print {
+#do_print, #go_back { /* .nav_links */
   height: 1.2em;
   width: 0.8em;
   padding: 0 0.3em 0.1em 0.4em;
-  background-image: url(/images/printer.svg);
   background-size: 0.9em 0.9em!important;
   background-repeat: no-repeat!important;
   background-position: center!important;
   /*font-family: sans!important; /* quirk for Chrome */
+}
+#do_print {
+  background-image: url(/images/printer.svg);
+}
+#go_back {
+  background-image: url(/images/grid.svg);
 }
 input.showTime[type="number"] {
   width: 1.3em;

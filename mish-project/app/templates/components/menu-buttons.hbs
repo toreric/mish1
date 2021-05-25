@@ -143,7 +143,7 @@ function copyToClipboard (str) {    // Copies a filename (below mini-pic) to the
   <textarea name="searchtext" placeholder="Skriv här sökbegrepp, åtskilda av blanktecken, på en eller flera rader, små eller stora bokstäver utan betydelse (välj överst i vilka texter du ska söka)" rows="4" style="min-width:" />
 </div>
 
-<!- ///// PARAMETER STORE ///// -->
+<!-- ///// PARAMETER STORE ///// -->
 <div id="allowValue" title="permissions" style="display:none"></div>
 <div id="backImg" style="display:none"></div>
 <div id="bkgrColor" style="display:none">rgb(59, 59, 59)</div>
@@ -203,13 +203,14 @@ function copyToClipboard (str) {    // Copies a filename (below mini-pic) to the
 
 <!-- ///// RIGHT BUTTONS (NOTE: without href attributes) /////  -->
 <div class="nav_links" draggable="false" ondragstart="return false">
-  <a class="nav_" title="Stäng
-[Esc]"{{action 'hideShow'}}>&times;</a> &nbsp;<br>
   <!-- NEXT-ARROW-BUTTONS -->
   <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' true }} title="Nästa
 bild [>]">&gt;</a> &nbsp;<br>
   <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' false}} title="Föregående
 bild [<]">&lt;</a> &nbsp;<br>
+  <!-- CLOSE AND GO BACK TO MINIPICS -->
+  <a class="nav_" id="go_back" title="Återgå
+[Esc]"{{action 'hideShow'}} src="/images/grid.svg"> </a> &nbsp;<br>
   <!-- AUTO-SLIDE-SHOW SELECT -->
   <a class="nav_ toggleAuto" draggable="false" ondragstart="return false" {{action 'toggleAuto'}} style="font-size:1.2em;font-family:monospace" title="Automatiskt
 bildbyte [A]">AUTO</a><br>
@@ -225,7 +226,7 @@ eller bildtextrad">&nbsp;per<br>&nbsp;text-&nbsp;<br>&nbsp;rad</a>
   <!-- FULL SIZE -->
   <a class="nav_" id="full_size" draggable="false" {{action 'fullSize'}} title="Full storlek
 i nytt fönster" style="font-size:200%;line-height:80%;padding:0.3em 0.33em 0.25em 0.3em">&#9974;</a> &nbsp; <br>
-<a class="nav_ pnav_" id="do_print" title="Skriv ut" {{action 'doPrint'}} src="/images/printer.svg"> </a> &nbsp;
+<a class="nav_ pnav_" id="dbbo_print" title="Skriv ut" {{action 'doPrint'}} src="/images/printer.svg"> </a> &nbsp;
 </div>
 
 <!-- ///// DISPLAY THE 'SLIDE SHOW' IMAGE ///// -->
@@ -281,6 +282,10 @@ i nytt fönster" style="font-size:200%;line-height:80%;padding:0.3em 0.33em 0.25
       <button class="dzclose" title="Close" {{action 'toggleMainMenu' imdbRoot}}>×</button>
     </p><br>
 
+    <p onclick="return false" draggable="false" ondragstart="return false" title="Favoritskötsel  ">
+      <a id ="favorites" {{action 'seeFavorites'}}>Favoritbilder</a>
+    </p><br>
+
     <p onclick="return false" draggable="false" ondragstart="return false">
       <a class="">
         <select id="rootSel" title="Albumkatalog (albumrot)" onchange={{action 'selectRoot' value='target.value'}}>
@@ -289,10 +294,6 @@ i nytt fönster" style="font-size:200%;line-height:80%;padding:0.3em 0.33em 0.25
           {{/each}}
         </select>
       </a>
-    </p><br>
-
-    <p onclick="return false" draggable="false" ondragstart="return false" title="Favoritskötsel  ">
-      <a id ="favorites" {{action 'seeFavorites'}}>Favoritbilder</a>
     </p><br>
 
     <p onclick="return false" draggable="false" ondragstart="return false">
