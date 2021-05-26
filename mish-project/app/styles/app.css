@@ -38,6 +38,7 @@ iframe {
   background: transparent!important;
   z-index: 0;
 }
+span.ui-dialog-title b, i {background: transparent;}
 /* Correcting these tags against the introduced
 spacing when they occur in inserted picture texts! */
 .img_txt1 a, .img_txt1 b, .img_txt1 strong, .img_txt1 i, .img_txt1 em, .img_txt1 u {
@@ -118,11 +119,14 @@ li.context-menu__item--disabled span, ul.context-menu--left li.context-menu__ite
 }
 button {
   border: 0.5px;
-  border-radius: 3px;
+  border-radius: 4px;
   cursor: pointer;
 }
 button:focus {
   border: 1.2px solid #666;
+}
+div.ui-dialog-buttonset button:hover {
+  background:#b0c4deaa!important;
 }
 .ui-menu {
   min-width: 50px;
@@ -693,6 +697,13 @@ div[aria-describedby='textareas'] {
   background-repeat: no-repeat!important;
   background-position: center!important;
 }
+#smallButtons a#do_mail, #do_mail0 {
+  background-color: #444;
+  background-image: url(/images/mail.svg);
+  background-size: 0.8em 0.8em!important;
+  background-repeat: no-repeat!important;
+  background-position: center!important;
+}
 #smallButtons a#goTop:hover, #smallButtons a#toggleHide:hover, #smallButtons a#reLd:hover {
   background-color: #555;
 }
@@ -791,7 +802,7 @@ strong.albumName {
   border: 1px solid #888;
   border-radius: 4px;
   padding: 0.15em;
-  margin: 0.1em 0.2em 0 -0.1em;
+  margin: 0.1em 3em 0 -0.1em;
   cursor: pointer;
   font-size: 1.2em;
   height: 0.7em;
@@ -1147,9 +1158,20 @@ button.goAlbum:hover {
   font-family: "Arial";
   font-size: 1.5em;
 }
-.nav_links #do_print {
+#do_print, #go_back { /* .nav_links */
+  height: 1.2em;
+  width: 0.8em;
   padding: 0 0.3em 0.1em 0.4em;
-  font-family: sans!important; /* quirk for Chrome */
+  background-size: 0.9em 0.9em!important;
+  background-repeat: no-repeat!important;
+  background-position: center!important;
+  /*font-family: sans!important; /* quirk for Chrome */
+}
+#do_print {
+  background-image: url(/images/printer.svg);
+}
+#go_back {
+  background-image: url(/images/grid.svg);
 }
 input.showTime[type="number"] {
   width: 1.3em;
