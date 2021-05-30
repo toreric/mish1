@@ -813,14 +813,14 @@ export default Component.extend (contextMenuMixin, {
         }), 25);
         later ( ( () => { // To top of screen:
           scrollTo (0, 0);
-          $ ("#title a.proid").focus ();
+          $ ("#title a.proid") [0].focus ();
           later ( ( () => { // Auto log in the default guest user:
             $ (".cred.user").attr ("value", "gäst"); // i18n
             $ (".cred.login").trigger ("click");
             later ( ( () => {
               $ (".cred.login").trigger ("click"); // Confirm logIn
               $ (".cred.user").trigger ("click"); // Prevents FF showing link to saved passwords
-              $ ("#title a.proid").focus ();
+              $ ("#title a.proid") [0].focus ();
               //this.actions.selectRoot ("");
             }), 1000);
           }), 1000);
@@ -1382,7 +1382,7 @@ export default Component.extend (contextMenuMixin, {
               $ ("#imdbDir").text ("");
             }
           } else {
-            that.set ("albumText", " Albumåtgärder");
+            that.set ("albumText", " Albumåtgärder – ");
             that.set ("albumName", '<strong class="albumName"> ' + tmpName + '</strong>');
             that.set ("jstreeHdr", "Alla album (albumkarta, albumträd):");
             $ ("#jstreeHdr").attr ("title", htmlSafe ("Visa alla album\n(hela albumträdet)")); //i18n
@@ -1565,6 +1565,7 @@ export default Component.extend (contextMenuMixin, {
             } else {
               $ ("input.i_email").css ("background", "#fdd");
               $ ("input.i_email").focus ();
+              hideKeyboard ();
               //$ ('#navKeys').text ('false'); // Repeated since non-modal
               return;
             }
@@ -1572,6 +1573,7 @@ export default Component.extend (contextMenuMixin, {
             if (message.length < 7) {
               $ ("textarea.t_mess").css ("background", "#fdd");
               $ ("textarea.t_mess").focus ();
+              hideKeyboard ();
               //$ ('#navKeys').text ('false'); // Repeated since non-modal
               return;
             }
@@ -1618,6 +1620,7 @@ export default Component.extend (contextMenuMixin, {
       }), 33);
       later ( ( () => {
         $ ("input.i_address").focus ();
+        hideKeyboard ();
       }), 333);
     },
     //============================================================================================
@@ -1686,7 +1689,7 @@ export default Component.extend (contextMenuMixin, {
       var album = $ (this.get ("albumName")).text ().replace (/\s/g, " ");
       var album1 = $ ("#picFound").text ().replace (/_/g, " ");
       if ( (!(allow.albumEdit || allow.adminAll)) || album === album1) {
-        userLog ("RÄTTIGHET SAKNAS", true, 1000);
+        userLog ("Otillåtet", true, 500);
         return;
       }
       $ (".mainMenu").hide ();
@@ -1723,10 +1726,11 @@ export default Component.extend (contextMenuMixin, {
       infoDia (null, null, album, code, 'Avbryt', true);
       later ( ( () => {
         $ ("select.selectOption").focus ();
+ hideKeyboard ();
       }), 50);
     },
     //============================================================================================
-    albumEditOption () { // Executes albumEdit()'s selected option
+    async albumEditOption () { // Executes albumEdit()'s selected option
       var opt = $ ("#temporary").text ();
       var chkName = $ ("#temporary_1").text ();
       var nameText = $ ("#imdbDir").text ().replace (/^(.+[/])+/, "");
@@ -1742,6 +1746,7 @@ export default Component.extend (contextMenuMixin, {
           okay = "Fortsätt";
           if (opt === "checked") {okay = "Slutför";}
           cancel = "Avbryt";
+ hideKeyboard ();
         }
         if (opt === "erase") {
           header = "Radera " + nameText; // i18n
@@ -1807,6 +1812,7 @@ export default Component.extend (contextMenuMixin, {
                   $ ("#albumEditOption").trigger ("click");
                 }), 100);
               }
+ hideKeyboard ();
 
             } else if (opt === "checked") {
               nameNew = $ ("#temporary_1").text (); // Regenerate the picFound album
@@ -1835,7 +1841,7 @@ export default Component.extend (contextMenuMixin, {
                 var n = 0;
                 for (let i=0; i<res.length; i++) {
                   var a = res [i].trim ()
-                  if (!(a == '' || a.indexOf ("_imdb_") === 0 || a.indexOf ("_mini_") === 0 || a.indexOf ("_show_") === 0)) {n++;}
+                  if (!(a === "" || a.indexOf ("_imdb_") === 0 || a.indexOf ("_mini_") === 0 || a.indexOf ("_show_") === 0)) {n++;}
                 }
                 // If n==0, any hidden (dotted) files are deleted along with _imdb_ files etc.
                 if (n) {
@@ -1898,6 +1904,7 @@ export default Component.extend (contextMenuMixin, {
         niceDialogOpen ();
         $ ("#noBut").focus ();
         $ ("input.nameNew").focus (); // if exists
+ hideKeyboard ();
         if (opt === "checked") {$ ("#yesBut").focus ();}
       }
     },
@@ -2410,6 +2417,19 @@ export default Component.extend (contextMenuMixin, {
       $ ("#wrap_show .img_txt1").attr ("draggable", "false");
       $ ("#wrap_show .img_txt2").attr ("draggable", "false");
       if ($ ("div[aria-describedby='dialog']").is (":visible") && $ ("div[aria-describedby='dialog'] div span").html () === "Information") showFileInfo ();
+
+      if ($ ("#hideText") [0].checked === true) {
+        $ ("#wrap_show .img_txt1").hide ();
+        $ ("#wrap_show .img_txt2").hide ();
+        $ ("#wrap_show.symlink").css ("border-bottom", "0");
+        $ ("#pathOrig").hide ();
+      } else {
+        $ ("#wrap_show .img_txt1").show ();
+        $ ("#wrap_show .img_txt2").show ();
+        $ ("#wrap_show.symlink").css ("border-bottom", "1.5px solid #0b0");
+        $ ("#pathOrig").show ();
+      }
+
     },
     //============================================================================================
     hideShow () { // ##### Hide the show image element
@@ -2675,7 +2695,8 @@ export default Component.extend (contextMenuMixin, {
         $ (diaSrch).show ();
         //$ ("#searcharea").dialog ("open");
         niceDialogOpen ("searcharea");
-        if (allow.albumEdit || allow.adminAll) $ ("#searcharea div.diaMess div.edWarn").html ("Sökdata...");
+        hideKeyboard ();
+    //    if (allow.albumEdit || allow.adminAll) $ ("#searcharea div.diaMess div.edWarn").html ("Sökdata...");
         //$ (".ui-dialog").attr ("draggable", "true"); // for jquery-ui-touch-punch, here useless?
         age_imdb_images ();
         let sw = parseInt ( (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth)*0.95);
@@ -2763,6 +2784,7 @@ export default Component.extend (contextMenuMixin, {
       }), 50);
 
       refreshEditor (namepic, origpic); // ...and perhaps warnings
+      hideKeyboard ();
 
       resetBorders ();
       if (displ === "none") {
@@ -2973,7 +2995,7 @@ export default Component.extend (contextMenuMixin, {
         $ ("#title button.cred").attr ("title", "Bekräfta inloggning");
         later ( ( () => {
           $ ("#title input.cred").blur ();
-          $ ("#title a.proid").focus (); // Prevents FF showing link to saved passwords
+          $ ("#title a.proid") [0].focus (); // Prevents FF showing link to saved passwords
         }),100);
         return;
       }
@@ -2990,10 +3012,10 @@ export default Component.extend (contextMenuMixin, {
         loggedIn = false;
         $ ("div.settings, div.settings div.check").hide ();
         userLog ("LOGOUT");
-        $ ("#title a.proid").focus ();
+        $ ("#title a.proid") [0].focus ();
         zeroSet (); // #allowValue = '000... etc.
         this.actions.setAllow ();
-        $ (".mainMenu p:eq(3) a").hide (); // Hide the album-edit button in mainMenu
+        $ (".mainMenu p:eq(3) a").attr ("disabled", true); // Disable album-edit button in mainMenu
         $ ("#showDropbox").hide ();  // Hide upload button
         $ ("#viSt").hide (); // Hide visit statistics button
         $ ("#netMeeting").hide (); // Hide meeting button
@@ -3129,7 +3151,7 @@ export default Component.extend (contextMenuMixin, {
                 $ ("#j1_1_anchor").trigger ("click");
               }), 6000);
             }
-            $ ("#title a.proid").focus ();
+            $ ("#title a.proid") [0].focus ();
           }
         });
         $ (document).tooltip ("enable");
@@ -3142,9 +3164,9 @@ export default Component.extend (contextMenuMixin, {
           } else {
             document.getElementById ("t3").parentElement.style.display = "";
           }
-          // Hide or show the album-edit button in mainMenu
-          if (!(allow.albumEdit || allow.adminAll)) $ (".mainMenu p:eq(3) a").hide ()
-          else $ (".mainMenu p:eq(3) a").show ();
+          // Disable or enable the album-edit button in mainMenu
+          if (!(allow.albumEdit || allow.adminAll)) $ (".mainMenu p:eq(3) a").attr ("disabled", true)
+          else $ (".mainMenu p:eq(3) a").attr ("disabled", false);
 
           // Check albumfind and picturefind cookies, they support navigation
           // by web address, in a "very preliminary & primitive way"
@@ -3375,6 +3397,7 @@ export default Component.extend (contextMenuMixin, {
       let favList = getCookie ("favorites").replace (/[ ]+/g, "\n");
       favDia (favList, "Hämta fil", "Lägg till markerade", "Spara", "Stäng", "Spara fil", "Finn och visa", "Töm listan");
       $ (".mainMenu").hide ();
+      hideKeyboard ();
     },
     //============================================================================================
     goTop () {
@@ -3495,8 +3518,8 @@ function acceptedDirName (name) { // Note that &ndash; is accepted:
 function age_imdb_images () {
   if (allow.albumEdit || allow.adminAll) {
     let imdbx = $ ("#imdbLink").text ();
-    execute ('echo $(($(date "+%s")-$(date -r ' + imdbx + '/_imdb_images.sqlite "+%s")))').then (s => {
-      let d = 0, h = 0, m = 0, text = "&nbsp;";
+    execute ('echo $(($(date "+%s")-$(date -r ' + imdbx + '/_imdb_images.sqlite "+%s")))').then (s => { s=0; if(s) s=2;
+    /*  let d = 0, h = 0, m = 0, text = "&nbsp;";
       if (s*1) {
         d = (s - s%86400);
         s = s - d;
@@ -3514,7 +3537,7 @@ function age_imdb_images () {
         if (m) {text += m + " m ";}
         if (s) {text += s + " s ";}
       }
-      $ ("#searcharea div.diaMess div.edWarn").html (text);
+      $ ("#searcharea div.diaMess div.edWarn").html (text); */
     })
   }
 }
@@ -3581,7 +3604,7 @@ $.spinnerWait = function (runWait, delay) {
       document.getElementById("saveOrder").disabled = false;
       document.getElementById("showDropbox").disabled = false; // May be disabled at upload!
       document.getElementById ("imageList").className = "show-block"; // Important! But...
-      $ ("#title a.proid").focus ();
+      $ ("#title a.proid") [0].focus ();
     }), 100);
   }
 }
@@ -3971,6 +3994,7 @@ function favDia (text, addfile, addmarked, savecook, closeit, savefile, findshow
         let text = $ ('textarea[name="favorites"]').val ().trim ();
         saveFavorites (text);
         $ ('textarea[name="favorites"]').focus ();
+        hideKeyboard ();
       }
     },
     {
@@ -4073,6 +4097,7 @@ function favDia (text, addfile, addmarked, savecook, closeit, savefile, findshow
   later ( ( () => {
     $ ('textarea[name="favorites"]').val (text);
   }), 40);
+  hideKeyboard ();
   $ ("#dialog").css ("padding", "0");
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -4149,6 +4174,7 @@ function notesDia (picName, filePath, title, text, save, saveClose, close) { // 
   later ( ( () => {
     niceDialogOpen ("notes");
     $ ('textarea[name="notes"]').focus (); // Positions to top *
+    hideKeyboard ();
     if (!(allow.notesEdit || allow.adminAll)) {
       $ ('textarea[name="notes"]').attr ("disabled", true);
       $ ("button.saveNotes").attr ("disabled", true);
@@ -4908,6 +4934,7 @@ let prepSearchDialog = () => {
           if (sTxt.length < 1) {
             $ ('textarea[name="searchtext"]').val ("");
             $ ('textarea[name="searchtext"]').focus ();
+            hideKeyboard ();
           } else {
             $ ("button.updText").hide ();
             $ ("button.findText").show ();
@@ -5234,6 +5261,7 @@ var prepTextEditDialog = () => {
         function xmpGetSource () {
           execute ("xmpget source " + filePath).then (result => {
             notesDia (namepic, filePath, "Anteckningar till ", result, "Spara", "Spara och stäng", "Stäng");
+            hideKeyboard ();
           });
         }
         if ($ ("#i" + ednp).hasClass ("symlink")) {
@@ -5372,8 +5400,7 @@ function refreshEditor (namepic, origpic) {
   $ ("#textareas .edWarn").html ("");
   let warnText = "";
   if ($ ("button.saveTexts").attr ("disabled")) { // Cannot save if not allowed
-    warnText += nosObs;
-    //$ ("#textareas .edWarn").html (nosObs); // Nos = no save
+    warnText += nosObs; // Nos = no save
   }
   if (origpic.search (/\.gif$/i) > 0) {
     // Don't display the notes etc. buttons:
@@ -5389,6 +5416,7 @@ function refreshEditor (namepic, origpic) {
   $ ('textarea[name="creator"]').html ("");
   $ ("#textareas").dialog ("open"); // Reopen
   $ ('textarea[name="description"]').focus ();
+  hideKeyboard ();
   later ( ( () => {
     $ ('textarea[name="creator"]').val ($ ('#i' + escapeDots (namepic) + ' .img_txt2').html ().trim ().replace (/<br>/g, "\n"));
     $ ('textarea[name="description"]').val ($ ('#i' + escapeDots (namepic) + ' .img_txt1').html ().trim ().replace (/<br>/g, "\n"));
@@ -5547,4 +5575,33 @@ function selectJstreeNode (idx) {
 }
 window.selectJstreeNode = function (idx) { // for child window (iframe)
   selectJstreeNode (idx);
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Hide smartphone virtual keyboard at else focused input/text fields
+ */
+function hideKeyboard () {
+  //this set timeout needed for case when hideKeyborad
+  //is called inside of 'onfocus' event handler
+  setTimeout (function () {
+    //creating temp field
+    var field = document.createElement ('input');
+    field.setAttribute ('type', 'text');
+    //hiding temp field from peoples eyes
+    //-webkit-user-modify is nessesary for Android 4.x
+    field.setAttribute ('style', 'position:absolute; top: 0px; opacity: 0; -webkit-user-modify: read-write-plaintext-only; left:0px;');
+    document.body.appendChild (field);
+    //adding onfocus event handler for out temp field
+    field.onfocus = function (){
+      //this timeout of 200ms is nessasary for Android 2.3.x
+      setTimeout (function () {
+        field.setAttribute ('style', 'display:none;');
+        setTimeout (function () {
+          document.body.removeChild (field);
+          document.body.focus ();
+        }, 20);
+      }, 200);
+    };
+    //focusing it
+    field.focus();
+  }, 50);
 }

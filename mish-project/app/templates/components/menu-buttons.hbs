@@ -61,9 +61,17 @@ function copyToClipboard (str) {    // Copies a filename (below mini-pic) to the
   </form>
   <div style="display:inline-block;white-space:nowrap;margin-top:0.4em">
 
+    <div style="display:inline-block;margin-left:1em">
+      <span class="textCheck">
+        GÖM BILDTEXTER
+        <input id="hideText" type="checkbox">
+        <label for="hideText"></label>
+      </span>
+    </div>
+
     <!-- Get webblink to non-hidden pictures -->
-    <div style="display:inline-block;margin-left:1em" totip="Direktlänk till aktuell bild">
-      <span class="picLinker" style="margin:0.5em 0 0 0" {{action "webLinker"}}>WEBBLÄNK</span>
+    <div style="display:inline-block;margin-left:0.4em" totip="Direktlänk till aktuell bild">
+      <span class="picLinker" {{action "webLinker"}}>WEBBLÄNK</span>
     </div>
     <!-- Show web statistics -->
     <div id="viSt" style="display:inline-block;margin-left:0.4em" totip="Besöksstatistik i ett nytt fönster">
@@ -101,6 +109,7 @@ function copyToClipboard (str) {    // Copies a filename (below mini-pic) to the
 </div>
 
 <div id="searcharea" style="margin:0;padding:0;display:none;width:">
+  <textarea name="searchtext" placeholder="Skriv här sökbegrepp, åtskilda av blanktecken, på en eller flera rader, små eller stora bokstäver utan betydelse (välj överst i vilka texter du ska söka)" rows="4" style="min-width:" />
   <div class="diaMess">
     <div class="edWarn" style="font-weight:normal;text-align:right" ></div>
     <div class="srchIn"> Sök i:&nbsp;
@@ -140,7 +149,6 @@ function copyToClipboard (str) {    // Copies a filename (below mini-pic) to the
     </div>
     <span class="srchMsg"></span>
   </div>
-  <textarea name="searchtext" placeholder="Skriv här sökbegrepp, åtskilda av blanktecken, på en eller flera rader, små eller stora bokstäver utan betydelse (välj överst i vilka texter du ska söka)" rows="4" style="min-width:" />
 </div>
 
 <!-- ///// PARAMETER STORE ///// -->
@@ -278,7 +286,6 @@ i nytt fönster" style="font-size:200%;line-height:80%;padding:0.3em 0.33em 0.25
 
     <p onclick="return false" draggable="false" ondragstart="return false">
       <a title="Sökning" class="search" {{action 'findText'}}>Finn bilder <span style="font:normal 1em monospace!important">[F]</span></a>
-      <span> &nbsp; [F11]=fullskärm</span>
       <button class="dzclose" title="Close" {{action 'toggleMainMenu' imdbRoot}}>×</button>
     </p><br>
 
@@ -297,7 +304,7 @@ i nytt fönster" style="font-size:200%;line-height:80%;padding:0.3em 0.33em 0.25
     </p><br>
 
     <p onclick="return false" draggable="false" ondragstart="return false">
-      <a title="Ta bort, gör nytt, bildsortera ..." {{action 'albumEdit'}}>{{{albumText}}}</a> &nbsp; Valt album: {{{albumName}}}
+      <a title="Ta bort, gör nytt, bildsortera ..." {{action 'albumEdit'}}>{{{albumText}}} {{{albumName}}}</a>
     </p><br>
 
     <p onclick="return false" draggable="false" ondragstart="return false" title="Visa alla album = hela albumträdet">
@@ -314,7 +321,6 @@ i nytt fönster" style="font-size:200%;line-height:80%;padding:0.3em 0.33em 0.25
 
   <!-- Start "home" page: the Information page-->
   <iframe class="intro" src="start.html" style="display:none"></iframe>
-  <!--iframe class="jitsi" allow="camera; microphone; fullscreen; display-capture" src="" style="height:100%;width:90%;top:0;left:4%;border:0px;display:none"></iframe-->
 
   <!-- SMALLBUTTONS -->
   <a id="questionMark" class="smBu" title="Användarhandledning [F1]" draggable="false" ondragstart="return false" {{action 'toggleHelp'}}>?</a>

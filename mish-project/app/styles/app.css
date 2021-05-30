@@ -488,14 +488,14 @@ button.mainMenuClose.ui-dialog-titlebar-close:hover {
   vertical-align: top;
   margin: 0;
 }
-#title span.eraseCheck {
+#title span.eraseCheck, #title span.textCheck {
   cursor: auto!important;
   display: inline;
 }
-#title a.finish, #title span.eraseCheck {
+#title a.finish, #title span.eraseCheck, #title span.textCheck {
   font-size: 70%!important;
 }
-#title input.cred, #title a.finish, #title span.eraseCheck, #title span.picLinker {
+#title input.cred, #title a.finish, #title span.eraseCheck, #title span.textCheck, #title span.picLinker {
   font-family: Verdana, Geneva, Tahoma, sans-serif!important;
   font-size: 0.8em;
   text-align: center;
@@ -1347,11 +1347,12 @@ select {
   z-index: 12;
 }
 .mainMenu p {
-  margin:0.5em 0.2em 0.3em -0.2em;
+  margin:0.3em 0.2em 0 -0.2em;
 }
 .mainMenu p, .mainMenu p a {
-  display:inline;
+  display:inline-block;
   white-space:nowrap;
+  width: 99.4%;
 }
 .mainMenu p a {
   text-decoration: none;
@@ -1361,7 +1362,7 @@ select {
   border: 0.5px solid lightgray;
   border-radius: 0 4px 4px 0;
   background: #555;
-  line-height: 2.4em;
+  line-height: 1.2em;
   margin: -0.4em 0 0 0;
   padding: 0.6em 0.4em 0.6em 0.4em;
   color: white;
@@ -1372,12 +1373,12 @@ select {
 .jstreeAlbumSelect {
   border: 1px solid gray;
   border-radius: 2px;
-  margin: 0 -2.5  px;
+  margin: 0 -2.5px;
   padding: 0;
 }
 .jstree-container-ul {
   margin: 0;
-  max-height: 20em;
+  max-height: 24em;
   overflow-x: auto;
   overflow-y: scroll;
   scrollbar-color: #07e #999 !important;
@@ -1450,8 +1451,8 @@ img.dotted {
 }
 .dzclose {
   position: absolute;
-  top: 0.1em;
-  right: 0.1em;
+  top: 0.03em;
+  right: 0;
   cursor: pointer!important;
   font-size: 2em!important;
   line-height: 0.7em!important;
