@@ -3511,7 +3511,7 @@ function albumPath () {
 // Check if an album/directory name can be accepted (a copy from the server)
 function acceptedDirName (name) { // Note that &ndash; is accepted:
   let acceptedName = 0 === name.replace (/[/\-–@_.a-öA-Ö0-9]+/g, "").length && name !== $ ("#imdbLink").text ();
-  return acceptedName && name.slice (0,1) !== "." && !name.includes ("/.") && !name.includes (picFound);
+  return acceptedName && name.slice (0, 1) !== "." && !name.includes ("/.") && !name.includes (picFound);
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Get the age of _imdb_images databases
@@ -4052,7 +4052,12 @@ function favDia (text, addfile, addmarked, savecook, closeit, savefile, findshow
       text: cleanup,
       class: "eraseFavs",
       click: function () {
-        $ ('textarea[name="favorites"]').val ("");
+        let tmp = $ ('textarea[name="favorites"]').val ().split ("\n");
+        let txt = [];
+        for (let i=0; i<tmp.length; i++) {
+          if (tmp [i].slice (0, 1) === "#") txt.push (tmp [i]);
+        }
+        $ ('textarea[name="favorites"]').val (txt.join ("\n"));
       }
     },
   ]);
@@ -4067,7 +4072,7 @@ function favDia (text, addfile, addmarked, savecook, closeit, savefile, findshow
   // Unvisible file input + iframe as file text content storage
   $ (".fileFavs").before ('<input id="favFile" type="file" accept="text/plain" style="display:none"><iframe id="txtDispl" style="display:none" draggable="false" ondragstart="return false"></iframe>');
   // Visible file name text field
-  $ (".fileFavs").parent ().after ('<input id="favName" type="text" style="width:99%;text-align:left;border:0">');
+  $ (".fileFavs").parent ().after ('<input id="favName" type="text" style="width:99%;text-align:left;border:0;display:none">');
   $ ("button.closeFavs").after ("<br>");
   $ ("button.fileFavs").parent ().css ("text-align", "left");
   $ ("button.saveFavs").parent ().css ("padding-left", "0.2em");
@@ -5580,28 +5585,33 @@ window.selectJstreeNode = function (idx) { // for child window (iframe)
 /** Hide smartphone virtual keyboard at else focused input/text fields
  */
 function hideKeyboard () {
-  //this set timeout needed for case when hideKeyborad
-  //is called inside of 'onfocus' event handler
-  setTimeout (function () {
-    //creating temp field
-    var field = document.createElement ('input');
-    field.setAttribute ('type', 'text');
-    //hiding temp field from peoples eyes
-    //-webkit-user-modify is nessesary for Android 4.x
-    field.setAttribute ('style', 'position:absolute; top: 0px; opacity: 0; -webkit-user-modify: read-write-plaintext-only; left:0px;');
-    document.body.appendChild (field);
-    //adding onfocus event handler for out temp field
-    field.onfocus = function (){
-      //this timeout of 200ms is nessasary for Android 2.3.x
-      setTimeout (function () {
-        field.setAttribute ('style', 'display:none;');
+
+  if (/Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+
+    //this set timeout needed for case when hideKeyborad
+    //is called inside of 'onfocus' event handler
+    setTimeout (function () {
+      //creating temp field
+      var field = document.createElement ('input');
+      field.setAttribute ('type', 'text');
+      //hiding temp field from peoples eyes
+      //-webkit-user-modify is nessesary for Android 4.x
+      field.setAttribute ('style', 'position:absolute; top: 0px; opacity: 0; -webkit-user-modify: read-write-plaintext-only; left:0px;');
+      document.body.appendChild (field);
+      //adding onfocus event handler for out temp field
+      field.onfocus = function (){
+        //this timeout of 200ms is nessasary for Android 2.3.x
         setTimeout (function () {
-          document.body.removeChild (field);
-          document.body.focus ();
-        }, 20);
-      }, 200);
-    };
-    //focusing it
-    field.focus();
-  }, 50);
+          field.setAttribute ('style', 'display:none;');
+          setTimeout (function () {
+            document.body.removeChild (field);
+            document.body.focus ();
+          }, 20);
+        }, 200);
+      };
+      //focusing it
+      field.focus();
+    }, 50);
+
+  }
 }
