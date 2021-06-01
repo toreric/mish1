@@ -70,8 +70,11 @@ function copyToClipboard (str) {    // Copies a filename (below mini-pic) to the
     </div>
 
     <!-- Get webblink to non-hidden pictures -->
-    <div style="display:inline-block;margin-left:0.4em" totip="Direktlänk till aktuell bild">
+    <!--div style="display:inline-block;margin-left:0.4em" totip="Direktlänk till aktuell bild">
       <span class="picLinker" {{action "webLinker"}}>WEBBLÄNK</span>
+    </div-->
+    <div style="display:inline-block;margin-left:0.4em" totip="Lista med alla bildtexter">
+      <span class="picLinker" {{action "textList"}}>TEXTLISTA</span>
     </div>
     <!-- Show web statistics -->
     <div id="viSt" style="display:inline-block;margin-left:0.4em" totip="Besöksstatistik i ett nytt fönster">

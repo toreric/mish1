@@ -1115,6 +1115,9 @@ export default Component.extend (contextMenuMixin, {
   setNavKeys () { // ===== Trigger actions.showNext when key < or > is pressed etc...
 
     var triggerClick = (evnt) => {
+      //evnt.preventDefault ();
+//console.log(evnt);
+//alert ("evnt.type " + evnt.type + " Ctrl=" + evnt.ctrlKey);
       var that = this;
       var tgt = evnt.target;
       let tgtClass = "";
@@ -1131,17 +1134,17 @@ export default Component.extend (contextMenuMixin, {
       if (!tgt.parentElement) return; // impossible
       if (tgt.tagName !=="IMG" && tgt.parentElement.firstElementChild.tagName !== "IMG") return;
 
-      // Ctrl + click may replace right-click on Mac
+      // Ctrl + click may replace right-click on Mac/Safari
       if (evnt.ctrlKey) {
-        if ($ (tgt).hasClass ("mark")) {
+        /*if ($ (tgt).hasClass ("mark")) {
           if (allow.imgHidden || allow.adminAll) {
             // Right click on the marker area of a thumbnail...
             parentAlbum (tgt);
           }
           return;
-        }
+        }*/
         $(tgt.parentElement.firstElementChild).trigger('contextmenu');
-        // Have to be repeated because of this extra contextmenu trigging. Keeps the menu
+        // Has to be repeated because of this extra contextmenu trigging. Keeps the menu
         // by the pointer for both rightclick, Ctrl + rightclic, and Ctrl + leftclick:
         var viewTop = window.pageYOffset; // The viewport position
         var tmpTop = evnt.clientY;           // The mouse position
@@ -1180,6 +1183,8 @@ export default Component.extend (contextMenuMixin, {
     }
     document.addEventListener ("click", triggerClick, false); // Click (at least left click)
     document.addEventListener ("contextmenu", triggerClick, false); // Right click
+    //document.addEventListener ("longclick", triggerClick, false); // Long click on Safari
+    //$("body").longclick(400, triggerClick); // Long click on Safari
 
     // Then the keyboard, actions.showNext etc.:
     var that = this;
@@ -1624,6 +1629,37 @@ export default Component.extend (contextMenuMixin, {
       }), 333);
     },
     //============================================================================================
+    textList () { // ##### Make a list of all shown picture's texts
+      var pictures = $ ("#imageList div.img_mini");
+      var hidecolor = $ ("#hideColor").text ();
+      var pnames = $ ("#imageList div.img_name");
+      var ptxt1s = $ ("#imageList div.img_txt1");
+      var ptxt2s = $ ("#imageList div.img_txt2");
+      var z = false;
+      if ($ ("#imdbDir").text () === ($ ("#imdbLink").text () + "/" + $ ("#picFound").text ())) {
+        z = true;
+      }
+      var list = this.get ("albumName") + " — " + $ ($ ('.showCount .numShown') [0]).text () + " bildtexter";
+      if (z && centerMarkSave.length > 1) list = list + "<br>" + centerMarkSave;
+      for (let i=0; i<pictures.length; i++) {
+        if ($ (pictures [i]).css ("background-color") !== hidecolor) {
+          let name = $ (pnames [i]).text ().trim ();
+          if (z) {name = name.replace (/\.[^.]{4}$/, "");}
+          list += "\n<br><br><small><b>" + name + "</b></small>";
+          list += "<br>" + $ (ptxt1s [i]).html ();
+          list += "<br><i>" + $ (ptxt2s [i]).html () + "</i>";
+        }
+      }
+      var txwin = null;
+      txwin = window.open ("", "txwin", "width=916,height=600,resizable=yes,location=no,titlebar=no,toolbar=no,menubar=no,scrollbars=yes,status=no", false);
+      if (txwin) {
+        txwin.focus ();
+        txwin.document.getElementsByTagName ("body") [0].innerHTML = list;
+      } else {
+        userLog ("POPUP blocked by browser", true, 5000); // 5 s
+      }
+    },
+    //============================================================================================
     infStatus () { // ##### Display permissions with the picture allow.jpg
       var title = "Information om användarrättigheter"; // i18n
       var text = '<img src="allow.jpg" title="Användarrätigheter">'; // i18n
@@ -2016,6 +2052,7 @@ export default Component.extend (contextMenuMixin, {
     },
     //============================================================================================
     selectAlbum () { // ##### triggered by a click within the JStree
+
       $.spinnerWait (true, 101);
       let value = $ ("[aria-selected='true'] a.jstree-clicked");
       if (value && value.length > 0) {
@@ -2279,7 +2316,6 @@ export default Component.extend (contextMenuMixin, {
             }
             h = h + 1;
           } else {
-            //nodelem.style.backgroundColor='#222';
             nodelem.style.backgroundColor=$ ("#bkgrColor").text ();
             if (yes) {
               nodelem.style.display='block-inline';
@@ -4759,18 +4795,18 @@ function extractContent(htmlString) { // Extracts text from an HTML string
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function devSpec () { // Device specific features/settings
   // How do we make context menus with iPad/iOS?
-  if ( (navigator.userAgent).includes ("iPad")) {
+  if (/Android|webOS|iPhone|iPad|iPod/i.test (navigator.userAgent)) {
     /*/ Disable iOS overscroll
     document.body.addEventListener('touchmove', function(event) {
       event.preventDefault();
     }, false);*/
-    $ (".nav_.qnav_").hide (); // the help link, cannot use click-in-picture...
     $ ("#full_size").hide (); // the full size image link
     $ (".nav_.pnav_").hide (); // the print link
+    $ (".nav_.qnav_").hide (); // the help link, cannot use click-in-picture...
   }
   if (window.screen.width < 500) {
     $ ("#full_size").hide (); // the full size image link
-    $ ("#do_print").hide (); // the printout link
+    $ (".nav_.pnav_").hide (); // the printout link
     $ ("a.toggleAuto").hide (); // slide show button
   }
   return false;
@@ -5586,7 +5622,7 @@ window.selectJstreeNode = function (idx) { // for child window (iframe)
  */
 function hideKeyboard () {
 
-  if (/Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+  if (/Android|webOS|iPhone|iPad|iPod/i.test (navigator.userAgent)) {
 
     //this set timeout needed for case when hideKeyborad
     //is called inside of 'onfocus' event handler
@@ -5615,3 +5651,34 @@ function hideKeyboard () {
 
   }
 }
+
+
+/*
+ Longclick Event (´longclick´ is defined)
+ Copyright (c) 2010 Petr Vostrel (http://petr.vostrel.cz/)
+ Dual licensed under the MIT (MIT-LICENSE.txt)
+ and GPL (GPL-LICENSE.txt) licenses.
+ Version: 0.3.2
+ Updated: 2010-06-22
+*//*
+(function(a){function n(b){a.each("touchstart touchmove touchend touchcancel".split(/ /),function(d,e){b.addEventListener(e,function(){a(b).trigger(e)},false)});return a(b)}function j(b){function d(){a(e).data(h,true);b.type=f;$.event.handle.apply(e,o)}if(!a(this).data(g)){var e=this,o=arguments;a(this).data(h,false).data(g,setTimeout(d,a(this).data(i)||a.longclick.duration))}}function k(){a(this).data(g,clearTimeout(a(this).data(g))||null)}function l(b){if(a(this).data(h))return b.stopImmediatePropagation()||
+  false}var p=a.fn.click;a.fn.click=function(b,d){if(!d)return p.apply(this,arguments);return a(this).data(i,b||null).bind(f,d)};a.fn.longclick=function(){var b=[].splice.call(arguments,0),d=b.pop();b=b.pop();var e=a(this).data(i,b||null);return d?e.click(b,d):e.trigger(f)};a.longclick={duration:500};a.event.special.longclick={setup:function(){/iphone|ipad|ipod/i.test(navigator.userAgent)?n(this).bind(q,j).bind([r,s,t].join(" "),k).bind(m,l).css({WebkitUserSelect:"none"}):a(this).bind(u,j).bind([v,
+  w,x,y].join(" "),k).bind(m,l)},teardown:function(){a(this).unbind(c)}};var f="longclick",c="."+f,u="mousedown"+c,m="click"+c,v="mousemove"+c,w="mouseup"+c,x="mouseout"+c,y="contextmenu"+c,q="touchstart"+c,r="touchend"+c,s="touchmove"+c,t="touchcancel"+c,i="duration"+c,g="timer"+c,h="fired"+c})($);    
+
+function longClickHandler(e){
+  e.preventDefault();
+  var tgt = e.target;
+  if (!tgt.parentElement) return; // impossible
+  if (tgt.tagName !=="IMG" && tgt.parentElement.firstElementChild.tagName !== "IMG") return;
+  $(tgt.parentElement.firstElementChild).trigger('contextmenu');
+  var viewTop = window.pageYOffset; // The viewport position
+  var tmpTop = e.clientY;           // The mouse position
+  $ ("div.context-menu-container").css ("top", (viewTop + tmpTop) + "px");
+  var viewLeft = window.pageXOffset; // The viewport position
+  var tmpLeft = e.clientX;           // The mouse position
+  $ ("div.context-menu-container").css ("left", (viewLeft + tmpLeft) + "px");
+  return;
+  //$("body").append("<p>You longclicked. Nice!</p>");
+}
+
+$("body").longclick(400, longClickHandler);*/

@@ -1100,6 +1100,10 @@ button.goAlbum:hover {
   background-color: transparent;
   cursor: pointer;
 }
+*:not(input):not(textarea) {   /* Safari iPad iPhone */
+  -webkit-user-select: none!important;   /* disable selection/Copy of UIWebView */
+  -webkit-touch-callout: none!important; /* disable the IOS popup when long-press on a link */
+}
 .nav_links {
   display: none;
   position: fixed;
