@@ -61,12 +61,9 @@ function copyToClipboard (str) {    // Copies a filename (below mini-pic) to the
   </form>
   <div style="display:inline-block;white-space:nowrap;margin-top:0.4em">
 
-    <div style="display:inline-block;margin-left:1em">
-      <span class="textCheck">
-        GÖM BILDTEXTER
-        <input id="hideText" type="checkbox">
-        <label for="hideText"></label>
-      </span>
+    <!-- Hide texts during slideshow -->
+    <div style="display:inline-block;margin-left:1em" totip="Göm texter vid bildvisning">
+      <label class="hideText">GÖM BILDTEXTER<input id="hideText" type="checkbox"><span class="checkMark"></span></label>
     </div>
 
     <!-- Get webblink to non-hidden pictures -->
@@ -103,7 +100,7 @@ function copyToClipboard (str) {    // Copies a filename (below mini-pic) to the
 
 <!-- ///// JQUERY DIALOGS ///// -->
 <div id="dialog" style="display:none">DIALOG</div>
-<div id="dummydiv" style="display:none">EXTRAADDED</div>
+<div id="extradia" style="display:none">EXTRA</div>
 
 <div id="textareas" style="margin:0;padding:0">
   <div class="diaMess"><span class="edWarn"></span></div>
@@ -237,7 +234,7 @@ eller bildtextrad">&nbsp;per<br>&nbsp;text-&nbsp;<br>&nbsp;rad</a>
   <!-- FULL SIZE -->
   <a class="nav_" id="full_size" draggable="false" {{action 'fullSize'}} title="Full storlek
 i nytt fönster" style="font-size:200%;line-height:80%;padding:0.3em 0.33em 0.25em 0.3em">&#9974;</a> &nbsp; <br>
-<a class="nav_ pnav_" id="dbbo_print" title="Skriv ut" {{action 'doPrint'}} src="/images/printer.svg"> </a> &nbsp;
+<a class="nav_ pnav_" id="do_print" title="Skriv ut" {{action 'doPrint'}} src="/images/printer.svg"></a> &nbsp;
 </div>
 
 <!-- ///// DISPLAY THE 'SLIDE SHOW' IMAGE ///// -->
@@ -337,7 +334,8 @@ gömda bilder" draggable="false" ondragstart="return false" style="display:none"
 ett meddelande med kommentarer,
 rättelser eller andra upplysningar" {{action 'doMail'}} src="/images/mail.svg"></a>
 <a class="smBu" draggable="false" ondragstart="return false" title="Gå upp (visa
-översta raden)" style="font:bold 190% sans-serif" {{action 'goTop'}}>↑</a>
+översta raden)
+ [pgUp]" style="font:bold 190% sans-serif" {{action 'goTop'}}>↑</a>
   <a id="netMeeting" class="smBu" title="Mötesknapp:
 Här träffas vi
 på Internet (i ny

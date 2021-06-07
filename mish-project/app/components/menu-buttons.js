@@ -1651,7 +1651,7 @@ export default Component.extend (contextMenuMixin, {
         }
       }
       var txwin = null;
-      txwin = window.open ("", "txwin", "width=916,height=600,resizable=yes,location=no,titlebar=no,toolbar=no,menubar=no,scrollbars=yes,status=no", false);
+      txwin = window.open ("", "txwin", "width=916,height=600,resizable=yes,location=no,titlebar=no,toolbar=no,menubar=no,scrollbars=yes,status=no");
       if (txwin) {
         txwin.focus ();
         txwin.document.getElementsByTagName ("body") [0].innerHTML = list;
@@ -4044,17 +4044,22 @@ function favDia (text, addfile, addmarked, savecook, closeit, savefile, findshow
       text: savefile,
       class: "saveFavs",
       click: function () {
-        let fileAdvice = "TYVÄRR: Ännu finns ingen standard för att spara lokala filer med webbläsare (förutom via nedladdningslänkar etc.).  Därför:\n\n"
+        let fileAdvice = "TYVÄRR: Ännu finns ingen standard för att spara lokala filer med webbläsare (förutom via nedladdningslänkar etc.).  Därför:<br>"
         fileAdvice += "Om du inte nöjer dig med att spara bara en enda favoritlista (med ";
         fileAdvice += "den mindre av [Spara]-knapparna) så måste du spara dem manuellt — i ";
-        fileAdvice += "textfiler på din dator. Gör så här:\n\n";
-        fileAdvice += "1.  Markera och kopiera listan i favoritfönstret (som med till exempel Ctrl + C).\n\n";
+        fileAdvice += "textfiler på din dator.<br> — Gör så här:<br>";
+        fileAdvice += "1.  Markera och kopiera listan i favoritfönstret (som med till exempel Ctrl + C).<br>";
         fileAdvice += "2.  Spara den med hjälp av en textredigerare (Anteckningar/Notepad eller liknande) som textfil med det namn och i den ";
-        fileAdvice += "katalog (folder) som du själv väljer.\n\n";
-        fileAdvice += "Sedan kan du med  [ Hämta fil ]  hämta din favoritlista därifrån — du kan spara olika favoritlistor att välja bland i samma katalog.\n\n";
-        fileAdvice += "OBSERVERA: Det måste vara textfiler med namnslut ´.txt´ eller ´.text´!\n\n";
-        fileAdvice += "TIPS: Första raden blir visningsrubrik om den börjar med ett #-tecken.";
-        alert (fileAdvice);
+        fileAdvice += "katalog (folder) som du själv väljer.<br>";
+        fileAdvice += " — Sedan kan du med [Hämta fil]-knappen hämta din favoritlista därifrån — du kan spara olika favoritlistor att välja bland i samma katalog.<br>";
+        fileAdvice += "OBSERVERA: Det måste vara textfiler med namnslut ´.txt´ eller ´.text´!<br>";
+        fileAdvice += "TIPS: En extra första rad blir visningsrubrik om den börjar med ett #-tecken.";
+        infoDia ("extradia", null, "Information", fileAdvice, "Ok");
+        $ ("#extradia").css ({"text-align": "left", "margin": "1em"});
+        later ( ( () => {
+          let tmp = parseInt ($ ("#extradia").parent ().css ("left"));
+          $ ("#extradia").parent ().css ("left", (tmp - 10) + "px");
+        }), 40);
       }
     },
     {

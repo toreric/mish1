@@ -261,7 +261,7 @@ div.ui-dialog-buttonset button:hover {
   float: none;
 }
 .ui-dialog .ui-dialog-buttonpane button {
-  margin: 0.2em 0.3em 0 0;
+  margin: 0.2em 0.3em 0.1em 0;
   padding: 0.2em 0.5em 0.3em 0.5em;
   background-color: #bbb;
 }
@@ -272,11 +272,11 @@ div.ui-dialog-buttonset button:hover {
   float: none;
 }
 .ui-dialog-buttonset button:first-child {
-  margin: 0.2em 0.3em 0 0.3em;
+  margin: 0.2em 0.3em 0.1em 0.3em;
   float: none;
 }
 .ui-dialog-buttonset button:last-child {
-  margin: 0.2em 0.3em 0 0;
+  margin: 0.2em 0.3em 0.1em 0;
   float: none;
 }
 div.ui-dialog div#textareas textarea {
@@ -488,14 +488,15 @@ button.mainMenuClose.ui-dialog-titlebar-close:hover {
   vertical-align: top;
   margin: 0;
 }
-#title span.eraseCheck, #title span.textCheck {
+#title span.eraseCheck {
   cursor: auto!important;
   display: inline;
-}
-#title a.finish, #title span.eraseCheck, #title span.textCheck {
   font-size: 70%!important;
 }
-#title input.cred, #title a.finish, #title span.eraseCheck, #title span.textCheck, #title span.picLinker {
+#title a.finish {
+  font-size: 70%!important;
+}
+#title input.cred, #title a.finish, #title span.eraseCheck, #title span.picLinker {
   font-family: Verdana, Geneva, Tahoma, sans-serif!important;
   font-size: 0.8em;
   text-align: center;
@@ -511,6 +512,65 @@ button.mainMenuClose.ui-dialog-titlebar-close:hover {
   display: inline;
   cursor: pointer!important;
 }
+/* Inline custom checkbox, label is ´container´ */
+label.hideText {
+  font-family: Verdana, Geneva, Tahoma, sans-serif!important;
+  border: 1.0px solid #888;
+  border-radius: 2px;
+  background: transparent;
+  display: inline;
+  position: relative;
+  padding: 0.1em 1.4em 0.1em 0.25em;
+  cursor: pointer;
+  font-size: 70%!important;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Hide the default checkbox*/
+label.hideText input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* Create a custom checkbox */
+span.checkMark {
+  position: absolute;
+  top: 0.25em;
+  right: auto;
+  height: 0.9em;
+  width: 0.9em;
+  background-color: #ddd!important;
+  border-radius: 1px;
+  margin: 0 0 0 0.25em;
+  display: inline-block;
+}
+
+/* Create the indicator (hidden when not checked) */
+span.checkMark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+/* Show the indicator (fill) when checked */
+label.hideText input:checked ~ .checkMark:after {
+  display: block;
+}
+
+/* Style the indicator (fill) */
+label .checkMark:after {
+  top: 0.1em;
+  left: 0.11em;
+  width: 0.7em;
+  height: 0.7em;
+  border-radius: 1px;
+  background: blue;
+}
+
 #title button {
   font-family: Verdana, Geneva, Tahoma, sans-serif!important;
   font-size: 0.8em;
@@ -1220,10 +1280,10 @@ input[type=checkbox]+label[for="eraOrig"]::before {
   content: '';
   display: inline-block;
   border: 1px solid white;
-  border-radius: 0.3em;
+  border-radius: 50%;
   margin: 0 0 -0.1px 0;
-  width: 0.6em;
-  height: 0.6em;
+  width: 0.7em;
+  height: 0.7em;
 }
 /* styling the checked 'checkbox': */
 input[type=checkbox]:checked+label::before {
