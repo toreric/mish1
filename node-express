@@ -18,7 +18,7 @@ IMDB_HOME=/home/tore
 IMDB_ROOT=Framkallning_2019
 IMDB_ROOT=Album-1
 #IMDB_ROOT='""' # Empty argument (must be '""') to be passed
-################# correctly positioned into 'node server.js'
+################# correctly positioned into '.../node .../server.js'
 if [[ $1 ]]; then
   IMDB_HOME=$1
   if [[ $2 ]]; then
@@ -28,5 +28,5 @@ fi
 echo IMDB_HOME = $IMDB_HOME
 echo IMDB_ROOT = $IMDB_ROOT
 echo -n "##### Starting the Node server "`date`
-# Note that Node may be installed as either 'node', 'nodejs', or often both:
+# Note that Node may be installed as either 'node', 'nodejs', or both:
 node server.js $IMDB_HOME $IMDB_ROOT $port

@@ -112,7 +112,6 @@ function removeDiacritics (str) {
 }
 //=============================================================================
 // The core program begins here -- load image metadata into _imdb_images.sqlite
-// Transactions is a must-be!
 if (process.argv [2] == "-e") {
   // argv [3] = absolute albumRoot path if present, else assumed symlink 'imdb/'
   loadImageMetadata ()
@@ -122,20 +121,18 @@ if (process.argv [2] == "-e") {
   console.log ("  Reloads image file text metadata into imdb/_imdb_images.sqlite")
   console.log ("  or (preferred) <absolute path to albumroot>_imdb_images.sqlite")
   console.log ("  from the images of the album tree after removing diacritic symbols")
-  console.log ("Needs: nodejs, xmpget")
+  console.log ("Needs: node, xmpget")
   console.log ("Note: This program is assumed to run in the www-album-roots root")
   console.log ("  catalog if an imdb/ symlink is assumed")
 }
 function loadImageMetadata () {
-  let sqlite = require('sqlite3').verbose ()
-  let TransactionDatabase = require("sqlite3-transactions").TransactionDatabase
+  const sqlite = require ("better-sqlite3")
   let execSync = require ('child_process').execSync
-
   let imdbLink = "imdb/" // <<<<<<<<<< NOTE: must equal the init() setting + '/'
   let albumRoot
   if (process.argv [3]) albumRoot = process.argv [3] // Absolute path, preferred
-  else albumRoot = imdbLink // Default symlink, relative path (NOTE: may vary!?!)
-  //    This Bash script (cmd) is subdivided (by |) into 4 tasks:
+  else albumRoot = imdbLink // Default symlink, relative path (NOTE: may it's name vary?!)
+  //    This Bash script line (cmd) is subdivided (by |) into 4 tasks:
   // 1. Find all '.imdb' file paths (with album directories)
   // 2. Remove all file names ('.imdb') from that path list, leaving the directories
   // 3. Use the list entries as arguments to find all non-"_*|.*" files in each directory (using depth=1)
@@ -143,55 +140,48 @@ function loadImageMetadata () {
   let cmd = 'find ' + albumRoot + ' -type f -name ".imdb" | sed "s/.imdb$//" | xargs -Ipath find path -maxdepth 1 -type f -not -name "_*" -not -name ".*" | egrep -i "(JPE?G|TIF{1,2}|PNG|GIF)$"'
   let pathlist = execSync (cmd)
   //console.log ("  pathlist:\n" + pathlist)
-  execSync ('rm -f ' + albumRoot + '_imdb_images.sqlite')
-  //try {
-  let dbtr = new TransactionDatabase (
-    new sqlite.Database (albumRoot + "_imdb_images.sqlite", sqlite.OPEN_READWRITE | sqlite.OPEN_CREATE)
-  )
-  dbtr.beginTransaction (function (err,db) {
-    db.serialize ( () => {
-      db.run ('CREATE TABLE imginfo (id INTEGER PRIMARY KEY, filepath TEXT UNIQUE, name TEXT, album TEXT, description TEXT, creator TEXT, source TEXT, subject TEXT, tcreated TEXT, tchanged TEXT)', function (err) {
-        if (err) {
-          console.error("01",err.message)
-        }
-      })
-      pathlist = pathlist.toString ().trim ().split ("\n")
-      for (let i=0; i<pathlist.length; i++) {
-        let filePath = pathlist [i]
-        // Replace albumRoot with imdbLink:
-        pathlist [i] = imdbLink + pathlist [i].slice (albumRoot.length);
-        let tmp = pathlist [i].split ("/")
-        let param = []
-        let xmpkey = ['description', 'creator', 'source']
-        for (let j=0; j<xmpkey.length; j++) {
-          // Important NOTE: this loop must correspond in both routes.js and ld_imdb.js
-          let cmd = 'xmpget ' + xmpkey [j] + ' ' + filePath // [!]
-          // The removeDiacritics funtion may bypass some characters (e.g. Sw. åäöÅÄÖ)
-          // Remove diacritics and make lowercase. Remove tags and double spaces.
-          param [j] = removeDiacritics (execSync (cmd).toString ()).toLowerCase ()
-          param [j] = param [j].replace(/<[^>]+>/g, " ").replace (/  */g, " ")
-        }
-        db.run ('INSERT INTO imginfo (filepath,name,album,description,creator,source,subject,tcreated,tchanged) VALUES ($filepath,$name,$album,$description,$creator,$source,$subject,$tcreated,$tchanged)', {
-          $filepath:  pathlist [i],
-          $name:      tmp [tmp.length -1].replace (/\.[^.]+$/, ""),
-          $album:     removeDiacritics (pathlist [i].replace (/^[^/]+(\/(.*\/)*)[^/]+$/, "$1")).toLowerCase (),
-          $description: param [0],
-          $creator:   param [1],
-          $source:    param [2],
-          $subject:   '',
-          $tcreated:  '',
-          $tchanged:  ''
-        }, function (err, row) {
-          if (err) {console.error ("02",err.message)}
-          if (row) {console.log ("03",row)}
-        })
-      }
-      db.run ('DROP TABLE IF EXISTS fts', function (err) { // free text search table
-        if (err) {
-          console.error ("04",err.message)
-        }
-      })
-      /* Prepare for free text search (fts) if relevant
+  pathlist = pathlist.toString ().trim ().split ("\n")
+
+  execSync ('rm -f ' + albumRoot + '_imdb_images.sqlite');
+  const db = new sqlite (albumRoot + "_imdb_images.sqlite");
+  
+  db.pragma ("journal_mode = WAL") // Turn on write-ahead logging
+  db.prepare ('CREATE TABLE imginfo (id INTEGER PRIMARY KEY, filepath TEXT UNIQUE, name TEXT, album TEXT, description TEXT, creator TEXT, source TEXT, subject TEXT, tcreated TEXT, tchanged TEXT)').run ()
+
+  for (let i=0; i<pathlist.length; i++) {
+    let filePath = pathlist [i]
+    // Replace albumRoot with imdbLink:
+    pathlist [i] = imdbLink + pathlist [i].slice (albumRoot.length);
+    let tmp = pathlist [i].split ("/")
+    let param = []
+    let xmpkey = ['description', 'creator', 'source']
+    for (let j=0; j<xmpkey.length; j++) {
+      // Important NOTE: this loop must correspond in both routes.js and ld_imdb.js
+      let cmd = 'xmpget ' + xmpkey [j] + ' ' + filePath // [!]
+      // The removeDiacritics funtion may bypass some characters (e.g. Sw. åäöÅÄÖ)
+      // Remove diacritics and make lowercase. Remove tags and double spaces.
+      param [j] = removeDiacritics (execSync (cmd).toString ()).toLowerCase ()
+      param [j] = param [j].replace(/<[^>]+>/g, " ").replace (/  */g, " ").trim ()
+    }
+    db.prepare ('INSERT INTO imginfo (filepath,name,album,description,creator,source,subject,tcreated,tchanged) VALUES ($filepath,$name,$album,$description,$creator,$source,$subject,$tcreated,$tchanged)').run ( {
+      filepath: pathlist [i],
+      name:     tmp [tmp.length -1].replace (/\.[^.]+$/, ""),
+      album:    removeDiacritics (pathlist [i].replace (/^[^/]+(\/(.*\/)*)[^/]+$/, "$1")).toLowerCase (),
+      description: param [0],
+      creator:  param [1],
+      source:   param [2],
+      subject:  '',
+      tcreated: '',
+      tchanged: ''
+    /*}, function (err, row) {
+      if (err) {console.error ("02",err.message)}
+      if (row) {console.log ("03",row)}*/
+    })
+  }
+
+  db.prepare ('DROP TABLE IF EXISTS fts').run ()
+
+      /* Prepare for free text search (fts) if relevant NOTE: NOT coded for ´better-sqlite3´!! 
       //console.log('pathlist 5')
       db.run ("CREATE VIRTUAL TABLE fts USING fts5 (filepath, description, creator, content='imginfo', content_rowid='id')", function (err) {
         if (err) {
@@ -205,14 +195,6 @@ function loadImageMetadata () {
         }
       })
       */
-      db.commit (function (err) {
-        if (err) {
-          console.log(albumRoot + ' image search texts update failed', err.message)
-        } else {
-          console.log (albumRoot + ' image search texts updated')
-        }
-      })
-    })
-    dbtr.close ()
-  })
+
+  db.close ()
 }

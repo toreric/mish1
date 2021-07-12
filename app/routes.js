@@ -12,7 +12,8 @@ module.exports = function (app) {
   //app.use (bodyParser.urlencoded ( {extended: false}))
   //app.use (bodyParser.json())
   var sqlite3 = require('sqlite3') //.verbose ()
-  const sqlitePromise = require ('sqlite3-promisify')
+  //const sqlitePromise = require ('sqlite3-promisify')
+  const sqlitePromise = require ('sqlite')
   const TransactionDatabase = require ("sqlite3-transactions").TransactionDatabase
   var setdb = new sqlite3.Database('_imdb_settings.sqlite')
 
@@ -745,6 +746,7 @@ console.log("p2",p);
     columns = columns.slice (2)
 
     try { // Start try ----------
+      /// change for better-sqlite3
       let db = new sqlite3.Database (IMDB_LINK + '/_imdb_images.sqlite', function (err) {
         if (err) {
           console.error (err.message)
@@ -886,16 +888,16 @@ console.log("p2",p);
           xmpParams [j] = removeDiacritics (execSync (cmd).toString ()).toLowerCase ()
           xmpParams [j] = xmpParams [j].replace(/<[^>]+>/g, " ").replace (/  */g, " ")
         }
-        dbValues =
-        { $filepath:  filePath,
-          $name:      pathArr [pathArr.length - 1].replace (/\.[^.]+$/, ""),
-          $album:     removeDiacritics (filePath.replace (/^[^/]+(\/(.*\/)*)[^/]+$/, "$1")).toLowerCase (),
+        dbValues =   /// Remove the $ prefix for better-sqlite3
+        { $filepath: filePath,
+          $name:     pathArr [pathArr.length - 1].replace (/\.[^.]+$/, ""),
+          $album:    removeDiacritics (filePath.replace (/^[^/]+(\/(.*\/)*)[^/]+$/, "$1")).toLowerCase (),
           $description: xmpParams [0],
-          $creator:   xmpParams [1],
-          $source:    xmpParams [2],
-          $subject:   '',
-          $tcreated:  '',
-          $tchanged:  ''
+          $creator:  xmpParams [1],
+          $source:   xmpParams [2],
+          $subject:  '',
+          $tcreated: '',
+          $tchanged: ''
         }
       }
 
@@ -912,12 +914,15 @@ console.log("p2",p);
           //console.log (' sql UPDATE', recId, filePath)
           // update the table row where id = recId
           getSqlParams ()
+          /// = for better-sqlit3
+          ///db.prepare ("UPDATE imginfo SET (filepath,name,album,description,creator,source,subject,tcreated,tchanged) = ($filepath,$name,$album,$description,$creator,$source,$subject,$tcreated,$tchanged) WHERE id=" + recId).run (dbValues)
           await db.run ('UPDATE imginfo SET (filepath,name,album,description,creator,source,subject,tcreated,tchanged) = ($filepath,$name,$album,$description,$creator,$source,$subject,$tcreated,$tchanged) WHERE id=' + recId, values = dbValues)
 
         } else {
           /* RECORD 1  EXISTS 0
           ¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤ */
           //console.log (' sql DELETE', recId, filePath)
+          /// db.prepare ("DELETE FROM imginfo WHERE id=" + recId).run ()
           let sqlDelete = "DELETE FROM imginfo WHERE id=" + recId
           await db.run (sqlDelete)
         }
@@ -930,6 +935,7 @@ console.log("p2",p);
           //console.log (' sql INSERT', filePath)
           // insert a table row with filepath = filePath
           getSqlParams ()
+          ///db.prepare ("INSERT INTO imginfo (filepath,name,album,description,creator,source,subject,tcreated,tchanged) VALUES ($filepath,$name,$album,$description,$creator,$source,$subject,$tcreated,$tchanged)").run (dbValues)
           await db.run ('INSERT INTO imginfo (filepath,name,album,description,creator,source,subject,tcreated,tchanged) VALUES ($filepath,$name,$album,$description,$creator,$source,$subject,$tcreated,$tchanged)', values = dbValues)
 
         } else {
@@ -939,6 +945,7 @@ console.log("p2",p);
           // do nothing
         } // if else
       } // if else
+      ///db.close ()
       await new Promise (z => setTimeout (z, 222))
       await db.close ()
     } // forLoop

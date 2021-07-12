@@ -4,8 +4,8 @@
 import Component from '@ember/component'
 import EmberObject from '@ember/object';
 import $ from 'jquery';
+import { inject as service } from '@ember/service';
 import { later } from '@ember/runloop';
-import Ember from 'ember';
 import { htmlSafe } from '@ember/string';
 import { task } from 'ember-concurrency';
 import contextMenuMixin from 'ember-context-menu';
@@ -1116,8 +1116,8 @@ export default Component.extend (contextMenuMixin, {
 
     var triggerClick = (evnt) => {
       //evnt.preventDefault ();
-//console.log(evnt);
-//alert ("evnt.type " + evnt.type + " Ctrl=" + evnt.ctrlKey);
+      //console.log(evnt);
+      //alert ("evnt.type " + evnt.type + " Ctrl=" + evnt.ctrlKey);
       var that = this;
       var tgt = evnt.target;
       let tgtClass = "";
@@ -1509,7 +1509,7 @@ export default Component.extend (contextMenuMixin, {
     });
   },
   //----------------------------------------------------------------------------------------------
-  printThis: Ember.inject.service (), // ===== For the 'doPrint' function
+  printThis: service (), // ===== For the 'doPrint' function
 
   // TEMPLATE ACTIONS, functions reachable from the HTML page
   /////////////////////////////////////////////////////////////////////////////////////////
@@ -1762,7 +1762,7 @@ export default Component.extend (contextMenuMixin, {
       infoDia (null, null, album, code, 'Avbryt', true);
       later ( ( () => {
         $ ("select.selectOption").focus ();
- hideKeyboard ();
+        hideKeyboard ();
       }), 50);
     },
     //============================================================================================
@@ -1782,7 +1782,7 @@ export default Component.extend (contextMenuMixin, {
           okay = "Fortsätt";
           if (opt === "checked") {okay = "Slutför";}
           cancel = "Avbryt";
- hideKeyboard ();
+          hideKeyboard ();
         }
         if (opt === "erase") {
           header = "Radera " + nameText; // i18n
@@ -1848,7 +1848,7 @@ export default Component.extend (contextMenuMixin, {
                   $ ("#albumEditOption").trigger ("click");
                 }), 100);
               }
- hideKeyboard ();
+              hideKeyboard ();
 
             } else if (opt === "checked") {
               nameNew = $ ("#temporary_1").text (); // Regenerate the picFound album
@@ -1940,7 +1940,7 @@ export default Component.extend (contextMenuMixin, {
         niceDialogOpen ();
         $ ("#noBut").focus ();
         $ ("input.nameNew").focus (); // if exists
- hideKeyboard ();
+        hideKeyboard ();
         if (opt === "checked") {$ ("#yesBut").focus ();}
       }
     },
@@ -2054,7 +2054,9 @@ export default Component.extend (contextMenuMixin, {
     selectAlbum () { // ##### triggered by a click within the JStree
 
       $.spinnerWait (true, 101);
-      let value = $ ("[aria-selected='true'] a.jstree-clicked");
+      //let value = $ ("[aria-selected='true'] a.jstree-clicked"); -- should be either, not both!!
+      //let value = $ ("a.jstree-clicked"); // Ok
+      let value = $ ("a[aria-selected='true']"); // Ok
       if (value && value.length > 0) {
         value = $ ("#imdbLink").text () + value.attr ("title").toString ().slice (1); // skip dot
       } else {
@@ -3449,6 +3451,7 @@ export default Component.extend (contextMenuMixin, {
     },
     //============================================================================================
     subalbumSelect (subal) {
+      //alert ("subalbumSelect (" + subal + ")")
       subaSelect (subal);
     }
   }
@@ -3611,13 +3614,13 @@ function hideShow_g () {
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Waiting spinner wheel for server activities etc.
-$.spinnerWait = function (runWait, delay) {
-//function $.spinnerWait (runWait, delay) {
-  // Delay is used only at end of waiting
+// This JQUERY construct makes the function available also in HTML/HBS:
+$.spinnerWait = function (runWait, delay) { // Delay is used only at end of waiting (runWait false)
+  //function $.spinnerWait (runWait, delay) {
   if (!delay) delay = 0;
   $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
   if (runWait) {
-    //console.log(" Startspin",delay); // Here only used as debug id-number
+    console.log (" Spinner ON", delay); // Here 'delay' is used only as debug id-number
     $ (".spinner").show ();
     clearInterval (BLINK); // Unlock if occasionaly in use ...
     BLINK_TAG = "#menuButton";
@@ -3625,20 +3628,20 @@ $.spinnerWait = function (runWait, delay) {
     $ (".mainMenu").hide ();
     $ ("div.settings, div.settings div.check").hide ();
     //document.getElementById("menuButton").disabled = true;
-    document.getElementById("reLd").disabled = false; // Important! Must be always available
-    document.getElementById("saveOrder").disabled = true;
+    document.getElementById ("reLd").disabled = false; // Important! Must be always available
+    document.getElementById ("saveOrder").disabled = true;
     document.getElementById ("divDropbox").className = "hide-all";
   } else { // End waiting
     later ( ( () => {
-    //console.log("Stopspin",delay);
+      console.log ("Spinner OFF", delay); // Here 'delay' is used as debug id-number too
       $ (".spinner").hide ();
       clearInterval (BLINK);
     }), delay);
     later ( ( () => {
-      document.getElementById("menuButton").disabled = false;
-      document.getElementById("reLd").disabled = false;
-      document.getElementById("saveOrder").disabled = false;
-      document.getElementById("showDropbox").disabled = false; // May be disabled at upload!
+      document.getElementById ("menuButton").disabled = false;
+      document.getElementById ("reLd").disabled = false;
+      document.getElementById ("saveOrder").disabled = false;
+      document.getElementById ("showDropbox").disabled = false; // May be disabled at upload!
       document.getElementById ("imageList").className = "show-block"; // Important! But...
       $ ("#title a.proid") [0].focus ();
     }), 100);
@@ -4048,8 +4051,8 @@ function favDia (text, addfile, addmarked, savecook, closeit, savefile, findshow
         fileAdvice += "Om du inte nöjer dig med att spara bara en enda favoritlista (med ";
         fileAdvice += "den mindre av [Spara]-knapparna) så måste du spara dem manuellt — i ";
         fileAdvice += "textfiler på din dator.<br> — Gör så här:<br>";
-        fileAdvice += "1.  Markera och kopiera listan i favoritfönstret (som med till exempel Ctrl + C).<br>";
-        fileAdvice += "2.  Spara den med hjälp av en textredigerare (Anteckningar/Notepad eller liknande) som textfil med det namn och i den ";
+        fileAdvice += "1.  Markera (till exempel med Ctrl + A) och kopiera (Ctrl + C) listan i favoritfönstret.<br>";
+        fileAdvice += "2.  Klistra in (Ctrl + V) och spara den med en textredigerare (Anteckningar/Notepad eller liknande) som textfil med det namn och i den ";
         fileAdvice += "katalog (folder) som du själv väljer.<br>";
         fileAdvice += " — Sedan kan du med [Hämta fil]-knappen hämta din favoritlista därifrån — du kan spara olika favoritlistor att välja bland i samma katalog.<br>";
         fileAdvice += "OBSERVERA: Det måste vara textfiler med namnslut ´.txt´ eller ´.text´!<br>";
@@ -5542,11 +5545,13 @@ function allowFunc () { // Called from setAllow (which is called from init(), lo
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function subaSelect (subName, path) { // ##### Sub-album link selected
+  //alert ("subaSelect (" + subName + ", " + path + ")")
   subName = subName.replace (/&nbsp;/g, "_"); // Restore readable album name
   // NOTE: That restoring may be questionable with " " instead of "&nbsp;"
   $.spinnerWait (true, 113);
   let names = $ ("#imdbDirs").text ().split ("\n");
   let name = $ ("#imdbDir").text ().slice ($ ("#imdbLink").text ().length); // Remove imdbLink
+  // NOTE: ´name´ is the album we are leaving, if root then empty!
   let here, idx;
   if (path) { // subName has full path except that '..' and similar is removed
     idx = names.indexOf (subName);

@@ -1,8 +1,9 @@
 /* eslint-disable no-console */
 /* global Dropzone*/
-//import Ember from 'ember';
 import Component from '@ember/component'
 import $ from 'jquery';
+// eslint-disable-next-line no-unused-vars
+//import Ember from 'ember';
 import { later } from '@ember/runloop';
 //import { on } from '@ember/object/evented';
 import { Promise } from 'rsvp';
