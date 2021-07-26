@@ -11,13 +11,15 @@ module.exports = function (app) {
   //var bodyParser = require ('body-parser')
   //app.use (bodyParser.urlencoded ( {extended: false}))
   //app.use (bodyParser.json())
-  var sqlite3 = require('sqlite3') //.verbose ()
   //const sqlitePromise = require ('sqlite3-promisify')
-  const sqlitePromise = require ('sqlite')
+
+  /*var sqlite3 = require('sqlite3') //.verbose ()
   const TransactionDatabase = require ("sqlite3-transactions").TransactionDatabase
   var setdb = new sqlite3.Database('_imdb_settings.sqlite')
+  var sqlite = require ('sqlite') // This is sqlite3 'with await', 2019! */
 
-  var sqlite = require ('sqlite') // This is sqlite3 'with await', 2019!
+  const SQLite = require ("better-sqlite3")
+  const setdb = new SQLite('_imdb_settings.sqlite')
 
   //var jsdom = require('jsdom')
   //var dialog = require('nw-dialog')
@@ -349,7 +351,7 @@ console.log("p2",p);
     var status = "viewer"
     var allow = "?"
     try {
-      setdb.serialize ( () => {
+      //setdb.serialize ( () => {
         //###  Uncomment the following to get a full user credentials log listout  ###//
         /*setdb.all ("SELECT name, pass, user.status, class.allow FROM user LEFT JOIN class ON user.status = class.status ORDER BY name;", (error,rows) => {
           if (!rows) {rows = []}
@@ -359,9 +361,16 @@ console.log("p2",p);
           }
           console.log('----------------')
         })*/
-        setdb.get ("SELECT pass, status FROM user WHERE name = $name", {
-          $name: name
-        }, (error, row) => {
+      let row = setdb.prepare ("SELECT pass, status FROM user WHERE name = $name").get ( {name: name})
+      if (row) {
+        password = row.pass
+        status = row.status
+      }
+      row = setdb.prepare ("SELECT allow FROM class WHERE status = $status").get ( {status: status})
+      if (row) {
+        allow = row.allow
+      }
+      /*, (error, row) => {
           if (error) {throw error}
           if (row) {
             password = row.pass
@@ -381,7 +390,9 @@ console.log("p2",p);
             //res.end ()
           })
         })
-      })
+      })*/
+      res.location ('/')
+      res.send (password +"\n"+ status +"\n"+ allow)
     } catch (err) {
       res.location ('/')
       res.send (err.message)
@@ -746,15 +757,27 @@ console.log("p2",p);
     columns = columns.slice (2)
 
     try { // Start try ----------
-      /// change for better-sqlite3
-      let db = new sqlite3.Database (IMDB_LINK + '/_imdb_images.sqlite', function (err) {
+      // better-sqlite3:
+      const db = new SQLite (IMDB_LINK + "/_imdb_images.sqlite")
+      /*let db = new sqlite3.Database (IMDB_LINK + '/_imdb_images.sqlite', function (err) {
         if (err) {
           console.error (err.message)
           res.send (err.message)
           //res.end ()
         }
-      })
-      db.serialize ( () => {
+      })*/
+      db.pragma ("journal_mode = WAL") // Turn on write-ahead logging
+      const rows = db.prepare ('SELECT id, filepath, ' + columns + ' AS txtstr FROM imginfo WHERE ' + like).all ()
+      setTimeout ( () => {
+        var foundpaths = ""
+        rows.forEach( (row) => {
+          foundpaths += row.filepath.trim () + "\n"
+        })
+        res.send (foundpaths.trim ())
+      }, 1000)
+      db.close ()
+
+      /*db.serialize ( () => {
         let sql = 'SELECT id, filepath, ' + columns + ' AS txtstr FROM imginfo WHERE ' + like
         db.all (sql, [], function (err, rows) {
           foundpath = ""
@@ -775,7 +798,7 @@ console.log("p2",p);
           }
         })
         db.close ()
-      })
+      })*/
     } catch (err) {
       console.error ("€RR", err.message)
     } // End try ----------
@@ -854,7 +877,7 @@ console.log("p2",p);
     for (let i=0; i<pathlist.length; i++) { // forLoop
       let filePath = pathlist [i]
       // No files in the #picFound album (may be occasionally uploaded,
-      // temporary, non-symlinks) nor any symlinks should be processed:
+      // temporary non-symlinks) and no symlinks should be processed:
       if (filePath.indexOf (picFound) > 0 || await isSymlink (filePath)) continue;
       //console.log("sqlUpdate",filePath)
       // Classify the file as existing or not
@@ -870,10 +893,13 @@ console.log("p2",p);
       } catch (err) {
         fileExists = false
       }
-      let db = await sqlite.open (IMDB_LINK + '/_imdb_images.sqlite')
-      await db.run ("PRAGMA journal_mode=WAL")
+      const db = new SQLite (IMDB_LINK + "/_imdb_images.sqlite")
+      db.pragma ("journal_mode = WAL") // Turn on write-ahead logging
+      //let db = await sqlite.open (IMDB_LINK + '/_imdb_images.sqlite')
+      //await db.run ("PRAGMA journal_mode=WAL")
       let sqlGetId = "SELECT id FROM imginfo WHERE filepath='" + filePath + "'"
-      row = await db.get (sqlGetId)
+      row = db.prepare (sqlGetId).get ()
+      //row = await db.get (sqlGetId)
       let recId = -1
       if (row) {recId = row ['id']}
 
@@ -888,16 +914,16 @@ console.log("p2",p);
           xmpParams [j] = removeDiacritics (execSync (cmd).toString ()).toLowerCase ()
           xmpParams [j] = xmpParams [j].replace(/<[^>]+>/g, " ").replace (/  */g, " ")
         }
-        dbValues =   /// Remove the $ prefix for better-sqlite3
-        { $filepath: filePath,
-          $name:     pathArr [pathArr.length - 1].replace (/\.[^.]+$/, ""),
-          $album:    removeDiacritics (filePath.replace (/^[^/]+(\/(.*\/)*)[^/]+$/, "$1")).toLowerCase (),
-          $description: xmpParams [0],
-          $creator:  xmpParams [1],
-          $source:   xmpParams [2],
-          $subject:  '',
-          $tcreated: '',
-          $tchanged: ''
+        dbValues =   /// Removed the $ prefix for better-sqlite3
+        { filepath: filePath,
+          name:     pathArr [pathArr.length - 1].replace (/\.[^.]+$/, ""),
+          album:    removeDiacritics (filePath.replace (/^[^/]+(\/(.*\/)*)[^/]+$/, "$1")).toLowerCase (),
+          description: xmpParams [0],
+          creator:  xmpParams [1],
+          source:   xmpParams [2],
+          subject:  '',
+          tcreated: '',
+          tchanged: ''
         }
       }
 
@@ -914,17 +940,17 @@ console.log("p2",p);
           //console.log (' sql UPDATE', recId, filePath)
           // update the table row where id = recId
           getSqlParams ()
-          /// = for better-sqlit3
-          ///db.prepare ("UPDATE imginfo SET (filepath,name,album,description,creator,source,subject,tcreated,tchanged) = ($filepath,$name,$album,$description,$creator,$source,$subject,$tcreated,$tchanged) WHERE id=" + recId).run (dbValues)
-          await db.run ('UPDATE imginfo SET (filepath,name,album,description,creator,source,subject,tcreated,tchanged) = ($filepath,$name,$album,$description,$creator,$source,$subject,$tcreated,$tchanged) WHERE id=' + recId, values = dbValues)
+          // For better-sqlite3
+          db.prepare ("UPDATE imginfo SET (filepath,name,album,description,creator,source,subject,tcreated,tchanged) = ($filepath,$name,$album,$description,$creator,$source,$subject,$tcreated,$tchanged) WHERE id=" + recId).run (dbValues)
+          //await db.run ('UPDATE imginfo SET (filepath,name,album,description,creator,source,subject,tcreated,tchanged) = ($filepath,$name,$album,$description,$creator,$source,$subject,$tcreated,$tchanged) WHERE id=' + recId, values = dbValues)
 
         } else {
           /* RECORD 1  EXISTS 0
           ¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤ */
           //console.log (' sql DELETE', recId, filePath)
-          /// db.prepare ("DELETE FROM imginfo WHERE id=" + recId).run ()
-          let sqlDelete = "DELETE FROM imginfo WHERE id=" + recId
-          await db.run (sqlDelete)
+          db.prepare ("DELETE FROM imginfo WHERE id=" + recId).run ()
+          //let sqlDelete = "DELETE FROM imginfo WHERE id=" + recId
+          //await db.run (sqlDelete)
         }
 
       } else { // not in db table
@@ -935,22 +961,22 @@ console.log("p2",p);
           //console.log (' sql INSERT', filePath)
           // insert a table row with filepath = filePath
           getSqlParams ()
-          ///db.prepare ("INSERT INTO imginfo (filepath,name,album,description,creator,source,subject,tcreated,tchanged) VALUES ($filepath,$name,$album,$description,$creator,$source,$subject,$tcreated,$tchanged)").run (dbValues)
-          await db.run ('INSERT INTO imginfo (filepath,name,album,description,creator,source,subject,tcreated,tchanged) VALUES ($filepath,$name,$album,$description,$creator,$source,$subject,$tcreated,$tchanged)', values = dbValues)
+          db.prepare ("INSERT INTO imginfo (filepath,name,album,description,creator,source,subject,tcreated,tchanged) VALUES ($filepath,$name,$album,$description,$creator,$source,$subject,$tcreated,$tchanged)").run (dbValues)
+          //await db.run ('INSERT INTO imginfo (filepath,name,album,description,creator,source,subject,tcreated,tchanged) VALUES ($filepath,$name,$album,$description,$creator,$source,$subject,$tcreated,$tchanged)', values = dbValues)
 
         } else {
           /* RECORD 0  EXISTS 0
           ¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤ */
           //console.log (' sql NOOP', filePath)
           // do nothing
-        } // if else
-      } // if else
-      ///db.close ()
+        } //--if else
+      } //--if else
       await new Promise (z => setTimeout (z, 222))
-      await db.close ()
-    } // forLoop
+      db.close ()
+      //await db.close ()
+    } //--for loop
     resolve (true)
-  }) // Promise
+  }) //--Promise
   }
 
   // ===== Check if an album/directory name can be accepted

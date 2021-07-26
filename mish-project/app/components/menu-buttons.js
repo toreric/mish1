@@ -6,9 +6,11 @@ import EmberObject from '@ember/object';
 import $ from 'jquery';
 import { inject as service } from '@ember/service';
 import { later } from '@ember/runloop';
+import { Promise } from 'rsvp';
 import { htmlSafe } from '@ember/string';
 import { task } from 'ember-concurrency';
 import contextMenuMixin from 'ember-context-menu';
+
 export default Component.extend (contextMenuMixin, {
 
   // TEMPLATE PERFORM tasks, reachable from the HTML template page
@@ -110,40 +112,40 @@ export default Component.extend (contextMenuMixin, {
   // CONTEXT MENU Context menu
   /////////////////////////////////////////////////////////////////////////////////////////
   contextItems: [
-    { label: "×", disabled: false, action () {} }, // Spacer closes menu
-    { label: 'Information',
-      disabled: false,
-      action () {
-        showFileInfo ();
-      }
+  { label: "×", disabled: false, action () {} }, // Spacer closes menu
+  { label: 'Information',
+    disabled: false,
+    action () {
+      showFileInfo ();
+    }
+  },
+  { label: 'Redigera text...',
+    disabled: () => {
+      return !(allow.textEdit || allow.adminAll);
     },
-    { label: 'Redigera text...',
-      disabled: () => {
-        return !(allow.textEdit || allow.adminAll);
-      },
-      //disabled: false, // For 'anyone text preview' change to this 'disabled:' line!
-      // NOTE: Also search for TEXTPREVIEW for another change needed!
-      action: () => {
-        // Mimic click on the text of the mini-picture (thumbnail)
-        $ ("#i" + escapeDots ($ ("#picName").text ().trim ()) + " a").next ().next ().next ().trigger ("click");
-      }
+    //disabled: false, // For 'anyone text preview' change to this 'disabled:' line!
+    // NOTE: Also search for TEXTPREVIEW for another change needed!
+    action: () => {
+      // Mimic click on the text of the mini-picture (thumbnail)
+      $ ("#i" + escapeDots ($ ("#picName").text ().trim ()) + " a").next ().next ().next ().trigger ("click");
+    }
+  },
+  { label: 'Redigera bild...', // i18n
+    disabled: () => {
+      return !(allow.imgEdit || allow.adminAll);
     },
-    { label: 'Redigera bild...', // i18n
-      disabled: () => {
-        return !(allow.imgEdit || allow.adminAll);
-      },
-      // to be completed ...
-      action () {
-        var title = "Information";
-        var text = "<br>”Redigera bild...” är en planerad framtida länk<br>till något bildredigeringsprogram"; // i18n
-        var yes = "Ok" // i18n
-        infoDia (null, null, title, text, yes, true);
-        return;
-      }
-    },
-    { label: 'Göm eller visa', // Toggle hide/show
-      disabled: () => {
-        return !(allow.imgHidden || allow.adminAll);
+    // to be completed ...
+    action () {
+      var title = "Information";
+      var text = "<br>”Redigera bild...” är en planerad framtida länk<br>till något bildredigeringsprogram"; // i18n
+      var yes = "Ok" // i18n
+      infoDia (null, null, title, text, yes, true);
+      return;
+    }
+  },
+  { label: 'Göm eller visa', // Toggle hide/show
+    disabled: () => {
+      return !(allow.imgHidden || allow.adminAll);
     },
     action () {
       var picName, act, nels, nelstxt, picNames = [], nodelem = [], nodelem0, i;
@@ -172,36 +174,40 @@ export default Component.extend (contextMenuMixin, {
       //console.log (nodelem0.parentNode.style.backgroundColor); // Check representation!
       if (nodelem0.parentNode.style.backgroundColor === $ ("#hideColor").text ())
         {act = 0;} else {act = 1;} // 0 = show, 1 = hide (it's the hide flag!)
-      var actxt1 = ["Vill du visa", "Vill du gömma"];
-      var actxt2 = ["ska visas", "ska gömmas"];
-      $ ("#dialog").html ("<b>" + actxt1 [act] + nelstxt + "?</b><br>" + cosp (picNames) + "<br>" + actxt2 [act]); // Set dialog text content
-      $ ("#dialog").dialog ( { // Initiate dialog
-        title: "Göm eller visa...",
-        autoOpen: false,
-        draggable: true,
-        modal: true,
-        closeOnEscape: true
-      });
-      // Define button array
-      $ ("#dialog").dialog ('option', 'buttons', [
-      {
-        text: "Ja", // Yes
-        "id": "allButt", // Process all
-        click: function () {
-          hideFunc (picNames, nels, act);
-          $ (this).dialog ('close');
-        }
-      },
-      {
-        text: "", // Set later, in order to include html tags (illegal here)
-        "id": "noButt",
-        click: function () {
-          $ (this).dialog ('close');
-        }
-      }]);
-      $ ("#noButt").html ("<b>Nej, avbryt</b>"); // i18n
-      niceDialogOpen ();
-      $ ("#allButt").focus ();
+      if (nels === 1) {
+        hideFunc (picNames, nels, act);
+      } else {
+        var actxt1 = ["Vill du visa", "Vill du gömma"];
+        var actxt2 = ["ska visas", "ska gömmas"];
+        $ ("#dialog").html ("<b>" + actxt1 [act] + nelstxt + "?</b><br>" + cosp (picNames) + "<br>" + actxt2 [act]); // Set dialog text content
+        $ ("#dialog").dialog ( { // Initiate dialog
+          title: "Göm eller visa...",
+          autoOpen: false,
+          draggable: true,
+          modal: true,
+          closeOnEscape: true
+        });
+        // Define button array
+        $ ("#dialog").dialog ('option', 'buttons', [
+        {
+          text: "Ja", // Yes
+          "id": "allButt", // Process all
+          click: function () {
+            hideFunc (picNames, nels, act);
+            $ (this).dialog ('close');
+          }
+        },
+        {
+          text: "", // Set later, in order to include html tags (illegal here)
+          "id": "noButt",
+          click: function () {
+            $ (this).dialog ('close');
+          }
+        }]);
+        $ ("#noButt").html ("<b>Nej, avbryt</b>"); // i18n
+        niceDialogOpen ();
+        $ ("#allButt").focus ();
+      }
     }
   },
   { label: "───────────────", disabled: false, action () {} }, // Spacer closes menu
@@ -2964,8 +2970,7 @@ export default Component.extend (contextMenuMixin, {
               var host = this.responseURL.replace (/download.+$/, "");
               $ ("#download").attr ("href", host + this.responseText); // Is just 'origpic'(!), outdated?
               later ( ( () => {
-                //$ ("#download").trigger ("click"); //DOES NOT WORK
-                document.getElementById ("download").trigger ("click"); // Works
+                document.getElementById ("download").click (); // Works, trigger.click() doesn't
                 $.spinnerWait (false, 2005);
                 userLog ("DOWNLOAD");
                 resolve (true);
@@ -3135,7 +3140,8 @@ export default Component.extend (contextMenuMixin, {
             $ ("#title button.cred").text ("Logga ut");
             //$ ("#title button.cred").attr ("title", "Du är inloggad ..."); // more below
             loggedIn = true;
-            //this.set ("loggedIn", true);
+            // Prevent unintentionally immediate logut with the Enter key:
+            $ ("#title button.cred").blur ();
             status = $ ("#title span.cred.status").text (); // [<status>]
             userLog ("LOGIN " + usr + " " + status);
             status = status.slice(1,status.length-1); // <status>
@@ -3488,7 +3494,7 @@ let chkPaths = []; // For DB picture paths to be soon updated (or removed)
 let savedAlbumIndex = 0;
 
 // NOTE: returnTitles [2] is used as a ´word´ in some places (must be one item), search for it!
-let returnTitles = ["HEM till ROT-albumet", "MOT ROT-albumet", "TILL-SENASTE-album"]; // i18n
+let returnTitles = ["HEM till ROT-albumet", "MOT ROT-albumet", "TILL SENASTE album"]; // i18n
 // Corresponding navigation buttons display=""|"none" in the high position, the extra are low down
 let navButtons = ["", "none", "none"]; // Additional extra navigation buttons ["⌂hem", "↖", "⇆"]
 //  The "⇆" button is triggered/pressed by the browser's navigation arrows, visibility-independent
@@ -5402,11 +5408,20 @@ var prepTextEditDialog = () => {
         result = result.replace (/^([^<]+)<.+/, "$1");
         fileName = result;
       }).then ( () => {
+        tempStore = "TEXT written";
         saveText (fileName +'\n'+ text1 +'\n'+ text2);
         return;
       })
     } else {
       saveText (fileName +'\n'+ text1 +'\n'+ text2);
+      if (fileName.indexOf ($ ("#picFound").text ()) < 0) {
+        tempStore = "TEXT written";
+      } else {
+        // An uploaded picture in the #picFound album is not saved permanently, if not
+        // moved to a ´real´ album. This warning is a hint of that the saved text is
+        // not written to the database but only temporarily saved as image metadata.
+        tempStore = "TEXT written TEMPORARY only!";
+      }
     }
     // ===== XMLHttpRequest saving the text
     function saveText (txt) {
@@ -5423,7 +5438,8 @@ var prepTextEditDialog = () => {
           $ ("#i" + ednp + " .img_txt2" ).html ("");
           infoDia (null, null,"Texten sparades inte!", '<br>Bildtexten kan inte uppdateras på grund av<br>något åtkomsthinder &ndash; är filen ändringsskyddad?<br><br>Eventuell tillfälligt förlorad text återfås med ”Ladda om albumet (återställ osparade ändringar)”', "Ok", true);
         } else {
-          userLog ("TEXT written", false, 2000);
+          userLog (tempStore, false, 2000);
+          tempStore = "";
           //console.log ('Xmp.dc metadata saved in ' + fileName);
         }
       }
@@ -5589,6 +5605,7 @@ window.onpopstate = function () {
   subaSelect ("⇆");
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// Show the (picture) file information dialog
 function showFileInfo () {
   var picName = $ ("#picName").text ();
   var picOrig = $ ("#picOrig").text ();
@@ -5609,6 +5626,7 @@ function showFileInfo () {
   });
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// Return true if valid email
 function emailOk(email) {
   const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   return re.test(email);

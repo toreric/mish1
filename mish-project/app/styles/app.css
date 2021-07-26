@@ -844,7 +844,7 @@ button[disabled] {
   display: inline-block;
   vertical-align:top;
   width: 80px;
-  margin: 0.5em 20px 0 0;
+  margin: 0.5em 0.75em 0 0;
   font-size: 85%;
   font-weight: bold;
 }
@@ -880,11 +880,12 @@ strong.albumName {
 }
 a.imDir span{
   background: transparent;
+  word-wrap: break-word;
 }
 a.imDir img {
   height: 60px;
   width: 80px;
-  border-radius: 2px;
+  border-radius: 4px;
 }
 /*a.imDir * {
   color: #aef;
@@ -896,7 +897,7 @@ a.imDir *:hover {
   border: 2px solid #aef;
 }*/
 a.imDir img:hover {
-  border: 0.7px solid #aef;
+  border: 1px solid #aef;
 }
 /* CSS tooltip title-1 for long one-liners.
 The jquery ui-tooltip is used elsewere (totip in *.js) */
