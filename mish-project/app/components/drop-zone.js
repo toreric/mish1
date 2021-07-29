@@ -211,8 +211,8 @@ export default Component.extend({
       dictMaxFilesExceeded: this.dictMaxFilesExceeded,
 
       // Fix flickering dragging over child elements: https://github.com/enyo/dropzone/issues/438
-      dragenter: $ .noop,
-      dragleave: $ .noop,
+      dragenter: this.noop,
+      dragleave: this.noop,
       init: function () {
         onDragEnterLeaveHandler(this);
         document.getElementById("uploadWarning").style.display = "none";
@@ -265,10 +265,19 @@ export default Component.extend({
           document.getElementById("uploadWarning").style.display = "none";
           $ ("#uploadFinished").text ("UPPLADDNINGEN FÄRDIG");
           this.options.autoProcessQueue = false;
-          //err $ ("#re F resh-1").click (); // Update the page, via DOM..
           let n = this.files.length;
+          console.log (secNow (), "drop-zone queuecomplete"); // Upload end
+          // Refresh after file upload
+          var ms = n * 1000; // May be a setting?
+          (function (t) {
+            setTimeout (function () {
+              $ ("img.spinner").trigger ("click");
+              later ( () => {
+                $ ("#reLd").trigger ("click");
+              }, 222);
+            }, (t)); // Waiting time
+          })(ms); //Pass milliseconds into closure of self-exec anon-func
           later ( () => {
-            console.log (secNow (), "drop-zone queuecomplete"); // Upload end
             // Mark the uploaded files
             for (let i=0; i<n; i++) {
               // This local 'name' is 1) without extension 2) with escaoed dots if any
@@ -276,16 +285,10 @@ export default Component.extend({
               $ ("#i" + name + " div[alt='MARKER']").removeClass ();
               $ ("#i" + name + " div[alt='MARKER']").addClass ("markTrue");
             }
-            document.getElementById ("toggleHide").click (); // This will update the display
-            document.getElementById ("toggleHide").click (); // This will update the display
-          }, 2000*qlen);
-          // Refresh after file upload
-          var ms = 1000; // The interval may be a setting?
-          (function (j, t) {
-            setTimeout (function () {
-              $ ("#refresh-1").click ();
-            }, (j*t)); // Waiting time
-          })(qlen, ms); //Pass into closure of self-exec anon-func
+            later ( () => { // Reveal obscured uploads
+              $ ("div.miniImgs").trigger ("click");
+            }, 222);
+          }, 2*ms);
         });
 
       }

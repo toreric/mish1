@@ -5473,7 +5473,13 @@ function refreshEditor (namepic, origpic) {
     $ (".ui-dialog-buttonset button.notes").css ("display", "none");
     $ (".ui-dialog-buttonset button.keys").css ("display", "none");
   }
-  warnText = "<b style='float:left;cursor:text'> &nbsp; ’ – × ° — ” &nbsp; </b>" + warnText;
+  warnText = "<span style='float:left'>" +
+  "&nbsp;<b class='insertChar' style='cursor:pointer' onclick='copyToClipboard(this.innerHTML)'>’</b>" + 
+  "&nbsp;<b class='insertChar' style='cursor:pointer' onclick='copyToClipboard(this.innerHTML)'>–</b>" + 
+  "&nbsp;<b class='insertChar' style='cursor:pointer' onclick='copyToClipboard(this.innerHTML)'>×</b>" + 
+  "&nbsp;<b class='insertChar' style='cursor:pointer' onclick='copyToClipboard(this.innerHTML)'>°</b>" + 
+  "&nbsp;<b class='insertChar' style='cursor:pointer' onclick='copyToClipboard(this.innerHTML)'>—</b>" + 
+  "&nbsp;<b class='insertChar' style='cursor:pointer' onclick='copyToClipboard(this.innerHTML)'>”</b></span>" +  warnText;
 
   if (warnText) {$ ("#textareas .edWarn").html (warnText);}
   // Load the texts to be edited after positioning to top
