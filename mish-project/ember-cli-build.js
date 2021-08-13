@@ -16,8 +16,11 @@ module.exports = function(defaults) {
     },
     minifyCSS: {
       enabled: false
-    }/*,
-    // Disable jQuery bundled with Ember.js
+    },
+    sourcemaps: {
+      enabled: false
+    }
+    /*/ Disable jQuery bundled with Ember.js
     vendorFiles: { 'jquery.js': null },
     // Include jQuery slim instead of default build
     jquery: {

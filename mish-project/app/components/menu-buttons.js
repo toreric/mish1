@@ -19,7 +19,7 @@ export default Component.extend (contextMenuMixin, {
   rstBrdrs: task (function* () {
     if ($ (".mainMenu").is (":visible")) {
       // Close this if visible:
-      $ (".mainMenu").hide ();
+      $ (".mainMenu").hide (); $ ("#menuButton").html ("☰");
     } else {
       resetBorders ();
     }
@@ -51,7 +51,7 @@ export default Component.extend (contextMenuMixin, {
 
       if (imdbroot === "") {
         // Prepare to select imdbRoot
-        $ (".mainMenu").show ();
+        $ (".mainMenu").show (); $ ("#menuButton").html ("×");
         $ ("iframe.intro").hide ();
         $ (".mainMenu p:gt(1)").hide (); // Shown at selectRoot ()
         this.set ("albumData", [])
@@ -818,6 +818,8 @@ export default Component.extend (contextMenuMixin, {
           }
         }), 25);
         later ( ( () => { // To top of screen:
+          let news ="Hembygdsföreningen beklagar att det här inte kunde ses under cirka två veckor fram till den 12 augusti 2021. Orsak: Upgradering av servern med oförutsedda komplikationer."
+          userLog (news, true, 10000);
           scrollTo (0, 0);
           $ ("#title a.proid") [0].focus ();
           later ( ( () => { // Auto log in the default guest user:
@@ -851,7 +853,7 @@ export default Component.extend (contextMenuMixin, {
           //effect: "fade"
         },
         position: {
-          my: "left top+2",
+          my: "left+2 top+2",
           at: "left bottom"
         },
         close: function () {
@@ -914,10 +916,10 @@ export default Component.extend (contextMenuMixin, {
     return new Promise (resolve => {
       var test = 'A1';
       //$.spinnerWait (true);console.log(test);
-      this.requestOrder ().then (sortnames => {
+      this.requestOrder ().then (async sortnames => {
         if (sortnames === undefined) {sortnames = "";}
         if (sortnames === "Error!") {
-          $ (".mainMenu").show ();
+          $ (".mainMenu").show (); $ ("#menuButton").html ("×");
           if ($ ("#imdbDir").text () !== "") {
             document.getElementById ("imdbError").className = "show-inline";
           }
@@ -932,9 +934,10 @@ export default Component.extend (contextMenuMixin, {
         test = 'A2';
         //$.spinnerWait (true);console.log(test);
         var n=0;
+        await new Promise (z => setTimeout (z, 1111));
         // Use sortOrder (as far as possible) to reorder namedata ERROR
         // First pick out namedata (allNames) against sortnames (SN), then any remaining
-        this.requestNames ().then (namedata => {
+        this.requestNames ().then (async namedata => {
           var i = 0, k = 0;
           // --- Start prepare sortnames checking CSV columns
           var SN = [];
@@ -981,7 +984,7 @@ export default Component.extend (contextMenuMixin, {
           for (i=0; i<namedata.length; i++) {
             name.push (namedata [i].name);
           }
-          test ='B';
+          test = 'B';
           // --- Make the object vector 'newdata' for new 'namedata=allNames' content
           // --- Use 'snams' order to pick from 'namedata' into 'newdata' and 'newsort'
           // --- 'namedata' and 'name': Ordered as from disk (like unknown)
@@ -997,7 +1000,7 @@ export default Component.extend (contextMenuMixin, {
             snamsvec.splice (0, 1);
             snams.splice (0, 1);
           }
-          test ='C';
+          test = 'C';
           // --- Move remaining 'namedata' objects (e.g. uploads) into 'newdata' until empty.
           // --- Place them first to get better noticed. Update newsort for sortnames.
           // --- The names, of such (added) 'namedata' objects, are kept remaining in 'name'??
@@ -1010,6 +1013,7 @@ export default Component.extend (contextMenuMixin, {
           }
 
           n = newdata.length;
+          nglob=n;
           // Transform the elements for HBS template use:
           //$.spinnerWait (true);console.log(test);
           for (i=0; i<n; i++) {
@@ -1023,9 +1027,8 @@ export default Component.extend (contextMenuMixin, {
           }
 
           newsort = newsort.trim (); // Important
-          test ='E0';
-          this.set ("allNames", newdata); // The minipics reload is triggered here (RELOAD)
-          //$.spinnerWait (true);console.log(test);
+          test = 'E0';
+          this.set ("allNames", newdata); // triggers the minipics reload (RELOAD)
           $ ('#sortOrder').text (newsort); // Save in the DOM
           //console.log("NOTE: newsort is the true list of images in the actual directory:",newsort.split("\n"));
           //console.log("NOTE: newdata will trigger the thumbnails reload:",this.get ("allNames"));
@@ -1079,7 +1082,6 @@ export default Component.extend (contextMenuMixin, {
               }
               //$.spinnerWait (true);console.log(test);
             }), 777);
-
             //$.spinnerWait (true);console.log(test);
             userLog ("RELOAD");
           } else {
@@ -1114,7 +1116,8 @@ export default Component.extend (contextMenuMixin, {
         console.log ("Not found");
       });
       $ ('#navKeys').text ('true');
-      resolve (test);
+console.log("refreshALL",nglob);
+      resolve (nglob);
     });
   },
   //----------------------------------------------------------------------------------------------
@@ -1182,7 +1185,7 @@ export default Component.extend (contextMenuMixin, {
         var origpic = $ ("#imdbLink").text () + "/" + tgt.title;
         var minipic = tgt.src;
         var showpic = minipic.replace ("/_mini_", "/_show_");
-        document.getElementById ("divDropbox").className = "hide-all";
+        document.getElementById ("divDropbox").style.display = "none";
         this.actions.showShow (showpic, namepic, origpic);
         return;
       }
@@ -1203,15 +1206,15 @@ export default Component.extend (contextMenuMixin, {
         // If #navAuto is true, runAuto will be stopped if it is running
         // (with no dialogs open). Else, #navAuto SHOULD be false, anyhow!
         $ ("#navAuto").text ("false");
-        $ (".mainMenu").hide ();
+        $ (".mainMenu").hide (); $ ("#menuButton").html ("☰");
         $ ("iframe.intro").hide ();
         $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
         if ($ ("div.settings").is (":visible")) { // Hide settings
           $ ("div.settings, div.settings div.check").hide ();
           return;
         }
-        if (document.getElementById ("divDropbox").className !== "hide-all") { // Hide upload
-          document.getElementById ("divDropbox").className = "hide-all";
+        if (document.getElementById ("divDropbox").style.display !== "none") { // Hide upload
+          document.getElementById ("divDropbox").style.display = "none";
           return;
         }
         if ($ ("#notes").is (":visible")) {
@@ -1734,7 +1737,7 @@ export default Component.extend (contextMenuMixin, {
         userLog ("Otillåtet", true, 500);
         return;
       }
-      $ (".mainMenu").hide ();
+      $ (".mainMenu").hide (); $ ("#menuButton").html ("☰");
       $ ("iframe.intro").hide ();
       $ (".img_show").hide ();
       $ (".nav_links").hide ();
@@ -2009,7 +2012,7 @@ export default Component.extend (contextMenuMixin, {
       ediTextClosed ();
       $ (".img_show").hide ();
       $ (".nav_links").hide ();
-      document.getElementById ("divDropbox").className = "hide-all";
+      document.getElementById ("divDropbox").style.display = "none";
       if (value.indexOf (" ") > -1) value = ""; // The header line contains space
       if (value === "") {
         $ (".mainMenu p:gt(1)").show ();
@@ -2076,7 +2079,8 @@ export default Component.extend (contextMenuMixin, {
       $ ("div.ember-view.jstree").attr ("onclick", "return false");
       $ ("ul.jstree-container-ul.jstree-children").attr ("onclick", "return false");
 
-      new Promise (resolve => {
+      // eslint-disable-next-line no-async-promise-executor
+      new Promise (async resolve => {
         $ ("a.jstree-anchor").blur (); // Important?
         let linLen = $ ("#imdbLink").text ().length
         if (value !== $ ("#imdbDir").text ()) {
@@ -2149,56 +2153,31 @@ export default Component.extend (contextMenuMixin, {
         }
         this.set ("subaList", a); // triggers load of subalbum links into menu-buttons.hbs
         $.spinnerWait (true, 102);
-        later ( ( () => {
-          $.spinnerWait (true, 103);
-          // REFRESH the displayed album
-          $ ("#reLd").trigger ("click");
-          $ ("div.subAlbum").show ();
-          $ ("a.imDir").attr ("title", "Album");
-          let n = $ ("a.imDir").length/2; // there is also a page bottom link line...
-          let nsub = n;
-          let z, iz, obj;
-          let fullAlbumName= $ ("#imdbRoot").text () + $ ("#imdbDir").text ().replace (/^[^/]*/, "");
-          fullAlbumName = '<span title-1="' + fullAlbumName+ '">' + this.get ("albumName") + ": </span>"
-          if (tmp [0] === "⌂hem") {
-            $ ("a.imDir").each (function (index, element) {
-              if (index < n) {z = 0;} else {z = n;}
-              iz = index - z;
-              if (iz < 3) { // the first 3 are nav link symbols
-                $ (element).attr ("title", returnTitles [iz]);
-                $ (element).closest ("div.subAlbum").attr ("title", returnTitles [iz]);
-                $ (element).closest ("div.subAlbum").css ("display", navButtons [iz]); // added later
-                if (!z) {
-                  nsub--;
-                  obj = $ (element).closest ("div.subAlbum");
-                  obj.addClass ("BUT_1");
-                  if (iz === 2) {
-                    if ( $ ("#imdbDir").text ().replace (/^[^/]*\//, "").indexOf (picFound) === 0) {
-                      obj.after ("<div class=\"BUT_2\"> Tillfälligt album utan underalbum</div><br>"); // i18n
-                    } else if (nsub < 1) {
-                      obj.after ("<div class=\"BUT_2\"> Har inga underalbum</div><br>"); // i18n
-                    } else if (nsub === 1) {
-                      obj.after ("<div class=\"BUT_2\"> Har ett underalbum</div><br>"); // i18n
-                    } else {
-                      obj.after ("<div class=\"BUT_2\"> Har " + nsub + " underalbum</div><br>"); // i18n
-                    }
-                    obj.after (fullAlbumName);
-                  }
-                }
-              }
-            });
-          } else if (tmp [0] === "⇆") {
-            $ ("a.imDir").each (function (index, element) {
-              if (index < n) {z = 0;} else {z = n;}
-              iz = index - z;
-              if (iz === 0) {
-                $ (element).attr ("title", returnTitles [index + 2]);
-                $ (element).closest ("div.subAlbum").attr ("title", returnTitles [index + 2]);
-                $ (element).closest ("div.subAlbum").css ("display", navButtons [index + 2]); // added later
-                if (!z) {
-                  nsub--;
-                  obj = $ (element).closest ("div.subAlbum");
-                  obj.addClass ("BUT_1");
+
+        await new Promise (z => setTimeout (z, 777));
+        $.spinnerWait (true, 103);
+        // REFRESH the displayed album
+        $ ("#reLd").trigger ("click");
+        $ ("div.subAlbum").show ();
+        $ ("a.imDir").attr ("title", "Album");
+        let n = $ ("a.imDir").length/2; // there is also a page bottom link line...
+        let nsub = n;
+        let z, iz, obj;
+        let fullAlbumName= $ ("#imdbRoot").text () + $ ("#imdbDir").text ().replace (/^[^/]*/, "");
+        fullAlbumName = '<span title-1="' + fullAlbumName+ '">' + this.get ("albumName") + ": </span>"
+        if (tmp [0] === "⌂hem") {
+          $ ("a.imDir").each (function (index, element) {
+            if (index < n) {z = 0;} else {z = n;}
+            iz = index - z;
+            if (iz < 3) { // the first 3 are nav link symbols
+              $ (element).attr ("title", returnTitles [iz]);
+              $ (element).closest ("div.subAlbum").attr ("title", returnTitles [iz]);
+              $ (element).closest ("div.subAlbum").css ("display", navButtons [iz]); // added later
+              if (!z) {
+                nsub--;
+                obj = $ (element).closest ("div.subAlbum");
+                obj.addClass ("BUT_1");
+                if (iz === 2) {
                   if ( $ ("#imdbDir").text ().replace (/^[^/]*\//, "").indexOf (picFound) === 0) {
                     obj.after ("<div class=\"BUT_2\"> Tillfälligt album utan underalbum</div><br>"); // i18n
                   } else if (nsub < 1) {
@@ -2211,36 +2190,62 @@ export default Component.extend (contextMenuMixin, {
                   obj.after (fullAlbumName);
                 }
               }
-            });
+            }
+          });
+        } else if (tmp [0] === "⇆") {
+          $ ("a.imDir").each (function (index, element) {
+            if (index < n) {z = 0;} else {z = n;}
+            iz = index - z;
+            if (iz === 0) {
+              $ (element).attr ("title", returnTitles [index + 2]);
+              $ (element).closest ("div.subAlbum").attr ("title", returnTitles [index + 2]);
+              $ (element).closest ("div.subAlbum").css ("display", navButtons [index + 2]); // added later
+              if (!z) {
+                nsub--;
+                obj = $ (element).closest ("div.subAlbum");
+                obj.addClass ("BUT_1");
+                if ( $ ("#imdbDir").text ().replace (/^[^/]*\//, "").indexOf (picFound) === 0) {
+                  obj.after ("<div class=\"BUT_2\"> Tillfälligt album utan underalbum</div><br>"); // i18n
+                } else if (nsub < 1) {
+                  obj.after ("<div class=\"BUT_2\"> Har inga underalbum</div><br>"); // i18n
+                } else if (nsub === 1) {
+                  obj.after ("<div class=\"BUT_2\"> Har ett underalbum</div><br>"); // i18n
+                } else {
+                  obj.after ("<div class=\"BUT_2\"> Har " + nsub + " underalbum</div><br>"); // i18n
+                }
+                obj.after (fullAlbumName);
+              }
+            }
+          });
+        } else {
+          obj = $ ("div.subAlbum").first ();
+          obj.before (fullAlbumName);
+          if ( $ ("#imdbDir").text ().replace (/^[^/]*\//, "").indexOf (picFound) === 0) {
+            obj.after ("<div class=\"BUT_2\"> Tillfälligt album utan underalbum</div><br>"); // i18n
+          } else if (nsub < 1) {
+            obj.before ("<div class=\"BUT_2\"> Har inga underalbum</div><br>"); // i18n
+          } else if (nsub === 1) {
+            obj.before ("<div class=\"BUT_2\"> Har ett underalbum</div><br>"); // i18n
           } else {
-            obj = $ ("div.subAlbum").first ();
-            obj.before (fullAlbumName);
-            if ( $ ("#imdbDir").text ().replace (/^[^/]*\//, "").indexOf (picFound) === 0) {
-              obj.after ("<div class=\"BUT_2\"> Tillfälligt album utan underalbum</div><br>"); // i18n
-            } else if (nsub < 1) {
-              obj.before ("<div class=\"BUT_2\"> Har inga underalbum</div><br>"); // i18n
-            } else if (nsub === 1) {
-              obj.before ("<div class=\"BUT_2\"> Har ett underalbum</div><br>"); // i18n
-            } else {
-              obj.before ("<div class=\"BUT_2\"> Har " + nsub + " underalbum</div><br>"); // i18n
-            }
+            obj.before ("<div class=\"BUT_2\"> Har " + nsub + " underalbum</div><br>"); // i18n
           }
-          // Don't show imdbLink (album root symlink name)
-          console.log ("Album " + imdbDir.replace (/^[^/]*/, ".") + ", nsub = " + nsub);
+        }
+        // Don't show imdbLink (album root symlink name)
+        console.log ("Album " + imdbDir.replace (/^[^/]*/, ".") + ", nsub = " + nsub);
 
-          if (imdbDir_is_picFound ()) $ ("span.centerMark").text (centerMarkSave);
-          else $ ("span.centerMark").text ("×"); // reset ´favorites' header´
+        if (imdbDir_is_picFound ()) $ ("span.centerMark").text (centerMarkSave);
+        else $ ("span.centerMark").text ("×"); // reset ´favorites' header´
 
-          resolve (true);
-          $.spinnerWait (true, 104);
-          later ( ( () => {
-            // Don't hide login (at top) if we now have 0/top position!
-            // If not, adjust the position, login remains hidden at window top.
-            if (0 < window.pageYOffset) {
-              scrollTo (null, $ ("#highUp").offset ().top);
-            }
-          }), 50);
-        }), 777);
+        resolve (true);
+        $.spinnerWait (true, 104);
+        later ( ( () => {
+          // Don't hide login (at top) if we now have 0/top position!
+          // If not, adjust the position, login remains hidden at window top.
+          if (0 < window.pageYOffset || $ ("#lowDown").offset ().top < window.pageYOffset) {
+            scrollTo (null, $ ("#highUp").offset ().top);
+          }
+        }), 50);
+
       }).then ( () => {
         $.spinnerWait (true, 105);
       });
@@ -2250,13 +2255,13 @@ export default Component.extend (contextMenuMixin, {
 
       $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
       $ ("iframe.intro").hide ();
-      document.getElementById ("divDropbox").className = "hide-all";
+      document.getElementById ("divDropbox").style.display = "none";
       //var that = this;
       $ ("div.settings, div.settings div.check").hide ();
       if (!$ (".mainMenu").is (":visible")) {
-        $ (".mainMenu").show ();
+        $ (".mainMenu").show (); $ ("#menuButton").html ("x");
       } else {
-        $ (".mainMenu").hide ();
+        $ (".mainMenu").hide (); $ ("#menuButton").html ("☰");
       }
     },
     //============================================================================================
@@ -2371,10 +2376,10 @@ export default Component.extend (contextMenuMixin, {
       if ($ ("#imdbDir").text () === "") return;
       if ($ (".toggleAuto").text () === "STOP") return; // Auto slide show is running
       $ ("iframe.intro").hide ();
-      $ (".mainMenu").hide ();
+      $ (".mainMenu").hide (); $ ("#menuButton").html ("☰");
       $ ("#link_show a").css ('opacity', 0);
-      if (document.getElementById ("divDropbox").className === "hide-all") {
-        document.getElementById ("divDropbox").className = "show-block";
+      if (document.getElementById ("divDropbox").style.display === "none") {
+        document.getElementById ("divDropbox").style.display = "block";
         $ ("div.settings, div.settings div.check").hide ();
         this.actions.hideShow ();
         $ ("#dzinfo").html ("VÄLJ FOTOGRAFIER FÖR UPPLADDNING"); // i18n
@@ -2386,7 +2391,7 @@ export default Component.extend (contextMenuMixin, {
           userLog ("UPLOAD prohibited");
         }
       } else {
-        document.getElementById ("divDropbox").className = "hide-all";
+        document.getElementById ("divDropbox").style.display = "none";
         document.getElementById("reLd").disabled = false;
         document.getElementById("saveOrder").disabled = false;
       }
@@ -2397,7 +2402,7 @@ export default Component.extend (contextMenuMixin, {
       document.getElementById ("imageList").className = "hide-all";
 
       $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
-      $ (".mainMenu").hide ();
+      $ (".mainMenu").hide (); $ ("#menuButton").html ("☰");
       $ ("div.settings, div.settings div.check").hide ();
       $ ("ul.context-menu").hide ();
       $ ("#i" + escapeDots (namepic) + " a img").blur ();
@@ -2575,10 +2580,11 @@ export default Component.extend (contextMenuMixin, {
       }
     },
     //============================================================================================
-    async refresh () { // ##### Reload the imageList and update the sort order
+    refresh () { // ##### Reload the imageList and update the sort order
 
       if ($ ("#imdbDir").text () === "") return;
       if ($ (".toggleAuto").text () === "STOP") return; // Auto slide show is running
+      screenTop = window.pageYOffset;
       document.getElementById ("imageList").className = "hide-all";
       $ (".miniImgs").hide ();
 
@@ -2586,7 +2592,7 @@ export default Component.extend (contextMenuMixin, {
       $ ("#link_show a").css ('opacity', 0);
       $ (".img_show").hide ();
       $ (".nav_links").hide ();
-      await this.refreshAll ().then (async () => {
+      this.refreshAll ().then (async (n) => {
 
         // Do not insert a temporary search result into the sql DB table:
         if (!imdbDir_is_picFound ()) {
@@ -2598,11 +2604,23 @@ export default Component.extend (contextMenuMixin, {
           }
         }
 
+        // If too low position, go to top with login hidden
+        scrollTo (null, 0);
+        later ( ( () => {
+console.log("high",$ ("#highUp").offset ().top);
+console.log(" low",$ ("#lowDown").offset ().top);
+console.log("here", screenTop);
+          if (screenTop > 0 && (screenTop < $ ("#highUp").offset ().top || $ ("#lowDown").offset ().top < screenTop)) {
+            scrollTo (null, $ ("#highUp").offset ().top);
+          }
+        }), 500);
+
         // await this.refreshAll... DOES NOT WAIT!
         // As a compensation, this pause seems reasonable:
+console.log("REFRESH",n); // Doesn't always return something, or the previous: has to wait before resolve?        
         await new Promise (z => setTimeout (z, 6000));
 
-        $.spinnerWait (false, 1002);
+        $.spinnerWait (false, 3002);
         return true;
       });
     },
@@ -2674,7 +2692,7 @@ export default Component.extend (contextMenuMixin, {
       if ($ ("#helpText").is (":visible") || $ ("#navAuto").text () === "true") {
         $ ('#helpText').dialog ("close");
       } else {
-        $ (".mainMenu").hide ();
+        $ (".mainMenu").hide (); $ ("#menuButton").html ("☰");
         let header = "Användarhandledning<br>(främst för dator med mus eller pekplatta och tangentbord)"
         infoDia ("helpText", null, header, $ ("div.helpText").html (), "Stäng", false);
         $ ("#helpText").parent ().css ("top", "0");
@@ -2706,7 +2724,7 @@ export default Component.extend (contextMenuMixin, {
       } else {
         BACKG = "#000";
       }
-      if ($ ("#imdbRoot").text ()) $ (".mainMenu").hide ();
+      if ($ ("#imdbRoot").text ()) {$ (".mainMenu").hide (); $ ("#menuButton").html ("☰");}
       if (BACKG === "#000") {
         BACKG = "#cbcbcb";
         TEXTC = "#000";
@@ -2734,7 +2752,7 @@ export default Component.extend (contextMenuMixin, {
           return;
         }
         $ ("iframe.intro").hide ();
-        $ (".mainMenu").hide ();
+        $ (".mainMenu").hide (); $ ("#menuButton").html ("☰");
         ediTextClosed ();
         $ (diaSrch).show ();
         //$ ("#searcharea").dialog ("open");
@@ -2819,16 +2837,21 @@ export default Component.extend (contextMenuMixin, {
       $ ("#picName").text (namepic);
       displ = $ ("div[aria-describedby='textareas']").css ("display");
 
+      $ (".insertChar").on ("mouseenter", function (event) {
+        event.preventDefault ();
+      });
+
       // OPEN THE TEXT EDIT DIALOG and adjust some more details...
       later ( ( () => {
         $ ("#textareas").dialog ("open");
         $ ("div[aria-describedby='textareas']").show ();
         $ ('textarea[name="description"]').attr ("placeholder", "Skriv bildtext: När var vad vilka (för Xmp.dc.description)");
         $ ('textarea[name="creator"]').attr ("placeholder", "Skriv ursprung: Foto upphov källa (för Xmp.dc.creator)");
+        $ ('textarea[name="description"]').trigger ("focus");
       }), 50);
 
       refreshEditor (namepic, origpic); // ...and perhaps warnings
-      hideKeyboard ();
+      hideKeyboard (); // For visability in small phones
 
       resetBorders ();
       if (displ === "none") {
@@ -2857,7 +2880,7 @@ export default Component.extend (contextMenuMixin, {
         ui.css ("max-height", hs - up + "px");
         //uy.css ("top", hs - uy.height () - 13 + "px"); // Lower down...
       }
-      $ (".mainMenu").hide ();
+      $ (".mainMenu").hide (); $ ("#menuButton").html ("☰");
       markBorders (namepic);
     },
     //============================================================================================
@@ -3023,7 +3046,7 @@ export default Component.extend (contextMenuMixin, {
       $ ("#title span.eraseCheck").css ("display", "none");
       $ ("div[aria-describedby='textareas']").css ("display", "none");
       $ ("#searcharea").dialog ("close");
-      document.getElementById ("divDropbox").className = "hide-all";
+      document.getElementById ("divDropbox").style.display = "none";
       ediTextClosed ();
       var that = this;
       $ (".img_show").hide ();
@@ -3091,7 +3114,7 @@ export default Component.extend (contextMenuMixin, {
         text += "du inloggad som <b style='font-family:monospace'>anonym</b> som är likvärdigt med att vara utloggad. ";
         text += "Börja om med att logga ut och så vidare.";
         $ ("iframe.intro").hide ();
-        $ (".mainMenu").hide ();
+        $ (".mainMenu").hide (); $ ("#menuButton").html ("☰");
         if (notLoggedOutEver) infoDia ("", "", '<b style="background:transparent">ÄR DU UTLOGGAD?</b>', text, "Jag förstår!", false, false);
         notLoggedOutEver = false;
         later ( ( () => { // Do not hide the top logon line:
@@ -3367,7 +3390,7 @@ export default Component.extend (contextMenuMixin, {
       $ ("#dialog").dialog ("close");
       $ ("#searcharea").dialog ("close");
       ediTextClosed ();
-      document.getElementById ("divDropbox").className = "hide-all";
+      document.getElementById ("divDropbox").style.display = "none";
       $ (".img_show").hide (); // settings + img_show don't go together
       $ (".nav_links").hide ();
       this.actions.setAllow (); // Resets unconfirmed changes
@@ -3387,7 +3410,7 @@ export default Component.extend (contextMenuMixin, {
         $ (".settings input[type=checkbox]+label").css ("cursor", "default");
       }
       if ($ ("div.settings").is (":visible")) {
-        $ (".mainMenu").hide ();
+        $ (".mainMenu").hide (); $ ("#menuButton").html ("☰");
       }
     },
     //============================================================================================
@@ -3434,19 +3457,19 @@ export default Component.extend (contextMenuMixin, {
     seeFavorites () {
       if ($ ("textarea.favorites").is (":visible")) {
         $ ("#dialog").dialog ("close");
-        $ (".mainMenu").hide ();
+        $ (".mainMenu").hide (); $ ("#menuButton").html ("☰");
         return;
       }
       $ ("iframe.intro").hide ();
       let favList = getCookie ("favorites").replace (/[ ]+/g, "\n");
       favDia (favList, "Hämta fil", "Lägg till markerade", "Spara", "Stäng", "Spara fil", "Finn och visa", "Töm listan");
-      $ (".mainMenu").hide ();
+      $ (".mainMenu").hide (); $ ("#menuButton").html ("☰");
       hideKeyboard ();
     },
     //============================================================================================
     goTop () {
       scrollTo (0, 0);
-      $ (".mainMenu").hide ();
+      $ (".mainMenu").hide (); $ ("#menuButton").html ("☰");
       $ ("#dialog").dialog ("close");
     },
     //============================================================================================
@@ -3482,7 +3505,8 @@ let eraseOriginals = false;
 let homeTip = "I N T R O D U K T I O N";
 let logAdv = "Logga in för att kunna se inställningar: Anonymt utan namn och lösenord, eller med namnet ’gäst’ utan lösenord som ger vissa redigeringsrättigheter"; // i18n
 let loggedIn = false;
-let mailAdmin = "tore.ericsson@tores.se"
+let mailAdmin = "tore.ericsson@tores.se";
+let nglob = 0; // number storage
 let nosObs = "Du får skriva men kan ej spara text utan annan inloggning"; // i18n
 let notLoggedOutEver = true;
 let nopsGif = "GIF-fil kan bara ha tillfällig text"; // i18n
@@ -3492,6 +3516,7 @@ let loginStatus = "";
 let tempStore = "";
 let chkPaths = []; // For DB picture paths to be soon updated (or removed)
 let savedAlbumIndex = 0;
+let screenTop = 0;
 
 // NOTE: returnTitles [2] is used as a ´word´ in some places (must be one item), search for it!
 let returnTitles = ["HEM till ROT-albumet", "MOT ROT-albumet", "TILL SENASTE album"]; // i18n
@@ -3631,12 +3656,12 @@ $.spinnerWait = function (runWait, delay) { // Delay is used only at end of wait
     clearInterval (BLINK); // Unlock if occasionaly in use ...
     BLINK_TAG = "#menuButton";
     BLINK = setInterval (blink_text, 600);
-    $ (".mainMenu").hide ();
+    $ (".mainMenu").hide (); $ ("#menuButton").html ("☰");
     $ ("div.settings, div.settings div.check").hide ();
     //document.getElementById("menuButton").disabled = true;
     document.getElementById ("reLd").disabled = false; // Important! Must be always available
     document.getElementById ("saveOrder").disabled = true;
-    document.getElementById ("divDropbox").className = "hide-all";
+    document.getElementById ("divDropbox").style.display = "none";
   } else { // End waiting
     later ( ( () => {
       console.log ("Spinner OFF", delay); // Here 'delay' is used as debug id-number too
@@ -4482,7 +4507,7 @@ var moveOrder = async (mpath, picNames) => { // ===== Sort-order-list "from outs
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const saveOrderFunc = namelist => { // ===== XMLHttpRequest saving the thumbnail order list
   if (!(allow.saveChanges || allow.adminAll || imdbDir_is_picFound ()) || $ ("#imdbDir").text () === "") Promise.resolve (true);
-  document.getElementById ("divDropbox").className = "hide-all"; // If shown...
+  document.getElementById ("divDropbox").style.display = "none"; // If shown...
   return new Promise ( (resolve, reject) => {
     $ ("#sortOrder").text (namelist); // Save in the DOM
     if (!$ ("#imdbDir").text ()) $ ("#imdbDir").text ($ ("#imdbLink").text ()); // Empty at root
@@ -5473,24 +5498,24 @@ function refreshEditor (namepic, origpic) {
     $ (".ui-dialog-buttonset button.notes").css ("display", "none");
     $ (".ui-dialog-buttonset button.keys").css ("display", "none");
   }
-  warnText = "<span style='float:left'>" +
-  "&nbsp;<b class='insertChar' style='cursor:pointer' onclick='copyToClipboard(this.innerHTML)'>’</b>" + 
-  "&nbsp;<b class='insertChar' style='cursor:pointer' onclick='copyToClipboard(this.innerHTML)'>–</b>" + 
-  "&nbsp;<b class='insertChar' style='cursor:pointer' onclick='copyToClipboard(this.innerHTML)'>×</b>" + 
-  "&nbsp;<b class='insertChar' style='cursor:pointer' onclick='copyToClipboard(this.innerHTML)'>°</b>" + 
-  "&nbsp;<b class='insertChar' style='cursor:pointer' onclick='copyToClipboard(this.innerHTML)'>—</b>" + 
-  "&nbsp;<b class='insertChar' style='cursor:pointer' onclick='copyToClipboard(this.innerHTML)'>”</b></span>" +  warnText;
+  warnText = "<span style='float:left' title='Click = Copy ' totip='Click = Copy '>" +
+  "&nbsp;<b class='insertChar' style='cursor:pointer' onmousedown='copyToClipboard(this.innerHTML)'>’</b>" +
+  "&nbsp;<b class='insertChar' style='cursor:pointer' onmousedown='copyToClipboard(this.innerHTML)'>–</b>" +
+  "&nbsp;<b class='insertChar' style='cursor:pointer' onmousedown='copyToClipboard(this.innerHTML)'>×</b>" +
+  "&nbsp;<b class='insertChar' style='cursor:pointer' onmousedown='copyToClipboard(this.innerHTML)'>°</b>" +
+  "&nbsp;<b class='insertChar' style='cursor:pointer' onmousedown='copyToClipboard(this.innerHTML)'>—</b>" +
+  "&nbsp;<b class='insertChar' style='cursor:pointer' onmousedown='copyToClipboard(this.innerHTML)'>”</b></span>" +  warnText;
 
   if (warnText) {$ ("#textareas .edWarn").html (warnText);}
   // Load the texts to be edited after positioning to top
   $ ('textarea[name="description"]').html ("");
   $ ('textarea[name="creator"]').html ("");
   $ ("#textareas").dialog ("open"); // Reopen
-  $ ('textarea[name="description"]').focus ();
   hideKeyboard ();
   later ( ( () => {
     $ ('textarea[name="creator"]').val ($ ('#i' + escapeDots (namepic) + ' .img_txt2').html ().trim ().replace (/<br>/g, "\n"));
     $ ('textarea[name="description"]').val ($ ('#i' + escapeDots (namepic) + ' .img_txt1').html ().trim ().replace (/<br>/g, "\n"));
+    $ ('textarea[name="description"]').trigger ("focus");
   }), 80);
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -5588,13 +5613,13 @@ function subaSelect (subName, path) { // ##### Sub-album link selected
     here = names.indexOf (name);
     idx = names.slice (here + 1).indexOf (name + "/" + subName);
     if (idx < 0) {
-      $ (".mainMenu").hide ();
+      $ (".mainMenu").hide (); $ ("#menuButton").html ("☰");
     } else {
       idx = idx + here + 1;
     }
   }
   if (idx < 0) {
-    $ (".mainMenu").hide ();
+    $ (".mainMenu").hide (); $ ("#menuButton").html ("☰");
     return;
   } else {
     // NOTE: jstree uses (calls) selectAlbum (see the HBS file)

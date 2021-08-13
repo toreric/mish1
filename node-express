@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Remove code lines causing (drag-)drop minipic error
+sed --debug -i~ '/sortEndAction/,+2d' ~/Arbeten/mish/mish-project/node_modules/ember-drag-drop/addon/components/sortable-objects.js
+
 clear
 port=3000
 # Kill the process (if any) already listening to this port

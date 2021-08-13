@@ -173,9 +173,6 @@ function loadImageMetadata () {
       subject:  '',
       tcreated: '',
       tchanged: ''
-    /*}, function (err, row) {
-      if (err) {console.error ("02",err.message)}
-      if (row) {console.log ("03",row)}*/
     })
   }
 

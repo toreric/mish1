@@ -355,7 +355,7 @@ export default Component.extend({
 
   actions: {
     closeThis() {
-      document.getElementById ("divDropbox").className = "hide-all";
+      document.getElementById ("divDropbox").style.display = "none";
     },
 
     removeAllFiles() {

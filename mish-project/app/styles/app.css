@@ -2,6 +2,9 @@
   font-family: Georgia, 'Times New Roman', Times, serif;
   font-size: 1em;
 }
+*:focus-visible {
+  border: 2px solid #0ae;
+}
 body {
  width: 99%!important;
  margin-left: 1.5em;
@@ -370,9 +373,13 @@ button.mainMenuClose.ui-dialog-titlebar-close {
 button.mainMenuClose.ui-dialog-titlebar-close:hover {
   background: deeppink;
 }
+.insertChar {
+  font-size: 106%;
+  padding: 0 0.4em;
+  border: 0.4px solid rgb(0, 0, 255);
+}
 .insertChar:hover {
-  border: 2px solid gray;
-  padding: 0 0.25em;
+  border: 2px solid rgb(93, 171, 223);
 }
 #notes textarea {
   font-family: Georgia, 'Times New Roman', Times, serif !important;
@@ -826,7 +833,8 @@ button[disabled] {
   background-color: white;
 }
 .hide-all {
-  display: none !important;
+  /*display: none !important;*/
+  visibility: hidden !important;
 }
 .show-inline {
   display: inline-block;

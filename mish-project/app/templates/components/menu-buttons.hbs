@@ -2,6 +2,11 @@
 
 <script>
 function copyToClipboard (str) {    // Copies a filename (below mini-pic) to the clipboard 
+  var ae = document.activeElement;                // Don't move focus from the active element but save and restore it
+  setTimeout (function () {
+    ae.focus ();
+    document.execCommand('paste');
+  }, 44);
   const el = document.createElement('textarea');  // Create a <textarea> element
   document.body.appendChild(el);                  // Append the <textarea> element to the HTML document
   el.value = str.trim ();                         // Set its value to the string that you want copied
@@ -93,7 +98,7 @@ function copyToClipboard (str) {    // Copies a filename (below mini-pic) to the
 </div>
 
 <!-- ///// DROPBOX  CONTAINER ///// -->
-<div id="divDropbox" class="hide-all">
+<div id="divDropbox" style="display:none">
   {{#drop-zone url='/upload' autoProcessQueue=false  acceptedFiles='image/jpeg,image/tiff,image/png,image/gif'}}
   {{/drop-zone}}
 </div>
@@ -109,7 +114,7 @@ function copyToClipboard (str) {    // Copies a filename (below mini-pic) to the
 </div>
 
 <div id="searcharea" style="margin:0;padding:0;display:none;width:">
-  <textarea name="searchtext" placeholder="Skriv här sökbegrepp, åtskilda av blanktecken, på en eller flera rader, små eller stora bokstäver utan betydelse (välj överst i vilka texter du ska söka)" rows="4" style="min-width:" />
+  <textarea name="searchtext" placeholder="Skriv här sökbegrepp, åtskilda av blanktecken, små/stora bokstäver oviktigt (välj nedan texter du vill söka i)" rows="4" style="min-width:" />
   <div class="diaMess">
     <div class="edWarn" style="font-weight:normal;text-align:right" ></div>
     <div class="srchIn"> Sök i:&nbsp;
@@ -279,14 +284,13 @@ i nytt fönster" style="font-size:200%;line-height:80%;padding:0.3em 0.33em 0.25
 
 <!-- ///// LEFT BUTTONS (NOTE: without href attributes) /////  -->
 <div id="smallButtons" draggable="false" ondragstart="return false">
-  <a id="menuButton" class="smBu" title="MENU" draggable="false" ondragstart="return false" {{action 'toggleMainMenu' imdbRoot}} style="width:1.25em;line-height:80%">☰</a>
+  <a id="menuButton" class="smBu" title="MENU" draggable="false" ondragstart="return false" {{action 'toggleMainMenu' imdbRoot}} style="font-family: Comic Sans MS;width:1.25em;line-height:80%">☰</a>
 
   <!-- ///// MAIN MENU, SELECT IMAGE ROOT DIRECTORIY, jstree ///// -->
   <div class="mainMenu BACKG" onclick="return false" draggable="false" ondragstart="return false" style="display:none">
 
     <p onclick="return false" draggable="false" ondragstart="return false">
       <a title="Sökning" class="search" {{action 'findText'}}>Finn bilder <span style="font:normal 1em monospace!important">[F]</span></a>
-      <button class="dzclose" title="Close" {{action 'toggleMainMenu' imdbRoot}}>×</button>
     </p><br>
 
     <p onclick="return false" draggable="false" ondragstart="return false" title="Favoritskötsel  ">
@@ -393,7 +397,7 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
 </p>
 
 <!-- ///// START OF MINI-LIST CONTAINER ///// -->
-<div id="imageList" class="show-block" onclick={{perform rstBrdrs}}><!-- THUMBNAIL CONTAINER -->
+<div id="imageList" class="" onclick={{perform rstBrdrs}}><!-- THUMBNAIL CONTAINER -->
 
 <!-- ///// SHOW MINI IMAGES (thumbnails) ///// -->
 <!-- Uses allNames from menu-buttons.js -->
@@ -433,7 +437,7 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
         </script>
         {{#if (eq file allNames.lastObject)}}
           <script>
-            $.spinnerWait (false, 4014);
+            $.spinnerWait (false, 2514);
           </script>
         {{/if}}
       </div>
@@ -446,8 +450,6 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
     <!--div style="display:none"></div-->
   {{/sortable-objects}}
 </div>
-
-<div id="lowDown"></div>
 
 <p class="showCount BACKG" draggable="false" ondragstart="return false">
   <span class="imDir path BACKG">{{{albumName}}}</span>
@@ -472,5 +474,6 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
 
 </div>
 <!-- ///// END OF MINI-LIST CONTAINER ///// -->
+<!-- div id="lowDown"></div MOVED TO application.hbs -->
 
 {{yield}}
