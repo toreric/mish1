@@ -197,23 +197,6 @@ function copyToClipboard (str) {    // Copies a filename (below mini-pic) to the
 <div id="highUp" style=""></div>
 <div id="highUpSpacer" style="margin-bottom:0.7em"></div>
 
-<!-- ///// LINKS TO SUBALBUMS ///// -->
-<p class='albumsHdr' draggable="false" ondragstart="return false">
-  <div class="miniImgs">
-    {{#each subaList as |suba|}}
-      <div class="subAlbum" {{action 'subalbumSelect' suba.album}} style="display:none">
-        <a class="imDir BLUET" style="background:transparent">
-          {{#if suba.image}}
-            <img src={{suba.image}}><br>
-          {{/if}}
-          <span>{{{suba.name}}}</span>
-        </a>
-      </div>
-    {{else}}
-    {{/each}}
-  </div>
-</p>
-
 <!-- ///// RIGHT BUTTONS (NOTE: without href attributes) /////  -->
 <div class="nav_links" draggable="false" ondragstart="return false">
   <!-- NEXT-ARROW-BUTTONS -->
@@ -339,7 +322,7 @@ ett meddelande med kommentarer,
 rättelser eller andra upplysningar" {{action 'doMail'}} src="/images/mail.svg"></a>
 <a class="smBu" draggable="false" ondragstart="return false" title="Gå upp (visa
 översta raden)
- [pgUp]" style="font:bold 190% sans-serif;line-height:90%" {{action 'goTop'}}>↑</a>
+ [pgUp]" style="font:bold 190% sans-serif;line-height:90%" onclick="window.scrollTo(0,0)">↑</a>
   <a id="netMeeting" class="smBu" title="Mötesknapp:
 Här träffas vi
 på Internet (i ny
@@ -348,7 +331,7 @@ Vänta ej inbjudan,
 klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dalenochHolm%C3%B6n" target="jitsi_window" draggable="false" ondragstart="return false" style="display:none;padding:0 0.25em 0.2em 0.125em;line-height:1.25em" onclick="$(this).hide()">▣</a>
 </div>
 
-<img src="/images/snurra.svg" class="spinner" draggable="false" ondragstart="return false" {{action 'hideSpinner'}} style="display:none">
+<img src="/images/snurra.svg" class="spinner" draggable="false" ondragstart="return false" {{action 'hideSpinner'}} style="">
 
 <!-- ///// HELP TEXT JQUERY DIALOG ///// -->
 <div id="helpText" style="display:none">
@@ -396,8 +379,25 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
   <button id="checkNames" {{action 'checkNames'}}></button>
 </p>
 
-<!-- ///// START OF MINI-LIST CONTAINER ///// -->
+<!-- ///// START OF ALBUM/MINI-LIST CONTAINER ///// -->
 <div id="imageList" class="" onclick={{perform rstBrdrs}}><!-- THUMBNAIL CONTAINER -->
+<!-- ///// LINKS TO SUBALBUMS ///// -->
+<p class='albumsHdr' draggable="false" ondragstart="return false">
+  <div class="miniImgs">
+    {{#each subaList as |suba|}}
+      <div class="subAlbum" {{action 'subalbumSelect' suba.album}} style="display:none">
+        <a class="imDir BLUET" style="background:transparent">
+          {{#if suba.image}}
+            <img src={{suba.image}}><br>
+          {{/if}}
+          <span>{{{suba.name}}}</span>
+        </a>
+      </div>
+    {{else}}
+    {{/each}}
+  </div>
+</p>
+
 
 <!-- ///// SHOW MINI IMAGES (thumbnails) ///// -->
 <!-- Uses allNames from menu-buttons.js -->
@@ -412,6 +412,9 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
 </p><!-- MiniImages = links to slides -->
 <div class="miniImgs">
   {{#sortable-objects sortableObjectList=allNames sortEndAction='sortEndAction' enableSort=true useSwap=false}}
+    <!--script>
+      $.spinnerWait (true, 1);
+    </script-->
     {{#each allNames as |file|}}
       {{#draggable-object content=file isSortable=true overrideClass='show-inline'}}
       <div id="i{{file.name}}" class="img_mini {{file.symlink}}" draggable="false" ondragstart="return false">
@@ -432,9 +435,6 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
         <div class="img_txt2" draggable="false" ondragstart="return false" title="{{file.txt2}}" totip="{{file.txt2}}" {{action 'ediText' file.name}}>
           {{file.txt2}}
         </div>
-        <script>
-          $.spinnerWait (true, 1);
-        </script>
         {{#if (eq file allNames.lastObject)}}
           <script>
             $.spinnerWait (false, 2514);
@@ -459,11 +459,11 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
   (<span class="numMarked BACKG" title="marked">0</span>&nbsp;markerade)
   <br>
  <!-- Extra minimal subalbum list at bottom -->
+  <!--script>
+    $.spinnerWait (true, 2);
+  </script-->
   {{#each subaList as |suba|}}
   <a class="imDir BLUET" {{action 'subalbumSelect' suba.album}}>
-    <script>
-      $.spinnerWait (true, 2);
-    </script>
     <span> {{{suba.name}}} &nbsp;</span>
     {{#if (eq suba subaList.lastObject)}}
     {{/if}}
@@ -473,7 +473,7 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
 </p>
 
 </div>
-<!-- ///// END OF MINI-LIST CONTAINER ///// -->
-<!-- div id="lowDown"></div MOVED TO application.hbs -->
+<!-- ///// END OF ALBUM/MINI-LIST CONTAINER ///// -->
+<div id="lowDown"></div>
 
 {{yield}}

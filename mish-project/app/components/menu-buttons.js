@@ -19,7 +19,7 @@ export default Component.extend (contextMenuMixin, {
   rstBrdrs: task (function* () {
     if ($ (".mainMenu").is (":visible")) {
       // Close this if visible:
-      $ (".mainMenu").hide (); $ ("#menuButton").html ("☰");
+      mainMenuHide ();
     } else {
       resetBorders ();
     }
@@ -51,7 +51,7 @@ export default Component.extend (contextMenuMixin, {
 
       if (imdbroot === "") {
         // Prepare to select imdbRoot
-        $ (".mainMenu").show (); $ ("#menuButton").html ("×");
+        mainMenuShow ();
         $ ("iframe.intro").hide ();
         $ (".mainMenu p:gt(1)").hide (); // Shown at selectRoot ()
         this.set ("albumData", [])
@@ -663,7 +663,7 @@ export default Component.extend (contextMenuMixin, {
             later ( ( () => {
               document.getElementById("reLd").disabled = false;
               $ ("#reLd").trigger ("click"); // REFRESH
-              scrollTo (null, $ ("#highUp").offset ().top);
+              gotoAtop ();
             }), 750);
           }
         },
@@ -760,9 +760,9 @@ export default Component.extend (contextMenuMixin, {
       // Here is the base IMDB_LINK setting, used for imdbLink in ld_imdb.js:
       $ ("#imdbLink").text ("imdb"); // <<<<<<<<<< == IMDB_LINK in routes.js
 
-      $ ("#menuButton").attr ("title", htmlSafe ("Öppna\nmenyn")); // i18n
+      $ ("#menuButton").attr ("title", htmlSafe ("Meny")); // i18n
       // Remember update *.hbs
-      $ ("#bkgrColor").text ("rgb(59, 59, 59)"); // #333
+      $ ("#bkgrColor").text ("rgb(59, 59, 59)");
       // Set the hidden-picture text background color:
       $ ("#hideColor").text ("rgb(0, 50, 100)");
       // Set body class BACKG:
@@ -817,10 +817,13 @@ export default Component.extend (contextMenuMixin, {
             $ ("#imdbRoots").text (rootList);
           }
         }), 25);
-        later ( ( () => { // To top of screen:
-          let news ="Hembygdsföreningen beklagar att det här inte kunde ses under cirka två veckor fram till den 12 augusti 2021. Orsak: Upgradering av servern med oförutsedda komplikationer."
+        later ( (async () => {
+          let news = await execute ("cat _imdb_news.txt");
+          if (news.indexOf ("Command failed") > -1) news = "";
+          if (!news.trim ()) news = await execute ('echo "Mish "$(date "+%k:%M %A %e %B %Y")');
           userLog (news, true, 10000);
-          scrollTo (0, 0);
+
+          scrollTo (0, 0); // To top of screen:
           $ ("#title a.proid") [0].focus ();
           later ( ( () => { // Auto log in the default guest user:
             $ (".cred.user").attr ("value", "gäst"); // i18n
@@ -832,6 +835,7 @@ export default Component.extend (contextMenuMixin, {
               //this.actions.selectRoot ("");
             }), 1000);
           }), 1000);
+
         }), 200);
       }), 200);
     });
@@ -908,18 +912,19 @@ export default Component.extend (contextMenuMixin, {
   // HELP FUNCTIONS, that is, component methods (within-component functions)
   /////////////////////////////////////////////////////////////////////////////////////////
   //----------------------------------------------------------------------------------------------
-  refreshAll () {
+  async refreshAll () {
     // ===== Updates allNames and the sortOrder tables by locating all images and
     // their metadata in the <imdbDir> dir (name is DOM saved) on the server disk.
     // This will trigger the template to restore the DOM elements. Prepare the didRender hook
     // to further restore all details!
+    let n = 0;
     return new Promise (resolve => {
       var test = 'A1';
-      //$.spinnerWait (true);console.log(test);
+      $.spinnerWait (true, 101.01);
       this.requestOrder ().then (async sortnames => {
         if (sortnames === undefined) {sortnames = "";}
         if (sortnames === "Error!") {
-          $ (".mainMenu").show (); $ ("#menuButton").html ("×");
+          mainMenuShow ();
           if ($ ("#imdbDir").text () !== "") {
             document.getElementById ("imdbError").className = "show-inline";
           }
@@ -932,8 +937,7 @@ export default Component.extend (contextMenuMixin, {
           $ ("#sortOrder").text (sortnames); // Save in the DOM
         }
         test = 'A2';
-        //$.spinnerWait (true);console.log(test);
-        var n=0;
+        n = 0;
         await new Promise (z => setTimeout (z, 1111));
         // Use sortOrder (as far as possible) to reorder namedata ERROR
         // First pick out namedata (allNames) against sortnames (SN), then any remaining
@@ -977,7 +981,6 @@ export default Component.extend (contextMenuMixin, {
             snams.push (snamsvec [i].split (",") [0]);
           }
           // --- END prepare sortnames
-          //$.spinnerWait (true);console.log(test);
           // --- Pull out the plain dir list file names: name <=> namedata (undefined order)
           if (namedata === undefined) {namedata = [];}
           var name = [];
@@ -1004,7 +1007,6 @@ export default Component.extend (contextMenuMixin, {
           // --- Move remaining 'namedata' objects (e.g. uploads) into 'newdata' until empty.
           // --- Place them first to get better noticed. Update newsort for sortnames.
           // --- The names, of such (added) 'namedata' objects, are kept remaining in 'name'??
-          //$.spinnerWait (true);console.log(test);
           while (namedata.length > 0) {
             newsort = namedata [0].name + ",0,0\n" + newsort;
             //newdata.pushObject (namedata [0]); instead:
@@ -1013,9 +1015,7 @@ export default Component.extend (contextMenuMixin, {
           }
 
           n = newdata.length;
-          nglob=n;
           // Transform the elements for HBS template use:
-          //$.spinnerWait (true);console.log(test);
           for (i=0; i<n; i++) {
             newdata [i].linkto = newdata [i].orig; // Added, see requestNames, 'row number eight'
             if (newdata [i].symlink === "&") {
@@ -1035,12 +1035,16 @@ export default Component.extend (contextMenuMixin, {
           preloadShowImg = []; // Preload show images:
           let nWarn = 100;
           for (i=0; i<n; i++) {
+            $.spinnerWait (true, 123);
             preloadShowImg [i] = new Image();
             preloadShowImg [i].src = newdata [i].show;
           }
-          //$.spinnerWait (true);console.log(test);
+          $.spinnerWait (false, 123);
           if ( (n > nWarn) && (allow.imgUpload || allow.adminAll)) {
-            infoDia (null, null, "M Ä N G D V A R N I N G", "<b>Ett album bör av alla möjliga <br>praktiska och tekniska skäl inte ha <br>särskilt många fler än etthundra bilder. <br>Försök att dela på det här albumet ...</b>", "... uppfattat!", true);
+            infoDia (null, null, "M Ä N G D V A R N I N G", "<b><br>Fler än etthundra (100) bilder!<br></b>", "... uppfattat!", true);
+            later ( ( () => {
+              $ ("#yesBut").trigger ("click");
+            }), 61234);
           }
           if (n > 0) {
             $ (".numMarked").text (" " + $ (".markTrue").length);
@@ -1053,7 +1057,6 @@ export default Component.extend (contextMenuMixin, {
               $ (".numShown").text ($ (".img_mini").length);
             }
 
-            //$.spinnerWait (true);console.log(test);
             later ( ( () => {
               if (document.querySelector("strong.albumName") && document.querySelector ("strong.albumName") [0] && document.querySelector ("strong.albumName") [0].innerHTML.replace (/&nbsp;/g, " ").trim () === $ ("#picFound").text ().replace (/\.[^.]{4}$/, "").replace (/_/g, " ")) {
                 // The search result album. Seems to fail, may be removed since also superfluous?
@@ -1080,9 +1083,7 @@ export default Component.extend (contextMenuMixin, {
                 } // i18n
                 $ ("div.BUT_2").text (ntext);
               }
-              //$.spinnerWait (true);console.log(test);
             }), 777);
-            //$.spinnerWait (true);console.log(test);
             userLog ("RELOAD");
           } else {
             later ( ( () => {
@@ -1092,9 +1093,7 @@ export default Component.extend (contextMenuMixin, {
               if (document.querySelector("strong.albumName") && document.querySelector ("strong.albumName") [0] && document.querySelector ("strong.albumName") [0].innerHTML.replace (/&nbsp;/g, " ") === $ ("#picFound").text ().replace (/\.[^.]{4}$/, "").replace (/_/g, " ")) {
                 $ ("div.BUT_2").text (""); // The search result album
               }
-              //$.spinnerWait (true);console.log(test);
             }), 777);
-            //$.spinnerWait (true);console.log(test);
           }
           test = 'E1';
           later ( ( () => {
@@ -1104,10 +1103,8 @@ export default Component.extend (contextMenuMixin, {
               $ (".img_name").show ();
             }
           }), 20);
-          //$.spinnerWait (true);console.log(test);
           later ( ( () => {
             $ ("#saveOrder").trigger ("click");
-            //$.spinnerWait (true);console.log(test);
           }), 200);
         }).catch (error => {
           console.error (test + ' in function refreshAll: ' + error.message);
@@ -1116,8 +1113,7 @@ export default Component.extend (contextMenuMixin, {
         console.log ("Not found");
       });
       $ ('#navKeys').text ('true');
-console.log("refreshALL",nglob);
-      resolve (nglob);
+      resolve (n);
     });
   },
   //----------------------------------------------------------------------------------------------
@@ -1206,7 +1202,7 @@ console.log("refreshALL",nglob);
         // If #navAuto is true, runAuto will be stopped if it is running
         // (with no dialogs open). Else, #navAuto SHOULD be false, anyhow!
         $ ("#navAuto").text ("false");
-        $ (".mainMenu").hide (); $ ("#menuButton").html ("☰");
+        mainMenuHide ();
         $ ("iframe.intro").hide ();
         $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
         if ($ ("div.settings").is (":visible")) { // Hide settings
@@ -1358,6 +1354,7 @@ console.log("refreshALL",nglob);
   },
   //----------------------------------------------------------------------------------------------
   requestOrder () { // ===== Request the sort order list
+    $.spinnerWait (true, 323);
     return new Promise ( (resolve, reject) => {
       var IMDB_DIR =  $ ('#imdbDir').text ();
       if (IMDB_DIR.slice (-1) !== "/") {IMDB_DIR = IMDB_DIR + "/";}
@@ -1401,6 +1398,7 @@ console.log("refreshALL",nglob);
             that.set ("jstreeHdr", "Alla album (albumkarta, albumträd):");
             $ ("#jstreeHdr").attr ("title", htmlSafe ("Visa alla album\n(hela albumträdet)")); //i18n
           }
+          $.spinnerWait (true, 321);
           resolve (data); // Return file-name text lines
           console.log ("ORDER received");
         } else {
@@ -1626,7 +1624,6 @@ console.log("refreshALL",nglob);
           click: function () {
             $ (this).dialog ("close");
             $ ('#navKeys').text ('true'); // Reset when L/R arrows have been protected
-            //return;
           }
         }]);
         $ ("div[aria-describedby='" + dialogId + "'] span.ui-dialog-title").html (title); /#/
@@ -1737,7 +1734,7 @@ console.log("refreshALL",nglob);
         userLog ("Otillåtet", true, 500);
         return;
       }
-      $ (".mainMenu").hide (); $ ("#menuButton").html ("☰");
+      mainMenuHide ();
       $ ("iframe.intro").hide ();
       $ (".img_show").hide ();
       $ (".nav_links").hide ();
@@ -2062,10 +2059,13 @@ console.log("refreshALL",nglob);
     //============================================================================================
     selectAlbum () { // ##### triggered by a click within the JStree
 
+      //gotoAtop ();
       $.spinnerWait (true, 101);
-      //let value = $ ("[aria-selected='true'] a.jstree-clicked"); -- should be either, not both!!
-      //let value = $ ("a.jstree-clicked"); // Ok
+      document.getElementById ("imageList").className = "hide-all";
+      $ (".miniImgs").hide (); // Extra, works temporary and smoothens transition
+      //scrollTo (null, 0);
       let value = $ ("a[aria-selected='true']"); // Ok
+      //let value = $ ("a.jstree-clicked"); // Ok, alternative
       if (value && value.length > 0) {
         value = $ ("#imdbLink").text () + value.attr ("title").toString ().slice (1); // skip dot
       } else {
@@ -2079,10 +2079,12 @@ console.log("refreshALL",nglob);
       $ ("div.ember-view.jstree").attr ("onclick", "return false");
       $ ("ul.jstree-container-ul.jstree-children").attr ("onclick", "return false");
 
+      var thisAlbumIndex = 0;
       // eslint-disable-next-line no-async-promise-executor
       new Promise (async resolve => {
         $ ("a.jstree-anchor").blur (); // Important?
         let linLen = $ ("#imdbLink").text ().length
+        thisAlbumIndex = $ ("#imdbDirs").text ().split ("\n").indexOf (value.slice (linLen));
         if (value !== $ ("#imdbDir").text ()) {
           // save the index of the preceeding album
           savedAlbumIndex = $ ("#imdbDirs").text ().split ("\n").indexOf ($ ("#imdbDir").text ().slice (linLen));
@@ -2238,15 +2240,9 @@ console.log("refreshALL",nglob);
 
         resolve (true);
         $.spinnerWait (true, 104);
-        later ( ( () => {
-          // Don't hide login (at top) if we now have 0/top position!
-          // If not, adjust the position, login remains hidden at window top.
-          if (0 < window.pageYOffset || $ ("#lowDown").offset ().top < window.pageYOffset) {
-            scrollTo (null, $ ("#highUp").offset ().top);
-          }
-        }), 50);
-
       }).then ( () => {
+        if (thisAlbumIndex > 0) gotoAtop ();
+        else scrollTo (null, 0);
         $.spinnerWait (true, 105);
       });
     },
@@ -2259,9 +2255,9 @@ console.log("refreshALL",nglob);
       //var that = this;
       $ ("div.settings, div.settings div.check").hide ();
       if (!$ (".mainMenu").is (":visible")) {
-        $ (".mainMenu").show (); $ ("#menuButton").html ("x");
+        mainMenuShow ();
       } else {
-        $ (".mainMenu").hide (); $ ("#menuButton").html ("☰");
+        mainMenuHide ();
       }
     },
     //============================================================================================
@@ -2376,7 +2372,7 @@ console.log("refreshALL",nglob);
       if ($ ("#imdbDir").text () === "") return;
       if ($ (".toggleAuto").text () === "STOP") return; // Auto slide show is running
       $ ("iframe.intro").hide ();
-      $ (".mainMenu").hide (); $ ("#menuButton").html ("☰");
+      mainMenuHide ();
       $ ("#link_show a").css ('opacity', 0);
       if (document.getElementById ("divDropbox").style.display === "none") {
         document.getElementById ("divDropbox").style.display = "block";
@@ -2400,9 +2396,10 @@ console.log("refreshALL",nglob);
     showShow (showpic, namepic, origpic) { // ##### Render a 'show image' in its <div>
 
       document.getElementById ("imageList").className = "hide-all";
+//$ (".miniImgs").hide ();
 
       $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
-      $ (".mainMenu").hide (); $ ("#menuButton").html ("☰");
+      mainMenuHide ();
       $ ("div.settings, div.settings div.check").hide ();
       $ ("ul.context-menu").hide ();
       $ ("#i" + escapeDots (namepic) + " a img").blur ();
@@ -2470,11 +2467,13 @@ console.log("refreshALL",nglob);
       if ($ ("#hideText") [0].checked === true) {
         $ ("#wrap_show .img_txt1").hide ();
         $ ("#wrap_show .img_txt2").hide ();
+        $ ("#wrap_show").css ("border-bottom", "0");
         $ ("#wrap_show.symlink").css ("border-bottom", "0");
         $ ("#pathOrig").hide ();
       } else {
         $ ("#wrap_show .img_txt1").show ();
         $ ("#wrap_show .img_txt2").show ();
+        $ ("#wrap_show").css ("border-bottom", "0");
         $ ("#wrap_show.symlink").css ("border-bottom", "1.5px solid #0b0");
         $ ("#pathOrig").show ();
       }
@@ -2506,10 +2505,10 @@ console.log("refreshALL",nglob);
             namepic = tmp [0].getAttribute ("id").slice (1);
             userLog ("FIRST", false, 2000);
           } else {
-            // here a problem:
             namepic = document.getElementById ("i" + namehere).parentElement.nextElementSibling.firstElementChild.id.slice (1);
           }
           if (document.getElementById ("i" + namepic).style.display === 'none') {
+          //if ($ ("#i" + escapeDots (namepic)).is (":hidden")) {
             namehere = namepic;
           }
         }
@@ -2584,9 +2583,7 @@ console.log("refreshALL",nglob);
 
       if ($ ("#imdbDir").text () === "") return;
       if ($ (".toggleAuto").text () === "STOP") return; // Auto slide show is running
-      screenTop = window.pageYOffset;
       document.getElementById ("imageList").className = "hide-all";
-      $ (".miniImgs").hide ();
 
       $.spinnerWait (true, 106);
       $ ("#link_show a").css ('opacity', 0);
@@ -2603,24 +2600,26 @@ console.log("refreshALL",nglob);
             chkPaths = [];
           }
         }
-
         // If too low position, go to top with login hidden
-        scrollTo (null, 0);
-        later ( ( () => {
-console.log("high",$ ("#highUp").offset ().top);
-console.log(" low",$ ("#lowDown").offset ().top);
-console.log("here", screenTop);
-          if (screenTop > 0 && (screenTop < $ ("#highUp").offset ().top || $ ("#lowDown").offset ().top < screenTop)) {
-            scrollTo (null, $ ("#highUp").offset ().top);
+        //scrollTo (null, 0);
+        //$ (".miniImgs").show ();
+        later ( (async () => {
+          //let yhigh = $ ("#highUp").offset ().top;
+          let yhigh = 66;
+          let yhere = window.pageYOffset;
+          let ylow = $ ("#lowDown").offset ().top;
+          if (yhere > 0 && (yhere < yhigh || ylow < yhere)) {
+            gotoAtop ();
+            //scrollTo (null, yhigh);
           }
-        }), 500);
+          // await this.refreshAll... DOES NOT WAIT!
+          // As a compensation, this pause seems reasonable:
+          await new Promise (z => setTimeout (z, 200*n));
+          //console.log("REFRESH",n); // Doesn't always return something, or the previous: has to wait before resolve?
+        }), 200*n);
 
-        // await this.refreshAll... DOES NOT WAIT!
-        // As a compensation, this pause seems reasonable:
-console.log("REFRESH",n); // Doesn't always return something, or the previous: has to wait before resolve?        
-        await new Promise (z => setTimeout (z, 6000));
-
-        $.spinnerWait (false, 3002);
+        $.spinnerWait (false, 200*n);
+        n = 0;
         return true;
       });
     },
@@ -2692,7 +2691,7 @@ console.log("REFRESH",n); // Doesn't always return something, or the previous: h
       if ($ ("#helpText").is (":visible") || $ ("#navAuto").text () === "true") {
         $ ('#helpText').dialog ("close");
       } else {
-        $ (".mainMenu").hide (); $ ("#menuButton").html ("☰");
+        mainMenuHide ();
         let header = "Användarhandledning<br>(främst för dator med mus eller pekplatta och tangentbord)"
         infoDia ("helpText", null, header, $ ("div.helpText").html (), "Stäng", false);
         $ ("#helpText").parent ().css ("top", "0");
@@ -2724,7 +2723,7 @@ console.log("REFRESH",n); // Doesn't always return something, or the previous: h
       } else {
         BACKG = "#000";
       }
-      if ($ ("#imdbRoot").text ()) {$ (".mainMenu").hide (); $ ("#menuButton").html ("☰");}
+      if ($ ("#imdbRoot").text ()) {mainMenuHide ();}
       if (BACKG === "#000") {
         BACKG = "#cbcbcb";
         TEXTC = "#000";
@@ -2752,13 +2751,12 @@ console.log("REFRESH",n); // Doesn't always return something, or the previous: h
           return;
         }
         $ ("iframe.intro").hide ();
-        $ (".mainMenu").hide (); $ ("#menuButton").html ("☰");
+        mainMenuHide ();
         ediTextClosed ();
         $ (diaSrch).show ();
         //$ ("#searcharea").dialog ("open");
         niceDialogOpen ("searcharea");
         hideKeyboard ();
-    //    if (allow.albumEdit || allow.adminAll) $ ("#searcharea div.diaMess div.edWarn").html ("Sökdata...");
         //$ (".ui-dialog").attr ("draggable", "true"); // for jquery-ui-touch-punch, here useless?
         age_imdb_images ();
         let sw = parseInt ( (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth)*0.95);
@@ -2880,7 +2878,7 @@ console.log("REFRESH",n); // Doesn't always return something, or the previous: h
         ui.css ("max-height", hs - up + "px");
         //uy.css ("top", hs - uy.height () - 13 + "px"); // Lower down...
       }
-      $ (".mainMenu").hide (); $ ("#menuButton").html ("☰");
+      mainMenuHide ();
       markBorders (namepic);
     },
     //============================================================================================
@@ -3114,7 +3112,7 @@ console.log("REFRESH",n); // Doesn't always return something, or the previous: h
         text += "du inloggad som <b style='font-family:monospace'>anonym</b> som är likvärdigt med att vara utloggad. ";
         text += "Börja om med att logga ut och så vidare.";
         $ ("iframe.intro").hide ();
-        $ (".mainMenu").hide (); $ ("#menuButton").html ("☰");
+        mainMenuHide ();
         if (notLoggedOutEver) infoDia ("", "", '<b style="background:transparent">ÄR DU UTLOGGAD?</b>', text, "Jag förstår!", false, false);
         notLoggedOutEver = false;
         later ( ( () => { // Do not hide the top logon line:
@@ -3309,7 +3307,6 @@ console.log("REFRESH",n); // Doesn't always return something, or the previous: h
             }
             loginStatus = status; // global
             if (status === "viewer") {usr = "anonym";}  // i18n
-            //$.spinnerWait (true);
             $ ("#allowValue").text (allval);
             $ ("#title span.cred.name").html ("<b>"+ usr +"</b>");
             $ ("#title span.cred.status").html ("["+ status +"]");
@@ -3410,7 +3407,7 @@ console.log("REFRESH",n); // Doesn't always return something, or the previous: h
         $ (".settings input[type=checkbox]+label").css ("cursor", "default");
       }
       if ($ ("div.settings").is (":visible")) {
-        $ (".mainMenu").hide (); $ ("#menuButton").html ("☰");
+        mainMenuHide ();
       }
     },
     //============================================================================================
@@ -3457,20 +3454,14 @@ console.log("REFRESH",n); // Doesn't always return something, or the previous: h
     seeFavorites () {
       if ($ ("textarea.favorites").is (":visible")) {
         $ ("#dialog").dialog ("close");
-        $ (".mainMenu").hide (); $ ("#menuButton").html ("☰");
+        mainMenuHide ();
         return;
       }
       $ ("iframe.intro").hide ();
       let favList = getCookie ("favorites").replace (/[ ]+/g, "\n");
       favDia (favList, "Hämta fil", "Lägg till markerade", "Spara", "Stäng", "Spara fil", "Finn och visa", "Töm listan");
-      $ (".mainMenu").hide (); $ ("#menuButton").html ("☰");
+      mainMenuHide ();
       hideKeyboard ();
-    },
-    //============================================================================================
-    goTop () {
-      scrollTo (0, 0);
-      $ (".mainMenu").hide (); $ ("#menuButton").html ("☰");
-      $ ("#dialog").dialog ("close");
     },
     //============================================================================================
     parAlb (name) { // #### Go to a (in DOM) linked picture's original (source) album
@@ -3506,7 +3497,6 @@ let homeTip = "I N T R O D U K T I O N";
 let logAdv = "Logga in för att kunna se inställningar: Anonymt utan namn och lösenord, eller med namnet ’gäst’ utan lösenord som ger vissa redigeringsrättigheter"; // i18n
 let loggedIn = false;
 let mailAdmin = "tore.ericsson@tores.se";
-let nglob = 0; // number storage
 let nosObs = "Du får skriva men kan ej spara text utan annan inloggning"; // i18n
 let notLoggedOutEver = true;
 let nopsGif = "GIF-fil kan bara ha tillfällig text"; // i18n
@@ -3516,7 +3506,6 @@ let loginStatus = "";
 let tempStore = "";
 let chkPaths = []; // For DB picture paths to be soon updated (or removed)
 let savedAlbumIndex = 0;
-let screenTop = 0;
 
 // NOTE: returnTitles [2] is used as a ´word´ in some places (must be one item), search for it!
 let returnTitles = ["HEM till ROT-albumet", "MOT ROT-albumet", "TILL SENASTE album"]; // i18n
@@ -3632,7 +3621,8 @@ function load_imdb_images () {
 // Hide the show image element, called by hideShow ()
 function hideShow_g () {
 
-  document.getElementById ("imageList").className = "show-block";
+  document.getElementById ("imageList").className = "show-inline";
+  //$ (".miniImgs").show ();
 
   $ ("ul.context-menu").hide (); // if open
   $ ("#link_show a").css ('opacity', 0);
@@ -3646,25 +3636,27 @@ function hideShow_g () {
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Waiting spinner wheel for server activities etc.
 // This JQUERY construct makes the function available also in HTML/HBS:
-$.spinnerWait = function (runWait, delay) { // Delay is used only at end of waiting (runWait false)
-  //function $.spinnerWait (runWait, delay) {
+$.spinnerWait = async function (runWait, delay) { // Delay is used only to end waiting (runWait false)
   if (!delay) delay = 0;
   $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
+  //var s = 0;
   if (runWait) {
-    console.log (" Spinner ON", delay); // Here 'delay' is used only as debug id-number
+    //s = await execute ('echo $(date "+%s.%N")');
+    //console.log (" Spinner ON", delay, s); // Here 'delay' is used only as debug id-number
     $ (".spinner").show ();
     clearInterval (BLINK); // Unlock if occasionaly in use ...
     BLINK_TAG = "#menuButton";
     BLINK = setInterval (blink_text, 600);
-    $ (".mainMenu").hide (); $ ("#menuButton").html ("☰");
+    mainMenuHide ();
     $ ("div.settings, div.settings div.check").hide ();
     //document.getElementById("menuButton").disabled = true;
     document.getElementById ("reLd").disabled = false; // Important! Must be always available
     document.getElementById ("saveOrder").disabled = true;
     document.getElementById ("divDropbox").style.display = "none";
   } else { // End waiting
-    later ( ( () => {
-      console.log ("Spinner OFF", delay); // Here 'delay' is used as debug id-number too
+    later ( (async () => {
+      //s = await execute ('echo $(date "+%s.%N")');
+      //console.log ("Spinner OFF", delay, s); // Here 'delay' is used as debug id-number too
       $ (".spinner").hide ();
       clearInterval (BLINK);
     }), delay);
@@ -3673,7 +3665,9 @@ $.spinnerWait = function (runWait, delay) { // Delay is used only at end of wait
       document.getElementById ("reLd").disabled = false;
       document.getElementById ("saveOrder").disabled = false;
       document.getElementById ("showDropbox").disabled = false; // May be disabled at upload!
-      document.getElementById ("imageList").className = "show-block"; // Important! But...
+      if (!$ (".img_show").is (":visible")) {
+        document.getElementById ("imageList").className = "show-inline"; // Important! But...
+      }
       $ ("#title a.proid") [0].focus ();
     }), 100);
   }
@@ -3802,7 +3796,7 @@ function gotoMinipic (namepic) {
   let spinner = document.querySelector("img.spinner");
   let timer;
   (function repeater () {
-    timer = setTimeout (repeater, 500)
+    timer = setTimeout (repeater, 500);
     if (spinner.style.display === "none") {
       clearTimeout (timer);
       let y, p = $ ("#i" + escapeDots (namepic));
@@ -3811,7 +3805,8 @@ function gotoMinipic (namepic) {
       } else {
         y = 0;
       }
-      let t = $ ("#highUp").offset ().top;
+      //let t = $ ("#highUp").offset ().top;
+      let t = 66;
       if (t > y) {y = t;}
       scrollTo (null, y);
       resetBorders (); // Reset all borders
@@ -3819,6 +3814,14 @@ function gotoMinipic (namepic) {
       markBorders (namepic); // Mark this one
     }
   } ());
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// Go to an album's basic top position
+function gotoAtop () {
+  //later ( ( () => {
+    scrollTo (null, 66); // Alternative to #highUp
+  //}), 3200);
+  //scrollTo (null, $ (".proid.toggbkg").offset ().top + 34); // Alternative to #highUp
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 async function deleteFiles (picNames, nels, picPaths) { // ===== Delete image(s)
@@ -4606,7 +4609,6 @@ function reqDirs (imdbroot) { // Read the dirs in imdbLink (requestDirs)
     // Here also #picFound is sent to the server for information/update
     xhr.open ('GET', 'imdbdirs/' + imdbroot + "@" + $ ("#picFound").text (), true, null, null);
     xhr.onload = function () {
-      //$.spinnerWait (false);
       if (this.status >= 200 && this.status < 300) {
         var dirList = xhr.responseText;
         dirList = dirList.split ("\n");
@@ -4670,6 +4672,7 @@ function reqDirs (imdbroot) { // Read the dirs in imdbLink (requestDirs)
         let ix = dirList.indexOf (curr);
         if ($ ("#imdbDir").text ().length > 0 && ix < 0) {
           document.getElementById ("imageList").className = "hide-all";
+          //$ (".miniImgs").hide ();
           $ ("#imdbDir").text (""); // Remove active album
         } else { // ... but save for selection if present in dirList:
           tempStore = ix + 1;
@@ -4899,7 +4902,6 @@ function aData (dirList) { // Construct the jstree data template from dirList
   return r; // Don't removeUnderscore here!
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 async function serverShell (anchor) { // Send commands in 'anchor text' to server shell
   var cmds = $ ("#"+anchor).text ();
   cmds = cmds.split ("\n");
@@ -4909,11 +4911,6 @@ async function serverShell (anchor) { // Send commands in 'anchor text' to serve
       commands.push (cmds [i]);
     }
   }
-
-  //for (let i=0; i<commands.length; i++) {
-    //await execute (commands [i]);
-  //}
-
   commands = commands.join ("\n").trim ();
   if (commands) {
     var result = await mexecute (commands);
@@ -5207,7 +5204,7 @@ let doFindText = (sTxt, and, sWhr, exact) => {
             document.getElementById("dialog").innerHTML = btFind;
             $("#dialog button") [0].focus();
           } else {
-            //let btFind ="<br><button style=\"border:solid 2px white;background:#b0c4deaa;\" onclick='$(\"#dialog\").dialog(\"close\");$(\"div.subAlbum[title=" + returnTitles [2] + "]\")[0].click();$(\"a.search\").click();'>TILLBAKA</button>";
+            //let btFind ="<br><button style=\"border:solid 2px white;background:#b0c4deaa;\" onclick='$(\"#dialog\").dialog(\"close\");$(\"div.q[title=" + returnTitles [2] + "]\")[0].click();$(\"a.search\").click();'>TILLBAKA</button>";
             let btFind ="<br><button style=\"border:solid 2px white;background:#b0c4deaa;\" onclick='$(\"#dialog\").dialog(\"close\");$(\"a.search\").click();'>TILLBAKA</button>";
             document.getElementById("dialog").innerHTML = btFind;
             $("#dialog button") [0].focus();
@@ -5613,13 +5610,13 @@ function subaSelect (subName, path) { // ##### Sub-album link selected
     here = names.indexOf (name);
     idx = names.slice (here + 1).indexOf (name + "/" + subName);
     if (idx < 0) {
-      $ (".mainMenu").hide (); $ ("#menuButton").html ("☰");
+      mainMenuHide ();
     } else {
       idx = idx + here + 1;
     }
   }
   if (idx < 0) {
-    $ (".mainMenu").hide (); $ ("#menuButton").html ("☰");
+    mainMenuHide ();
     return;
   } else {
     // NOTE: jstree uses (calls) selectAlbum (see the HBS file)
@@ -5710,6 +5707,20 @@ function hideKeyboard () {
 
   }
 }
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Show/hide mainMenu: mainMenuShow, mainMenuHide
+ */
+function mainMenuShow () {
+  $ ("#menuButton").attr ("title", htmlSafe ("Stäng\nmenyn")); // i18n
+  $ ("#menuButton").html ("×");
+  $ (".mainMenu").show ();
+}
+function mainMenuHide () {
+  $ ("#menuButton").attr ("title", htmlSafe ("Öppna\nmenyn")); // i18n
+  $ ("#menuButton").html ("☰");
+  $ (".mainMenu").hide ();
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
 /*
