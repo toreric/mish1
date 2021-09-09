@@ -412,9 +412,6 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
 </p><!-- MiniImages = links to slides -->
 <div class="miniImgs">
   {{#sortable-objects sortableObjectList=allNames sortEndAction='sortEndAction' enableSort=true useSwap=false}}
-    <!--script>
-      $.spinnerWait (true, 1);
-    </script-->
     {{#each allNames as |file|}}
       {{#draggable-object content=file isSortable=true overrideClass='show-inline'}}
       <div id="i{{file.name}}" class="img_mini {{file.symlink}}" draggable="false" ondragstart="return false">
@@ -459,9 +456,6 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
   (<span class="numMarked BACKG" title="marked">0</span>&nbsp;markerade)
   <br>
  <!-- Extra minimal subalbum list at bottom -->
-  <!--script>
-    $.spinnerWait (true, 2);
-  </script-->
   {{#each subaList as |suba|}}
   <a class="imDir BLUET" {{action 'subalbumSelect' suba.album}}>
     <span> {{{suba.name}}} &nbsp;</span>

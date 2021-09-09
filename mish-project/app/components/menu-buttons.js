@@ -778,19 +778,19 @@ export default Component.extend (contextMenuMixin, {
         }
         console.log ("jQuery v" + $ ().jquery);
         // The time stamp is produced with the Bash 'ember-b-script'
-        // userLog ($ ("#timeStamp").text (), true); // Confuses phone users
         // Login advice:
         $ ("#title a.proid").attr ("title", homeTip);
         //$ ("#title a.proid").attr ("totip", homeTip);
         $ ("#title a.toggbkg").attr ("title", bkgTip);
         $ ("#title button.cred").attr ("title", logAdv);
         $ ("#title button.cred").attr ("totip", logAdv);
+
         // Initialize settings:
         // Search result album names will have unique random extensions.
         // This #picFound search result album will, harmlessly, have identical
         // name within a session for any #imdbRoot (if you switch between them)
         let rnd = "." + Math.random().toString(36).substr(2,4);
-        $ ("#picFound").text (picFound + rnd); // i18n
+        $ ("#picFound").text (picFound + rnd); // picFound is a global
         console.log ("picFound:", $ ("#picFound").text ());
         zeroSet ();
         this.actions.setAllow ();
@@ -902,9 +902,6 @@ export default Component.extend (contextMenuMixin, {
         $ ("span#showSpeed").hide ();
         $ ("div.ember-view.jstree").attr ("onclick", "return false");
 
-        /*if (allow.imgHidden || allow.adminAll) { // Qualified if at least Guest
-          $ (".img_mini.symlink [alt='MARKER']").attr("title", "Klick = markera; med Ctrl eller högerklick = till originalet");
-        }*/
       }), 10);
     });
   },
@@ -2051,10 +2048,10 @@ export default Component.extend (contextMenuMixin, {
         }).then ( () => {
           startInfoPage ()
         });
-      }), 2000); // Time needed!
+      }), 4000); // Time needed!
       later ( ( () => {
         that.set('isLoading', false);
-      }), 4000); // Time needed!
+      }), 12000); // Time needed!
     },
     //============================================================================================
     selectAlbum () { // ##### triggered by a click within the JStree
@@ -2241,6 +2238,26 @@ export default Component.extend (contextMenuMixin, {
         resolve (true);
         $.spinnerWait (true, 104);
       }).then ( () => {
+        execute ("cat " + $ ("#imdbLink").text () + "/.imdb")
+        .then ( (res) => {
+          openRoot = res.trim ();
+          console.log("openRoot",openRoot);
+          if (openRoot === "yes") { // SET THE ADMIN FLAG TO ALLOW ANYTHING!
+            allowvalue = "1" + $ ("#allowValue").text ().slice (1);
+          } else {
+            allowvalue = "0" + $ ("#allowValue").text ().slice (1);
+          }
+          $ ("#allowValue").text (allowvalue);
+          this.actions.setAllow ();
+
+          // Show upload button only if qualified:
+          if (allow.imgUpload || allow.adminAll) {
+            $ ("#showDropbox").show ();
+          } else {
+            $ ("#showDropbox").hide ();
+          }
+
+        });
         if (thisAlbumIndex > 0) gotoAtop ();
         else scrollTo (null, 0);
         $.spinnerWait (true, 105);
@@ -3343,12 +3360,6 @@ export default Component.extend (contextMenuMixin, {
               }, 2000);                 // NOTE: Preserved here just as an example
             }), 200);
 
-            // Hide upload button if just viewer or guest:
-            if (status === "viewer" || status === "guest") {
-              $ ("#showDropbox").hide ();
-            } else {
-              $ ("#showDropbox").show ();
-            }
           }).catch (error => {
             console.error (error.message);
           });
@@ -3491,7 +3502,7 @@ let TEXTC = "#000";
 let BLUET = "#146";
 let bkgTip = "Byt bakgrund";
 let centerMarkSave = "×";
-let cmsg = "Får inte laddas ned/förstoras utan särskilt medgivande: Vänligen kontakta copyrightinnehavaren eller Hembygdsföreningen"
+let cmsg = "Får inte laddas ned/förstoras utan särskilt medgivande: Vänligen kontakta copyrightinnehavare eller Hembygdsföreningen"
 let eraseOriginals = false;
 let homeTip = "I N T R O D U K T I O N";
 let logAdv = "Logga in för att kunna se inställningar: Anonymt utan namn och lösenord, eller med namnet ’gäst’ utan lösenord som ger vissa redigeringsrättigheter"; // i18n
@@ -3500,6 +3511,7 @@ let mailAdmin = "tore.ericsson@tores.se";
 let nosObs = "Du får skriva men kan ej spara text utan annan inloggning"; // i18n
 let notLoggedOutEver = true;
 let nopsGif = "GIF-fil kan bara ha tillfällig text"; // i18n
+let openRoot = "";
 let picFound = "Funna_bilder"; // i18n
 let preloadShowImg = [];
 let loginStatus = "";
@@ -4379,11 +4391,14 @@ function linkFunc (picNames) { // ===== Execute a link-these-files-to... request
   var albums = $ ("#imdbDirs").text ();
   albums = albums.split ("\n");
   var curr = $ ("#imdbDir").text ().match(/\/.*$/); // Remove imdbLink
+  var picf = $ ("#picFound").text () // Remove if possibly picFound
   if (curr) {curr = curr.toString ();} else {curr = "";}
   var lalbum = [];
   var i;
   for (i=0; i<albums.length; i++) { // Remove current album from options
-    if (albums [i] !== curr) {lalbum.push (albums [i]);}
+    if (albums [i] !== curr && albums [i].indexOf (picf) < 0) {
+      lalbum.push (albums [i]);
+    }
   }
   //var rex = /^[^/]*\//;
   var codeLink = "'var lalbum=this.value;var lpath = \"\";if (this.selectedIndex === 0) {return false;}lpath = lalbum.replace (/^[^/]*(.*)/, $ (\"#imdbLink\").text () + \"$1\");console.log(\"Link to\",lpath);var picNames = $(\"#picNames\").text ().split (\"\\n\");var cmd=[];for (var i=0; i<picNames.length; i++) {var linkfrom = document.getElementById (\"i\" + picNames [i]).getElementsByTagName(\"img\")[0].getAttribute (\"title\");linkfrom = \"../\".repeat (lpath.split (\"/\").length - 1) + linkfrom;var linkto = lpath + \"/\" + picNames [i];linkto += linkfrom.match(/\\.[^.]*$/);cmd.push(\"ln -sf \"+linkfrom+\" \"+linkto);}$ (\"#temporary\").text (lpath);$ (\"#temporary_1\").text (cmd.join(\"\\n\"));$ (\"#checkNames\").trigger (\"click\");'";
@@ -5224,7 +5239,7 @@ let doFindText = (sTxt, and, sWhr, exact) => {
       if (n > 0 && n < nLimit) displayPicFound ();
       else $.spinnerWait (false, 111);
 
-      let noDisplay = n && n <= nLimit && (loginStatus === "guest" || loginStatus === "viewer" || !loggedIn);
+      let noDisplay = n && n <= nLimit && loginStatus === "guest";
       if (noDisplay) $ ("div[aria-describedby='dialog']").hide ();
       // Save 'nameOrder' as the picFound album's namelist:
       later ( ( () => {
@@ -5350,7 +5365,7 @@ var prepTextEditDialog = () => {
           }).then ( () => {
             xmpGetSource ();
             return;
-          })
+          });
         } else {
           xmpGetSource ();
         }
@@ -5433,7 +5448,7 @@ var prepTextEditDialog = () => {
         tempStore = "TEXT written";
         saveText (fileName +'\n'+ text1 +'\n'+ text2);
         return;
-      })
+      });
     } else {
       saveText (fileName +'\n'+ text1 +'\n'+ text2);
       if (fileName.indexOf ($ ("#picFound").text ()) < 0) {
