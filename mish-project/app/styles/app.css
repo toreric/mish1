@@ -21,8 +21,8 @@ body {
 }
 iframe {
   display: block;
-  top: 3.5em;
-  left: 0;
+  top: 3.2em;
+  left: 0.3em;
   height: 100%;
   width: 99.55%;
   margin: 0;
@@ -30,7 +30,7 @@ iframe {
   opacity: 0.95;
   border: 2px solid gray;
   position: fixed;
-  z-index: 0;
+  z-index: 20;
 }
 #wrap_pad {
   position: relative;
@@ -615,9 +615,15 @@ label .checkMark:after {
   color: white;
   font-weight: bold;
 }
-#title span.usrlg {
-  font: bold 0.75em monospace!important;
-  color: yellowgreen;
+span.usrlg {
+  font: bold 1.6em monospace!important;
+  color: #0b0!important;
+  position: fixed;
+  display: block;
+  top: 0;
+  width: 2em;
+  margin: 0 0 0 50%;
+  z-index: -1;
 }
 div.settings button {
   font-size: 100%!important;
@@ -1415,7 +1421,7 @@ select {
   position: fixed;
   top: 3.2em;
   left: 2px;
-  min-width: 20em;
+  min-width: 16em;
   margin: 0 0 0 4px;
   padding: 0 2px 0 2px;
   border: 1px solid gray;
@@ -1423,6 +1429,7 @@ select {
   text-align: left;
   background: inherit;
   opacity: 0.9;
+  line-height: 0;
   z-index: 12;
 }
 .mainMenu p {

@@ -37,7 +37,7 @@ export default Component.extend (contextMenuMixin, {
         rootList = rootList.split ("\n");
         let seltxt = rootList [0];
         rootList.splice (0, 1, "");
-        rootList [0] = "Välj albumkatalog "; // i18n, must have a space
+        rootList [0] = "Välj albumsamling "; // i18n, must have a space
         let selix = rootList.indexOf (seltxt);
         if (selix > 0) {
           this.set ("imdbRoot", seltxt);
@@ -53,15 +53,13 @@ export default Component.extend (contextMenuMixin, {
         // Prepare to select imdbRoot
         mainMenuShow ();
         $ ("iframe.intro").hide ();
-        $ (".mainMenu p:gt(1)").hide (); // Shown at selectRoot ()
+        $ (".mainMenu p:gt(2)").hide (); // Shown at selectRoot ()
         this.set ("albumData", [])
         return;
       }
     }
 
     document.title = "Mish: " + removeUnderscore (imdbroot, true);
-    //yield reqDirs (imdbroot); // Request all subdirs recursively ((2))
-    // MUST BE POSTPONED UNTIL imdLink is server-established!
 
     if (this.get ("albumData").length === 0) {
       yield reqDirs (imdbroot); // Then request subdirectories recursively ((2))
@@ -206,7 +204,7 @@ export default Component.extend (contextMenuMixin, {
         }]);
         $ ("#noButt").html ("<b>Nej, avbryt</b>"); // i18n
         niceDialogOpen ();
-        $ ("#allButt").focus ();
+        $ ("#allButt").trigger ("focus");
       }
     }
   },
@@ -320,7 +318,7 @@ export default Component.extend (contextMenuMixin, {
   { label:  "───────────────", disabled: false, action () {} }, // Spacer closes menu
   { label: 'Ladda ned...',
     disabled: () => {
-      return !(["admin", "editall", "edit"].indexOf (loginStatus) > -1 && (allow.imgOriginal || allow.adminAll));
+      return !(allow.imgOriginal || allow.adminAll);
     },
     action () {
       $ ("#downLoad").trigger ("click"); // Call via DOM since "this" is ...where?
@@ -409,7 +407,7 @@ export default Component.extend (contextMenuMixin, {
         }]);
         $ ("#noButt").html ("<b>Nej, avbryt</b>"); // i18n
         niceDialogOpen ();
-        $ ("#allButt").focus ();
+        $ ("#allButt").trigger ("focus");
       } else { // only when nels === 1
         $ (this).dialog ('close');
         markBorders (picNames [0]); // Mark this single one, even if it wasn't clicked
@@ -515,7 +513,7 @@ export default Component.extend (contextMenuMixin, {
       var text = "<br><b>—— du får bara radera länkar ——</b>"; // i18n
       var yes = "Uppfattat" // i18n
       let symlink = document.getElementById ("i" + picName).classList.contains ('symlink');
-      if (!symlink && !allow.deleteImg) {
+      if (!symlink && !(allow.deleteImg || allow.adminAll)) {
         infoDia (null, null, title, text, yes, true);
         return;
       }
@@ -614,7 +612,7 @@ export default Component.extend (contextMenuMixin, {
         }]);
         $ ("#noButt").html ("<b>Nej, avbryt</b>"); // May contain html
         niceDialogOpen ();
-        $ ("#allButt").focus ();
+        $ ("#allButt").trigger ("focus");
       } else {
         nextStep (nels);
       }
@@ -677,7 +675,7 @@ export default Component.extend (contextMenuMixin, {
          }]);
         $ ("#noBut").html ("<b>Nej, avbryt</b>");
         niceDialogOpen ();
-        $ ("#yesBut").focus ();
+        $ ("#yesBut").trigger ("focus");
       }
     }
   },
@@ -743,7 +741,6 @@ export default Component.extend (contextMenuMixin, {
   imdbDir: "",  // Current picture directory, selected from imdbDirs
   imdbDirs: () => {return ['Albums?']}, // Reset in requestDirs
   imdbPics: () => {return ['Alpics?']}, // Reset in requestDirs
-  isLoading: false,
   jstreeHdr: "", // Current album JStree menu header
   albumName: "", // Current album display name, even with HTML tags
   albumText: "", // Current album maintenance menu label
@@ -805,7 +802,7 @@ export default Component.extend (contextMenuMixin, {
             rootList = rootList.split ("\n");
             let seltxt = rootList [0];
             rootList.splice (0, 1, "");
-            rootList [0] = "Välj albumkatalog "; // i18n, must have a space
+            rootList [0] = "Välj albumsamling "; // i18n, must have a space
             let selix = rootList.indexOf (seltxt);
             if (selix > 0) {
               this.set ("imdbRoot", seltxt);
@@ -820,10 +817,11 @@ export default Component.extend (contextMenuMixin, {
         later ( (async () => {
           let news = await execute ("cat _imdb_news.txt");
           if (news.indexOf ("Command failed") > -1) news = "";
-          if (!news.trim ()) news = await execute ('echo "Mish "$(date "+%k:%M %A %e %B %Y")');
+          if (news.trim ()) //news = await execute ('echo "Mish "$(date "+%k:%M %A %e %B %Y")');
           userLog (news, true, 10000);
 
           scrollTo (0, 0); // To top of screen:
+          //$ ("#title a.proid") [0].focus () cannot be replaced by $ ("#title a.proid") [0].trigger ("focus"):
           $ ("#title a.proid") [0].focus ();
           later ( ( () => { // Auto log in the default guest user:
             $ (".cred.user").attr ("value", "gäst"); // i18n
@@ -831,6 +829,7 @@ export default Component.extend (contextMenuMixin, {
             later ( ( () => {
               $ (".cred.login").trigger ("click"); // Confirm logIn
               $ (".cred.user").trigger ("click"); // Prevents FF showing link to saved passwords
+              //$ ("#title a.proid") [0].focus () cannot be replaced by $ ("#title a.proid") [0].trigger ("focus"):
               $ ("#title a.proid") [0].focus ();
               //this.actions.selectRoot ("");
             }), 1000);
@@ -1324,7 +1323,7 @@ export default Component.extend (contextMenuMixin, {
       ediTextClosed ();
       $ ("#showSpeed").show ();
       userLog ('BEGIN show');
-      //$ ("#showSpeed input").focus (); Fatal for phones!
+      //$ ("#showSpeed input").trigger ("focus"); Fatal for phones!
       var that = this;
       (function sequence () {
         that.actions.showNext (true); // Immediate response
@@ -1390,10 +1389,10 @@ export default Component.extend (contextMenuMixin, {
               $ ("#imdbDir").text ("");
             }
           } else {
-            that.set ("albumText", " Albumåtgärder – ");
-            that.set ("albumName", '<strong class="albumName"> ' + tmpName + '</strong>');
-            that.set ("jstreeHdr", "Alla album (albumkarta, albumträd):");
-            $ ("#jstreeHdr").attr ("title", htmlSafe ("Visa alla album\n(hela albumträdet)")); //i18n
+            that.set ("albumText", " Albumåtgärder för "); // i18n
+            that.set ("albumName", '<b class="albumName">”' + tmpName + '”</b>');
+            that.set ("jstreeHdr", "<pre style='margin:0'>Albumsamlingen ”" + that.get ("imdbRoot") + "”" + "\t\t﹀</pre>");
+            $ ("#jstreeHdr").attr ("title", htmlSafe ("Alla album (hela albumträdet)")); //i18n
           }
           $.spinnerWait (true, 321);
           resolve (data); // Return file-name text lines
@@ -1573,7 +1572,7 @@ export default Component.extend (contextMenuMixin, {
               $ ("input.i_email").css ("background", "#dfd");
             } else {
               $ ("input.i_email").css ("background", "#fdd");
-              $ ("input.i_email").focus ();
+              $ ("input.i_email").trigger ("focus");
               hideKeyboard ();
               //$ ('#navKeys').text ('false'); // Repeated since non-modal
               return;
@@ -1581,7 +1580,7 @@ export default Component.extend (contextMenuMixin, {
             let message = document.querySelector ("textarea.t_mess").value.trim ().replace (/\s+/g, " ");
             if (message.length < 7) {
               $ ("textarea.t_mess").css ("background", "#fdd");
-              $ ("textarea.t_mess").focus ();
+              $ ("textarea.t_mess").trigger ("focus");
               hideKeyboard ();
               //$ ('#navKeys').text ('false'); // Repeated since non-modal
               return;
@@ -1627,7 +1626,7 @@ export default Component.extend (contextMenuMixin, {
         niceDialogOpen (dialogId);
       }), 33);
       later ( ( () => {
-        $ ("input.i_address").focus ();
+        $ ("input.i_address").trigger ("focus");
         hideKeyboard ();
       }), 333);
     },
@@ -1656,7 +1655,7 @@ export default Component.extend (contextMenuMixin, {
       var txwin = null;
       txwin = window.open ("", "txwin", "width=916,height=600,resizable=yes,location=no,titlebar=no,toolbar=no,menubar=no,scrollbars=yes,status=no");
       if (txwin) {
-        txwin.focus ();
+        txwin.trigger ("focus");
         txwin.document.getElementsByTagName ("body") [0].innerHTML = list;
       } else {
         userLog ("POPUP blocked by browser", true, 5000); // 5 s
@@ -1698,7 +1697,7 @@ export default Component.extend (contextMenuMixin, {
         // Swedish
         allowHtml [j] = "<span>" + allowSV [j] + " " + (j + 1) + ' </span>' + code (Number (allowvalue [j]), j); // i18n
       }
-      $ ("#setAllow").html ( allowHtml.join ("<br>"));
+      $ ("#setAllow").html (allowHtml.join ("<br>"));
 
 
       allowFunc ();
@@ -1735,6 +1734,7 @@ export default Component.extend (contextMenuMixin, {
       $ ("iframe.intro").hide ();
       $ (".img_show").hide ();
       $ (".nav_links").hide ();
+      document.getElementById ("imageList").className = "show-inline";
       var imdbRoot = $ ("#imdbRoot").text ();
       if (imdbDir.indexOf ("/") < 0) {
         imdbDir = imdbRoot;
@@ -1764,7 +1764,7 @@ export default Component.extend (contextMenuMixin, {
       code += '\n</select>';
       infoDia (null, null, album, code, 'Avbryt', true);
       later ( ( () => {
-        $ ("select.selectOption").focus ();
+        $ ("select.selectOption").trigger ("focus");
         hideKeyboard ();
       }), 50);
     },
@@ -1941,10 +1941,10 @@ export default Component.extend (contextMenuMixin, {
           }
         }]);
         niceDialogOpen ();
-        $ ("#noBut").focus ();
-        $ ("input.nameNew").focus (); // if exists
+        $ ("#noBut").trigger ("focus");
+        $ ("input.nameNew").trigger ("focus"); // if exists
         hideKeyboard ();
-        if (opt === "checked") {$ ("#yesBut").focus ();}
+        if (opt === "checked") {$ ("#yesBut").trigger ("focus");}
       }
     },
     //============================================================================================
@@ -1994,12 +1994,11 @@ export default Component.extend (contextMenuMixin, {
       }
     },
     //============================================================================================
-    selectRoot (value, what) { // ##### Select album root dir (to put into imdbLink) from dropdown
-      if (what) {var that = what;} else that = this;
-      if(that.get('isLoading')) return;
-      that.set('isLoading', true);
-      $ (".mainMenu p:gt(1)").hide ();
-      //$ (".mainMenu p:gt(1)").show ();
+    selectRoot (value, what) { // ##### Select album root dir to put into imdbLink from selectbox
+      // Check if there is a rootcookie
+
+      if (what) var that = what; else that = this;
+      $ (".mainMenu p:gt(2)").hide (); // The selectbox is in the third <p> item
       // Close all dialogs/windows
       $ ("#dialog").dialog ("close");
       $ ("#searcharea").dialog ("close");
@@ -2007,11 +2006,19 @@ export default Component.extend (contextMenuMixin, {
       $ (".img_show").hide ();
       $ (".nav_links").hide ();
       document.getElementById ("divDropbox").style.display = "none";
-      if (value.indexOf (" ") > -1) value = ""; // The header line contains space
-      if (value === "") {
-        $ (".mainMenu p:gt(1)").show ();
+      if (value.indexOf (" ") > -1) value = ""; // NOTE: Space flags the header line !!
+      if (value === "" || value === $ ("#imdbRoot").text ()) {
+        $ (".mainMenu p:gt(2)").show (); // The selectbox is in the third <p> item
         return;
       }
+
+      // Set zero the allow.adminAll==1 value if set at/by a demo album!!
+      if ($ ("span.cred.name b").text () !== "admin") {
+        allow.adminAll = 0;
+        allowvalue = "0" + $ ("#allowValue").text ().slice (1);
+        $ ("#allowValue").text (allowvalue);
+      }
+
       $ ("#rootSel option[value=" + value + "]").prop('selected', 'selected');
       $ ("#imdbRoot").text (value);
       that.set ("imdbRoot", value);
@@ -2049,9 +2056,6 @@ export default Component.extend (contextMenuMixin, {
           startInfoPage ()
         });
       }), 4000); // Time needed!
-      later ( ( () => {
-        that.set('isLoading', false);
-      }), 12000); // Time needed!
     },
     //============================================================================================
     selectAlbum () { // ##### triggered by a click within the JStree
@@ -2059,7 +2063,7 @@ export default Component.extend (contextMenuMixin, {
       //gotoAtop ();
       $.spinnerWait (true, 101);
       document.getElementById ("imageList").className = "hide-all";
-      $ (".miniImgs").hide (); // Extra, works temporary and smoothens transition
+      $ (".miniImgs").hide ();
       //scrollTo (null, 0);
       let value = $ ("a[aria-selected='true']"); // Ok
       //let value = $ ("a.jstree-clicked"); // Ok, alternative
@@ -2153,17 +2157,17 @@ export default Component.extend (contextMenuMixin, {
         this.set ("subaList", a); // triggers load of subalbum links into menu-buttons.hbs
         $.spinnerWait (true, 102);
 
-        await new Promise (z => setTimeout (z, 777));
+        await new Promise (z => setTimeout (z, 77));
         $.spinnerWait (true, 103);
         // REFRESH the displayed album
         $ ("#reLd").trigger ("click");
         $ ("div.subAlbum").show ();
-        $ ("a.imDir").attr ("title", "Album");
+        //$ ("a.imDir").attr ("title", "Album");
         let n = $ ("a.imDir").length/2; // there is also a page bottom link line...
         let nsub = n;
         let z, iz, obj;
-        let fullAlbumName= $ ("#imdbRoot").text () + $ ("#imdbDir").text ().replace (/^[^/]*/, "");
-        fullAlbumName = '<span title-1="' + fullAlbumName+ '">' + this.get ("albumName") + ": </span>"
+        //let fullAlbumName = $ ("#imdbRoot").text () + $ ("#imdbDir").text ().replace (/^[^/]*/, "");
+        let fullAlbumName = '<span title-1="' + $ ("#imdbRoot").text () + $ ("#imdbDir").text ().replace (/^[^/]*/, "") + '">”' + this.get ("albumName") + "” </span>"
         if (tmp [0] === "⌂hem") {
           $ ("a.imDir").each (function (index, element) {
             if (index < n) {z = 0;} else {z = n;}
@@ -2178,13 +2182,13 @@ export default Component.extend (contextMenuMixin, {
                 obj.addClass ("BUT_1");
                 if (iz === 2) {
                   if ( $ ("#imdbDir").text ().replace (/^[^/]*\//, "").indexOf (picFound) === 0) {
-                    obj.after ("<div class=\"BUT_2\"> Tillfälligt album utan underalbum</div><br>"); // i18n
+                    obj.after ("<div class=\"BUT_2\"> är ett tillfälligt album: utan underalbum</div><br>"); // i18n
                   } else if (nsub < 1) {
-                    obj.after ("<div class=\"BUT_2\"> Har inga underalbum</div><br>"); // i18n
+                    obj.after ("<div class=\"BUT_2\"> har: inga underalbum</div><br>"); // i18n
                   } else if (nsub === 1) {
-                    obj.after ("<div class=\"BUT_2\"> Har ett underalbum</div><br>"); // i18n
+                    obj.after ("<div class=\"BUT_2\"> har: ett underalbum</div><br>"); // i18n
                   } else {
-                    obj.after ("<div class=\"BUT_2\"> Har " + nsub + " underalbum</div><br>"); // i18n
+                    obj.after ("<div class=\"BUT_2\"> har: " + nsub + " underalbum</div><br>"); // i18n
                   }
                   obj.after (fullAlbumName);
                 }
@@ -2204,13 +2208,13 @@ export default Component.extend (contextMenuMixin, {
                 obj = $ (element).closest ("div.subAlbum");
                 obj.addClass ("BUT_1");
                 if ( $ ("#imdbDir").text ().replace (/^[^/]*\//, "").indexOf (picFound) === 0) {
-                  obj.after ("<div class=\"BUT_2\"> Tillfälligt album utan underalbum</div><br>"); // i18n
+                  obj.after ("<div class=\"BUT_2\"> är ett tillfälligt album: utan underalbum</div><br>"); // i18n
                 } else if (nsub < 1) {
-                  obj.after ("<div class=\"BUT_2\"> Har inga underalbum</div><br>"); // i18n
+                  obj.after ("<div class=\"BUT_2\"> har: inga underalbum</div><br>"); // i18n
                 } else if (nsub === 1) {
-                  obj.after ("<div class=\"BUT_2\"> Har ett underalbum</div><br>"); // i18n
+                  obj.after ("<div class=\"BUT_2\"> har: ett underalbum</div><br>"); // i18n
                 } else {
-                  obj.after ("<div class=\"BUT_2\"> Har " + nsub + " underalbum</div><br>"); // i18n
+                  obj.after ("<div class=\"BUT_2\"> har: " + nsub + " underalbum</div><br>"); // i18n
                 }
                 obj.after (fullAlbumName);
               }
@@ -2220,13 +2224,13 @@ export default Component.extend (contextMenuMixin, {
           obj = $ ("div.subAlbum").first ();
           obj.before (fullAlbumName);
           if ( $ ("#imdbDir").text ().replace (/^[^/]*\//, "").indexOf (picFound) === 0) {
-            obj.after ("<div class=\"BUT_2\"> Tillfälligt album utan underalbum</div><br>"); // i18n
+            obj.after ("<div class=\"BUT_2\"> Tillfälligt album: utan underalbum</div><br>"); // i18n
           } else if (nsub < 1) {
-            obj.before ("<div class=\"BUT_2\"> Har inga underalbum</div><br>"); // i18n
+            obj.before ("<div class=\"BUT_2\"> har: inga underalbum</div><br>"); // i18n
           } else if (nsub === 1) {
-            obj.before ("<div class=\"BUT_2\"> Har ett underalbum</div><br>"); // i18n
+            obj.before ("<div class=\"BUT_2\"> har: ett underalbum</div><br>"); // i18n
           } else {
-            obj.before ("<div class=\"BUT_2\"> Har " + nsub + " underalbum</div><br>"); // i18n
+            obj.before ("<div class=\"BUT_2\"> har: " + nsub + " underalbum</div><br>"); // i18n
           }
         }
         // Don't show imdbLink (album root symlink name)
@@ -2238,14 +2242,17 @@ export default Component.extend (contextMenuMixin, {
         resolve (true);
         $.spinnerWait (true, 104);
       }).then ( () => {
-        execute ("cat " + $ ("#imdbLink").text () + "/.imdb")
+        execute ("cat " + $ ("#imdbLink").text () + "/.imdb") // NOTE: Always the albumroot
         .then ( (res) => {
           openRoot = res.trim ();
-          console.log("openRoot",openRoot);
-          if (openRoot === "yes") { // SET THE ADMIN FLAG TO ALLOW ANYTHING!
+          if (openRoot) console.log("openRoot",openRoot);
+          if (openRoot === "demo") { // SET THE ADMIN FLAG TO ALLOW ANYTHING!
             allowvalue = "1" + $ ("#allowValue").text ().slice (1);
+            let tx = "MISH DEMO MISH DEMO MISH DEMO MISH DEMO MISH DEMO MISH DEMO MISH DEMO MISH DEMO ";
+            $ ("span.usrlg").html (tx+tx+tx+tx);
           } else {
-            allowvalue = "0" + $ ("#allowValue").text ().slice (1);
+            $ ("span.usrlg").html ("");
+            //allowvalue = "0" + $ ("#allowValue").text ().slice (1);
           }
           $ ("#allowValue").text (allowvalue);
           this.actions.setAllow ();
@@ -2256,7 +2263,12 @@ export default Component.extend (contextMenuMixin, {
           } else {
             $ ("#showDropbox").hide ();
           }
-
+          // Show "erase original too" button only if qualified:
+          if (allow.deleteImg || allow.adminAll) {
+            $ ("#title span.eraseCheck").css ("display", "inline");
+          } else {
+            $ ("#title span.eraseCheck").css ("display", "none");
+          }
         });
         if (thisAlbumIndex > 0) gotoAtop ();
         else scrollTo (null, 0);
@@ -2413,7 +2425,6 @@ export default Component.extend (contextMenuMixin, {
     showShow (showpic, namepic, origpic) { // ##### Render a 'show image' in its <div>
 
       document.getElementById ("imageList").className = "hide-all";
-//$ (".miniImgs").hide ();
 
       $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
       mainMenuHide ();
@@ -2481,7 +2492,7 @@ export default Component.extend (contextMenuMixin, {
       $ ("#wrap_show .img_txt2").attr ("draggable", "false");
       if ($ ("div[aria-describedby='dialog']").is (":visible") && $ ("div[aria-describedby='dialog'] div span").html () === "Information") showFileInfo ();
 
-      if ($ ("#hideText") [0].checked === true) {
+      if ($ ("#hideText").prop ("checked") === true) {
         $ ("#wrap_show .img_txt1").hide ();
         $ ("#wrap_show .img_txt2").hide ();
         $ ("#wrap_show").css ("border-bottom", "0");
@@ -2617,9 +2628,6 @@ export default Component.extend (contextMenuMixin, {
             chkPaths = [];
           }
         }
-        // If too low position, go to top with login hidden
-        //scrollTo (null, 0);
-        //$ (".miniImgs").show ();
         later ( (async () => {
           //let yhigh = $ ("#highUp").offset ().top;
           let yhigh = 66;
@@ -2764,7 +2772,7 @@ export default Component.extend (contextMenuMixin, {
         $ ("#searcharea").dialog ("close");
       } else {
         if ($ ("#imdbRoot").text () === "") {
-          userLog ("VÄLJ ALBUMKATALOG", true); //i18n
+          userLog ("VÄLJ ALBUMSAMLING", true, 999); //i18n
           return;
         }
         $ ("iframe.intro").hide ();
@@ -2781,8 +2789,8 @@ export default Component.extend (contextMenuMixin, {
         $ (diaSrch).css ("left", diaSrchLeft);
         $ (diaSrch).css ("max-width", sw+"px");
         $ (diaSrch).css ("width", "");
-        $ ('textarea[name="searchtext"]').focus ();
-        $ ('textarea[name="searchtext"]').select ();
+        $ ('textarea[name="searchtext"]').trigger ("focus");
+        $ ('textarea[name="searchtext"]').trigger ("select");
         $ ("button.findText").html ("Sök i <b>" + $ ("#imdbRoot").text () + "</b>");
         $ ("button.findText").show ();
         $ ("button.updText").hide ();
@@ -2924,7 +2932,9 @@ export default Component.extend (contextMenuMixin, {
             var djvuName = xhr.responseText;
             //var dejavu = window.open (djvuName  + '?djvuopts&amp;zoom=100', 'dejavu', 'width=916,height=600,resizable=yes,location=no,titlebar=no,toolbar=no,menubar=no,scrollbars=yes,status=no'); // Use the PNG file instead (wrongly named):
             var dejavu = window.open (djvuName, 'dejavu', 'width=916,height=600,resizable=yes,location=no,titlebar=no,toolbar=no,menubar=no,scrollbars=yes,status=no');
-            if (dejavu) {dejavu.focus ();} else {
+            if (dejavu) {
+              dejavu.focus (); // NOTE: dejavu.trigger ... cannot be used here
+            } else {
               userLog ("POPUP blocked by browser", true, 5000); // 5 s
             }
             $.spinnerWait (false, 2004);
@@ -2954,7 +2964,7 @@ export default Component.extend (contextMenuMixin, {
         if (acc) {
           execute ("/usr/lib/cgi-bin/awstats.pl -config=mish.hopto.org -output > /var/www/mish/public/awstats/index.html").then ( () => {
             var statwind = window.open ('/awstats', 'statwind');
-            if (statwind) {statwind.focus ();} else {
+            if (statwind) {statwind.trigger ("focus");} else {
               userLog ("POPUP blocked by browser", true, 5000);
             }
           });
@@ -3076,7 +3086,10 @@ export default Component.extend (contextMenuMixin, {
         $ ("#title button.cred").attr ("title", "Bekräfta inloggning");
         later ( ( () => {
           $ ("#title input.cred").blur ();
-          $ ("#title a.proid") [0].focus (); // Prevents FF showing link to saved passwords
+          //$ ("#title a.proid") [0].focus () cannot be replaced by $ ("#title a.proid") [0].trigger ("focus"):
+          //$ ("#title a.proid") [0].focus (); // Prevent FF showing link to saved passwords, or
+          $ ("#title input.cred.user").trigger ("focus"); // prepare for using the FF preset facility
+          $ ("#title input.cred.user").trigger ("select");
         }),100);
         return;
       }
@@ -3093,7 +3106,8 @@ export default Component.extend (contextMenuMixin, {
         loggedIn = false;
         $ ("div.settings, div.settings div.check").hide ();
         userLog ("LOGOUT");
-        $ ("#title a.proid") [0].focus ();
+        //$ ("#title a.proid") [0].focus () cannot be replaced by $ ("#title a.proid") [0].trigger ("focus"):
+         $ ("#title a.proid") [0].focus ();
         zeroSet (); // #allowValue = '000... etc.
         this.actions.setAllow ();
         $ (".mainMenu p:eq(3) a").attr ("disabled", true); // Disable album-edit button in mainMenu
@@ -3153,6 +3167,8 @@ export default Component.extend (contextMenuMixin, {
       }
       //¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
       if (btnTxt === "Bekräfta") { // Confirm
+        //$ ("#title a.proid") [0].focus () cannot be replaced by $ ("#title a.proid") [0].trigger ("focus"):
+        $ ("#title a.proid") [0].focus ();
         usr = $ ("#title input.cred.user").val ();
         var pwd = $ ("#title input.cred.password").val ().trim (); // Important
         $ ("#title input.cred.password").val ("");
@@ -3231,9 +3247,12 @@ export default Component.extend (contextMenuMixin, {
               // And the delay appears to be important, 2000 is too little.
               later ( ( () => {
                 $ ("#j1_1_anchor").trigger ("click");
+                // Remove any confusing browser message (saved logins etc.)
+                $ ("#title span.cred.name").trigger ("click");
               }), 6000);
             }
-            $ ("#title a.proid") [0].focus ();
+          //$ ("#title a.proid") [0].focus () cannot be replaced by $ ("#title a.proid") [0].trigger ("focus"):
+          $ ("#title a.proid") [0].focus ();
           }
         });
         $ (document).tooltip ("enable");
@@ -3296,7 +3315,8 @@ export default Component.extend (contextMenuMixin, {
               } // end if
             } // end if
 
-            // Hide or show the web traffic statistics button
+            // Hide or show the web visit statistics "viSt" button.
+            // NOTE: is not reset later according to the openRoot demo option.
             if (allow.deleteImg || allow.adminAll) $ ("#viSt").show ()
             else $ ("#viSt").hide ();
             // Hide or show the net meeting button
@@ -3465,7 +3485,11 @@ export default Component.extend (contextMenuMixin, {
     seeFavorites () {
       if ($ ("textarea.favorites").is (":visible")) {
         $ ("#dialog").dialog ("close");
-        mainMenuHide ();
+        //mainMenuHide ();
+        return;
+      }
+      if ($ ("#imdbRoot").text () === "") {
+        userLog ("VÄLJ ALBUMSAMLING", true, 999); //i18n
         return;
       }
       $ ("iframe.intro").hide ();
@@ -3511,7 +3535,7 @@ let mailAdmin = "tore.ericsson@tores.se";
 let nosObs = "Du får skriva men kan ej spara text utan annan inloggning"; // i18n
 let notLoggedOutEver = true;
 let nopsGif = "GIF-fil kan bara ha tillfällig text"; // i18n
-let openRoot = "";
+let openRoot = ""; // If "demo" then SETS THE ADMIN FLAG TO ALLOW ANYTHING!
 let picFound = "Funna_bilder"; // i18n
 let preloadShowImg = [];
 let loginStatus = "";
@@ -3634,7 +3658,6 @@ function load_imdb_images () {
 function hideShow_g () {
 
   document.getElementById ("imageList").className = "show-inline";
-  //$ (".miniImgs").show ();
 
   $ ("ul.context-menu").hide (); // if open
   $ ("#link_show a").css ('opacity', 0);
@@ -3680,6 +3703,7 @@ $.spinnerWait = async function (runWait, delay) { // Delay is used only to end w
       if (!$ (".img_show").is (":visible")) {
         document.getElementById ("imageList").className = "show-inline"; // Important! But...
       }
+      //$ ("#title a.proid") [0].focus () cannot be replaced by $ ("#title a.proid") [0].trigger ("focus"):
       $ ("#title a.proid") [0].focus ();
     }), 100);
   }
@@ -4017,7 +4041,7 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) { // ===== I
     niceDialogOpen (dialogId);
     $ ("#yesBut").html (yes);
   }), 33);
-  $ ("#yesBut").focus ();
+  $ ("#yesBut").trigger ("focus");
   $ ("div[aria-describedby='" + dialogId + "']").show ();
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -4069,7 +4093,7 @@ function favDia (text, addfile, addmarked, savecook, closeit, savefile, findshow
         var texar = $ ('textarea[name="favorites"]') [0];
         $ ('textarea[name="favorites"]').val ( (text + "\n" + newfav).trim ());
         texar.scrollTop = texar.scrollHeight;
-        texar.focus ();
+        texar.trigger ("focus");
       }
     },
     {
@@ -4078,7 +4102,7 @@ function favDia (text, addfile, addmarked, savecook, closeit, savefile, findshow
       click: function () {
         let text = $ ('textarea[name="favorites"]').val ().trim ();
         saveFavorites (text);
-        $ ('textarea[name="favorites"]').focus ();
+        $ ('textarea[name="favorites"]').trigger ("focus");
         hideKeyboard ();
       }
     },
@@ -4188,7 +4212,7 @@ function favDia (text, addfile, addmarked, savecook, closeit, savefile, findshow
     }), 40);
   }
 
-  $ ('textarea[name="favorites"]').focus ();
+  $ ('textarea[name="favorites"]').trigger ("focus");
   later ( ( () => {
     $ ('textarea[name="favorites"]').val (text);
   }), 40);
@@ -4268,12 +4292,12 @@ function notesDia (picName, filePath, title, text, save, saveClose, close) { // 
   niceDialogOpen ("notes");
   later ( ( () => {
     niceDialogOpen ("notes");
-    $ ('textarea[name="notes"]').focus (); // Positions to top *
+    $ ('textarea[name="notes"]').trigger ("focus"); // Positions to top *
     hideKeyboard ();
     if (!(allow.notesEdit || allow.adminAll)) {
       $ ('textarea[name="notes"]').attr ("disabled", true);
       $ ("button.saveNotes").attr ("disabled", true);
-      $ ("button.closeNotes").focus ();
+      $ ("button.closeNotes").trigger ("focus");
     }
     $ ('textarea[name="notes"]').html (text.replace (/<br>/g, "\n"));
   }), 40);
@@ -4415,7 +4439,7 @@ function linkFunc (picNames) { // ===== Execute a link-these-files-to... request
   var text = cosp (picNames) +"<br>ska länkas till<br>" + codeSelect;
   var modal = true;
   infoDia (null, "", title, text, "Ok", modal); // Trigger infoDia run 'serverShell("temporary_1")'
-  $ ("select.selectOption").focus ();
+  $ ("select.selectOption").trigger ("focus");
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function moveFunc (picNames, picOrder) { // ===== Execute a move-these-files-to... request
@@ -4468,7 +4492,7 @@ function moveFunc (picNames, picOrder) { // ===== Execute a move-these-files-to.
   let text = cosp (picNames) +"<br>ska flyttas till<br>" + codeSelect;
   let modal = true;
   infoDia (null, "", title, text, "Ok", modal); // Trigger infoDia run serverShell ("temporary_1")
-  $ ("select.selectOption").focus ();
+  $ ("select.selectOption").trigger ("focus");
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var moveOrder = async (mpath, picNames) => { // ===== Sort-order-list "from outside"
@@ -4659,7 +4683,6 @@ function reqDirs (imdbroot) { // Read the dirs in imdbLink (requestDirs)
         dirList = newList;
         dirCoco = newCoco;
         dirLabel = newLabel;
-
         // Remove "ignore" albums from the list if not allowed, starred in dirCoco
         if (!(allow.textEdit || allow.adminAll)) {
           newList = [], newCoco = [], newLabel = [];
@@ -4687,7 +4710,6 @@ function reqDirs (imdbroot) { // Read the dirs in imdbLink (requestDirs)
         let ix = dirList.indexOf (curr);
         if ($ ("#imdbDir").text ().length > 0 && ix < 0) {
           document.getElementById ("imageList").className = "hide-all";
-          //$ (".miniImgs").hide ();
           $ ("#imdbDir").text (""); // Remove active album
         } else { // ... but save for selection if present in dirList:
           tempStore = ix + 1;
@@ -4847,7 +4869,9 @@ function removeUnderscore (textString, noHTML) {
 function extractContent(htmlString) { // Extracts text from an HTML string
   var span= document.createElement('span');
   span.innerHTML = htmlString;
-  return span.textContent || span.innerText;
+  var res = span.textContent || span.innerText;
+  // and also removes "”"s (citation marks), which else may accumulate:
+  return res.replace (/”/g, "");
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function devSpec () { // Device specific features/settings
@@ -5025,7 +5049,7 @@ let prepSearchDialog = () => {
           let sTxt = $ ('textarea[name="searchtext"]').val ().replace (/[ \n]+/g, " ").trim ();
           if (sTxt.length < 1) {
             $ ('textarea[name="searchtext"]').val ("");
-            $ ('textarea[name="searchtext"]').focus ();
+            $ ('textarea[name="searchtext"]').trigger ("focus");
             hideKeyboard ();
           } else {
             $ ("button.updText").hide ();
@@ -5601,6 +5625,7 @@ function allowFunc () { // Called from setAllow (which is called from init(), lo
   } else {
     $ ("#saveOrder").hide (); // Any user may reorder but not save it
   }
+  //console.log(allow);
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function subaSelect (subName, path) { // ##### Sub-album link selected
@@ -5712,7 +5737,7 @@ function hideKeyboard () {
           field.setAttribute ('style', 'display:none;');
           setTimeout (function () {
             document.body.removeChild (field);
-            document.body.focus ();
+            document.body.trigger ("focus");
           }, 20);
         }, 200);
       };

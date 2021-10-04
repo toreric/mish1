@@ -225,7 +225,6 @@ console.log("p2",p);
             dircoco.push (npics)
             dirlabel.push (albumLabel)
           }
-//console.log("  dirlabel prel.:", dirlabel)
           for (let i=0; i<dirlist.length; i++) {
             var albumLabel
             if (dirlabel [i].slice (0, 1) === "€") {
@@ -238,7 +237,6 @@ console.log("p2",p);
                 }
               }
             }
-//console.log(i,albumLabel,dirlabel[i])
           }
 
           let fd, ignorePaths = homeDir +"/"+ IMDB_ROOT + "/_imdb_ignore.txt"
@@ -259,9 +257,6 @@ console.log("p2",p);
               }
             }
           }
-//console.log("  dirtext:", dirtext)
-//console.log("  dircoco:", dircoco)
-//console.log("  dirlabel:", dirlabel)
           dirtext = dirtext.replace (/€/g, "\n")
           dircoco = dircoco.join ("\n")
           dirlabel = dirlabel.join ("\n")
@@ -284,12 +279,10 @@ console.log("p2",p);
 
     var homeDir = imdbHome ()
     readSubdir (homeDir).then (dirlist => {
-//console.log("DIRLIST", dirlist)
       dirlist = dirlist.join ('\n')
       var tmp = execSync ("echo $IMDB_ROOT").toString ().trim ()
       if (dirlist.indexOf (tmp) < 0) {tmp = ""}
       dirlist = tmp + '\n' + dirlist
-//console.log (dirlist)
       res.location ('/')
       res.send (dirlist)
       //res.end ()

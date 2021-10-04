@@ -34,7 +34,7 @@ function copyToClipboard (str) {    // Copies a filename (below mini-pic) to the
 <!-- ///// HEADER AND ALSO THE LOGIN AND SETTINGS BUTTON ///// -->
 <div id="title" class="BACKG BLUET" draggable="false" ondragstart="return false">
   <form action="">
-    <a class="proid" title="" onclick="window.scrollTo(0,0);$('iframe.intro').toggle();$('.mainMenu').hide();$('#searcharea').dialog('close')">Mish&nbsp;<small>introduktion</small></a>
+    <a class="proid" title="" onclick="window.scrollTo(0,0);$('iframe.intro').toggle();$('#searcharea').dialog('close')">Mish&nbsp;<small>introduktion</small></a>
     <a class="proid toggbkg" style="margin:0.5em 0 0 0" title="" {{action 'toggleBackg'}}><small>MÖRK/LJUS</small></a>
     <div style="display:inline-block;vertical-align:top;margin:0.4em 0 0 1em">
       <button type="submit" class="cred login" title="" {{action "logIn"}}>Logga in</button>
@@ -281,12 +281,13 @@ i nytt fönster" style="font-size:200%;line-height:80%;padding:0.3em 0.33em 0.25
     </p><br>
 
     <p onclick="return false" draggable="false" ondragstart="return false">
-      <a class="">
-        <select id="rootSel" title="Albumkatalog (albumrot)" onchange={{action 'selectRoot' value='target.value'}}>
+      <a class="" style="color: white;cursor: default">
+        <select id="rootSel" title="Albumsamling (albumrot)" onchange={{action 'selectRoot' value='target.value'}}>
           {{#each imdbRoots as |rootChoice|}}
-            <option onclick="this.parentElement.blur()" value={{rootChoice}} selected={{eq imdbRoot rootChoice}}>{{rootChoice}}</option>
+            <option value={{rootChoice}} selected={{eq imdbRoot rootChoice}}>{{rootChoice}}</option>
           {{/each}}
         </select>
+        = rot-album
       </a>
     </p><br>
 
@@ -295,7 +296,7 @@ i nytt fönster" style="font-size:200%;line-height:80%;padding:0.3em 0.33em 0.25
     </p><br>
 
     <p onclick="return false" draggable="false" ondragstart="return false" title="Visa alla album = hela albumträdet">
-      <a id ="jstreeHdr" {{action 'toggleJstreeAlbumSelect'}}>{{jstreeHdr}}</a>
+      <a id ="jstreeHdr" {{action 'toggleJstreeAlbumSelect'}}>{{{jstreeHdr}}}</a>
     </p>
 
     <div class="jstreeAlbumSelect" style="display:none">
@@ -313,7 +314,8 @@ i nytt fönster" style="font-size:200%;line-height:80%;padding:0.3em 0.33em 0.25
   <a id="questionMark" class="smBu" title="Användarhandledning [F1]" draggable="false" ondragstart="return false" {{action 'toggleHelp'}}>?</a>
   <a id="reLd" class="smBu" title="Ladda om albumet
 (återställ osparade ändringar)" draggable="false" ondragstart="return false" {{action 'refresh'}} src="/images/reload.png"></a>
-  <a id="toggleName" class="smBu" title="Bildnamnen" draggable="false" ondragstart="return false" style="display:none" {{action 'toggleNameView'}}>N</a>
+  <a id="toggleName" class="smBu" title="Visa/dölj
+bildnamnen" draggable="false" ondragstart="return false" style="display:none" {{action 'toggleNameView'}}>N</a>
   <a id="toggleHide" class="smBu" title="Visa/dölj
 gömda bilder" draggable="false" ondragstart="return false" style="display:none" {{action 'toggleHideFlagged'}}></a>
   <a id="saveOrder" class="smBu" title="Spara ändringar" draggable="false" ondragstart="return false" {{action 'saveOrder' true}}>S</a>
@@ -386,9 +388,9 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
   <div class="miniImgs">
     {{#each subaList as |suba|}}
       <div class="subAlbum" {{action 'subalbumSelect' suba.album}} style="display:none">
-        <a class="imDir BLUET" style="background:transparent">
+        <a class="imDir BLUET" style="background:transparent" title="{{suba.name}}">
           {{#if suba.image}}
-            <img src={{suba.image}}><br>
+            <img src={{suba.image}} title="Underalbum"><br>
           {{/if}}
           <span>{{{suba.name}}}</span>
         </a>
@@ -401,7 +403,7 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
 
 <!-- ///// SHOW MINI IMAGES (thumbnails) ///// -->
 <!-- Uses allNames from menu-buttons.js -->
-<p class="showCount BACKG" draggable="false" ondragstart="return false">
+<p class="showCount" draggable="false" ondragstart="return false">
   <span class="imDir path BACKG">{{{albumName}}}</span>
   <span class="imDir ifZero BACKG">
     <span class="imDir BACKG"> &mdash; </span>
@@ -448,7 +450,7 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
   {{/sortable-objects}}
 </div>
 
-<p class="showCount BACKG" draggable="false" ondragstart="return false">
+<p class="showCount" draggable="false" ondragstart="return false">
   <span class="imDir path BACKG">{{{albumName}}}</span>
   <span class="imDir BACKG"> &mdash; </span>
   <span class="numShown BACKG" title="shown">0</span>&nbsp;visas,
