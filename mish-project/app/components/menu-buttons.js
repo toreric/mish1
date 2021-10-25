@@ -1655,7 +1655,7 @@ export default Component.extend (contextMenuMixin, {
       var txwin = null;
       txwin = window.open ("", "txwin", "width=916,height=600,resizable=yes,location=no,titlebar=no,toolbar=no,menubar=no,scrollbars=yes,status=no");
       if (txwin) {
-        txwin.trigger ("focus");
+        txwin.focus ();
         txwin.document.getElementsByTagName ("body") [0].innerHTML = list;
       } else {
         userLog ("POPUP blocked by browser", true, 5000); // 5 s
@@ -3774,12 +3774,10 @@ function startInfoPage () { // Compose the information display page
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Show a symlink's 'parent' album; tgt is a mini-IMG, hopefully a linked one...
 async function parentAlbum (tgt) {
-  $.spinnerWait (true);
   if (!tgt) {
     await new Promise (z => setTimeout (z, 4000));
     tgt = document.getElementsByClassName ("img_mini") [0].getElementsByTagName ("img") [1];
   }
-  $.spinnerWait (true);
   let classes = $ (tgt).parent ("div").parent ("div").attr("class");
   let albumDir, file, tmp, imgs;
   if (classes && -1 < classes.split (" ").indexOf ("symlink")) { // ...yes! a symlink...
@@ -3796,6 +3794,7 @@ async function parentAlbum (tgt) {
         infoDia (null, null, "Tyvärr ...", "<br>Albumet <b>" + albumDir.replace (/^(.*\/)+/, "") + "</b> med den här bilden kan inte visas<br>(rätt till gömda album saknas)", "Ok", true);
         return "";
       }
+      $.spinnerWait (true);
       // Get the number of imgs in the album; open and read it from the jstree node
       $ (".ember-view.jstree").jstree ("_open_to", "#j1_" + (1 + idx));
       await new Promise (z => setTimeout (z, 400));
@@ -3810,7 +3809,6 @@ async function parentAlbum (tgt) {
       let namepic = file.replace (/^(.*\/)*(.+)\.[^.]*$/, "$2");
       return namepic;
     }).then (async (namepic) => {
-      $.spinnerWait (true);
       await new Promise (z => setTimeout (z, 111*imgs)); // proportional pause
       if (namepic) gotoMinipic (namepic);
     });

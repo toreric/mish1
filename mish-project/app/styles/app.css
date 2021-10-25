@@ -1475,10 +1475,15 @@ select {
 }
 .jstree-default .jstree-clicked {
   color: #000;
+  border-radius: 0 4px 4px 0 !important;
 }
 .jstree-default .jstree-hovered  {
   background-color: inherit !important;
   color: inherit!important;
+}
+.jstree-anchor:hover {
+  border-radius: 0 4px 4px 0;
+  background-color: #999!important;
 }
 .jstree-anchor.jstree-hovered small  {
   background-color: inherit !important;

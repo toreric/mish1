@@ -244,7 +244,7 @@ console.log("p2",p);
             fd = await fs.openAsync (ignorePaths, 'r')
             await fs.closeAsync (fd)
           } catch (err) {
-            fd = await fs.openAsync (ignorePaths, 'w')
+            fd = await fs.openAsync (ignorePaths, 'w') // created
             await fs.closeAsync (fd)
           }
           // An _imdb_ignore line/path may/should start with just './' (if not #)
@@ -448,13 +448,23 @@ console.log("p2",p);
   })
 
   // ##### #2. Get sorted file name list
-  app.get ('/sortlist/:imagedir', function (req, res) {
+  app.get ('/sortlist/:imagedir', async function (req, res) {
     IMDB_DIR = req.params.imagedir.replace (/@/g, "/")
     if (show_imagedir) {
       console.log ("sortlist", req.params.imagedir, "=>", IMDB_DIR)
     }
     var imdbtxtpath = IMDB_DIR + '_imdb_order.txt'
-    try {
+
+    try { // Create _imdb_order.txt if missing
+      fd = await fs.openAsync (imdbtxtpath, 'r')
+      await fs.closeAsync (fd)
+    } catch (err) {
+      fd = await fs.openAsync (imdbtxtpath, 'w') // created
+      await fs.closeAsync (fd)
+      execSync ('chmod 664 ' + imdbtxtpath)
+    }
+
+    /*try { NOTE: Try change to the above alternative, hoping less loss probability??
       execSync ('touch ' + imdbtxtpath + '&&chmod 664 ' + imdbtxtpath) // In case not yet created
     } catch (err) {
       res.location ('/')
@@ -462,7 +472,8 @@ console.log("p2",p);
       res.send ("Error!") // Keyword!
       //res.end ()
       console.log (IMDB_DIR + ' not found')
-    }
+    }*/
+
     fs.readFileAsync (imdbtxtpath)
     .then (names => {
       //console.log (names) // <buffer>
@@ -711,7 +722,7 @@ console.log("p2",p);
           // most Bash shell interpretation. Thus slice out 's within 's (cannot
           // be escaped just simply); makes Bash happy :) ('s = single quotes)
           body = body.replace (/'/g, "'\\''")
-          //console7.log (fileName + " '" + body + "'")
+          //console.log (fileName + " '" + body + "'")
           var mtime = fs.statSync (fileName).mtime // Object
           //console.log (typeof mtime, mtime)
           execSync ('set_xmp_description ' + fileName + " '" + body + "'") // for txt1
@@ -1078,13 +1089,6 @@ console.log("p2",p);
         fd = await fs.openAsync (album + '/.imdb', 'r')
         await fs.closeAsync (fd)
         albums.push (album)
-        /*try { // Create _imdb_ignore.txt if missing
-          fd = await fs.openAsync (album + '/_imdb_ignore.txt', 'r')
-          await fs.closeAsync (fd)
-        } catch (err) {
-          fd = fs.openSync (album + '/_imdb_ignore.txt', 'w')
-          fs.closeSync (fd)
-        }*/
       } catch (err) {
         // Ignore
       }
