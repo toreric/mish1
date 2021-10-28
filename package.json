@@ -13,7 +13,7 @@
     "better-sqlite3": "^7.4.1",
     "bluebird": "^3.7.1",
     "express": "^4.17.1",
-    "jquery-ui": "^1.12.1",
+    "jquery-ui": "^1.13.0",
     "multer": "^1.4.2",
     "tar": "^6.1.11"
   },
