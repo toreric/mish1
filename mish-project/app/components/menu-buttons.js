@@ -37,7 +37,7 @@ export default Component.extend (contextMenuMixin, {
         rootList = rootList.split ("\n");
         let seltxt = rootList [0];
         rootList.splice (0, 1, "");
-        rootList [0] = "Välj albumsamling "; // i18n, must have a space
+        rootList [0] = "Välj albumsamling "; // i18n, must have a space, Choose album collection
         let selix = rootList.indexOf (seltxt);
         if (selix > 0) {
           this.set ("imdbRoot", seltxt);
@@ -333,7 +333,7 @@ export default Component.extend (contextMenuMixin, {
       //await new Promise (z => setTimeout (z, 2000));
       picName = $ ("#picName").text ().trim ();
       resetBorders (); // Reset all borders
-      if (document.getElementById ("i" + picName).classList.contains ("symlink")) { // Leave out symlinks
+      if (document.getElementById ("i" + picName).classList.contains  ("symlink")) { // Leave out symlinks
         nels = 0;
       } else {
         markBorders (picName);
@@ -549,6 +549,7 @@ export default Component.extend (contextMenuMixin, {
             */
             let tmp = $ ("#imdbLink").text () + "/" + $ ("#i" + escapeDots (picNames [i]) + " a img").attr ("title");
             execute ("readlink -n " + tmp).then (res => {
+              //NEW  res = res.replace (/^(\.{1,2}\/)*/, $ ("#imdbPath").text () + "/");
               res = res.replace (/^(\.{1,2}\/)*/, $ ("#imdbLink").text () + "/");
               picPaths.push (res);
               if (picName === picNames [i]) {
@@ -556,6 +557,7 @@ export default Component.extend (contextMenuMixin, {
               }
             });
           } else {
+            //NEW  picPaths.push ($ ("#imdbPath").text () + "/" + $ ("#i" + escapeDots (picNames [i]) + " a img").attr ("title"));
             picPaths.push ($ ("#imdbLink").text () + "/" + $ ("#i" + escapeDots (picNames [i]) + " a img").attr ("title"));
           }
       }
@@ -578,7 +580,7 @@ export default Component.extend (contextMenuMixin, {
           }
         }
         $ ("#dialog").html (nelstxt); // i18n
-        var eraseText = $ ("#imdbDir").text ().replace (/^(.+[/])+/, "") + ": Radera...";
+        var eraseText = $ ("#imdbDir").text ().replace (/^(.*[/])*/, "") + ": Radera...";
         // Set dialog text content
         $ ("#dialog").dialog ( { // Initiate dialog
           title: eraseText,
@@ -623,7 +625,7 @@ export default Component.extend (contextMenuMixin, {
         // 2 if still "<imdbLink>", change to "<imdbRoot>"
         // 3 if "<picFound>", remove the disturbing distinguishing random extension
         //   from most GUI labels but, NOTE: Use it also, e.g. in the Jstree label!
-        var nameText = $ ("#imdbDir").text ().replace (/^(.+[/])+/, "");
+        var nameText = $ ("#imdbDir").text ().replace (/^(.*[/])*/, "");
         if (nameText === $ ("#imdbLink").text ()) {nameText = $ ("#imdbRoot").text ();}
         if (nameText.indexOf (picFound) > -1) nameText = nameText.replace (/^(.+)\.[^.]+$/, "$1");
 
@@ -744,7 +746,7 @@ export default Component.extend (contextMenuMixin, {
   jstreeHdr: "", // Current album JStree menu header
   albumName: "", // Current album display name, even with HTML tags
   albumText: "", // Current album maintenance menu label
-  albumData: () => {return []}, // Directory structure for the selected imdbRoot
+  albumData: () => {return []}, // JStree directory structure for the selected imdbRoot
   subaList: () => {return []},  // Subalbum links
 
   // HOOKS, that is, Ember "hooks" in the execution cycle
@@ -1358,9 +1360,10 @@ export default Component.extend (contextMenuMixin, {
       var that = this;
       var xhr = new XMLHttpRequest ();
       xhr.open ('GET', 'sortlist/' + IMDB_DIR, true, null, null); // URL matches server-side routes.js
+      setReqHdr (xhr);
       xhr.onload = function () {
         if (this.status >= 200 && this.status < 300) {
-          var data = xhr.responseText.trim ();
+          var data = xhr.response.trim ();
           if (data.slice (0, 8) === '{"error"') {
             //data = undefined;
             data = "Error!"; // This error text may also be generated elsewhere
@@ -1431,6 +1434,7 @@ export default Component.extend (contextMenuMixin, {
       IMDB_DIR = IMDB_DIR.replace (/\//g, "@"); // For sub-directories
       var xhr = new XMLHttpRequest ();
       xhr.open ('GET', 'imagelist/' + IMDB_DIR, true, null, null); // URL matches server-side routes.js
+      setReqHdr (xhr);
       var allfiles = [];
       xhr.onload = function () {
         if (this.status >= 200 && this.status < 300) {
@@ -1445,7 +1449,7 @@ export default Component.extend (contextMenuMixin, {
             linkto: ''           //   which is set in refreshAll
           });
           var NEPF = 7; // Number of properties in Fobj
-          var result = xhr.responseText;
+          var result = xhr.response;
           result = result.trim ().split ('\n'); // result is vectorised
           var i = 0, j = 0;
           var n_files = result.length/NEPF;
@@ -1599,8 +1603,9 @@ export default Component.extend (contextMenuMixin, {
             return new Promise ( (resolve, reject) => {
               let xhr = new XMLHttpRequest ();
               xhr.open ('POST', 'contact/')
+              setReqHdr (xhr);
               xhr.onload = function () {
-                resolve (xhr.responseText); // empty
+                resolve (xhr.response); // empty
               };
               xhr.onerror = function () {
                 resolve (xhr.statusText);
@@ -1772,7 +1777,7 @@ export default Component.extend (contextMenuMixin, {
     async albumEditOption () { // Executes albumEdit()'s selected option
       var opt = $ ("#temporary").text ();
       var chkName = $ ("#temporary_1").text ();
-      var nameText = $ ("#imdbDir").text ().replace (/^(.+[/])+/, "");
+      var nameText = $ ("#imdbDir").text ().replace (/^(.*[/])*/, "");
       if (nameText === $ ("#imdbLink").text ()) {nameText = $ ("#imdbRoot").text ();}
       var header, optionText, okay, cancel;
       if (opt) {
@@ -1861,7 +1866,8 @@ export default Component.extend (contextMenuMixin, {
                 if (result) {
                   var album = $ (that.get ("albumName")).text ();
                   later ( ( () => {
-                    infoDia (null, null, album, "<b>Misslyckades: </b>" + pathNew + "<b>" + nameNew + "</b> finns redan<br>" + result, "Ok", true);
+                    //NEW  `result` should be removed from the dialog for security reasons
+                    infoDia (null, null, album, "Misslyckades: <b>" + nameNew + "</b> finns redan!<br>" + result, "Ok", true);
                   }), 100);
                 } else {
                   console.log ("Album created: " + nameNew);
@@ -2012,7 +2018,7 @@ export default Component.extend (contextMenuMixin, {
         return;
       }
 
-      // Set zero the allow.adminAll==1 value if set at/by a demo album!!
+      // Reset the allow.adminAll==1, my be set previously at/by a demo album!!
       if ($ ("span.cred.name b").text () !== "admin") {
         allow.adminAll = 0;
         allowvalue = "0" + $ ("#allowValue").text ().slice (1);
@@ -2032,6 +2038,7 @@ export default Component.extend (contextMenuMixin, {
         return new Promise ( (resolve) => {
           var xhr = new XMLHttpRequest ();
           xhr.open ('GET', 'imdbroot/' + value + "@" + picFound, true, null, null);
+          setReqHdr (xhr);
           xhr.onload = function () {
             resolve (true);
           };
@@ -2490,7 +2497,8 @@ export default Component.extend (contextMenuMixin, {
       // Reset draggability for the texts (perhaps set to true somewhere by Jquery?)
       $ ("#wrap_show .img_txt1").attr ("draggable", "false");
       $ ("#wrap_show .img_txt2").attr ("draggable", "false");
-      if ($ ("div[aria-describedby='dialog']").is (":visible") && $ ("div[aria-describedby='dialog'] div span").html () === "Information") showFileInfo ();
+      // Reset the original file information if visible (NOTE: ´includes´ is the string method!)
+      if ($ ("div[aria-describedby='dialog']").is (":visible") && $ ("div[aria-describedby='dialog'] div span").html ().includes ("Information")) showFileInfo ();
 
       if ($ ("#hideText").prop ("checked") === true) {
         $ ("#wrap_show .img_txt1").hide ();
@@ -2925,11 +2933,12 @@ export default Component.extend (contextMenuMixin, {
         var origpic = $ (".img_show img:first").attr ("title"); // With path
         origpic = $ ("#imdbLink").text () + "/" + origpic;
         xhr.open ('GET', 'fullsize/' + origpic, true, null, null); // URL matches routes.js with *?
+        setReqHdr (xhr);
         xhr.onload = function () {
           if (this.status >= 200 && this.status < 300) {
 
-            // NOTE: djvuName is the name of a PNG file, starting from 2019, see routes.js
-            var djvuName = xhr.responseText;
+            // NOTE: djvuName is the name of a PNG file, changed 2019, see routes.js
+            var djvuName = xhr.response;
             //var dejavu = window.open (djvuName  + '?djvuopts&amp;zoom=100', 'dejavu', 'width=916,height=600,resizable=yes,location=no,titlebar=no,toolbar=no,menubar=no,scrollbars=yes,status=no'); // Use the PNG file instead (wrongly named):
             var dejavu = window.open (djvuName, 'dejavu', 'width=916,height=600,resizable=yes,location=no,titlebar=no,toolbar=no,menubar=no,scrollbars=yes,status=no');
             if (dejavu) {
@@ -3012,11 +3021,12 @@ export default Component.extend (contextMenuMixin, {
         }
         later ( ( () => {
           xhr.open ('GET', 'download/' + origpic, true, null, null); // URL matches routes.js with *?
+          setReqHdr (xhr);
           xhr.onload = function () {
             if (this.status >= 200 && this.status < 300) {
               //console.log (this.responseURL); // Contains http://<host>/download/...
               var host = this.responseURL.replace (/download.+$/, "");
-              $ ("#download").attr ("href", host + this.responseText); // Is just 'origpic'(!), outdated?
+              $ ("#download").attr ("href", host + this.response); // Is just 'origpic'(!), outdated?
               later ( ( () => {
                 document.getElementById ("download").click (); // Works, trigger.click() doesn't
                 $.spinnerWait (false, 2005);
@@ -3360,7 +3370,7 @@ export default Component.extend (contextMenuMixin, {
             that.actions.setAllow ();
             later ( ( () => {
               $ ("#requestDirs").trigger ("click");
-              setTimeout (function () { // NOTE: Normally, later replaces setTimeout
+              setTimeout (function () { // ***NOTE: Normally, 'later' replaces setTimeout
                 $ (".ember-view.jstree").jstree ("deselect_all");
                 $ (".ember-view.jstree").jstree ("close_all");
                 $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
@@ -3377,7 +3387,7 @@ export default Component.extend (contextMenuMixin, {
                   }
                 }), 2000);
                 resolve (false);
-              }, 2000);                 // NOTE: Preserved here just as an example
+              }, 2000);                 // ***NOTE: Preserved here just as an example
             }), 200);
 
           }).catch (error => {
@@ -3389,8 +3399,9 @@ export default Component.extend (contextMenuMixin, {
               // ===== XMLHttpRequest checking 'usr'
               var xhr = new XMLHttpRequest ();
               xhr.open ('GET', 'login/' + user, true, null, null);
+              setReqHdr (xhr);
               xhr.onload = function () {
-                resolve (xhr.responseText);
+                resolve (xhr.response);
               }
               xhr.onerror = function () {
                 reject ({
@@ -3603,10 +3614,11 @@ function albumPath () {
   return $ ("#imdbDir").text ().replace (imdbx, $ ("#imdbRoot").text ());
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// Check if an album/directory name can be accepted (a copy from the server)
+// Check if an album/directory name can be accepted
+// Code copy from the server except that slashes (/) may not occur and `picFound` must be reserved
 function acceptedDirName (name) { // Note that &ndash; is accepted:
-  let acceptedName = 0 === name.replace (/[/\-–@_.a-öA-Ö0-9]+/g, "").length && name !== $ ("#imdbLink").text ();
-  return acceptedName && name.slice (0, 1) !== "." && !name.includes ("/.") && !name.includes (picFound);
+  let acceptedName = 0 === name.replace (/[-–@_.a-zåäöA-ZÅÄÖ0-9]+/g, "").length && name !== $ ("#imdbLink").text ();
+  return acceptedName && name.slice (0, 1) !== "." && !name.includes (picFound);
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Get the age of _imdb_images databases
@@ -3905,9 +3917,10 @@ function deleteFile (picPath) { // ===== Delete an image
     var xhr = new XMLHttpRequest ();
     var origpic = picPath;
     xhr.open ('GET', 'delete/' + origpic, true, null, null); // URL matches routes.js with *?
+    setReqHdr (xhr);
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {
-        resolve (xhr.responseText);
+        resolve (xhr.response);
       } else {
         reject ({
           status: this.status,
@@ -3934,8 +3947,9 @@ function sqlUpdate (picPaths) {
   return new Promise ( (resolve, reject) => {
     let xhr = new XMLHttpRequest ();
     xhr.open ('POST', 'sqlupdate/')
+    setReqHdr (xhr);
     xhr.onload = function () {
-      resolve (xhr.responseText); // empty
+      resolve (xhr.response); // empty
     };
     xhr.onerror = function () {
       resolve (xhr.statusText);
@@ -4514,9 +4528,10 @@ var moveOrder = async (mpath, picNames) => { // ===== Sort-order-list "from outs
       IMDB_DIR = IMDB_DIR.replace (/\//g, "@"); // For passing sub-directories
       var xhr = new XMLHttpRequest ();
       xhr.open ('GET', 'sortlist/' + IMDB_DIR, true, null, null); // URL matches server-side routes.js
+      setReqHdr (xhr);
       xhr.onload = function () {
         if (this.status >= 200 && this.status < 300) {
-          var data = xhr.responseText.trim ();
+          var data = xhr.response.trim ();
           if (data.slice (0, 8) === '{"error"') {
             //data = undefined;
             data = "Error!"; // This error text may also be generated elsewhere
@@ -4556,6 +4571,7 @@ const saveOrderFunc = namelist => { // ===== XMLHttpRequest saving the thumbnail
     IMDB_DIR = IMDB_DIR.replace (/\//g, "@"); // For sub-directories
     var xhr = new XMLHttpRequest ();
     xhr.open ('POST', 'saveorder/' + IMDB_DIR); // URL matches server-side routes.js
+    setReqHdr (xhr);
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {
         userLog ("SAVE", false, 1000);
@@ -4572,6 +4588,11 @@ const saveOrderFunc = namelist => { // ===== XMLHttpRequest saving the thumbnail
   }).catch (error => {
     console.error (error.message);
   });
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function setReqHdr (xhr) {
+  xhr.setRequestHeader ("imdbRoot", $ ("#imdbRoot").text ());
+  xhr.setRequestHeader ("imdbDir", $ ("#imdbDir").text ());
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function saveFavorites (favList) {
@@ -4611,9 +4632,10 @@ function reqRoot () { // Propose root directory (requestDirs)
   return new Promise ( (resolve, reject) => {
     var xhr = new XMLHttpRequest ();
     xhr.open ('GET', 'rootdir/', true, null, null);
+    setReqHdr (xhr);
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {
-        var dirList = xhr.responseText;
+        var dirList = xhr.response;
         resolve (dirList);
       } else {
         reject ({
@@ -4638,6 +4660,7 @@ function reqRoot () { // Propose root directory (requestDirs)
   });
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// FIND #imdbRoot... regex: `#imdbRoot[^s]\)\.[^(]*\([^)]`
 function reqDirs (imdbroot) { // Read the dirs in imdbLink (requestDirs)
   if (imdbroot === undefined) return;
   $.spinnerWait (true, 111);
@@ -4645,9 +4668,10 @@ function reqDirs (imdbroot) { // Read the dirs in imdbLink (requestDirs)
     var xhr = new XMLHttpRequest ();
     // Here also #picFound is sent to the server for information/update
     xhr.open ('GET', 'imdbdirs/' + imdbroot + "@" + $ ("#picFound").text (), true, null, null);
+    setReqHdr (xhr);
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {
-        var dirList = xhr.responseText;
+        var dirList = xhr.response;
         dirList = dirList.split ("\n");
         var dim = (dirList.length - 2)/3;
         var dirLabel = dirList.splice (2 + 2*dim, dim);
@@ -4748,9 +4772,10 @@ function getBaseNames (IMDB_DIR) { // ===== Request imgfile basenames from a ser
     IMDB_DIR = IMDB_DIR.replace (/\//g, "@");
     var xhr = new XMLHttpRequest ();
     xhr.open ('GET', 'basenames/' + IMDB_DIR, true, null, null);
+    setReqHdr (xhr);
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {
-        var result = xhr.responseText;
+        var result = xhr.response;
         //userLog ('NAMES received');
         resolve (result);
       } else {
@@ -4776,9 +4801,10 @@ function getFilestat (filePath) { // Request a file's statistics/information
   return new Promise ( (resolve, reject) => {
     var xhr = new XMLHttpRequest ();
     xhr.open ('GET', 'filestat/' + filePath.replace (/\//g, "@"), true, null, null);
+    setReqHdr (xhr);
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {
-        var data = xhr.responseText.trim ();
+        var data = xhr.response.trim ();
         resolve (data);
       } else {
         reject ({
@@ -4802,10 +4828,11 @@ function fileWR (filePath) { // Request a server file's exist/read/write status/
   return new Promise ( (resolve, reject) => {
     var xhr = new XMLHttpRequest ();
     xhr.open ('GET', 'wrpermission/' + filePath.replace (/\//g, "@"), true, null, null);
+    setReqHdr (xhr);
     //console.log(filePath);
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {
-        var data = xhr.responseText.trim ();
+        var data = xhr.response.trim ();
         resolve (data);
       } else {
         reject ({
@@ -4963,8 +4990,9 @@ function mexecute (commands) { // Execute on the server, return a promise
   return new Promise ( (resolve, reject) => {
     let xhr = new XMLHttpRequest ();
     xhr.open ('POST', 'mexecute/');
+    setReqHdr (xhr);
     xhr.onload = function () {
-      resolve (xhr.responseText); // usually empty
+      resolve (xhr.response); // usually empty
     };
     xhr.onerror = function () {
       resolve (xhr.statusText);
@@ -4982,9 +5010,10 @@ function execute (command) { // Execute on the server, return a promise
     var xhr = new XMLHttpRequest ();
     command = command.replace (/%/g, "%25");
     xhr.open ('GET', 'execute/' + encodeURIComponent (command.replace (/\//g, "@")), true, null, null);
+    setReqHdr (xhr);
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {
-        var data = xhr.responseText.trim ();
+        var data = xhr.response.trim ();
         resolve (data);
       } else {
         reject ({
@@ -5330,9 +5359,10 @@ function searchText (searchString, and, searchWhere, exact) {
     let xhr = new XMLHttpRequest();
     let imdbroot = $ ("#imdbRoot").text ();
     xhr.open ('POST', 'search/' + imdbroot);
+    setReqHdr (xhr);
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {
-        let data = xhr.responseText.trim ();
+        let data = xhr.response.trim ();
         //data.sort
         resolve (data);
       } else {
@@ -5490,8 +5520,9 @@ var prepTextEditDialog = () => {
 
       var xhr = new XMLHttpRequest ();
       xhr.open ('POST', 'savetext/' + IMDB_DIR); // URL matches server-side routes.js
+      setReqHdr (xhr);
       xhr.onload = function () {
-        if (xhr.responseText) {
+        if (xhr.response) {
           userLog ("NOT written");
           $ ("#i" + ednp + " .img_txt1" ).html ("");
           $ ("#i" + ednp + " .img_txt2" ).html ("");
@@ -5675,7 +5706,7 @@ window.onpopstate = function () {
 function showFileInfo () {
   var picName = $ ("#picName").text ();
   var picOrig = $ ("#picOrig").text ();
-  var title = "Information";
+  var title = "Information om originalbildfilen";
   var yes = "Ok";
   getFilestat (picOrig).then (result => {
     $ ("#temporary").text (result);

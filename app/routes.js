@@ -2,7 +2,7 @@
 module.exports = function (app) {
   var path = require ('path')
   var Promise = require ('bluebird')
-  var fs = Promise.promisifyAll (require ('fs'))
+  var fs = Promise.promisifyAll (require ('fs')) // ...Async () suffix
   var execP = Promise.promisify (require ('child_process').exec)
   var multer = require ('multer')
   var upload = multer ( {dest: '/tmp'}) // tmp upload
@@ -38,6 +38,8 @@ module.exports = function (app) {
   let IMDB_DIR = null // Must be set in route
   // ----- Name of symlink pointing to IMDB_ROOT
   let IMDB_LINK = "imdb"    // <<<<<<<<<< NOTE: must equal init () setting!
+  //NEW This will be the absolute current abum root path IMDB
+  let IMDB = null // Will replace the ´link to album´ task of 'imdb' (IMDB_LINK)
   // ----- Base name of search result albums
   let picFound = ""
   // ----- Max lifetime (minutes) after last access of a search result album
@@ -51,8 +53,16 @@ module.exports = function (app) {
   // Remember to check 'Express route tester'!
   // ##### #0. General passing point
   app.all ('*', function (req, res, next) {
+
+    IMDB_ROOT = req.get ('imdbRoot')
+    IMDB_DIR = req.get ('imdbDir')
+
+    console.log (" ")
+    console.log (" IMDB:", IMDB)
+    console.log (" IMDB_ROOT:", IMDB_ROOT)
+    console.log (" IMDB_DIR:", IMDB_DIR)
+    console.log (" picFound:", picFound)
     if (show_imagedir) {
-      console.log (" IMDB_DIR:", IMDB_DIR)
       console.log (req.params)
       console.log (req.hostname)
       console.log (req.originalUrl)
@@ -78,13 +88,14 @@ console.log("p1",q);
     if (p [0] === "phpmyadmin") res.redirect ("/" + q)
     if (p [0] === "awstats" || p [0] === "cgi-bin") res.redirect ("/" + q)
     if (p [0] === "find" || p [0] === "album") {
-      var homeDir = imdbHome () // From env.var. $IMDB_HOME or $HOME
+      var IMDB_HOME = imdbHome () // From env.var. $IMDB_HOME or $HOME
       IMDB_ROOT = p [1]
       if (p[0] === "album") {
         //p [3] = req.params.p.toString ().replace (/^([^/]*\/*){3}/, "")
         if (p [2] && p [3]) p [2] = p [2] + "/" + p [3]
       }
-      setRootLink (homeDir, IMDB_ROOT, IMDB_LINK)
+      setRootLink (IMDB_HOME, IMDB_ROOT, IMDB_LINK)
+      IMDB = IMDB_HOME + "/" + IMDB_ROOT
       // A few seconds cookie:
       res.cookie (p [0], p [1] + "/" + p [2], {httpOnly: false, expires: new Date (Date.now () + 9000)}).redirect ("../..")
 console.log("p2",p);
@@ -124,7 +135,7 @@ console.log("p2",p);
     var missing = "uppgift saknas"
     var file = req.params.path.replace (/@/g, "/").trim ()
     var stat = fs.statSync (file)
-    var lstat = fs.lstatSync (file)
+    //var lstat = fs.lstatSync (file)
     var linkto = ""
     var syml = await isSymlink (file)
     if (syml) {
@@ -154,15 +165,17 @@ console.log("p2",p);
 
   // ##### #0.1.9 Set IMDB_ROOT and picFound basename
   app.get ('/imdbroot/:imdbroot', async function (req, res) {
-    var homeDir = imdbHome () // From env.var. $IMDB_HOME or $HOME
+    var IMDB_HOME = imdbHome () // From env.var. $IMDB_HOME or $HOME
     let p = req.params.imdbroot.trim ().split ("@")
     IMDB_ROOT = p [0]
     picFound = p [1]
-    //console.log("0.1.9", homeDir, IMDB_ROOT, IMDB_LINK, picFound);
+    //console.log("0.1.9", IMDB_HOME, IMDB_ROOT, IMDB_LINK, picFound);
     // IMDB_LINK = symlink pointing to current album root
-    setRootLink (homeDir, IMDB_ROOT, IMDB_LINK)
+    setRootLink (IMDB_HOME, IMDB_ROOT, IMDB_LINK)
+    IMDB = IMDB_HOME + "/" + IMDB_ROOT
     await new Promise (z => setTimeout (z, 400))
     // Remove all too old picFound files
+    //NEW  let cmd = 'find -L ' + IMDB + ' -type d -name "' + picFound + '*" -amin +' + toold + ' | xargs rm -rf'
     let cmd = 'find -L ' + IMDB_LINK + ' -type d -name "' + picFound + '*" -amin +' + toold + ' | xargs rm -rf'
     //console.log (cmd);
     await cmdasync (cmd)
@@ -171,27 +184,31 @@ console.log("p2",p);
 
   // ##### #0.2 Get IMDB_LINK directory list
   app.get ('/imdbdirs/:imdbroot', async function (req, res) {
-    let homeDir = imdbHome () // From env.var. $IMDB_HOME or $HOME
+    let IMDB_HOME = imdbHome () // From env.var. $IMDB_HOME or $HOME
     let p = req.params.imdbroot.trim ().split ("@")
     IMDB_ROOT = p [0]
     // picFoundx == picFound + random extension
     let picFoundx = p [1]
     // IMDB_LINK = symlink pointing to current albums
-    setRootLink (homeDir, IMDB_ROOT, IMDB_LINK)
+    setRootLink (IMDB_HOME, IMDB_ROOT, IMDB_LINK)
+    IMDB = IMDB_HOME + "/" + IMDB_ROOT
     await new Promise (z => setTimeout (z, 200))
     // Refresh picFoundx: the shell commands must execute in sequence
+    //NEW  let pif = IMDB + '/' + picFoundx
     let pif = IMDB_LINK + '/' + picFoundx
     let cmd = 'rm -rf ' + pif + ' && mkdir ' + pif + ' && touch ' + pif + '/.imdb'
     await cmdasync (cmd)
     // Remove all too old picFound files
     // We have to extract the picFound basename in case picFound is not yet defined
     if (!picFound) picFound = picFoundx.replace (/\..+$/, "")
+    //NEW  let cmd = 'find -L ' + IMDB + ' -type d -name "' + picFound + '*" -amin +' + toold + ' | xargs rm -rf'
     cmd = 'find -L ' + IMDB_LINK + ' -type d -name "' + picFound + '*" -amin +' + toold + ' | xargs rm -rf'
     await cmdasync (cmd)
     //console.log("0.2", cmd);
     setTimeout (function () {
+      //NEW allDirs (IMDB).then (dirlist => { // dirlist entries start with the IMDB string
       allDirs (IMDB_LINK).then (dirlist => {
-        //console.log ("\n\na\n", dirlist)
+          //console.log ("\n\na\n", dirlist)
         areAlbums (dirlist).then (async dirlist => {
           dirlist = dirlist.sort ()
           let dirtext = dirlist.join ("€")
@@ -239,7 +256,7 @@ console.log("p2",p);
             }
           }
 
-          let fd, ignorePaths = homeDir +"/"+ IMDB_ROOT + "/_imdb_ignore.txt"
+          let fd, ignorePaths = IMDB_HOME + "/" + IMDB_ROOT + "/_imdb_ignore.txt"
           try { // Create _imdb_ignore.txt if missing
             fd = await fs.openAsync (ignorePaths, 'r')
             await fs.closeAsync (fd)
@@ -252,6 +269,7 @@ console.log("p2",p);
           for (let j=0; j<ignore.length; j++) {
             for (let i=0; i<dirlist.length; i++) {
               if (ignore [j] && ignore [j].slice (0, 1) !== '#') {
+                //NEW  ignore [j] = ignore [j].replace (/^[^/]*/, IMDB)
                 ignore [j] = ignore [j].replace (/^[^/]*/, IMDB_LINK)
                 if (ignore [j] && dirlist [i].startsWith (ignore [j])) dircoco [i] += "*"
               }
@@ -260,8 +278,8 @@ console.log("p2",p);
           dirtext = dirtext.replace (/€/g, "\n")
           dircoco = dircoco.join ("\n")
           dirlabel = dirlabel.join ("\n")
-          // NOTE: rootDir = homeDir + "/" + IMDB_ROOT, but here "@" separates them (important!):
-          dirtext = homeDir +"@"+ IMDB_ROOT + "\n" + dirtext + "\nNodeJS " + process.version.trim ()
+          // NOTE: rootDir = IMDB_HOME + "/" + IMDB_ROOT, but here "@" separates them (important!):
+          dirtext = IMDB_HOME + "@" + IMDB_ROOT + "\n" + dirtext + "\nNodeJS " + process.version.trim ()
           res.location ('/')
           res.send (dirtext + "\n" + dircoco + "\n" + dirlabel)
           //res.end ()
@@ -269,7 +287,7 @@ console.log("p2",p);
         })
       }).catch (function (error) {
         res.location ('/')
-        res.send (error.message)
+        res.sloadend (error.message)
       })
     }, 1000)
   })
@@ -277,8 +295,8 @@ console.log("p2",p);
   // ##### #0.3 readSubdir (album subdirs) to select rootdir...
   app.get ('/rootdir', function (req, res) {
 
-    var homeDir = imdbHome ()
-    readSubdir (homeDir).then (dirlist => {
+    var IMDB_HOME = imdbHome ()
+    readSubdir (IMDB_HOME).then (dirlist => {
       dirlist = dirlist.join ('\n')
       var tmp = execSync ("echo $IMDB_ROOT").toString ().trim ()
       if (dirlist.indexOf (tmp) < 0) {tmp = ""}
@@ -744,10 +762,11 @@ console.log("p2",p);
   // ##### #10. Search text, case insensitively, in _imdb_images.sqlite
   app.post ('/search/:imdbroot', upload.none (), function (req, res, next) {
 
-    var homeDir = imdbHome () // From env.var. $IMDB_HOME or $HOME
+    var IMDB_HOME = imdbHome () // From env.var. $IMDB_HOME or $HOME
     IMDB_ROOT = req.params.imdbroot.replace (/@/g, "/").trim ()
     // IMDB_LINK = Symlink pointing to current albums
-    setRootLink (homeDir, IMDB_ROOT, IMDB_LINK)
+    setRootLink (IMDB_HOME, IMDB_ROOT, IMDB_LINK)
+    IMDB = IMDB_HOME + "/" + IMDB_ROOT
 
     // Convert everything to lower case
     // The removeDiacritics funtion may bypass some characters (e.g. Sw. åäöÅÄÖ)
@@ -762,6 +781,7 @@ console.log("p2",p);
 
     try { // Start try ----------
       // better-sqlite3:
+      //NEW  const db = new SQLite (IMDB + "/_imdb_images.sqlite")
       const db = new SQLite (IMDB_LINK + "/_imdb_images.sqlite")
       /*let db = new sqlite3.Database (IMDB_LINK + '/_imdb_images.sqlite', function (err) {
         if (err) {
@@ -897,6 +917,7 @@ console.log("p2",p);
       } catch (err) {
         fileExists = false
       }
+      //NEW  const db = new SQLite (IMDB + "/_imdb_images.sqlite")
       const db = new SQLite (IMDB_LINK + "/_imdb_images.sqlite")
       db.pragma ("journal_mode = WAL") // Turn on write-ahead logging
       //let db = await sqlite.open (IMDB_LINK + '/_imdb_images.sqlite')
@@ -985,7 +1006,7 @@ console.log("p2",p);
 
   // ===== Check if an album/directory name can be accepted
   function acceptedDirName (name) { // Note that &ndash; is accepted:
-    let acceptedName = 0 === name.replace (/[/\-–@_.a-öA-Ö0-9]+/g, "").length && name !== IMDB_LINK
+    let acceptedName = 0 === name.replace (/[/\-–@_.a-zåäöA-ZÅÄÖ0-9]+/g, "").length && name !== IMDB_LINK
     return acceptedName && name.slice (0,1) !== "." && !name.includes ('/.')
   }
 
@@ -1068,6 +1089,7 @@ console.log("p2",p);
   // ===== Read the imdbLink's content of sub-dirs recursively
   // Use: allDirs (imdbLink).then (dirlist => { ...
   // Replaces findDirectories (), NOTE: Includes imdbLink in the list!
+  //NEW The parameter will be the absolute current abum root path IMDB
   let allDirs = async imdbLink => {
     let IMDB_PATH = PWD_PATH + '/' + imdbLink
     let dirlist = await cmdasync ('find -L ' + IMDB_PATH + ' -type d|sort')
@@ -1185,11 +1207,11 @@ console.log("p2",p);
   // ===== Get the image databases' root directory
   // The server environment should have $IMDB_HOME, else use $HOME
   function imdbHome () {
-    var homeDir = execSync ("echo $IMDB_HOME").toString ().trim ()
-    if (!homeDir || homeDir === "") {
-      homeDir = execSync ("echo $HOME").toString ().trim ()
+    var IMDB_HOME = execSync ("echo $IMDB_HOME").toString ().trim ()
+    if (!IMDB_HOME || IMDB_HOME === "") {
+      IMDB_HOME = execSync ("echo $HOME").toString ().trim ()
     }
-    return homeDir
+    return IMDB_HOME
   }
 
   // ===== Make a package of orig, show, mini, and plain filenames, metadata, and symlink flag=origin
@@ -1278,16 +1300,12 @@ console.log("p2",p);
   }
 
   // ===== Point the symlink to the chosen album root directory
-  function setRootLink (homeDir, IMDB_ROOT, imdbLink) {
-    //console.log ("\nIMDB_HOME:", homeDir)
+  function setRootLink (IMDB_HOME, IMDB_ROOT, imdbLink) {
+    //console.log ("\nIMDB_HOME:", IMDB_HOME)
     if (!IMDB_ROOT || IMDB_ROOT === "") {IMDB_ROOT = execSync ("echo $IMDB_ROOT").toString ().trim ()}
     if (IMDB_ROOT === "undefined") {IMDB_ROOT = "/"}
-    //console.log ("IMDB_ROOT:", IMDB_ROOT)
     // Establish the symlink to the chosen album root directory
-    execSync ("ln -sfn " + homeDir + "/" + IMDB_ROOT + " " + imdbLink)
-    // Confirm:
-    let rootDir = execSync ("readlink " + imdbLink).toString ().trim ()
-    //console.log ("Path to '" + imdbLink + "': " + rootDir)
+    execSync ("ln -sfn " + IMDB_HOME + "/" + IMDB_ROOT + " " + imdbLink)
   }
 }
 // End module.exports
