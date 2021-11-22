@@ -517,7 +517,7 @@ export default Component.extend (contextMenuMixin, {
         infoDia (null, null, title, text, yes, true);
         return;
       }
-      // nels == no of all elements (images), linked == no of linked elements
+      // nels == no of all elements (images), linked == no of lidu får bara raderanked elements
       nodelem0 = document.getElementById ("i" + picName).firstElementChild.nextElementSibling;
       nodelem [0] = nodelem0;
       nels = 1;
@@ -565,7 +565,7 @@ export default Component.extend (contextMenuMixin, {
       if (nels > 1) {
 
         // Not only symlinks are included:
-        if (nels > linked && !allow.deleteImg) {
+        if (nels > linked && !(allow.deleteImg || allow.adminAll)) {
           infoDia (null, null, title, text, yes, true);
           return;
         }
@@ -4591,8 +4591,9 @@ const saveOrderFunc = namelist => { // ===== XMLHttpRequest saving the thumbnail
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function setReqHdr (xhr) {
-  xhr.setRequestHeader ("imdbRoot", $ ("#imdbRoot").text ());
-  xhr.setRequestHeader ("imdbDir", $ ("#imdbDir").text ());
+  xhr.setRequestHeader ("imdbRoot", encodeURIComponent ($ ("#imdbRoot").text ()));
+  xhr.setRequestHeader ("imdbDir", encodeURIComponent ($ ("#imdbDir").text ()));
+  xhr.setRequestHeader ("picFound", picFound);
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function saveFavorites (favList) {

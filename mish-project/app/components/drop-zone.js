@@ -377,25 +377,25 @@ export default Component.extend({
     },
 
     processQueue() {
-      setImdbDir ().then (imdbDir => { // Ensure the server imdbDir is set!
-        if (imdbDir) {
-          return new Promise ( () => {
-            this.myDropzone.options.autoProcessQueue = false;
-            qlen = this.myDropzone.getQueuedFiles().length;
-            if (qlen > 0) {
-              $ (".spinner").show ();
-              document.getElementById("reLd").disabled = true;
-              document.getElementById("saveOrder").disabled = true;
-              document.getElementById("showDropbox").disabled = true;
-              this.myDropzone.options.autoProcessQueue = true;
-              console.log (secNow (), "drop-zone processQueue:", qlen); // Upload begin
-              this.myDropzone.processQueue ();
-            }
-          }).then ( () => {
-            // Kanske här?
-          });
+      return new Promise ( () => {
+        this.myDropzone.options.autoProcessQueue = false;
+        qlen = this.myDropzone.getQueuedFiles().length;
+        if (qlen > 0) {
+          $ (".spinner").show ();
+          document.getElementById("reLd").disabled = true;
+          document.getElementById("saveOrder").disabled = true;
+          document.getElementById("showDropbox").disabled = true;
+          this.myDropzone.options.autoProcessQueue = true;
+          console.log (secNow (), "drop-zone processQueue:", qlen); // Upload begin
+          this.myDropzone.processQueue ();
         }
+      }).then ( () => {
+        // Kanske här?
       });
+      /*setImdbDir ().then (imdbDir => { // Ensure the server imdbDir is set!
+        if (imdbDir) {
+        }
+      });*/
     }
 
   },
@@ -418,7 +418,7 @@ function acceptedFileName (name) {
   return acceptedName && ftype && imtype !== '_mini_' && imtype !== '_show_' && imtype !== '_imdb_' && name.slice (0,1) !== "."
 }
 
-function setImdbDir () { // Set the server imdbDir
+/*function setImdbDir () { // Set the server imdbDir
   return new Promise ( (resolve, reject) => {
     later ( () => { // Wait in case imdbDir is changing
       var IMDB_DIR = $ ('#imdbDir').text ();
@@ -443,4 +443,4 @@ function setImdbDir () { // Set the server imdbDir
   }).catch (error => {
     console.error (error.message);
   });
-}
+}*/
