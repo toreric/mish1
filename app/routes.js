@@ -34,9 +34,9 @@ module.exports = function (app) {
   let PWD_PATH = path.resolve ('.')
   // ----- Root directory where IMDB_ROOTs are found
   let IMDB_HOME = imdbHome () // From env.var. $IMDB_HOME or $HOME
-  // ----- Image data(base) root directory
+  // ----- Image database root directory
   let IMDB_ROOT = null // Must be set in route
-  // ----- Image data(base) directory
+  // ----- Image database directory
   let IMDB_DIR = null // Must be set in route
   // ----- Name of symlink pointing to IMDB_ROOT
   let IMDB_LINK = "imdb"    // <<<<<<<<<< NOTE: must equal init () setting!
@@ -458,13 +458,13 @@ console.log("p2",p);
     if (show_imagedir) {
       console.log ("sortlist", req.params.imagedir, "=>", IMDB_DIR)
     }
-    var imdbtxtpath = IMDB_DIR + '_imdb_order.txt'
+    var imdbtxtpath = IMDB_DIR + '/_imdb_order.txt'
 
     try { // Create _imdb_order.txt if missing
-      fd = await fs.openAsync (imdbtxtpath, 'r')
+      fd = await fs.openAsync (imdbtxtpath, 'r') // check
       await fs.closeAsync (fd)
     } catch (err) {
-      fd = await fs.openAsync (imdbtxtpath, 'w') // created
+      fd = await fs.openAsync (imdbtxtpath, 'w') // create
       await fs.closeAsync (fd)
       execSync ('chmod 664 ' + imdbtxtpath)
     }
@@ -649,7 +649,7 @@ console.log("p2",p);
     if (show_imagedir) {
       console.log ("saveorder", req.params.imagedir, "=>", IMDB_DIR)
     }
-    var file = IMDB_DIR + "_imdb_order.txt"
+    var file = IMDB_DIR + "/_imdb_order.txt"
     execSync ('touch ' + file + '&&chmod 664 ' + file) // In case not yet created
     var body = []
     req.on ('data', (chunk) => {

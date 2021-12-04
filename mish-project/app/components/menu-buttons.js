@@ -439,11 +439,11 @@ export default Component.extend (contextMenuMixin, {
         }
       }
       picNames.reverse ();
-      var picOrder = [];
-      // Remove the random name postfix from any picture in #picFound:
+      var picOrder = picNames;
+      // Remove the random name suffix from any picture in #picFound:
       if ($ ("#imdbDir").text ().indexOf (picFound) > -1) {
         for (i=0; i<picOrder.length; i++) {
-          picOrder [i] = picNames [i].replace (/\..{4}$/, "");
+          picOrder [i] = picOrder [i].replace (/\..{4}$/, "");
         }
       }
       $ ("#picNames").text (picNames.join ("\n"));
@@ -463,7 +463,8 @@ export default Component.extend (contextMenuMixin, {
       }
       //console.log (nodelem0.parentNode.style.backgroundColor); // <- Checks this text content
       var mvTxt = "<br>ska flyttas till annat album"; // i18n
-      $ ("#dialog").html (movetxt + "<b>" + nelstxt + "?</b><br>" + cosp (picOrder.reverse ()) + mvTxt); // Set dialog text content (picOrder == picNames.without.posfix)
+      // Set dialog text content (picOrder == picNames.without.posfix):
+      $ ("#dialog").html (movetxt + "<b>" + nelstxt + "?</b><br>" + cosp (picOrder.reverse ()) + mvTxt);
       $ ("#dialog").dialog ( { // Initiate dialog
         title: "Flytta till... ", // i18n
         autoOpen: false,
@@ -478,6 +479,7 @@ export default Component.extend (contextMenuMixin, {
         "id": "allButt", // Process all
         click: function () {
           $ (this).dialog ('close');
+          //console.log("picOrder", picOrder);
           moveFunc (picNames, picOrder);
         }
       },
@@ -504,31 +506,40 @@ export default Component.extend (contextMenuMixin, {
       } else {
         eraseOriginals = false;
       }
-      var picPath, picName, delNames, all, nels, nelstxt,
-        picPaths = [], picNames = [], nodelem = [], nodelem0, linked;
+      var picPath, picName, delNames = [], all, nels, nelstxt, symlink,
+        picPaths = [], picNames = [], nodelem = [], nodelem0, linked, ifsymlink = [];
       picName = $ ("#picName").text ().trim ();
       picPath = $ ("#imdbLink").text () + "/" + $ ("#i" + escapeDots (picName) + " a img").attr ("title");
       // Non-symlink clicked:
       var title = "Otillåtet"; // i18n
-      var text = "<br><b>—— du får bara radera länkar ——</b>"; // i18n
+      var mtext = "<br><b>—— du får bara radera länkar ——</b>"; // i18n
       var yes = "Uppfattat" // i18n
-      let symlink = document.getElementById ("i" + picName).classList.contains ('symlink');
+      symlink = document.getElementById ("i" + picName).classList.contains ('symlink') + 0;
+      linked = symlink;
+      ifsymlink [0] = symlink;
       if (!symlink && !(allow.deleteImg || allow.adminAll)) {
-        infoDia (null, null, title, text, yes, true);
+        infoDia (null, null, title, mtext, yes, true);
         return;
       }
-      // nels == no of all elements (images), linked == no of lidu får bara raderanked elements
+      // nels == no of all elements (images), linked == no of linked elements
       nodelem0 = document.getElementById ("i" + picName).firstElementChild.nextElementSibling;
       nodelem [0] = nodelem0;
       nels = 1;
       var picMarked = nodelem0.className === "markTrue";
       if (picMarked) {
-        picNames = [];
-        picPaths = [];
         nodelem = document.getElementsByClassName ("markTrue");
-        linked = $ (".symlink .markTrue").length;
-        all = "alla ";
         nels = nodelem.length;
+        linked = 0;
+        for (let i=0; i<nels; i++) {
+          if (nodelem [i].parentNode.classList.contains ("symlink")) {
+            linked += 1;
+            ifsymlink [i] = 1;
+          } else {
+            ifsymlink [i] = 0;
+          }
+        }
+        //OLD linked = $ (".symlink .markTrue").length;
+        all = "alla ";
         nelstxt = nels; // To be used as text...
         if (nels === 2) {all = "båda "; nelstxt = "två";}
       }
@@ -536,11 +547,12 @@ export default Component.extend (contextMenuMixin, {
       for (let i=0; i<nels; i++) {
         let tmpName = nodelem [i].nextElementSibling.innerHTML.trim ();
         picNames.push (tmpName);
+        delNames.push (tmpName); // To be HTML-formatted
         markBorders (tmpName); // Mark this one
       }
-      for (let i=0; i<nodelem.length; i++) {
-          symlink = document.getElementById ("i" + picNames [i]).classList.contains ('symlink');
-          if (symlink && eraseOriginals) {
+      for (let i=0; i<nels; i++) {
+        if (ifsymlink [i]) {
+          if (eraseOriginals) {
             /* Use file paths instead of picture names in order to make
             possible erase even symlinked originals (e.g. for dups removal):
             deleteFiles (picNames, nels) was changed to
@@ -552,25 +564,29 @@ export default Component.extend (contextMenuMixin, {
               //NEW  res = res.replace (/^(\.{1,2}\/)*/, $ ("#imdbPath").text () + "/");
               res = res.replace (/^(\.{1,2}\/)*/, $ ("#imdbLink").text () + "/");
               picPaths.push (res);
-              if (picName === picNames [i]) {
+              if (picName === picNames [i]) { // Need this if only one marked is finally chosen
                 picPath = res;
               }
             });
+            // Make RED delNames here
+            delNames [i] = '<span style="color:#d00;font-weight:bold">' + picNames [i] + "</span>";
           } else {
-            //NEW  picPaths.push ($ ("#imdbPath").text () + "/" + $ ("#i" + escapeDots (picNames [i]) + " a img").attr ("title"));
+            // Make GREEN delNames here
+            delNames [i] = '<span style="color:#090">' + picNames [i] + "</span>";
             picPaths.push ($ ("#imdbLink").text () + "/" + $ ("#i" + escapeDots (picNames [i]) + " a img").attr ("title"));
           }
-      }
-      delNames = picName;
-      if (nels > 1) {
-
-        // Not only symlinks are included:
-        if (nels > linked && !(allow.deleteImg || allow.adminAll)) {
-          infoDia (null, null, title, text, yes, true);
-          return;
+        } else {
+          //NEW  picPaths.push ($ ("#imdbPath").text () + "/" + $ ("#i" + escapeDots (picNames [i]) + " a img").attr ("title"));
+          picPaths.push ($ ("#imdbLink").text () + "/" + $ ("#i" + escapeDots (picNames [i]) + " a img").attr ("title"));
         }
-
-        delNames =  cosp (picNames);
+      }
+      // When not only symlinks are included:
+      if (nels > linked && !(allow.deleteImg || allow.adminAll)) {
+        infoDia (null, null, title, mtext, yes, true);
+        return;
+      }
+      delNames =  cosp (delNames); // Make comma+space-separated string
+      if (nels > 1) {
         nelstxt = "<b>Vill du radera " + all + nelstxt + "?</b><br>" + delNames + "<br>ska raderas permanent";
         if (linked) {
           if (eraseOriginals) {
@@ -589,7 +605,6 @@ export default Component.extend (contextMenuMixin, {
           modal: true,
           closeOnEscape: true
         });
-        // Close button
         $ ("#dialog").dialog ('option', 'buttons', [ // Define button array
         {
           text: "Ja", // Yes
@@ -607,6 +622,7 @@ export default Component.extend (contextMenuMixin, {
             nodelem [0] = nodelem0; // Else illegal, displays "read-only"!
             picPaths [0] = picPath;
             picNames [0] = picName;
+            ifsymlink [0] = symlink;
             delNames = picName;
             nels = 1;
             $ (this).dialog ('close');
@@ -632,8 +648,9 @@ export default Component.extend (contextMenuMixin, {
         var eraseText = "Radera i " + nameText + ":";
         markBorders (picName); // Mark this one
         if (nels === 1) {
-          linked = $ ("#i" + escapeDots (picName)).hasClass ("symlink");
+          linked = $ ("#i" + escapeDots (picName)).hasClass ("symlink") + 0;
         }
+console.log("eraseOriginals",eraseOriginals,"linked",linked,"nels",nels);
         nelstxt = "<b>Vänligen bekräfta:</b><br>" + delNames + "<br>i <b>" + nameText + "<br>ska alltså raderas?</b><br>(<i>kan inte ångras</i>)"; // i18n
         if (linked) {
           if (eraseOriginals) {
@@ -656,7 +673,7 @@ export default Component.extend (contextMenuMixin, {
           text: "Ja", // Yes
           "id": "yesBut",
           click: function () {
-            console.log ("To be deleted: " + delNames); // delNames is picNames as a string
+            console.log ("To be deleted: " + picNames); // Autoconverted to csv srting
             // NOTE: Must be a 'clean' call (no then or <await>):
             deleteFiles (picNames, nels, picPaths);
             $ (this).dialog ('close');
@@ -671,7 +688,7 @@ export default Component.extend (contextMenuMixin, {
           text: "Nej", // No
           "id": "noBut",
           click: function () {
-            console.log ("Untouched: " + delNames);
+            console.log ("Untouched: " + picNames); // Autoconverted to csv srting
             $ (this).dialog ('close');
           }
          }]);
@@ -910,7 +927,7 @@ export default Component.extend (contextMenuMixin, {
   // HELP FUNCTIONS, that is, component methods (within-component functions)
   /////////////////////////////////////////////////////////////////////////////////////////
   //----------------------------------------------------------------------------------------------
-  async refreshAll () {
+  refreshAll () {
     // ===== Updates allNames and the sortOrder tables by locating all images and
     // their metadata in the <imdbDir> dir (name is DOM saved) on the server disk.
     // This will trigger the template to restore the DOM elements. Prepare the didRender hook
@@ -3604,7 +3621,7 @@ function pause (ms) { // or use 'await new Promise (z => setTimeout (z, 2000))'
   return new Promise (done => setTimeout (done, ms))
 }*/
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// TRUE if the current album is the search result album, with random postfix
+// TRUE if the current album is the search result album, with random suffix
 // This album has less write restrictions etc.
 let imdbDir_is_picFound = () => $ ("#imdbDir").text ().replace (/^[^/]*\//, "") === $ ("#picFound").text ();
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -3962,9 +3979,9 @@ function sqlUpdate (picPaths) {
   });
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Information dialog, bordermarks an image if mentioned (use a fake name if unwanted)
- * @param {string} dialogId Jquery ´dialog name´, defaults to "dialog" if !\<dialogId\> is true
- * @param {string} picName  Name (file base name) of the image that is concerned.
+/** Multipurpose information dialog
+ * @param {string} dialogId Jquery ´dialog name´, defaults to "dialog" if \<dialogId\> isn't true
+ * @param {string} picName  Name (file base name) of an image if applicable or "" or null
  * If \<picName\> is "" (and \<flag\> false): yes/ok button runs ´serverShell ("temporary_1")´,
  * primarily used for the ´Link to...´ and ´Move to...´ entries on the context menu.
  * @param {string} title  The dialog title (may have HTML tags)
@@ -3974,7 +3991,7 @@ function sqlUpdate (picPaths) {
  * @param {boolean} flag  If omitted: false, else if true and picname is ´null´,
  * runs ´eval (<content of #temporary>)´, mostly for the function ´albumEdit´.
  */
-function infoDia (dialogId, picName, title, text, yes, modal, flag) { // ===== Information dialog
+function infoDia (dialogId, picName, title, text, yes, modal, flag) {
   if (!dialogId) {dialogId = "dialog";}
   var id = "#" + dialogId;
   if (picName) { //
@@ -3998,15 +4015,16 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) { // ===== I
       text: yes, // Okay. See below
         id: "yesBut",
       click: function () {
-          if (picName === "") { // Special case: link || move || ...
+       return new Promise (resolve => {
+        if (picName === "") { // Special case: link || move || ...
           $.spinnerWait (true, 108);
           serverShell ("temporary_1");
 
           // Extract/construct sqlUpdate file list if there are any
           // move=... moveto=... lines in #temporary_1
           // Note: Files to be moved from #picFound and have got a random
-          // postfix are symlinks and thus ignored in any case by sqlUpdate
-          // (Why I do say that? Since a moved symlink has lost its random name postfix...)
+          // suffix are symlinks and thus ignored in any case by sqlUpdate
+          // (Why I do say that? Since a moved symlink has lost its random name suffix...)
           let txt = document.getElementById ("temporary_1").innerHTML.split (";");
           let files = [];
           for (let i=0; i<txt.length; i++) {
@@ -4020,10 +4038,10 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) { // ===== I
           }
           files = files.join ("\n");
           if (files.length > 0) {
-            later ( ( () => {
-              document.getElementById("reLd").disabled = false;
+            document.getElementById("reLd").disabled = false;
+            /*later ( ( () => {
               $ ("#reLd").trigger ("click");
-            }), 800);
+            }), 800);*/
             later ( (async () => {
               await sqlUpdate (files);
             }), 5000);
@@ -4035,18 +4053,20 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) { // ===== I
         if (flag && !picName) { // Special case: evaluate #temporary, probably for albumEdit
           console.log ($ ("#temporary").text ());
           eval ($ ("#temporary").text ());
-          return true;
+          resolve (true);
         }
         // If this is the second search (result) dialog:
         if (yes.indexOf ("Visa i") > -1) {
           $.spinnerWait (true, 109);
           document.getElementById("reLd").disabled = false;
-          later ( ( () => {
+          /*later ( ( () => {
             $ ("#reLd").trigger ("click");
-          }), 1999);
+          }), 1999);*/
         }
         $ ("#yesBut").html (yes);
-        return true;
+        resetBorders ();
+        resolve (true);
+       }).then ( () => {$ ("#reLd").trigger ("click")});
       }
     }]);
     $ ("div[aria-describedby='" + dialogId + "'] span.ui-dialog-title").html (title); //#
@@ -4450,7 +4470,8 @@ function linkFunc (picNames) { // ===== Execute a link-these-files-to... request
   var title = "Länka till annat album";
   var text = cosp (picNames) +"<br>ska länkas till<br>" + codeSelect;
   var modal = true;
-  infoDia (null, "", title, text, "Ok", modal); // Trigger infoDia run 'serverShell("temporary_1")'
+  // Trigger infoDia run 'serverShell("temporary_1")':
+  infoDia (null, "", title, text, "Ok", modal);
   $ ("select.selectOption").trigger ("focus");
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -4469,27 +4490,27 @@ function moveFunc (picNames, picOrder) { // ===== Execute a move-these-files-to.
     }
   }
   // The following will move even links, where link source is corrected and with even
-  // deletion of the random postfix from picture names for links moved from #picFound.
+  // deletion of the random suffix from picture names for links moved from #picFound.
 
   //   malbum = album selected to move pictures into
   //    mpath = the corresponding actual path, moveto = mpath/
   // picNames = the names* of the pictures in the current album to be moved
   // move|mini|show = the path to the original|mini|show pictures to be moved
   // picfound = the name of the temporary album where found pictures are kept
-  // picfound in the path means that a random postfix has to be removed from names*
+  // picfound in the path means that a random suffix has to be removed from names*
 
   // Beware of the algorithm with all regular expression escapes in the text put into
   // #temporary_1, a Bash text string containing in the magnitude of 1000 characters,
   // depending on actual file names, but well within the Bash line length limit.
 
-  !picOrder; !moveOrder; // Dummy calls, for names only referenced in codeMove:
+  !picOrder; //!moveOrder; // Dummy calls, for names only referenced in codeMove:
 
-  var codeMove = "'var malbum=this.value;var mpath=\"\";if(this.selectedIndex===0){return false;}mpath=malbum.replace (/^[^/]*(.*)/,$(\"#imdbLink\").text()+\"$1\");var lpp=mpath.split(\"/\").length-1;if (lpp > 0)lpp=\"../\".repeat(lpp);else lpp=\"./\";console.log(\"Trying move to\",malbum);var picNames=$(\"#picNames\").text().split(\"\\n\");var picOrder=$(\"#picOrder\").text().split(\"\\n\");console.log(picNames,picOrder);cmd=[];for (let i=0;i<picNames.length;i++){var move=$(\"#imdbLink\").text()+\"/\"+document.getElementById(\"i\"+picNames[i]).getElementsByTagName(\"img\")[0].getAttribute(\"title\");var mini=move.replace(/([^/]+)(\\.[^/.]+)$/,\"_mini_$1.png\");var show=move.replace(/([^/]+)(\\.[^/.]+)$/,\"_show_$1.png\");var moveto=mpath+\"/\";var picfound=$(\"#picFound\").text();cmd.push(\"picfound=\"+picfound+\";move=\"+move+\";mini=\"+mini+\";show=\"+show+\";orgmove=$move;orgmini=$mini;orgshow=$show;moveto=\"+moveto+\";lpp=\"+lpp+\";lnksave=$(readlink -n $move);if [ $lnksave ];then move=$(echo $move|sed -e \\\"s/\\\\(.*$picfound.*\\\\)\\\\.[^.\\\\/]\\\\+\\\\(\\\\.[^.\\\\/]\\\\+$\\\\)/\\\\1\\\\2/\\\");mini=$(echo $mini|sed -e \\\"s/\\\\(.*$picfound.*\\\\)\\\\.[^.\\\\/]\\\\+\\\\(\\\\.[^.\\\\/]\\\\+$\\\\)/\\\\1\\\\2/\\\");show=$(echo $show|sed -e \\\"s/\\\\(.*$picfound.*\\\\)\\\\.[^.\\\\/]\\\\+\\\\(\\\\.[^.\\\\/]\\\\+$\\\\)/\\\\1\\\\2/\\\");lnkfrom=$(echo $lnksave|sed -e \\\"s/^\\\\(\\\\.\\\\{1,2\\\\}\\\\/\\\\)*//\\\" -e \\\"s,^,$lpp,\\\");lnkmini=$(echo $lnkfrom|sed -e \\\"s/\\\\([^/]\\\\+\\\\)\\\\(\\\\.[^/.]\\\\+\\\\)\\\\$/_mini_\\\\1\\\\.png/\\\");lnkshow=$(echo $lnkfrom|sed -e \\\"s/\\\\([^/]\\\\+\\\\)\\\\(\\\\.[^/.]\\\\+\\\\)\\\\$/_show_\\\\1\\\\.png/\\\");ln -sfn $lnkfrom $move;fi;mv -n $move $moveto;if [ $? -ne 0 ];then if [ $move != $orgmove ];then rm $move;fi;exit;else if [ $lnksave ];then ln -sfn $lnkmini $mini;ln -sfn $lnkshow $show;fi;mv -n $mini $show $moveto;if [ $move != $orgmove ];then rm $orgmove;fi;if [ $mini != $orgmini ];then rm $orgmini;fi;if [ $show != $orgshow ];then rm $orgshow;fi;fi;\");console.log(move,mini,show,moveto);}$(\"#temporary\").text(mpath);$(\"#temporary_1\").text (cmd.join(\"\\n\"));'"
+  var codeMove = "'var malbum=this.value;var mpath=\"\";if(this.selectedIndex===0){return false;}mpath=malbum.replace (/^[^/]*(.*)/,$(\"#imdbLink\").text()+\"$1\");var lpp=mpath.split(\"/\").length-1;if (lpp > 0)lpp=\"../\".repeat(lpp);else lpp=\"./\";console.log(\"Trying move to\",malbum);var picNames=$(\"#picNames\").text().split(\"\\n\");var picOrder=$(\"#picOrder\").text().split(\"\\n\");console.log(\"\"+picNames,\" \"+picOrder);cmd=[];for (let i=0;i<picNames.length;i++){var move=$(\"#imdbLink\").text()+\"/\"+document.getElementById(\"i\"+picNames[i]).getElementsByTagName(\"img\")[0].getAttribute(\"title\");var mini=move.replace(/([^/]+)(\\.[^/.]+)$/,\"_mini_$1.png\");var show=move.replace(/([^/]+)(\\.[^/.]+)$/,\"_show_$1.png\");var moveto=mpath+\"/\";var picfound=$(\"#picFound\").text();cmd.push(\"picfound=\"+picfound+\";move=\"+move+\";mini=\"+mini+\";show=\"+show+\";orgmove=$move;orgmini=$mini;orgshow=$show;moveto=\"+moveto+\";lpp=\"+lpp+\";lnksave=$(readlink -n $move);if [ $lnksave ];then move=$(echo $move|sed -e \\\"s/\\\\(.*$picfound.*\\\\)\\\\.[^.\\\\/]\\\\+\\\\(\\\\.[^.\\\\/]\\\\+$\\\\)/\\\\1\\\\2/\\\");mini=$(echo $mini|sed -e \\\"s/\\\\(.*$picfound.*\\\\)\\\\.[^.\\\\/]\\\\+\\\\(\\\\.[^.\\\\/]\\\\+$\\\\)/\\\\1\\\\2/\\\");show=$(echo $show|sed -e \\\"s/\\\\(.*$picfound.*\\\\)\\\\.[^.\\\\/]\\\\+\\\\(\\\\.[^.\\\\/]\\\\+$\\\\)/\\\\1\\\\2/\\\");lnkfrom=$(echo $lnksave|sed -e \\\"s/^\\\\(\\\\.\\\\{1,2\\\\}\\\\/\\\\)*//\\\" -e \\\"s,^,$lpp,\\\");lnkmini=$(echo $lnkfrom|sed -e \\\"s/\\\\([^/]\\\\+\\\\)\\\\(\\\\.[^/.]\\\\+\\\\)\\\\$/_mini_\\\\1\\\\.png/\\\");lnkshow=$(echo $lnkfrom|sed -e \\\"s/\\\\([^/]\\\\+\\\\)\\\\(\\\\.[^/.]\\\\+\\\\)\\\\$/_show_\\\\1\\\\.png/\\\");ln -sfn $lnkfrom $move;fi;mv -n $move $moveto;if [ $? -ne 0 ];then if [ $move != $orgmove ];then rm $move;fi;exit;else if [ $lnksave ];then ln -sfn $lnkmini $mini;ln -sfn $lnkshow $show;fi;mv -n $mini $show $moveto;if [ $move != $orgmove ];then rm $orgmove;fi;if [ $mini != $orgmini ];then rm $orgmini;fi;if [ $show != $orgshow ];then rm $orgshow;fi;fi;\");console.log(move,mini,show,moveto);}$(\"#temporary\").text(mpath);$(\"#temporary_1\").text (cmd.join(\"\\n\"));'"
   // A log ...\");console.log(move,mini,show,moveto);}$...
-  // may be inserted and is printed even at failure (now removed).
+  // may be inserted (or removed), and it is printed even at failure.
   // Here checkNames cannot be called (like in linkFunc) since  #temporary_1 is not usable
 
-  console.log("codeMove",codeMove);
+  //console.log("codeMove",codeMove);
   let r = $ ("#imdbRoot").text ();
   let codeSelect = '<select class="selectOption" onchange=' + codeMove + '><option value="">Välj ett album:</option>';
   //console.log(codeSelect);
@@ -4507,7 +4528,7 @@ function moveFunc (picNames, picOrder) { // ===== Execute a move-these-files-to.
   $ ("select.selectOption").trigger ("focus");
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-var moveOrder = async (mpath, picNames) => { // ===== Sort-order-list "from outside"
+/*var moveOrder = async (mpath, picNames) => { // ===== Sort-order-list "from outside"
   console.log("mpath",mpath,"picOrder",picNames);
   if (!mpath) return;
   let spath = $ ("#imdbDir").text ();
@@ -4558,7 +4579,7 @@ var moveOrder = async (mpath, picNames) => { // ===== Sort-order-list "from outs
       console.error (error.message);
     });
   }
-}
+}*/
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const saveOrderFunc = namelist => { // ===== XMLHttpRequest saving the thumbnail order list
   if (!(allow.saveChanges || allow.adminAll || imdbDir_is_picFound ()) || $ ("#imdbDir").text () === "") Promise.resolve (true);
@@ -4593,7 +4614,7 @@ const saveOrderFunc = namelist => { // ===== XMLHttpRequest saving the thumbnail
 function setReqHdr (xhr) {
   xhr.setRequestHeader ("imdbRoot", encodeURIComponent ($ ("#imdbRoot").text ()));
   xhr.setRequestHeader ("imdbDir", encodeURIComponent ($ ("#imdbDir").text ()));
-  xhr.setRequestHeader ("picFound", picFound);
+  xhr.setRequestHeader ("picFound", picFound); // All 'wihtin 255' characters
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function saveFavorites (favList) {
@@ -4693,7 +4714,7 @@ function reqDirs (imdbroot) { // Read the dirs in imdbLink (requestDirs)
           dirList [i] = dirList [i].slice (imdbLen);
         }
         let newList = [], newCoco = [], newLabel = [];
-        // The length of "." + the random postfix is 5:
+        // The length of "." + the random suffix is 5:
         let test = $ ("#picFound").text ();
         test = test.slice (0, test.length - 5);
         for (let i=0; i<dirList.length; i++) {
