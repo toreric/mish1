@@ -65,6 +65,7 @@ module.exports = function (app) {
       let cmd = 'find -L ' + IMDB + ' -type d -name "' + picFound + '*" -amin +' + toold + ' | xargs rm -rf'
       await cmdasync (cmd)
     }
+    console.log ("")
     console.log ("      IMDB:", IMDB)
     console.log (" IMDB_ROOT:", IMDB_ROOT)
     console.log ("  IMDB_DIR:", IMDB_DIR)
