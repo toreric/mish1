@@ -1181,8 +1181,8 @@ button.goAlbum:hover {
   cursor: pointer;
 }
 *:not(input):not(textarea) {   /* Safari iPad iPhone */
-  user-select: none!important;
-  -webkit-user-select: none!important;   /* disable selection/Copy of UIWebView */
+  /*user-select: none!important;*/
+  /*-webkit-user-select: none!important;*/ /*  disable selection/Copy of UIWebView */
   -webkit-touch-callout: none!important; /* disable the IOS popup when long-press on a link */
 }
 .nav_links {

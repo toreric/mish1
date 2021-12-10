@@ -5226,8 +5226,8 @@ let doFindText = (sTxt, and, sWhr, exact) => {
       }
       for (let i=0; i<chalbs.length; i++) {
         if (counts [i]) {
-          let tmp = ("     " + counts [i]).slice (-6) + "   i   " + $ ("#imdbRoot").text () + chalbs [i]
-          tmp = tmp.replace (/ /g, "&nbsp;");
+          chalbs [i] = chalbs [i].replace (/ /g, "&nbsp;");
+          let tmp = (("     " + counts [i]).slice (-6) + "   i   ").replace (/ /g, "&nbsp;") + "<a onclick='parent.selectJstreeNode(" + i + ");return false'>" + $ ("#imdbRoot").text () + chalbs [i] + "</a>";
           countAlbs.push (tmp);
         }
       }
@@ -5308,19 +5308,18 @@ let doFindText = (sTxt, and, sWhr, exact) => {
             //let btFind ="<br><button style=\"border:solid 2px white;background:#b0c4deaa;\" onclick='$(\"#dialog\").dialog(\"close\");$(\"div.subAlbum[title=" + returnTitles [2] + "]\")[0].click();$(\"#favorites\").click();'>TILLBAKA</button>";
             let btFind ="<br><button style=\"border:solid 2px white;background:#b0c4deaa;\" onclick='$(\"#dialog\").dialog(\"close\");$(\"#favorites\").click();'>TILLBAKA</button>";
             document.getElementById("dialog").innerHTML = btFind;
-            $("#dialog button") [0].focus();
+            $ ("#dialog button") [0].focus ();
           } else {
             //let btFind ="<br><button style=\"border:solid 2px white;background:#b0c4deaa;\" onclick='$(\"#dialog\").dialog(\"close\");$(\"div.q[title=" + returnTitles [2] + "]\")[0].click();$(\"a.search\").click();'>TILLBAKA</button>";
             let btFind ="<br><button style=\"border:solid 2px white;background:#b0c4deaa;\" onclick='$(\"#dialog\").dialog(\"close\");$(\"a.search\").click();'>TILLBAKA</button>";
             document.getElementById("dialog").innerHTML = btFind;
-            $("#dialog button") [0].focus();
+            $ ("#dialog button") [0].focus ();
           }
         } else if (n > nLimit) {
           document.getElementById("yesBut").disabled = true;
-          //let btFind = "<div style=\"text-align:left\"> Fann:<br>" + countAlbs.join ("<br>") + "</div><br><button style=\"border:solid 2px white;background:#b0c4deaa;\" onclick='$(\"#dialog\").dialog(\"close\");$(\"div.subAlbum[title=" + returnTitles [2] + "]\")[0].click();$(\"a.search\").click();'>TILLBAKA</button>";
           let btFind = "<div style=\"text-align:left\"> Fann:<br>" + countAlbs.join ("<br>") + "</div><br><button style=\"border:solid 2px white;background:#b0c4deaa;\" onclick='$(\"#dialog\").dialog(\"close\");$(\"a.search\").click();'>TILLBAKA</button>";
           document.getElementById("dialog").innerHTML = btFind;
-          $("#dialog button") [0].focus();
+          $ ("#dialog button") [0].focus ();
         }
       }), 40);
       $ ("button.findText").show ();
