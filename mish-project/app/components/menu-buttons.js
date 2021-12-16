@@ -5291,7 +5291,7 @@ let doFindText = (sTxt, and, sWhr, exact) => {
       yes ="Visa i <b>" + txt + "</b>";
     }), 40);
     let modal = false;
-    let p3 =  "<p style='margin:-0.3em 1.6em 0.2em 0;background:transparent'>" + sTxt + "</p>Funna i <span style='font-weight:bold'>" + $ ("#imdbRoot").text () + "</span>:&nbsp; " + n + (n>nLimit?" (bara " + nLimit + " kan visas)":"");
+    let p3 =  "<p style='margin:-0.3em 1.6em 0.2em 0;background:transparent'>" + sTxt + "</p>Funna i <span style='font-weight:bold'>" + $ ("#imdbRoot").text () + "</span>:&nbsp; " + n + (n>nLimit?" (fler än " + nLimit + " kan visas i sina album)":"");
     later ( ( () => {
 
       let imdbx = new RegExp ($ ("#imdbLink").text () + "/", "g");
