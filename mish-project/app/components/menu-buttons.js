@@ -794,7 +794,7 @@ console.log("eraseOriginals",eraseOriginals,"linked",linked,"nels",nels);
         }
         console.log ("jQuery v" + $ ().jquery);
         // The time stamp is produced with the Bash 'ember-b-script'
-        // Login advice:
+        // Introduktion advice:
         $ ("#title a.proid").attr ("title", homeTip);
         //$ ("#title a.proid").attr ("totip", homeTip);
         $ ("#title a.toggbkg").attr ("title", bkgTip);
@@ -1749,7 +1749,7 @@ console.log("eraseOriginals",eraseOriginals,"linked",linked,"nels",nels);
       var album = $ (this.get ("albumName")).text ().replace (/\s/g, " ");
       var album1 = $ ("#picFound").text ().replace (/_/g, " ");
       if ( (!(allow.albumEdit || allow.adminAll)) || album === album1) {
-        userLog ("Otillåtet", true, 500);
+        userLog ("OTILLÅTET", true, 800);
         return;
       }
       mainMenuHide ();
@@ -2076,6 +2076,7 @@ console.log("eraseOriginals",eraseOriginals,"linked",linked,"nels",nels);
             $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
             $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_1")); // calls selectAlbum
             userLog ("START " + imdbroot);
+            $ ("a.proid:first-of-type").attr ("style", "display:"); // Revoke display:none
           }
         }).then ( () => {
           startInfoPage ()
@@ -3262,6 +3263,7 @@ console.log("eraseOriginals",eraseOriginals,"linked",linked,"nels",nels);
               let toold = 60; // minutes. NOTE: Also defined in routes.js, please MAKE COMMON!!
               execute ('find -L ' + lnk + ' -type d -name "' + picFound + '*" -amin +' + toold + ' | xargs rm -rf').then ();
               userLog ("START " + $ ("#imdbRoot").text ());
+              $ ("a.proid:first-of-type").attr ("style", "display:"); // Revoke display:none
               later ( ( () => {
 
                 // The getCookie result is used here, detects external "/album/..."
@@ -3761,7 +3763,7 @@ function startInfoPage () { // Compose the information display page
   execute ("cat " + $ ("#imdbLink").text () + "/_imdb_intro.txt | egrep '^/'").then (result => {
     $ ("#imdbIntro").text (result);
     var intro = result.split ("\n");
-    if (intro.length < 2 || intro [0].indexOf ("Command failed") === 0) {
+    if (intro.length < 1 || intro [0].indexOf ("Command failed") === 0) {
       $ ("#imdbIntro").text ("");
       intro = [];
       console.log("Inga introbilder");
@@ -5828,9 +5830,12 @@ function mainMenuHide () {
   $ ("#menuButton").html ("☰");
   $ (".mainMenu").hide ();
 }
+$.maMeHi = function () {
+  $ ("#menuButton").attr ("title", htmlSafe ("Öppna\nmenyn")); // i18n
+  $ ("#menuButton").html ("☰");
+  $ (".mainMenu").hide ();
+}
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-
 /*
  Longclick Event (´longclick´ is defined)
  Copyright (c) 2010 Petr Vostrel (http://petr.vostrel.cz/)

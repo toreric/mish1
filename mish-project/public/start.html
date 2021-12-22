@@ -12,6 +12,10 @@
     <link rel="stylesheet" type="text/css" href="start.css">
   </head>
   <body>
+    <div id="GO" style="display:none">
+      <!--a href="/" title="S T A R T K N A P P">I</a-->
+      <a href="/" title="S T A R T K N A P P" style="width:10em;font-size:1.25em">S T A R T A &nbsp; H Ä R</a>
+    </div>
     <script>
       function toggle(queSel) {
         var x = document.querySelector(queSel);
@@ -19,30 +23,22 @@
         else x.style.display = "none";
       }
     </script>
-    <div id="GO" style="display:none">
-      <!--a href="/" title="S T A R T K N A P P">I</a-->
-      <a href="/find/MISH/" title="S T A R T K N A P P" style="width:12em;font-size:1.5em;margin:0 0 0 1em">S T A R T A &nbsp; H Ä R</a>
-    </div>
     <div class="wrap0">
+      <p class="dzclose" onclick="parent.document.getElementsByTagName('iframe')[0].style.display='none'" title="Stäng       [Esc]
+introduktionen"> &times; </p>
+
       <a href="https://bygdegardarna.se/savar" target="_blank" title="Gå till hemsidan
 i nytt fönster"><h3 style="line-height:0.8em;vertical-align:top">Sävar Hembygdsförening</h3></a><br>
       <h2 style="margin:0.5em 0">INTRODUKTION<br><span>till fotoalbum</span></h2>
-      <p class="dzclose" onclick="parent.document.getElementsByTagName('iframe')[0].style.display='none'" title="Stäng       [Esc]
-introduktionen"> &times; </p>
       <img src="images/savar.png" draggable="false" ondragstart="return false" title="Sävars
 kommuns
 vapen" style="width:2.4em;border:0;margin: 0 0.2em -0.4em 0.1em">
       <h3 style="margin:-0.1em 0 0.5em 0">Minnen från <br>Sävarådalen och Holmön </h3>
       <br>
-
       <pre style="font-size:95%;font-weight:normal;line-height:130%;margin:0.5em 0 0 0"><a title="Läs användarregler, upphovrättsavtal..." onclick="toggle('.mid')">Se användarregler med mera</a>,</pre>
 
       <div class="mid" style="display:none">
         <a class="intro" title="Användarreglerna" href="villkor.html" onclick="toggle('.mid')" target="villkor" style="">Läs &ndash; i nytt fönster &ndash; Hembygds-<br>föreningens användarregler!</a><br>
-        <!--a class="intro" href="index.html" target="_top" style="">
-          Om du vill börja om:<br>Återstarta (starta om) Mish
-        </a><br>
-        <a class="intro" title="Upphovsrättsavtal" href="copyrightavtal.pdf" target="copyrightavtal" style="">Upphovsrättsavtal som &nbsp; <br>gäller för bildbidrag</a><br-->
         <a class="intro" title="Egna bidrag" href="#" onclick="window.parent.document.getElementById('do_mail').click();toggle('.mid')" style="">Har du frågor? Kontakta oss!<br>(vill du bidra med egna fotografier?)</a><br>
         <a class="intro" href="history.html" onclick="toggle('.mid')" target="history" style="">Historik &ndash; i nytt fönster</a>
       </div>
@@ -53,45 +49,20 @@ och finn bland tusentals bilder!
 efternamn med den <b title="Öppna menyn" onclick="window.parent.document.getElementById('menuButton').click()" style="color:#6cf;cursor:pointer">blå</b> menyknappen:
 Välj ”Finn bilder” och skriv sökbegrepp...
 <a title="Öppna sökfönstret" onclick="window.parent.document.querySelector('a.search').click()" target="_parent" style="margin: 0 1em 1em 0">...eller sök direkt!</a></pre>
-
+      <pre style="margin:0.8em 0 1em 0"><a onclick="window.parent.document.querySelector('#menuButton').click();if(window.parent.document.querySelector('.jstreeAlbumSelect').style.display==='none')window.parent.document.querySelector('#jstreeHdr').click()">Site map (albumkarta, albumträd)</a></pre>
       <pre style="margin:0.8em 0 1em 0"><span style="color:#fe4">Mish gör kakor (cookies) med dina
 inställningar och ”favoritbilder”</span></pre>
 
-      <pre style="margin:0.8em 0 1em 0"><a onclick="window.parent.document.querySelector('#menuButton').click();if(window.parent.document.querySelector('.jstreeAlbumSelect').style.display==='none')window.parent.document.querySelector('#jstreeHdr').click()">Site map (albumkarta, albumträd)</a></pre>
-
-        <a class="intro border0" draggable="false" ondragstart="return false" title="name" style="display:inline-block"><img src=""></a><br><span class="imtx"></span>
+      <span>Exempel:</span><br>
+      <a class="intro border0" draggable="false" ondragstart="return false" title="name" style="display:inline-block"><img src=""></a><br><span class="imtx"></span>
 
     </div>
     <div class="wrap1">
       <a class="intro border0" draggable="false" ondragstart="return false" title="name" style="display:inline-block"><img src=""></a><br><span class="imtx"></span><br>
       <a class="intro border0" draggable="false" ondragstart="return false" title="name" style="display:inline-block"><img src=""></a><br><span class="imtx"></span>
+      <a class="intro border0" draggable="false" ondragstart="return false" title="name" style="display:inline-block"><img src=""></a><br><span class="imtx"></span>
     </div>
 
-    <!--div class="wrap1">
-      <div class="lef">
-        <b>Testbilder</b>
-        <pre style="margin:0.1em 0 0.4em 0">Klicka för att
-förpröva i ett
-nytt fönster:</pre>
-        <a class="intro border0" title="Testbild" href="" style="display:none"><img src=""></a>
-        <a class="intro border0" title="Testbild" href="" style="display:none"><img src=""></a>
-        <a class="intro border0" title="Testbild" href="" style="display:none"><img src=""></a>
-        <a class="intro border0" title="Testbild" href="" style="display:none"><img src=""></a>
-        <a class="intro sampleAll" title="Testbild" href="" style="display:none">Pröva dem<br>tillsammans</a>
-      </div>
-      <div class="mid">
-        <a class="intro" title="Upphovsrättsavtal" href="copyrightavtal.pdf" target="copyrightavtal" style="">Upphovsrätts-<br>avtal som gäller <br>för bildbidrag</a>
-        <a class="intro" title="Egna bidrag" href="#" onclick="window.parent.document.getElementById('do_mail').click()" style="">Har du frågor?<br>Kontakta oss!<br>(vill du bidra<br>med egna<br>fotografier?)</a>
-        <a class="" title="" href="#" style="">&nbsp;</a>
-        <a class="" title="" href="#" style="">&nbsp;</a>
-      </div>
-      <div class="rig">
-        <a class="intro border0" title="Testbild" href="" style="display:none"><img src=""></a>
-        <a class="intro border0" title="Testbild" href="" style="display:none"><img src=""></a>
-        <a class="intro border0" title="Testbild" href="" style="display:none"><img src=""></a>
-        <a class="intro border0" title="Testbild" href="" style="display:none"><img src=""></a>
-      </div>
-    </div-->
     <script>
       if (!window.parent.frames.length) {
         document.getElementById ("GO").style.display = "block";

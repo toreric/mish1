@@ -9,10 +9,11 @@ body {
   background: #5b5f5f;
 }
 #GO a {
-  position: fixed;
-  top: 0.5em;
-  left: 0.35em;
-  width: 0.7em;
+  display: inline-block;
+  position: relative;
+  top: 0;
+  left: 0;
+  margin-bottom: 0.5em;
   height: 0.7em;
   border: 0.2em solid rgb(176, 240, 255);
   border-radius: 1em;

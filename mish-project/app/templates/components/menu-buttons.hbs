@@ -34,8 +34,8 @@ function copyToClipboard (str) {    // Copies a filename (below mini-pic) to the
 <!-- ///// HEADER AND ALSO THE LOGIN AND SETTINGS BUTTON ///// -->
 <div id="title" class="BACKG BLUET" draggable="false" ondragstart="return false">
   <form action="">
-    <a class="proid" title="" onclick="window.scrollTo(0,0);$('iframe.intro').toggle();$('#searcharea').dialog('close')">Mish&nbsp;<small>introduktion</small></a>
-    <a class="proid toggbkg" style="margin:0.5em 0 0 0" title="" {{action 'toggleBackg'}}><small>MÖRK/LJUS</small></a>
+    <a class="proid" title="" onclick="window.scrollTo(0,0);$.maMeHi();$('iframe.intro').toggle();$('#searcharea').dialog('close')" style="display:none">Mish&nbsp;<small>introduktion</small></a>
+    <a class="proid toggbkg" style="margin:0.5em 0 0 0.7em" title="" {{action 'toggleBackg'}}><small>MÖRK/LJUS</small></a>
     <div style="display:inline-block;vertical-align:top;margin:0.4em 0 0 1em">
       <button type="submit" class="cred login" title="" {{action "logIn"}}>Logga in</button>
       <input type="text" class="cred user" size="10" title="Användare" placeholder="User name" value="">
@@ -312,7 +312,7 @@ i nytt fönster" style="font-size:200%;line-height:80%;padding:0.3em 0.33em 0.25
   </div>
 
   <!-- Start "home" page: the Information page-->
-  <iframe class="intro" src="start1.html" style="display:none"></iframe>
+  <iframe class="intro" src="start.html" style="display:none"></iframe>
 
   <!-- SMALLBUTTONS -->
   <a id="questionMark" class="smBu" title="Användarhandledning [F1]" draggable="false" ondragstart="return false" {{action 'toggleHelp'}}>?</a>
