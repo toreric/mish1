@@ -316,8 +316,10 @@ i nytt fönster" style="font-size:200%;line-height:80%;padding:0.3em 0.33em 0.25
 
   <!-- SMALLBUTTONS -->
   <a id="questionMark" class="smBu" title="Användarhandledning [F1]" draggable="false" ondragstart="return false" {{action 'toggleHelp'}}>?</a>
+  <a id="reFr" {{action 'refresh'}} title="NOTE: refresh was original system reLd" style="display:none"></a>
   <a id="reLd" class="smBu" title="Ladda om albumet
-(återställ osparade ändringar)" draggable="false" ondragstart="return false" {{action 'refresh'}} src="/images/reload.png"></a>
+(återställ osparade ändringar)" draggable="false" ondragstart="return false" {{action 'reload'}} src="/images/reload.png"></a>
+
   <a id="toggleName" class="smBu" title="Visa/dölj
 bildnamnen" draggable="false" ondragstart="return false" style="display:none" {{action 'toggleNameView'}}>N</a>
   <a id="toggleHide" class="smBu" title="Visa/dölj
@@ -352,7 +354,7 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
     <b>Se först knapparna till vänster</b> (vilka som syns varierar):<br>
     <a id="albSel">☰</a> Huvudmeny: Välj album, sökning, favoriter, albumöversikt ...<br>
     <a id="questionMark0">?</a> Visa/dölj den här användarhandledningen<br>
-    <a id="reLd0" class="helpIcon"><img draggable="false" ondragstart="return false" src="/images/reload.png"></a> Ladda om albumet, återställ eventuella osparade ändringar¹³ (’ångerknapp’, men avser ej textändringar)<br>
+    <a id="reFr0" class="helpIcon"><img draggable="false" ondragstart="return false" src="/images/reload.png"></a> Ladda om albumet, återställ eventuella osparade ändringar¹³ (’ångerknapp’, men avser ej textändringar)<br>
     <a id="toggleName0">N</a> Visa/dölj namn på bilden (filnamn utan .filtyp)<br>
     <a id="toggleHide0"></a> Visa/dölj ’gömda bilder’ (gömda med bildens högerklick-meny)<br>
     <!--a id="upLoad0">U</a> Visa/dölj panelen för uppladdning av (fler) bilder<br -->

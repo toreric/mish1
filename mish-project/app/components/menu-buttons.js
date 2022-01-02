@@ -286,7 +286,7 @@ export default Component.extend (contextMenuMixin, {
       sortOrder = line.trim () + "\n" + sortOrder.trim ();
       $ ("#sortOrder").text (sortOrder);
       saveOrderFunc (sortOrder) // Save on server disk
-      .then ($ ("#reLd").trigger ("click")); // Call via DOM... REFRESH
+      .then ($ ("#reFr").trigger ("click")); // Call via DOM... REFRESH
       later ( ( () => {
         scrollTo (null, $ (".showCount:first").offset ().top);
       }), 50);
@@ -309,7 +309,7 @@ export default Component.extend (contextMenuMixin, {
       sortOrder = sortOrder.trim () + "\n" + line.trim ();
       $ ("#sortOrder").text (sortOrder);
       saveOrderFunc (sortOrder) // Save on server disk
-      .then ($ ("#reLd").trigger ("click")); // Call via DOM... REFRESH
+      .then ($ ("#reFr").trigger ("click")); // Call via DOM... REFRESH
       later ( ( () => {
         scrollTo (null, $ ("#lowDown").offset ().top - window.screen.height*0.85);
       }), 50);
@@ -640,7 +640,7 @@ export default Component.extend (contextMenuMixin, {
         // 1 remove "<imdbLink>/" and all following "<album>/"s, leaving the last
         // 2 if still "<imdbLink>", change to "<imdbRoot>"
         // 3 if "<picFound>", remove the disturbing distinguishing random extension
-        //   from most GUI labels but, NOTE: Use it also, e.g. in the Jstree label!
+        //   from most GUI labels but, NOTE, use it also, e.g. in the JStree label!
         var nameText = $ ("#imdbDir").text ().replace (/^(.*[/])*/, "");
         if (nameText === $ ("#imdbLink").text ()) {nameText = $ ("#imdbRoot").text ();}
         if (nameText.indexOf (picFound) > -1) nameText = nameText.replace (/^(.+)\.[^.]+$/, "$1");
@@ -679,7 +679,7 @@ console.log("eraseOriginals",eraseOriginals,"linked",linked,"nels",nels);
             $ (this).dialog ('close');
             later ( ( () => {
               document.getElementById("reLd").disabled = false;
-              $ ("#reLd").trigger ("click"); // REFRESH
+              $ ("#reFr").trigger ("click"); // REFRESH
               gotoAtop ();
             }), 750);
           }
@@ -1931,7 +1931,7 @@ console.log("eraseOriginals",eraseOriginals,"linked",linked,"nels",nels);
                 cmd = sortop + $ ("#imdbDir").text () + "/_imdb_order.txt > /tmp/tmp && cp /tmp/tmp " + $ ("#imdbDir").text () + "/_imdb_order.txt";
                 execute (cmd).then ( () => {
                   later ( ( () => {
-                    $ ("#reLd").trigger ("click");
+                    $ ("#reFr").trigger ("click");
                   }), 500);
                 });
               }), 2000);
@@ -2195,7 +2195,7 @@ console.log("eraseOriginals",eraseOriginals,"linked",linked,"nels",nels);
         await new Promise (z => setTimeout (z, 77));
         $.spinnerWait (true, 103);
         // REFRESH the displayed album
-        $ ("#reLd").trigger ("click");
+        $ ("#reFr").trigger ("click");
         $ ("div.subAlbum").show ();
         //$ ("a.imDir").attr ("title", "Album");
         let n = $ ("a.imDir").length/2; // there is also a page bottom link line...
@@ -2643,6 +2643,19 @@ console.log("eraseOriginals",eraseOriginals,"linked",linked,"nels",nels);
       }
     },
     //============================================================================================
+    async reload () { // Alternative refresh method?? selectJstreeNode USEFUL? TESTING Jan 2022
+      let idx = $ ("#imdbDirs").text ().split ("\n").indexOf ($ ("#imdbDir").text ().replace (/^[^/]*/, ""));
+      if (idx > -1) selectJstreeNode (idx);
+      if (!imdbDir_is_picFound ()) {
+        // Perform pending DB updates
+        if (chkPaths.length > 0) {
+          await sqlUpdate (chkPaths.join ("\n"));
+          chkPaths = randIndex (0); // Dummy use of randIndex (=> [])
+          chkPaths = [];
+        }
+      }
+    },
+    //============================================================================================
     refresh () { // ##### Reload the imageList and update the sort order
 
       if ($ ("#imdbDir").text () === "") return;
@@ -2653,6 +2666,7 @@ console.log("eraseOriginals",eraseOriginals,"linked",linked,"nels",nels);
       $ ("#link_show a").css ('opacity', 0);
       $ (".img_show").hide ();
       $ (".nav_links").hide ();
+
       this.refreshAll ().then (async (n) => {
 
         // Do not insert a temporary search result into the sql DB table:
@@ -3934,7 +3948,7 @@ async function deleteFiles (picNames, nels, picPaths) { // ===== Delete image(s)
       }
       later ( ( () => {
         document.getElementById("reLd").disabled = false;
-        $ ("#reLd").trigger ("click");
+        $ ("#reFr").trigger ("click");
         document.getElementById("saveOrder").disabled = false;
         $ ("#saveOrder").trigger ("click");
       }), 200);
@@ -4057,7 +4071,7 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) {
             if (files.length > 0) {
               document.getElementById("reLd").disabled = false;
               later ( ( () => {
-                $ ("#reLd").trigger ("click");
+                $ ("#reFr").trigger ("click");
               }), 800);
               later ( (async () => {
                 await sqlUpdate (files);
@@ -4078,7 +4092,7 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) {
             $.spinnerWait (true, 109);
             document.getElementById("reLd").disabled = false;
             later ( ( () => {
-              $ ("#reLd").trigger ("click");
+              $ ("#reFr").trigger ("click");
             }), 1999);
           }
 

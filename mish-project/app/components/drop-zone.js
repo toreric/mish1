@@ -273,7 +273,7 @@ export default Component.extend({
             setTimeout (function () {
               $ ("img.spinner").trigger ("click");
               later ( () => {
-                $ ("#reLd").trigger ("click");
+                $ ("#reFr").trigger ("click");
               }, 222);
             }, (t)); // Waiting time
           })(ms); //Pass milliseconds into closure of self-exec anon-func
