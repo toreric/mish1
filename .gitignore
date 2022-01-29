@@ -25,5 +25,6 @@ testem.log
 012345*
 *.xmp
 /imdb*
+/rln
 
 /!.gitignore

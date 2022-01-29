@@ -118,17 +118,17 @@ if (process.argv [2] == "-e") {
 } else {
   console.log ("  This program regenerates texts in a Mish metadata database")
   console.log ("Usage: " + process.argv [1] + " -e [<absolute path to albumroot>]")
-  console.log ("  Reloads image file text metadata into imdb/_imdb_images.sqlite")
+  console.log ("  Reloads image file text metadata into ./_imdb_images.sqlite")
   console.log ("  or (preferred) <absolute path to albumroot>_imdb_images.sqlite")
   console.log ("  from the images of the album tree after removing diacritic symbols")
   console.log ("Needs: node, xmpget")
   console.log ("Note: This program is assumed to run in the www-album-roots root")
-  console.log ("  catalog if an imdb/ symlink is assumed")
+  console.log ("  catalog if ./_imdb_images.sqliteb is used")
 }
 function loadImageMetadata () {
   const sqlite = require ("better-sqlite3")
   let execSync = require ('child_process').execSync
-  let imdbLink = "imdb/" // <<<<<<<<<< NOTE: must equal the init() setting + '/'
+  let imdbLink = "." // <<<<<<<<<< NOTE: must equal the init() setting + '/'
   let albumRoot
   if (process.argv [3]) albumRoot = process.argv [3] // Absolute path, preferred
   else albumRoot = imdbLink // Default symlink, relative path (NOTE: may it's name vary?!)
@@ -144,7 +144,7 @@ function loadImageMetadata () {
 
   execSync ('rm -f ' + albumRoot + '_imdb_images.sqlite');
   const db = new sqlite (albumRoot + "_imdb_images.sqlite");
-  
+
   db.pragma ("journal_mode = WAL") // Turn on write-ahead logging
   db.prepare ('CREATE TABLE imginfo (id INTEGER PRIMARY KEY, filepath TEXT UNIQUE, name TEXT, album TEXT, description TEXT, creator TEXT, source TEXT, subject TEXT, tcreated TEXT, tchanged TEXT)').run ()
 
@@ -178,7 +178,7 @@ function loadImageMetadata () {
 
   db.prepare ('DROP TABLE IF EXISTS fts').run ()
 
-      /* Prepare for free text search (fts) if relevant NOTE: NOT coded for ´better-sqlite3´!! 
+      /* Prepare for free text search (fts) if relevant NOTE: NOT coded for ´better-sqlite3´!!
       //console.log('pathlist 5')
       db.run ("CREATE VIRTUAL TABLE fts USING fts5 (filepath, description, creator, content='imginfo', content_rowid='id')", function (err) {
         if (err) {

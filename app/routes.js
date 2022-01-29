@@ -31,17 +31,17 @@ module.exports = function (app) {
   // ----- mailSender/host/provider/smtpRelay for the contact function
   let mailsender = "savarhembygd@telia.com"
   // ----- Present work directory
-  let PWD_PATH = path.resolve ('.')
+  let WWW_ROOT = path.resolve ('.')
   // ----- Root directory where IMDB_ROOTs are found
   let IMDB_HOME = imdbHome () // From env.var. $IMDB_HOME or $HOME
   // ----- Image database root directory
-  let IMDB_ROOT = null // Must be set in route
+  let IMDB_ROOT = "" // Must be set in route
   // ----- Image database directory
-  let IMDB_DIR = null // Must be set in route
+  let IMDB_DIR = "" // Must be set in route
   // ----- Name of symlink pointing to IMDB_ROOT
-  let IMDB_LINK = "imdb"    // <<<<<<<<<< NOTE: must equal init () setting!
+  let IMDB_LINK = "."    // <<<<<<<<<< OLD: must equal init () setting!
   //NEW This will be the absolute current abum root path IMDB
-  let IMDB = null // Will replace the ´link-to-album´ task of 'imdb' (IMDB_LINK)
+  let IMDB = "" // Replaces the former ´link-to-album´ task of 'imdb' (IMDB_LINK)
   // ----- Base name of search result albums
   let picFound = ""
   // ----- Max lifetime (minutes) after last access of a search result album
@@ -55,17 +55,21 @@ module.exports = function (app) {
   // Remember to check 'Express route tester'!
   // ##### #0. General passing point
   app.all ('*', async function (req, res, next) {
-    let tmp = req.get ('imdbRoot')
+    let tmp = req.get ('imdbroot')
     if (tmp) {
       IMDB_ROOT = decodeURIComponent (tmp)
-      IMDB_DIR = decodeURIComponent (req.get ('imdbDir'))
+      IMDB_DIR = decodeURIComponent (req.get ('imdbdir'))
       IMDB = IMDB_HOME + "/" + IMDB_ROOT
-      picFound = req.get ('picFound')
+      picFound = req.get ('picfound')
       // Remove all too old picFound files
       let cmd = 'find -L ' + IMDB + ' -type d -name "' + picFound + '*" -amin +' + toold + ' | xargs rm -rf'
       await cmdasync (cmd)
     }
+
+if (IMDB_DIR && IMDB_DIR.trim () === ".") console.log(req);
+
     console.log ("")
+    console.log ("  WWW_ROOT:", WWW_ROOT)
     console.log ("      IMDB:", IMDB)
     console.log (" IMDB_ROOT:", IMDB_ROOT)
     console.log ("  IMDB_DIR:", IMDB_DIR)
@@ -169,16 +173,18 @@ console.log("p2",p);
     res.send (fileStat)
   })
 
-  //¤ ##### #0.1.9 Set IMDB_ROOT and picFound basename  OBSOLETE(?)
+  // ##### #0.1.9 Set IMDB_ROOT and picFound basename  OBSOLETE? - NO!
+  // Keep it for returning IMDB if/When only imdbroot is set!
   app.get ('/imdbroot/:imdbroot', async function (req, res) {
-    //OLD: let p = req.params.imdbroot.trim ().split ("@")
-    //OLD: IMDB_ROOT = p [0]
+    let p = req.params.imdbroot.trim ().split ("@")
+console.log("/imdbroot/",p);
+    //OLD: IMDB_ROOT = p [0]                 NEVER REACHED!!!!!
     //OLD: picFound = p [1]
     //console.log("0.1.9", IMDB_HOME, IMDB_ROOT, IMDB_LINK, picFound);
     // IMDB_LINK = symlink pointing to current album root
-    setRootLink (IMDB_HOME, IMDB_ROOT, IMDB_LINK)
-    await new Promise (z => setTimeout (z, 400))
-    res.send (true)
+    //setRootLink (IMDB_HOME, IMDB_ROOT, IMDB_LINK)
+    //await new Promise (z => setTimeout (z, 400))
+    res.send (IMDB)
   })
 
   // ##### #0.2 Get IMDB_LINK directory list
@@ -187,20 +193,22 @@ console.log("p2",p);
     //OLD: IMDB_ROOT = p [0]
     // picFoundx == picFound + random extension
     let picFoundx = p [1]
-    // IMDB_LINK = symlink pointing to current albums
-    setRootLink (IMDB_HOME, IMDB_ROOT, IMDB_LINK)
+
+    // IMDB_LINK was symlink pointing to current albums
+    //setRootLink (IMDB_HOME, IMDB_ROOT, IMDB_LINK)
     await new Promise (z => setTimeout (z, 200))
     // Refresh picFoundx: the shell commands must execute in sequence
-    //NEW  let pif = IMDB + '/' + picFoundx
-    let pif = IMDB_LINK + '/' + picFoundx
+    let pif = IMDB + '/' + picFoundx
+    //let pif = IMDB_LINK + '/' + picFoundx
     let cmd = 'rm -rf ' + pif + ' && mkdir ' + pif + ' && touch ' + pif + '/.imdb'
     await cmdasync (cmd)
     setTimeout (function () {
-      //NEW allDirs (IMDB).then (dirlist => { // dirlist entries start with the IMDB string
-      allDirs (IMDB_LINK).then (dirlist => {
-          //console.log ("\n\na\n", dirlist)
+      allDirs ().then (dirlist => { // dirlist entries start with the root album
+console.log("-dirlist",dirlist);
         areAlbums (dirlist).then (async dirlist => {
+          //NOTE: These paths include IMDB_ROOT, soon removed by caller!
           dirlist = dirlist.sort ()
+console.log("=dirlist",dirlist);
           let dirtext = dirlist.join ("€")
           let dircoco = [] // directory content counter
           let dirlabel = [] // Album label thumbnail paths
@@ -260,8 +268,7 @@ console.log("p2",p);
           for (let j=0; j<ignore.length; j++) {
             for (let i=0; i<dirlist.length; i++) {
               if (ignore [j] && ignore [j].slice (0, 1) !== '#') {
-                //NEW  ignore [j] = ignore [j].replace (/^[^/]*/, IMDB)
-                ignore [j] = ignore [j].replace (/^[^/]*/, IMDB_LINK)
+                ignore [j] = ignore [j].replace (/^[^/]*/, "")
                 if (ignore [j] && dirlist [i].startsWith (ignore [j])) dircoco [i] += "*"
               }
             }
@@ -269,9 +276,10 @@ console.log("p2",p);
           dirtext = dirtext.replace (/€/g, "\n")
           dircoco = dircoco.join ("\n")
           dirlabel = dirlabel.join ("\n")
-          // NOTE: rootDir = IMDB_HOME + "/" + IMDB_ROOT, but here "@" separates them (important!):
+          // NOTE: IMDB = IMDB_HOME + "/" + IMDB_ROOT, but here "@" separates them (important!):
           dirtext = IMDB_HOME + "@" + IMDB_ROOT + "\n" + dirtext + "\nNodeJS " + process.version.trim ()
           res.location ('/')
+          //NOTE: The paths include IMDB_ROOT, soon removed by caller!
           res.send (dirtext + "\n" + dircoco + "\n" + dirlabel)
           //res.end ()
           console.log ('Directory information sent from server')
@@ -307,8 +315,8 @@ console.log("p2",p);
     findFiles (IMDB_DIR).then ( (files) => {
       var namelist = ""
       for (var i=0; i<files.length; i++) {
-        var file = files [i].slice (IMDB_DIR.length)
-        if (acceptedFileName (file) && !brokenLink (files [i])) {
+        var file = files [i].slice ((IMDB + IMDB_DIR).length + 1)
+        if (acceptedFileName (file) && !brokenLink ('rln' + files [i])) {
           file = file.replace (/\.[^.]*$/, "") // Remove ftype
           namelist = namelist +'\n'+ file
         }
@@ -405,9 +413,7 @@ console.log("p2",p);
     allfiles = undefined
     // Note: A terminal '/' had been lost here, but not a terminal '@'! Thus, no need to add a '/':
     //OLD: IMDB_DIR = req.params.imagedir.replace (/@/g, "/")
-    if (show_imagedir) {
-      console.log ("imagelist", req.params.imagedir, "=>", IMDB_DIR)
-    }
+
     findFiles (IMDB_DIR).then (function (files) {
       if (!files) {files = []}
       var origlist = ''
@@ -424,7 +430,7 @@ console.log("p2",p);
       // Get, check and package quadruple file names:
       //    [ 3 x relative-path, and simple-name ]   of
       //    [ origfile (without root-link-name, nov 2014),
-      //                       showfile, minifile, nameonly ]
+      //               showfile, minifile, nameonly ]
       // where the corresponding images will be sized (e.g.)
       //    [ full, 640x640, 150x150, -- ]   with file type
       //    [ image/*, png, png, -- ]   *(see application.hbs)
@@ -456,11 +462,8 @@ console.log("p2",p);
   // ##### #2. Get sorted file name list
   app.get ('/sortlist/:imagedir', async function (req, res) {
     //OLD: IMDB_DIR = req.params.imagedir.replace (/@/g, "/")
-    if (show_imagedir) {
-      console.log ("sortlist", req.params.imagedir, "=>", IMDB_DIR)
-    }
-    var imdbtxtpath = IMDB_DIR + '/_imdb_order.txt'
-
+    var imdbtxtpath = IMDB + IMDB_DIR + '/_imdb_order.txt'
+console.log("/sortlist/:imdbtxtpath",imdbtxtpath);
     try { // Create _imdb_order.txt if missing
       fd = await fs.openAsync (imdbtxtpath, 'r') // check
       await fs.closeAsync (fd)
@@ -470,23 +473,10 @@ console.log("p2",p);
       execSync ('chmod 664 ' + imdbtxtpath)
     }
 
-    /*try { NOTE: Try change to the above alternative, hoping less loss probability??
-      execSync ('touch ' + imdbtxtpath + '&&chmod 664 ' + imdbtxtpath) // In case not yet created
-    } catch (err) {
-      res.location ('/')
-      //res.send (err.message)
-      res.send ("Error!") // Keyword!
-      //res.end ()
-      console.log (IMDB_DIR + ' not found')
-    }*/
-
     fs.readFileAsync (imdbtxtpath)
     .then (names => {
-      //console.log (names) // <buffer>
-      //??res.location ('/')
+console.log ('/sortlist/:names' +'\n'+ names) // names <buffer> here converts to <text>
       res.send (names) // Sent buffer arrives as text
-      //res.end ()
-      //console.log ('\n'+names.toString ()+'\n')
     }).then (console.info ('File order sent from server'))
   })
 
@@ -544,7 +534,7 @@ console.log("p2",p);
 
   // ##### #6. START PAGE start page
   app.get ('/', function (req, res) {
-    res.sendFile ('index.html', {root: PWD_PATH + '/public/'}) // load our index.html file
+    res.sendFile ('index.html', {root: WWW_ROOT + '/public/'}) // load our index.html file
     // path must be "absolute or specify root to res.sendFile"
   })
 
@@ -612,7 +602,7 @@ console.log("p2",p);
       return
     }
     // ----- Image data base absolute path
-    var IMDB_PATH = PWD_PATH + '/' + IMDB_DIR + '/'
+    var IMDB_PATH = IMDB + IMDB_DIR + '/'
     await Promise.mapSeries (req.files, function (file) { // Can we use mapSeries here?
       file.originalname = file.originalname.replace (/ /g, "_") // Spaces prohibited
       //console.log (file.originalname)
@@ -627,8 +617,9 @@ console.log("p2",p);
       .then (console.log (++n_upl +' TMP: '+ file.path + ' written to' +'\nUPLOADED: '+ IMDB_DIR +"/"+ file.originalname))
       // Delete showfile and minifile if the main file is refreshed
       .then(pngname = path.parse (file.originalname).name + '.png')
-      .then (fs.unlinkAsync (IMDB_PATH +'_mini_'+ pngname)) // File not found isn't caught, see Express unhandledRejection!
-      .then (fs.unlinkAsync (IMDB_PATH +'_show_'+ pngname)) // File not found isn't caught, see Express unhandledRejection!
+      // File not found isn't caught, see Express unhandledRejection!
+      .then (fs.unlinkAsync ('rln' + IMDB_PATH +'_mini_'+ pngname)) // see Express
+      .then (fs.unlinkAsync ('rln' + IMDB_PATH +'_show_'+ pngname)) // see Express
       .then (res.send (file.originalname))
       //.then (console.log (' originalname: ' + file.originalname), res.send (file.originalname))
       .catch (function (error) {
@@ -645,21 +636,20 @@ console.log("p2",p);
 
   // ##### #8. Save the _imdb_order.txt file
   //           Called from the menu-buttons component's action.refresh
-  app.post ('/saveorder/:imagedir', function (req, res, next) {
+  //app.post ('/saveorder/:imagedir', function (req, res, next) {
+  app.post ('/saveorder', function (req, res, next) {
     //OLD:IMDB_DIR = req.params.imagedir.replace (/@/g, "/")
-    if (show_imagedir) {
-      console.log ("saveorder", req.params.imagedir, "=>", IMDB_DIR)
-    }
-    var file = IMDB_DIR + "/_imdb_order.txt"
+    var file = IMDB + IMDB_DIR + "/_imdb_order.txt"
+console.log("file",file);
     execSync ('touch ' + file + '&&chmod 664 ' + file) // In case not yet created
     var body = []
     req.on ('data', (chunk) => {
-      //console.log(chunk)
+console.log(chunk)
       body.push (chunk) // body will be a Buffer array: <buffer 39 35 33 2c 30 ... >, <buf... etc.
     }).on ('end', () => {
       body = Buffer.concat (body).toString () // Concatenate; then change the Buffer into String
       // At this point, do whatever with the request body (now a string)
-      //console.log("Request body =\n",body)
+console.log("Request body =\n",body)
       fs.writeFileAsync (file, body).then (function () {
         console.log ("Saved file order ")
         //console.log ('\n'+body+'\n')
@@ -667,9 +657,8 @@ console.log("p2",p);
       res.on('error', (err) => {
         console.error(err.message)
       })
-      //res.connection.destroy()
       setTimeout (function () {
-        res.sendFile ('index.html', {root: PWD_PATH + '/public/'}) // stay at the index.html file
+        res.sendFile ('index.html', {root: WWW_ROOT + '/public/'}) // stay at the index.html file
       }, 200)
     })
   })
@@ -694,7 +683,7 @@ console.log("p2",p);
         console.error(err.message)
       })
       setTimeout (function () {
-        res.sendFile ('index.html', {root: PWD_PATH + '/public/'}) // stay at the index.html file
+        res.sendFile ('index.html', {root: WWW_ROOT + '/public/'}) // stay at the index.html file
       }, 200)
     })
   })
@@ -705,9 +694,6 @@ console.log("p2",p);
     //OLD: IMDB_DIR = req.params.imagedir.replace (/@/g, "/")
     // The above is superfluous and has, so far, no use here, since please note:
     // The imagedir directory path is already included in the file name here @***
-    if (show_imagedir) {
-      console.log ("savetext", req.params.imagedir, "=>", IMDB_DIR)
-    }
     var body = []
     req.on ('data', (chunk) => {
       body.push (chunk)
@@ -745,15 +731,15 @@ console.log("p2",p);
         }
       })
     })
-    //res.sendFile ('index.html', {root: PWD_PATH + '/public/'}) // stay at the index.html file
+    //res.sendFile ('index.html', {root: WWW_ROOT + '/public/'}) // stay at the index.html file
   })
 
   // ##### #10. Search text, case insensitively, in _imdb_images.sqlite
   app.post ('/search/:imdbroot', upload.none (), function (req, res, next) {
 
     //OLD: IMDB_ROOT = req.params.imdbroot.replace (/@/g, "/").trim ()
-    // IMDB_LINK = Symlink pointing to current albums
-    setRootLink (IMDB_HOME, IMDB_ROOT, IMDB_LINK)
+    // IMDB_LINK was Symlink pointing to current albums
+    //setRootLink (IMDB_HOME, IMDB_ROOT, IMDB_LINK)
     // Convert everything to lower case
     // The removeDiacritics funtion bypasses some characters (e.g. Sw. åäöÅÄÖ)
     let like = removeDiacritics (req.body.like).toLowerCase ()
@@ -767,15 +753,7 @@ console.log("p2",p);
 
     try { // Start try ----------
       // better-sqlite3:
-      //NEW  const db = new SQLite (IMDB + "/_imdb_images.sqlite")
-      const db = new SQLite (IMDB_LINK + "/_imdb_images.sqlite")
-      /*let db = new sqlite3.Database (IMDB_LINK + '/_imdb_images.sqlite', function (err) {
-        if (err) {
-          console.error (err.message)
-          res.send (err.message)
-          //res.end ()
-        }
-      })*/
+      const db = new SQLite (IMDB + "/_imdb_images.sqlite")
       db.pragma ("journal_mode = WAL") // Turn on write-ahead logging
       const rows = db.prepare ('SELECT id, filepath, ' + columns + ' AS txtstr FROM imginfo WHERE ' + like).all ()
       setTimeout ( () => {
@@ -836,8 +814,8 @@ console.log("p2",p);
   function rmPic (fileName) {
     let pngname = path.parse (fileName).name + '.png'
     let IMDB_dir = path.parse (fileName).dir + '/'
-    let IMDB_PATH = PWD_PATH + '/' + IMDB_dir
-    fs.unlinkAsync (PWD_PATH + '/' + fileName) // File not found isn't caught!
+    let IMDB_PATH = WWW_ROOT + '/' + IMDB_dir
+    fs.unlinkAsync (WWW_ROOT + '/' + fileName) // File not found isn't caught!
     .then (sqlUpdate (fileName))
     .then (fs.unlinkAsync (IMDB_PATH +'_mini_'+ pngname)) // File not found isn't caught!
     .then (fs.unlinkAsync (IMDB_PATH +'_show_'+ pngname)) // File not found isn't caught!
@@ -848,7 +826,7 @@ console.log("p2",p);
         tmp = 'FILE NOT FOUND: ' + IMDB_PATH + '_xxx_' + pngname
         return tmp
       } else {
-        tmp = 'NO PERMISSION to' + PWD_PATH + '/' + fileName
+        tmp = 'NO PERMISSION to' + WWW_ROOT + '/' + fileName
         tmp = '\033[31m' + tmp + '\033[0m'
         return tmp
 // ??? HÄR BORDE EN STOR VARNING KOMMA FRAM FÖR TEXT TILL FEL USER -- varför det?
@@ -903,8 +881,7 @@ console.log("p2",p);
       } catch (err) {
         fileExists = false
       }
-      //NEW  const db = new SQLite (IMDB + "/_imdb_images.sqlite")
-      const db = new SQLite (IMDB_LINK + "/_imdb_images.sqlite")
+      const db = new SQLite (IMDB + "/_imdb_images.sqlite")
       db.pragma ("journal_mode = WAL") // Turn on write-ahead logging
       //let db = await sqlite.open (IMDB_LINK + '/_imdb_images.sqlite')
       //await db.run ("PRAGMA journal_mode=WAL")
@@ -992,7 +969,7 @@ console.log("p2",p);
 
   // ===== Check if an album/directory name can be accepted
   function acceptedDirName (name) { // Note that &ndash; is accepted:
-    let acceptedName = 0 === name.replace (/[/\-–@_.a-zåäöA-ZÅÄÖ0-9]+/g, "").length && name !== IMDB_LINK
+    let acceptedName = 0 === name.replace (/[/\-–@_.a-zåäöA-ZÅÄÖ0-9]+/g, "").length
     return acceptedName && name.slice (0,1) !== "." && !name.includes ('/.')
   }
 
@@ -1010,8 +987,8 @@ console.log("p2",p);
 
   // ===== Read a directory's file content; in passing remove broken links
   function findFiles (dirName) {
-    return fs.readdirAsync (dirName).map (function (fileName) { // Cannot use mapSeries here (why?)
-      var filepath = path.join (dirName, fileName)
+    return fs.readdirAsync ('rln' + IMDB + dirName).map (function (fileName) { // Cannot use mapSeries here (why?)
+      var filepath = path.join ('rln' + IMDB + dirName, fileName)
       var brli = brokenLink (filepath)
       if (brli) {
         rmPic (filepath) // may hopefully also work for removing any single file ...
@@ -1072,17 +1049,16 @@ console.log("p2",p);
     })
   }*/
 
-  // ===== Read the imdbLink's content of sub-dirs recursively
-  // Use: allDirs (imdbLink).then (dirlist => { ...
-  // Replaces findDirectories (), NOTE: Includes imdbLink in the list!
+  // ===== Read the IMDB's content of sub-dirs recursively
+  // Use: allDirs ().then (dirlist => { ...
+  // Replaces findDirectories (), NOTE: Includes IMDB in the list!
   //NEW The parameter will be the absolute current abum root path IMDB
-  let allDirs = async imdbLink => {
-    let IMDB_PATH = PWD_PATH + '/' + imdbLink
-    let dirlist = await cmdasync ('find -L ' + IMDB_PATH + ' -type d|sort')
+  let allDirs = async () => {
+    let dirlist = await cmdasync ('find -L rln' + IMDB + ' -type d|sort')
     dirlist = dirlist.toString ().trim () // Formalise string
     dirlist = dirlist.split ('\n')
     for (let i=0; i<dirlist.length; i++) {
-      dirlist [i] = dirlist [i].slice (PWD_PATH.length + 1)
+      dirlist [i] = dirlist [i].slice (4 + IMDB_HOME.length) // 4: ´rln´ and a ´/´
     }
     return dirlist
   }
@@ -1094,7 +1070,7 @@ console.log("p2",p);
     let fd, albums = []
     return Promise.mapSeries (dirlist, async (album) => { // (*) // CAN use mapSeries here (why?)
       try {
-        fd = await fs.openAsync (album + '/.imdb', 'r')
+        fd = await fs.openAsync ('rln' + IMDB_HOME + "/" + album + '/.imdb', 'r')
         await fs.closeAsync (fd)
         albums.push (album)
       } catch (err) {
@@ -1111,15 +1087,15 @@ console.log("p2",p);
 
   // ===== Read the dir's content of album sub-dirs (not recursively)
   readSubdir = async (dir, files = []) => {
-    let items = await fs.readdirAsync (dir) // items are file || dir names
+    let items = await fs.readdirAsync ('rln' + dir) // items are file || dir names
     return Promise.map (items, async (name) => { // Cannot use mapSeries here (why?)
       //let apitem = path.resolve (dir, name) // Absolute path
       let item = path.join (dir, name) // Relative path
       if (acceptedDirName (name) && !brokenLink (item)) {
-        let stat = await fs.statAsync (item)
+        let stat = await fs.statAsync ('rln' + item)
         if (stat.isDirectory ()) {
           let flagFile = path.join (item, '.imdb')
-          let fd = await fs.openAsync (flagFile, 'r')
+          let fd = await fs.openAsync ('rln' + flagFile, 'r')
           if (fd > -1) {
             await fs.closeAsync (fd)
             files.push (name)
@@ -1257,7 +1233,8 @@ console.log("p2",p);
     let qrn = '?' + Math.random ().toString (36).substr (2,4)
     if (symlink !== '&') {qrn = ''}
     // origfile without root-link-name, nov 2014, e.g. imdb/aa/bb => aa/bb :
-    return (origfile.replace (/^[^/]+\//, "") +'\n'+ showfile + qrn +'\n'+ minifile + qrn +'\n'+ namefile +'\n'+ txt12.trim ()).trim () +'\n'+ symlink // NOTE: returns 7 rows, the last often '&'
+    // origfile without the whole IMDB-path, jan 2022:
+    return (origfile.slice (IMDB.length) +'\n'+ showfile + qrn +'\n'+ minifile + qrn +'\n'+ namefile +'\n'+ txt12.trim ()).trim () +'\n'+ symlink // NOTE: returns 7 rows, the last often '&'
   }
 
   // ===== Make a shell command asyncronous (cf. execP)
@@ -1285,14 +1262,14 @@ console.log("p2",p);
     })
   }
 
-  // ===== Point the symlink to the chosen album root directory  will be OBSOLETE
+  /*/ ===== Point the symlink to the chosen album root directory  will be OBSOLETE
   function setRootLink (IMDB_HOME, IMDB_ROOT, imdbLink) {
     //console.log ("\nIMDB_HOME:", IMDB_HOME)
     if (!IMDB_ROOT || IMDB_ROOT === "") {IMDB_ROOT = execSync ("echo $IMDB_ROOT").toString ().trim ()}
     if (IMDB_ROOT === "undefined") {IMDB_ROOT = "/"}
     // Establish the symlink to the chosen album root directory
     execSync ("ln -sfn " + IMDB_HOME + "/" + IMDB_ROOT + " " + imdbLink)
-  }
+  }*/
 }
 // End module.exports
 
