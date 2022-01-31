@@ -90,7 +90,7 @@ console.log("treePath",treePath);
       albDat = albDat.replace (/€/g, '"');
       this.set ("albumData", eval (albDat));
       if (tempStore) { // This is not in use (?) ... too sophisticated ...
-        //alert ('75 tempStore true'); // borde testa här hur det är ^^^
+        //alert('75 tempStore true'); // borde testa här hur det är ^^^
         $ (".ember-view.jstree").jstree ("close_all");
         $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
         $ (".ember-view.jstree").jstree ("_open_to", "#j1_" + tempStore);
@@ -99,7 +99,7 @@ console.log("treePath",treePath);
           tempStore = "";
         }), 400);
       } else {
-        //alert ('83 tempStore false');
+        //alert('83 tempStore false');
         this.set ("albumText", "");
         this.set ("albumName", "");
       }
@@ -306,7 +306,7 @@ console.log("treePath",treePath);
       sortOrder = sortOrder.replace (line, "");
       sortOrder = sortOrder.replace (/\\n\\n/g, "\n");
       sortOrder = sortOrder.trim () + "\n" + line.trim ();
-      $ ("#sortOrder").text (sortOrder);
+      $ ("#sortOrder").text (sortOrder).then (null);
       saveOrderFunc (sortOrder) // Save on server disk
       .then ($ ("#reFr").trigger ("click")); // Call via DOM... REFRESH
       later ( ( () => {
@@ -613,7 +613,7 @@ console.log("treePath",treePath);
           }
         },
         {
-          text: "", // Set later, (html tags are killed here)
+          text: "", // Set later, (html tags useless here)
           "id": "noButt", // Process only one
           click: function () {
             var nodelem = [];       // Redefined since:
@@ -924,30 +924,35 @@ console.log("eraseOriginals",eraseOriginals,"linked",linked,"nels",nels);
     // This will trigger the template to restore the DOM elements. Prepare the didRender hook
     // to further restore all details!
     let n = 0;
-    return new Promise (resolve => {
-      var test = 'A1';
+    return new Promise (async resolve => {
+      var test = 'A1'; console.log ("refreshAll, test = A1");
       $.spinnerWait (true, 101.01);
-      this.requestOrder ().then (async sortnames => {
+      await this.requestOrder ().then (async sortnames => {
         if (sortnames === undefined) sortnames = "";
         if (sortnames === "Error!") {
           mainMenuShow ();
-          if ($ ("#imdbDir").text () !== "") {
+
+          // Apparenly not used (but has CSS and is free to reuse):
+          if ($ ("#imdbDir").text () !== "") { // "" = root album
             document.getElementById ("imdbError").className = "show-inline";
           }
+
           $ ('.showCount').hide ();
           $ ("#imdbDir").text ("");
-          //$ ("#sortOrder").text ("");
+          $ ("#sortOrder").text ("");
           $ ('#navKeys').text ('true');
         } else {
           $ ('.showCount:last').hide ();
+alert ("refreshAll" + "\n  sortnames ´" + sortnames + "´" + statusValues ());//good
           $ ("#sortOrder").text (sortnames); // Save in the DOM
         }
-        test = 'A2';
+        test = 'A2'; console.log ("refreshAll, test = A2");
         n = 0;
         await new Promise (z => setTimeout (z, 1111));
         // Use sortOrder (as far as possible) to reorder namedata ERROR
         // First pick out namedata (allNames) against sortnames (SN), then any remaining
         this.requestNames ().then (async namedata => {
+alert ("refreshAll" + "\n  namedata ´" + namedata + "´" + statusValues ());
           var i = 0, k = 0;
           // --- Start prepare sortnames checking CSV columns
           var SN = [];
@@ -972,7 +977,7 @@ console.log("eraseOriginals",eraseOriginals,"linked",linked,"nels",nels);
               sortnames = sortnames +'\n'+ SN [i];
             }
           }
-          test = 'A3';
+          test = 'A3'; console.log ("refreshAll, test = A3");
           sortnames = sortnames.trim (); // Important!
           if (sortnames === "") {
             var snamsvec = [];
@@ -993,7 +998,7 @@ console.log("eraseOriginals",eraseOriginals,"linked",linked,"nels",nels);
           for (i=0; i<namedata.length; i++) {
             name.push (namedata [i].name);
           }
-          test = 'B';
+          test = 'B'; console.log ("refreshAll, test = B");
           // --- Make the object vector 'newdata' for new 'namedata=allNames' content
           // --- Use 'snams' order to pick from 'namedata' into 'newdata' and 'newsort'
           // --- 'namedata' and 'name': Ordered as from disk (like unknown)
@@ -1009,7 +1014,7 @@ console.log("eraseOriginals",eraseOriginals,"linked",linked,"nels",nels);
             snamsvec.splice (0, 1);
             snams.splice (0, 1);
           }
-          test = 'C';
+          test = 'C'; console.log ("refreshAll, test = C");
           // --- Move remaining 'namedata' objects (e.g. uploads) into 'newdata' until empty.
           // --- Place them first to get better noticed. Update newsort for sortnames.
           // --- The names, of such (added) 'namedata' objects, are kept remaining in 'name'??
@@ -1033,9 +1038,10 @@ console.log("eraseOriginals",eraseOriginals,"linked",linked,"nels",nels);
           }
 
           newsort = newsort.trim (); // Important
-          test = 'E0';
+          test = 'E0'; console.log ("refreshAll, test = E0");
           this.set ("allNames", newdata); // triggers the minipics reload (RELOAD)
-          $ ('#sortOrder').text (newsort); // Save in the DOM
+alert ("refreshAll" + "\n  newsort ´" + newsort + "´" + statusValues ());
+          $ ("#sortOrder").text (newsort); // Save in the DOM
           //console.log("NOTE: newsort is the true list of images in the actual directory:",newsort.split("\n"));
           //console.log("NOTE: newdata will trigger the thumbnails reload:",this.get ("allNames"));
           preloadShowImg = []; // Preload show images:
@@ -1043,7 +1049,7 @@ console.log("eraseOriginals",eraseOriginals,"linked",linked,"nels",nels);
           for (i=0; i<n; i++) {
             $.spinnerWait (true, 123);
             preloadShowImg [i] = new Image();
-            preloadShowImg [i].src = newdata [i].show;
+            preloadShowImg [i].src = "rln" + newdata [i].show;
           }
           $.spinnerWait (false, 123);
           if ( (n > nWarn) && (allow.imgUpload || allow.adminAll)) {
@@ -1101,7 +1107,7 @@ console.log("eraseOriginals",eraseOriginals,"linked",linked,"nels",nels);
               }
             }), 777);
           }
-          test = 'E1';
+          test = 'E1'; console.log ("refreshAll, test = E1");
           later ( ( () => {
             if ($ ("#hideNames").text () === "1") {
               $ (".img_name").hide ();
@@ -1128,7 +1134,7 @@ console.log("eraseOriginals",eraseOriginals,"linked",linked,"nels",nels);
     var triggerClick = (evnt) => {
       //evnt.preventDefault ();
       //console.log(evnt);
-      //alert ("evnt.type " + evnt.type + " Ctrl=" + evnt.ctrlKey);
+      //alert("evnt.type " + evnt.type + " Ctrl=" + evnt.ctrlKey);
       var that = this;
       var tgt = evnt.target;
       let tgtClass = "";
@@ -1370,7 +1376,7 @@ console.log("eraseOriginals",eraseOriginals,"linked",linked,"nels",nels);
 console.log("requestOrder:IMDB_DIR",IMDB_DIR);
       xhr.open ('GET', 'sortlist/' + IMDB_DIR, true, null, null); // URL matches server-side routes.js
       setReqHdr (xhr, 1);
-      xhr.onload = function () {
+      xhr.onload = async function () {
 console.log("STATUS",this.status);
         if (this.status >= 200 && this.status < 300) {
           var data = xhr.response.trim ();
@@ -1396,7 +1402,7 @@ console.log("requestOrder:data",data);
           if (data === "Error!") {
             if (tmpIndex === 0) { // Regenerate the picFound album since it has probably timed out
               let lpath = $ ("#imdbPath").text () + "/" + $ ("#picFound").text ();
-              execute ("rm -rf " +lpath+ "&&mkdir -m0775 " +lpath+ "&&touch " +lpath+ "/.imdb&&chmod 664 " +lpath+ "/.imdb").then ();
+              await execute ("rm -rf " +lpath+ "&&mkdir -m0775 " +lpath+ "&&touch " +lpath+ "/.imdb&&chmod 664 " +lpath+ "/.imdb");
             } else {
               tmpName += " &mdash; <em style=\"color:red;background:transparent\">just nu oåtkomligt</em>" // i18n
               that.set ("albumName", tmpName);
@@ -1639,7 +1645,7 @@ console.log("requestNames:IMBD_DIR",IMDB_DIR);
             $ ('#navKeys').text ('true'); // Reset when L/R arrows have been protected
           }
         }]);
-        $ ("div[aria-describedby='" + dialogId + "'] span.ui-dialog-title").html (title); /#/
+        $ ("div[aria-describedby='" + dialogId + "'] span.ui-dialog-title").html (title); // /#/
         niceDialogOpen (dialogId);
       }), 33);
       later ( ( () => {
@@ -1739,7 +1745,7 @@ console.log("requestNames:IMBD_DIR",IMDB_DIR);
     albumEdit () { // ##### Erase or create (sub)albums (image folders)
 
       var imdbDir = $ ("#imdbDir").text ();
-      if (imdbDir === "—" || imdbDir === "") return;
+      if (imdbDir === "—") return; // remainder from 2018?
       // Extract the album name and replace &nbsp; with space:
       var album = $ (this.get ("albumName")).text ().replace (/\s/g, " ");
       var album1 = $ ("#picFound").text ().replace (/_/g, " ");
@@ -2013,7 +2019,7 @@ console.log("requestNames:IMBD_DIR",IMDB_DIR);
     },
     //============================================================================================
     selectRoot (value, what) { // ##### Select album root dir from selectbox
-      // Check if there is a rootcookie
+      // Check if there is a rootcookie(?)
 
       if (what) var that = what; else that = this;
       $ (".mainMenu p:gt(2)").hide (); // The selectbox is in the third <p> item
@@ -2024,6 +2030,7 @@ console.log("requestNames:IMBD_DIR",IMDB_DIR);
       $ (".img_show").hide ();
       $ (".nav_links").hide ();
       document.getElementById ("divDropbox").style.display = "none";
+
       if (value.indexOf (" ") > -1) value = ""; // NOTE: Space flags the header line !!
       if (value === "" || value === $ ("#imdbRoot").text ()) {
         $ (".mainMenu p:gt(2)").show (); // The selectbox is in the third <p> item
@@ -2081,9 +2088,15 @@ console.log("selectRoot.result",result);
       }), 4000); // Time needed!
     },
     //============================================================================================
-    async selectAlbum () { // ##### triggered by a click within the JStree
+    async selAlb () { // ##### triggered by a click within the JStree
+      await this.actions.selectAlbum (this);
+    },
+    selectAlbum (that) { // ##### triggered by a click within the JStree
 
       //gotoAtop ();
+
+    return new Promise ( async () => {
+
       $.spinnerWait (true, 101);
       document.getElementById ("imageList").className = "hide-all";
       $ (".miniImgs").hide ();
@@ -2177,17 +2190,17 @@ console.log("selectRoot.result",result);
         if (value) {tmp2 = value.split ("/");}
         if (tmp2 [tmp2.length - 1] === "") {tmp2 = tmp2.slice (0, -1)} // removes trailing /
         tmp2 = tmp2.slice (1); // remove symbolic link name
-        if (typeof this.set === 'function') {
+        if (typeof that.set === 'function') {
           if (tmp2.length > 0) {
-            this.set ("albumName", tmp2 [tmp2.length - 1]);
+            that.set ("albumName", tmp2 [tmp2.length - 1]);
           } else {
-            this.set ("albumName", this.get ("imdbRoot"));
+            that.set ("albumName", that.get ("imdbRoot"));
           }
         }
         if (value) {
           $ (".imDir.path").attr ("title-1", $ ("#imdbRoot").text () + $ ("#imdbDir").text ());
         }
-        this.set ("subaList", a); // triggers load of subalbum links into menu-buttons.hbs
+        that.set ("subaList", a); // triggers load of subalbum links into menu-buttons.hbs
         $.spinnerWait (true, 102);
 
         // REFRESH the displayed album
@@ -2198,7 +2211,7 @@ console.log("selectRoot.result",result);
         let nsub = n;
         let z, iz, obj;
         //let fullAlbumName = $ ("#imdbRoot").text () + $ ("#imdbDir").text ().replace (/^[^/]*/, "");
-        let fullAlbumName = '<span title-1="' + $ ("#imdbRoot").text () + $ ("#imdbDir").text ().replace (/^[^/]*/, "") + '">”' + this.get ("albumName") + "” </span>"
+        let fullAlbumName = '<span title-1="' + $ ("#imdbRoot").text () + $ ("#imdbDir").text ().replace (/^[^/]*/, "") + '">”' + that.get ("albumName") + "” </span>"
         if (tmp [0] === "⌂hem") {
           $ ("a.imDir").each (function (index, element) {
             if (index < n) {z = 0;} else {z = n;}
@@ -2270,9 +2283,9 @@ console.log("selectRoot.result",result);
         if (imdbDir_is_picFound ()) $ ("span.centerMark").text (centerMarkSave);
         else $ ("span.centerMark").text ("×"); // reset ´favorites' header´
 
-        resolve (true);
         $.spinnerWait (true, 104);
-      }).then ( () => {
+        resolve (true);
+      }).then ( () => { // End return new Promise
         execute ("cat " + $ ("#imdbPath").text () + "/.imdb") // NOTE: Always the albumroot
         .then ( (res) => {
           openRoot = res.trim ();
@@ -2286,7 +2299,7 @@ console.log("selectRoot.result",result);
             //allowvalue = "0" + $ ("#allowValue").text ().slice (1);
           }
           $ ("#allowValue").text (allowvalue);
-          this.actions.setAllow ();
+          that.actions.setAllow ();
 
           // Show upload button only if qualified:
           if (allow.imgUpload || allow.adminAll) {
@@ -2305,6 +2318,7 @@ console.log("selectRoot.result",result);
           $.spinnerWait (true, 105);
         });
       });
+    }); // End return new Promise
     },
     //============================================================================================
     toggleMainMenu () {
@@ -2361,7 +2375,7 @@ console.log("selectRoot.result",result);
      return new Promise ( (resolve) => {
 
       $ ("#link_show a").css ('opacity', 0);
-      var tmp = $ ('#sortOrder').text ().trim ();
+      var tmp = $ ("#sortOrder").text ().trim ();
       if (tmp.length < 1) return;
       var rows = tmp.split ('\n');
       var n = 0, h = 0;
@@ -2651,9 +2665,9 @@ console.log("selectRoot.result",result);
       }
     },
     //============================================================================================
-    refresh () { // ##### Reload the imageList and update the sort order, #reFr hidden Jan 2022
+    async refresh () { // ##### Reload the imageList and update the sort order, #reFr hidden Jan 2022
 
-      if ($ ("#imdbRoot").text () === "") return;
+      //if ($ ("#imdbRoot").text () === "") return;
       if ($ (".toggleAuto").text () === "STOP") return; // Auto slide show is running
       document.getElementById ("imageList").className = "hide-all";
 
@@ -2662,7 +2676,7 @@ console.log("selectRoot.result",result);
       $ (".img_show").hide ();
       $ (".nav_links").hide ();
 
-      this.refreshAll ().then (async (n) => {
+      await this.refreshAll ().then (async (n) => {
 
         // Do not insert a temporary search result into the sql DB table:
         if (!imdbDir_is_picFound ()) {
@@ -2684,11 +2698,11 @@ console.log("selectRoot.result",result);
           }
           // await this.refreshAll... DOES NOT WAIT!
           // As a compensation, this pause seems reasonable:
-          await new Promise (z => setTimeout (z, 200*n));
+          await new Promise (z => setTimeout (z, 888*n)); // Was 400?
           //console.log("REFRESH",n); // Doesn't always return something, or the previous: has to wait before resolve?
-        }), 200*n);
+        }), 888*n);
 
-        $.spinnerWait (false, 200*n);
+        $.spinnerWait (false, 888*n);
         n = 0;
         return true;
       });
@@ -2699,13 +2713,14 @@ console.log("selectRoot.result",result);
     // screen. Note that they may, by user's drag-and-drop, have an unknown sort order (etc.)
 
       if ($ (".toggleAuto").text () === "STOP") return; // Auto slide show is running
-      if (!(allow.saveChanges || allow.adminAll) || $ ("#imdbDir").text () === "") return;
+      if (!(allow.saveChanges || allow.adminAll)) return;
 
       $ ("#link_show a").css ('opacity', 0);
       new Promise (resolve => {
         if (spinTrue) $.spinnerWait (true, 107);
         var i =0, k = 0, SName = [], names, SN;
-        SN = $ ('#sortOrder').text ().trim ().split ('\n'); // Take it from the DOM storage
+        SN = $ ("#sortOrder").text ().trim ().split ('\n'); // Take it from the DOM storage
+alert ("saveOrder" + "\n  SN ´" + SN + "´" + statusValues ());
         for (i=0; i<SN.length; i++) {
           SName.push (SN[i].split (",") [0]);
         }
@@ -3557,7 +3572,7 @@ console.log("getCredentials:user",user);
     },
     //============================================================================================
     subalbumSelect (subal) {
-      //alert ("subalbumSelect (" + subal + ")")
+      //alert("subalbumSelect (" + subal + ")")
       subaSelect (subal);
     }
   }
@@ -4616,8 +4631,8 @@ function moveFunc (picNames, picOrder) { // ===== Execute a move-these-files-to.
   }
 }*/
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const saveOrderFunc = namelist => { // ===== XMLHttpRequest saving the thumbnail order list
-  if (!(allow.saveChanges || allow.adminAll || imdbDir_is_picFound ()) || $ ("#imdbDir").text () === "") Promise.resolve (true);
+const saveOrderFunc = (namelist) => { // ===== XMLHttpRequest saving the thumbnail order list
+  if (!(allow.saveChanges || allow.adminAll || imdbDir_is_picFound ())) Promise.resolve (true);
   document.getElementById ("divDropbox").style.display = "none"; // If shown...
   return new Promise ( (resolve, reject) => {
     $ ("#sortOrder").text (namelist); // Save in the DOM
@@ -4625,7 +4640,6 @@ const saveOrderFunc = namelist => { // ===== XMLHttpRequest saving the thumbnail
     if (IMDB_DIR.slice (-1) !== "/") {IMDB_DIR = IMDB_DIR + "/";}
     IMDB_DIR = IMDB_DIR.replace (/\//g, "@"); // For sub-directories*/
     var xhr = new XMLHttpRequest ();
-    //xhr.open ('POST', 'saveorder/' + IMDB_DIR); // URL matches server-side routes.js, IMBD_DIR is OBSOLETE*
     xhr.open ('POST', 'saveorder/');
     setReqHdr (xhr, 11);
     xhr.onload = function () {
@@ -4640,11 +4654,28 @@ const saveOrderFunc = namelist => { // ===== XMLHttpRequest saving the thumbnail
         });
       }
     };
+alert ("saveOrderFunc" + "\n  namelist ´" + namelist + "´" + statusValues ());
     xhr.send (namelist);
   }).catch (error => {
     console.error (error.message);
   });
 }
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function statusValues () {
+  let txt = "";
+  txt += "\n  #imdbDir ´" + $ ("#imdbDir").text () + "´";
+  txt += "\n  #imdbDirs ´" + $ ("#imdbDirs").text () + "´";
+  //txt += "\n  #imdbLabels ´" + $ ("#imdbLabels").text () + "´";
+  txt += "\n  #imdbPath ´" + $ ("#imdbPath").text () + "´";
+  txt += "\n  #imdbRoot ´" + $ ("#imdbRoot").text () + "´";
+  txt += "\n  #imdbRoots ´" + $ ("#imdbRoots").text () + "´";
+  txt += "\n  #picFound ´" + $ ("#picFound").text () + "´";
+  txt += "\n  #picOrder ´" + $ ("#picOrder").text () + "´";
+  txt += "\n  #sortOrder ´" + $ ("#sortOrder").text () + "´";
+  txt += "\n  #userDir ´" + $ ("#userDir").text () + "´";
+  return txt;
+}
+!statusValues (); // Make it always used!
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function setReqHdr (xhr, id) {
   console.log("setReqHdr:imdbDir",id,$ ("#imdbDir").text ());
@@ -5724,7 +5755,7 @@ function allowFunc () { // Called from setAllow (which is called from init(), lo
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function subaSelect (subName, path) { // ##### Sub-album link selected
-  //alert ("subaSelect (" + subName + ", " + path + ")")
+  //alert("subaSelect (" + subName + ", " + path + ")")
   subName = subName.replace (/&nbsp;/g, "_"); // Restore readable album name
   // NOTE: That restoring may be questionable with " " instead of "&nbsp;"
   $.spinnerWait (true, 113);

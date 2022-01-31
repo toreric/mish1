@@ -1,7 +1,7 @@
 {{! template-lint-disable }}
 
 <script>
-function copyToClipboard (str) {    // Copies a filename (below mini-pic) to the clipboard 
+function copyToClipboard (str) {    // Copies a filename (below mini-pic) to the clipboard
   var ae = document.activeElement;                // Don't move focus from the active element but save and restore it
   setTimeout (function () {
     ae.focus ();
@@ -306,7 +306,7 @@ i nytt fönster" style="font-size:200%;line-height:80%;padding:0.3em 0.33em 0.25
     <div class="jstreeAlbumSelect" style="display:none">
       {{ember-jstree
         data=albumData
-        eventDidSelectNode=(action "selectAlbum")
+        eventDidSelectNode=(action "selAlb")
       }}
     </div>
   </div>
@@ -316,7 +316,7 @@ i nytt fönster" style="font-size:200%;line-height:80%;padding:0.3em 0.33em 0.25
 
   <!-- SMALLBUTTONS -->
   <a id="questionMark" class="smBu" title="Användarhandledning [F1]" draggable="false" ondragstart="return false" {{action 'toggleHelp'}}>?</a>
-  <a id="reFr" {{action 'refresh'}} title="NOTE: refresh was original system reLd" style="display:none"></a>
+  <a id="reFr" {{action 'refresh'}} title="NOTE: refresh was original reLd" style="display:none"></a>
   <a id="reLd" class="smBu" title="Ladda om albumet
 (återställ osparade ändringar)" draggable="false" ondragstart="return false" {{action 'reload'}} src="/images/reload.png"></a>
 
@@ -396,7 +396,7 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
       <div class="subAlbum" {{action 'subalbumSelect' suba.album}} style="display:none">
         <a class="imDir BLUET" style="background:transparent" title="{{suba.name}}">
           {{#if suba.image}}
-            <img src={{suba.image}} title="Underalbum"><br>
+            <img src="rln{{suba.image}}" title="Underalbum"><br>
           {{/if}}
           <span>{{{suba.name}}}</span>
         </a>
@@ -425,7 +425,7 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
       <div id="i{{file.name}}" class="img_mini {{file.symlink}}" draggable="false" ondragstart="return false">
         <a draggable="false" ondragstart="return false">
         <!-- a {#{action 'showShow' file.show ... Instead: Click listener in 'setNavKeys'-->
-          <img src="{{file.mini}}" class="left-click" title="{{file.linkto}}" draggable="false" ondragstart="return false">
+          <img src="rln{{file.mini}}" class="left-click" title="{{file.linkto}}" draggable="false" ondragstart="return false">
         </a>
         <div id="" class="markFalse" alt="MARKER" title="Markera" {{action 'toggleMark' file.name}}  draggable="false" ondragstart="return false"><img src="/images/markericon.svg" draggable="false" ondragstart="return false" class="mark">
           <!-- The action of this button triggers a parent (!, marking) click: toggle it back! -->

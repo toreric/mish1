@@ -421,7 +421,7 @@ console.log("=dirlist",dirlist);
       for (var i=0; i<files.length; i++) {
         var file = files [i]
         // Check the file name and that it is not a broken link: !`find <filename> xtype l`
-        if (acceptedFileName (file.slice (IMDB_DIR.length + 1)) && !brokenLink (file)) {
+        if (acceptedFileName (file.slice ((IMDB + IMDB_DIR).length + 1)) && !brokenLink (file)) {
           origlist = origlist +'\n'+ file
         }
       }
@@ -644,7 +644,7 @@ console.log("file",file);
     execSync ('touch ' + file + '&&chmod 664 ' + file) // In case not yet created
     var body = []
     req.on ('data', (chunk) => {
-console.log(chunk)
+//console.log(chunk)
       body.push (chunk) // body will be a Buffer array: <buffer 39 35 33 2c 30 ... >, <buf... etc.
     }).on ('end', () => {
       body = Buffer.concat (body).toString () // Concatenate; then change the Buffer into String
@@ -988,8 +988,8 @@ console.log("Request body =\n",body)
   // ===== Read a directory's file content; in passing remove broken links
   function findFiles (dirName) {
     return fs.readdirAsync ('rln' + IMDB + dirName).map (function (fileName) { // Cannot use mapSeries here (why?)
-      var filepath = path.join ('rln' + IMDB + dirName, fileName)
-      var brli = brokenLink (filepath)
+      var filepath = path.join (IMDB + dirName, fileName)
+      var brli = brokenLink (filepath) // refers to server root
       if (brli) {
         rmPic (filepath) // may hopefully also work for removing any single file ...
         return path.join (path.dirname (filepath), ".ignore") // fake dotted file
@@ -997,6 +997,7 @@ console.log("Request body =\n",body)
       return fs.statAsync (filepath).then (function (stat) {
         if (stat.mode & 0100000) {
           // See 'man 2 stat': S_IFREG bitmask for 'Regular file'
+console.log(filepath,brli);
           return filepath
         } else {
           return path.join (path.dirname (filepath), ".ignore") // fake dotted file
