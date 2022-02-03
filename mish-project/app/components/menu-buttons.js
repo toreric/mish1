@@ -77,7 +77,7 @@ export default Component.extend (contextMenuMixin, {
       for (var i=0; i<treePath.length; i++) {
         treePath [i] = this.get ("imdbPath") + treePath [i].toString ();
       }
-console.log("treePath",treePath);
+console.log("requestDirs:treePath",treePath);
       let albDat = aData (treePath);
       // Substitute the first name (in '{text:"..."') into ´ROOT: <root name>´:
       albDat = albDat.split (","); // else too long a string (??)
@@ -822,7 +822,6 @@ console.log("eraseOriginals",eraseOriginals,"linked",linked,"nels",nels);
             if (selix > 0) {
               this.set ("imdbRoot", seltxt);
               $ ("#imdbRoot").text (seltxt);
-              //let imdbRoot = seltxt;
             }
             this.set ("imdbRoots", rootList);
             rootList = rootList.join ("\n");
@@ -925,7 +924,7 @@ console.log("eraseOriginals",eraseOriginals,"linked",linked,"nels",nels);
     // to further restore all details!
     let n = 0;
     return new Promise (async resolve => {
-      var test = 'A1'; console.log ("refreshAll, test = A1");
+      var test = 'A1'; //console.log ("refreshAll, test = A1");
       $.spinnerWait (true, 101.01);
       await this.requestOrder ().then (async sortnames => {
         if (sortnames === undefined) sortnames = "";
@@ -943,16 +942,16 @@ console.log("eraseOriginals",eraseOriginals,"linked",linked,"nels",nels);
           $ ('#navKeys').text ('true');
         } else {
           $ ('.showCount:last').hide ();
-alert ("refreshAll" + "\n  sortnames ´" + sortnames + "´" + statusValues ());//good
+//alert ("refreshAll" + "\n  sortnames ´" + sortnames + "´" + statusValues ());//good
           $ ("#sortOrder").text (sortnames); // Save in the DOM
         }
-        test = 'A2'; console.log ("refreshAll, test = A2");
+        test = 'A2'; //console.log ("refreshAll, test = A2");
         n = 0;
         await new Promise (z => setTimeout (z, 1111));
         // Use sortOrder (as far as possible) to reorder namedata ERROR
         // First pick out namedata (allNames) against sortnames (SN), then any remaining
         this.requestNames ().then (async namedata => {
-alert ("refreshAll" + "\n  namedata ´" + namedata + "´" + statusValues ());
+//alert ("refreshAll" + "\n  namedata ´" + namedata + "´" + statusValues ());
           var i = 0, k = 0;
           // --- Start prepare sortnames checking CSV columns
           var SN = [];
@@ -977,7 +976,7 @@ alert ("refreshAll" + "\n  namedata ´" + namedata + "´" + statusValues ());
               sortnames = sortnames +'\n'+ SN [i];
             }
           }
-          test = 'A3'; console.log ("refreshAll, test = A3");
+          test = 'A3'; //console.log ("refreshAll, test = A3");
           sortnames = sortnames.trim (); // Important!
           if (sortnames === "") {
             var snamsvec = [];
@@ -998,7 +997,7 @@ alert ("refreshAll" + "\n  namedata ´" + namedata + "´" + statusValues ());
           for (i=0; i<namedata.length; i++) {
             name.push (namedata [i].name);
           }
-          test = 'B'; console.log ("refreshAll, test = B");
+          test = 'B'; //console.log ("refreshAll, test = B");
           // --- Make the object vector 'newdata' for new 'namedata=allNames' content
           // --- Use 'snams' order to pick from 'namedata' into 'newdata' and 'newsort'
           // --- 'namedata' and 'name': Ordered as from disk (like unknown)
@@ -1014,7 +1013,7 @@ alert ("refreshAll" + "\n  namedata ´" + namedata + "´" + statusValues ());
             snamsvec.splice (0, 1);
             snams.splice (0, 1);
           }
-          test = 'C'; console.log ("refreshAll, test = C");
+          test = 'C'; //console.log ("refreshAll, test = C");
           // --- Move remaining 'namedata' objects (e.g. uploads) into 'newdata' until empty.
           // --- Place them first to get better noticed. Update newsort for sortnames.
           // --- The names, of such (added) 'namedata' objects, are kept remaining in 'name'??
@@ -1038,9 +1037,9 @@ alert ("refreshAll" + "\n  namedata ´" + namedata + "´" + statusValues ());
           }
 
           newsort = newsort.trim (); // Important
-          test = 'E0'; console.log ("refreshAll, test = E0");
+          test = 'E0'; //console.log ("refreshAll, test = E0");
           this.set ("allNames", newdata); // triggers the minipics reload (RELOAD)
-alert ("refreshAll" + "\n  newsort ´" + newsort + "´" + statusValues ());
+//alert ("refreshAll" + "\n  newsort ´" + newsort + "´" + statusValues ());
           $ ("#sortOrder").text (newsort); // Save in the DOM
           //console.log("NOTE: newsort is the true list of images in the actual directory:",newsort.split("\n"));
           //console.log("NOTE: newdata will trigger the thumbnails reload:",this.get ("allNames"));
@@ -1107,7 +1106,7 @@ alert ("refreshAll" + "\n  newsort ´" + newsort + "´" + statusValues ());
               }
             }), 777);
           }
-          test = 'E1'; console.log ("refreshAll, test = E1");
+          test = 'E1'; //console.log ("refreshAll, test = E1");
           later ( ( () => {
             if ($ ("#hideNames").text () === "1") {
               $ (".img_name").hide ();
@@ -2061,7 +2060,8 @@ console.log("selectRoot:value",value);
           setReqHdr (xhr, 4);
           xhr.onload = function () {
             var result = xhr.response;
-console.log("selectRoot.result",result);
+console.log("selectRoot: VAD ÄR DETTA?",result);
+//            $ ("#imdbRoot").text (result);
             resolve (true);
           };
           xhr.send ();
@@ -2108,7 +2108,7 @@ console.log("selectRoot.result",result);
       } else {
         value = "";
       }
-      // Different from in images, paths in JStree titles include `imdbRoot`:
+      // Different from when images, paths in JStree titles include `imdbRoot`:
       value = value.slice ($ ("#imdbRoot").text ().length);
       // Do not hide the introduction page at very first view = the first root show
       if (value) {
@@ -2720,7 +2720,7 @@ console.log("selectRoot.result",result);
         if (spinTrue) $.spinnerWait (true, 107);
         var i =0, k = 0, SName = [], names, SN;
         SN = $ ("#sortOrder").text ().trim ().split ('\n'); // Take it from the DOM storage
-alert ("saveOrder" + "\n  SN ´" + SN + "´" + statusValues ());
+//alert ("saveOrder" + "\n  SN ´" + SN + "´" + statusValues ());
         for (i=0; i<SN.length; i++) {
           SName.push (SN[i].split (",") [0]);
         }
@@ -4654,7 +4654,7 @@ const saveOrderFunc = (namelist) => { // ===== XMLHttpRequest saving the thumbna
         });
       }
     };
-alert ("saveOrderFunc" + "\n  namelist ´" + namelist + "´" + statusValues ());
+//alert ("saveOrderFunc" + "\n  namelist ´" + namelist + "´" + statusValues ());
     xhr.send (namelist);
   }).catch (error => {
     console.error (error.message);
@@ -4678,7 +4678,9 @@ function statusValues () {
 !statusValues (); // Make it always used!
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function setReqHdr (xhr, id) {
-  console.log("setReqHdr:imdbDir",id,$ ("#imdbDir").text ());
+  console.log(id,"setReqHdr:#imdbRoot",$ ("#imdbRoot").text ());
+  console.log(id,"setReqHdr:#imdbDir",$ ("#imdbDir").text ());
+  if ($ ("#imdbRoot").text ().includes ("/")) alert ($ ("#imdbRoot").text ());
   xhr.setRequestHeader ("imdbroot", encodeURIComponent ($ ("#imdbRoot").text ()));
   xhr.setRequestHeader ("imdbdir", encodeURIComponent ($ ("#imdbDir").text ()));
   xhr.setRequestHeader ("picfound", picFound); // All 'wihtin 255' characters
@@ -4751,7 +4753,7 @@ console.log("reqRoot: ---");
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // FIND #imdbRoot... regex: `#imdbRoot[^s]\)\.[^(]*\([^)]`
-function reqDirs (imdbroot) { // Read the dirs in album root
+  function reqDirs (imdbroot) { // Read the dirs in album root
   if (imdbroot === "") return;
   $.spinnerWait (true, 111);
   return new Promise ( (resolve, reject) => {
@@ -4763,9 +4765,12 @@ console.log("reqDirs:imdbroot",imdbroot);
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {
         var dirList = xhr.response;
+console.log("reqDirs:dirList",dirList);
         dirList = dirList.split ("\n");
+console.log("reqDirs:dirList",dirList);
         var dim = (dirList.length - 2)/3;
         var dirLabel = dirList.splice (2 + 2*dim, dim);
+console.log("reqDirs:dirLabel",dirLabel);
         var dirCoco = dirList.splice (2 + dim, dim);
         $ ("#imdbPath").text (dirList [0].replace (/@/g, "/"))
         $ ("#userDir").text (dirList [0].slice (0, dirList [0].indexOf ("@")));
@@ -4778,25 +4783,26 @@ console.log("reqDirs:imdbroot",imdbroot);
         // Remove the last line:
         dirList.splice (dirList.length - 1, 1);
         // Remove IMDB_ROOT from each path:
-        var rootLen = $ ("#imdbRoot").text ().length;
-        for (let i=0; i<dirList.length; i++) {
-          dirList [i] = dirList [i].slice (rootLen);
-        }
+        //var rootLen = $ ("#imdbRoot").text ().length;
+        //for (let i=0; i<dirList.length; i++) {
+          //dirList [i] = dirList [i].slice (rootLen);
+        //}
         let newList = [], newCoco = [], newLabel = [];
         // The length of "." + the random suffix is 5:
         let test = $ ("#picFound").text ();
-        test = test.slice (0, test.length - 5);
+        test = test.slice (0, test.length - 5); // remove suffix
         for (let i=0; i<dirList.length; i++) {
           if (dirList [i].slice (1, test.length+1) !== test || dirList [i].slice (1) === $ ("#picFound").text ()) {
             newList.push (dirList [i])
             newCoco.push (dirCoco [i])
-            newLabel.push (dirLabel [i])
+            newLabel.push (dirLabel [ i])
           }
         }
         dirList = newList;
-console.log("dirList",dirList);
+console.log("reqDirs:dirList",dirList);
         dirCoco = newCoco;
         dirLabel = newLabel;
+console.log("reqDirs:dirLabel",dirLabel);
         // Remove "ignore" albums from the list if not allowed, starred in dirCoco
         if (!(allow.textEdit || allow.adminAll)) {
           newList = [], newCoco = [], newLabel = [];

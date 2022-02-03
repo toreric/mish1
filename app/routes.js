@@ -65,10 +65,8 @@ module.exports = function (app) {
       let cmd = 'find -L ' + IMDB + ' -type d -name "' + picFound + '*" -amin +' + toold + ' | xargs rm -rf'
       await cmdasync (cmd)
     }
-
-if (IMDB_DIR && IMDB_DIR.trim () === ".") console.log(req);
-
     console.log ("")
+console.log('\033[31m' + "originalUrl: " + '\033[33m' + decodeURIComponent (req.originalUrl) + '\033[0m');
     console.log ("  WWW_ROOT:", WWW_ROOT)
     console.log ("      IMDB:", IMDB)
     console.log (" IMDB_ROOT:", IMDB_ROOT)
@@ -177,7 +175,7 @@ console.log("p2",p);
   // Keep it for returning IMDB if/When only imdbroot is set!
   app.get ('/imdbroot/:imdbroot', async function (req, res) {
     let p = req.params.imdbroot.trim ().split ("@")
-console.log("/imdbroot/",p);
+console.log(p);
     //OLD: IMDB_ROOT = p [0]                 NEVER REACHED!!!!!
     //OLD: picFound = p [1]
     //console.log("0.1.9", IMDB_HOME, IMDB_ROOT, IMDB_LINK, picFound);
@@ -206,7 +204,6 @@ console.log("/imdbroot/",p);
       allDirs ().then (dirlist => { // dirlist entries start with the root album
 console.log("-dirlist",dirlist);
         areAlbums (dirlist).then (async dirlist => {
-          //NOTE: These paths include IMDB_ROOT, soon removed by caller!
           dirlist = dirlist.sort ()
 console.log("=dirlist",dirlist);
           let dirtext = dirlist.join ("€")
@@ -217,26 +214,22 @@ console.log("=dirlist",dirlist);
           // randomly one to be used as "subdirectory label"
           for (let i=0; i<dirlist.length; i++) {
             cmd = "echo -n `ls " + dirlist [i] + "/_mini_* 2>/dev/null`"
-            //cmd = "echo -n `find " + dirlist [i] + ' -maxdepth 1 -type f,l -name "_mini_*" 2>/dev/null`'
-            //let pics = execSync (cmd)
             let pics = await execP (cmd)
             pics = pics.toString ().trim ().split (" ")
             if (!pics [0]) {pics = []} // Remove a "" element
             let npics = pics.length
             if (npics > 0) {
-              let f = () => {let d = new Date; return Number (d.getTime ().toString ().slice (-1))}
-              let n = f () + 1
-              let k = 0
+              let k, n = 1 + Number ((new Date).getTime ().toString ().slice (-1))
               // Instead of seeding, loop n (1 to 10) times to get some variation:
-              for (let i=0; i<n; i++) {
-                k = (Math.random ()*npics)
+              for (let j=0; j<n; j++) {
+                k = Math.random ()*npics
               }
               var albumLabel = pics [Number (k.toString ().replace (/\..*/, ""))]
             } else {albumLabel = "€" + dirlist [i]}
             // Count the number of subdirectories
             let subs = occurrences (dirtext, dirlist [i]) - 1
             npics = " (" + npics + ")"
-            if (i > 0 && subs) {npics += subs}
+            if (i > 0 && subs) {npics += subs} // text!
             dircoco.push (npics)
             dirlabel.push (albumLabel)
           }
@@ -291,7 +284,7 @@ console.log("=dirlist",dirlist);
     }, 1000)
   })
 
-  // ##### #0.3 readSubdir (album subdirs) to select rootdir...
+  // ##### #0.3 readSubdir (album subdirs) to selected rootdir  ...
   app.get ('/rootdir', function (req, res) {
     readSubdir (IMDB_HOME).then (dirlist => {
       dirlist = dirlist.join ('\n')
@@ -316,7 +309,7 @@ console.log("=dirlist",dirlist);
       var namelist = ""
       for (var i=0; i<files.length; i++) {
         var file = files [i].slice ((IMDB + IMDB_DIR).length + 1)
-        if (acceptedFileName (file) && !brokenLink ('rln' + files [i])) {
+        if (acceptedFileName (file) && !brokenLink (files [i])) {
           file = file.replace (/\.[^.]*$/, "") // Remove ftype
           namelist = namelist +'\n'+ file
         }
@@ -1053,13 +1046,14 @@ console.log(filepath,brli);
   // ===== Read the IMDB's content of sub-dirs recursively
   // Use: allDirs ().then (dirlist => { ...
   // Replaces findDirectories (), NOTE: Includes IMDB in the list!
-  //NEW The parameter will be the absolute current abum root path IMDB
+  // IMDB is the absolute current abum root path
+  // Returns directories formatted such as #imdbDirs, (first "", then /... etc.)
   let allDirs = async () => {
-    let dirlist = await cmdasync ('find -L rln' + IMDB + ' -type d|sort')
+    let dirlist = await cmdasync ('find -L ' + IMDB + ' -type d|sort')
     dirlist = dirlist.toString ().trim () // Formalise string
     dirlist = dirlist.split ('\n')
     for (let i=0; i<dirlist.length; i++) {
-      dirlist [i] = dirlist [i].slice (4 + IMDB_HOME.length) // 4: ´rln´ and a ´/´
+      dirlist [i] = dirlist [i].slice (IMDB.length)
     }
     return dirlist
   }
@@ -1071,7 +1065,7 @@ console.log(filepath,brli);
     let fd, albums = []
     return Promise.mapSeries (dirlist, async (album) => { // (*) // CAN use mapSeries here (why?)
       try {
-        fd = await fs.openAsync ('rln' + IMDB_HOME + "/" + album + '/.imdb', 'r')
+        fd = await fs.openAsync ('rln' + IMDB + album + '/.imdb', 'r')
         await fs.closeAsync (fd)
         albums.push (album)
       } catch (err) {
