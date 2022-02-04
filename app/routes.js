@@ -66,7 +66,8 @@ module.exports = function (app) {
       await cmdasync (cmd)
     }
     console.log ("")
-console.log('\033[31m' + "originalUrl: " + '\033[33m' + decodeURIComponent (req.originalUrl) + '\033[0m');
+// 30 svart, 31 röd, 32 grön, 33 gul, 34 blå, 35 magenta, 36 cyan, 37 vit, 0 default
+console.log('\033[36m' + "originalUrl: " + decodeURIComponent (req.originalUrl) + '\033[0m');
     console.log ("  WWW_ROOT:", WWW_ROOT)
     console.log ("      IMDB:", IMDB)
     console.log (" IMDB_ROOT:", IMDB_ROOT)
@@ -172,10 +173,10 @@ console.log("p2",p);
   })
 
   // ##### #0.1.9 Set IMDB_ROOT and picFound basename  OBSOLETE? - NO!
-  // Keep it for returning IMDB if/When only imdbroot is set!
+  // Keep it for returning IMDB if/when only imdbroot is set!
   app.get ('/imdbroot/:imdbroot', async function (req, res) {
-    let p = req.params.imdbroot.trim ().split ("@")
-console.log(p);
+//     let p = req.params.imdbroot.trim ().split ("@")
+// console.log(p);
     //OLD: IMDB_ROOT = p [0]                 NEVER REACHED!!!!!
     //OLD: picFound = p [1]
     //console.log("0.1.9", IMDB_HOME, IMDB_ROOT, IMDB_LINK, picFound);
@@ -185,15 +186,11 @@ console.log(p);
     res.send (IMDB)
   })
 
-  // ##### #0.2 Get IMDB_LINK directory list
+  // ##### #0.2 Get IMDB directory list
   app.get ('/imdbdirs/:imdbroot', async function (req, res) {
-    let p = decodeURIComponent (req.params.imdbroot.trim ()).split ("@") //NYTT, ok??
-    //OLD: IMDB_ROOT = p [0]
-    // picFoundx == picFound + random extension
-    let picFoundx = p [1]
+    let p = decodeURIComponent (req.params.imdbroot.trim ()).split ("@")
+    let picFoundx = p [1] // picFoundx == picFound + random extension
 
-    // IMDB_LINK was symlink pointing to current albums
-    //setRootLink (IMDB_HOME, IMDB_ROOT, IMDB_LINK)
     await new Promise (z => setTimeout (z, 200))
     // Refresh picFoundx: the shell commands must execute in sequence
     let pif = IMDB + '/' + picFoundx
@@ -213,9 +210,10 @@ console.log("=dirlist",dirlist);
           // Get all thumbnails and select
           // randomly one to be used as "subdirectory label"
           for (let i=0; i<dirlist.length; i++) {
-            cmd = "echo -n `ls " + dirlist [i] + "/_mini_* 2>/dev/null`"
+            cmd = "echo -n `ls " + IMDB + dirlist [i] + "/_mini_* 2>/dev/null`"
             let pics = await execP (cmd)
             pics = pics.toString ().trim ().split (" ")
+console.log("pics:",dirlist [i],pics);
             if (!pics [0]) {pics = []} // Remove a "" element
             let npics = pics.length
             if (npics > 0) {
@@ -404,7 +402,6 @@ console.log("=dirlist",dirlist);
   app.get ('/imagelist/:imagedir', function (req, res) {
     // NOTE: Reset allfiles here, since it isn't refreshed by an empty album!
     allfiles = undefined
-    // Note: A terminal '/' had been lost here, but not a terminal '@'! Thus, no need to add a '/':
     //OLD: IMDB_DIR = req.params.imagedir.replace (/@/g, "/")
 
     findFiles (IMDB_DIR).then (function (files) {
@@ -642,7 +639,7 @@ console.log("file",file);
     }).on ('end', () => {
       body = Buffer.concat (body).toString () // Concatenate; then change the Buffer into String
       // At this point, do whatever with the request body (now a string)
-console.log("Request body =\n",body)
+console.log("  Request body =\n"+body)
       fs.writeFileAsync (file, body).then (function () {
         console.log ("Saved file order ")
         //console.log ('\n'+body+'\n')
@@ -980,6 +977,7 @@ console.log("Request body =\n",body)
 
   // ===== Read a directory's file content; in passing remove broken links
   function findFiles (dirName) {
+console.log("findFiles:dirName '" + dirName + "'");
     return fs.readdirAsync ('rln' + IMDB + dirName).map (function (fileName) { // Cannot use mapSeries here (why?)
       var filepath = path.join (IMDB + dirName, fileName)
       var brli = brokenLink (filepath) // refers to server root
@@ -987,10 +985,10 @@ console.log("Request body =\n",body)
         rmPic (filepath) // may hopefully also work for removing any single file ...
         return path.join (path.dirname (filepath), ".ignore") // fake dotted file
       }
-      return fs.statAsync (filepath).then (function (stat) {
+      return fs.statAsync ('rln' + filepath).then (function (stat) {
         if (stat.mode & 0100000) {
           // See 'man 2 stat': S_IFREG bitmask for 'Regular file'
-console.log(filepath,brli);
+console.log("  ",filepath);
           return filepath
         } else {
           return path.join (path.dirname (filepath), ".ignore") // fake dotted file

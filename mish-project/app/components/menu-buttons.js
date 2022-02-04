@@ -2055,13 +2055,11 @@ console.log("requestNames:IMBD_DIR",IMDB_DIR);
         // (the server needs #picFound base name for old file cleaning)
         return new Promise ( (resolve) => {
           var xhr = new XMLHttpRequest ();
-console.log("selectRoot:value",value);
           xhr.open ('GET', 'imdbroot/' + value + "@" + picFound, true, null, null);
           setReqHdr (xhr, 4);
           xhr.onload = function () {
             var result = xhr.response;
-console.log("selectRoot: VAD ÄR DETTA?",result);
-//            $ ("#imdbRoot").text (result);
+            $ ("#imdbPath").text (result);
             resolve (true);
           };
           xhr.send ();
@@ -3736,12 +3734,12 @@ function hideShow_g () {
 $.spinnerWait = async function (runWait, delay) { // Delay is used only to end waiting (runWait false)
   if (!delay) delay = 0;
   $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
-  var s = 1; // s is used as debug switch
+  var s = 1; !s; // s is used as debug switch
   if (runWait) {
-    if (s) {
-      s = await execute ('echo $(date "+%s.%N")');
-      console.log (" Spinner ON", delay, s); // Here 'delay' is used only as debug id-number
-    }
+    // if (s) {
+    //   s = await execute ('echo $(date "+%s.%N")');
+    //   console.log (" Spinner ON", delay, s); // Here 'delay' is used only as debug id-number
+    // }
     $ (".spinner").show ();
     clearInterval (BLINK); // Unlock if occasionaly in use ...
     BLINK_TAG = "#menuButton";
@@ -4677,10 +4675,10 @@ function statusValues () {
 }
 !statusValues (); // Make it always used!
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function setReqHdr (xhr, id) {
-  console.log(id,"setReqHdr:#imdbRoot",$ ("#imdbRoot").text ());
-  console.log(id,"setReqHdr:#imdbDir",$ ("#imdbDir").text ());
-  if ($ ("#imdbRoot").text ().includes ("/")) alert ($ ("#imdbRoot").text ());
+function setReqHdr (xhr, id) { !id
+/*console.log(id,"setReqHdr:#imdbRoot",$ ("#imdbRoot").text ());
+console.log(id,"setReqHdr:#imdbDir",$ ("#imdbDir").text ());
+if ($ ("#imdbRoot").text ().includes ("/")) alert ($ ("#imdbRoot").text ());*/
   xhr.setRequestHeader ("imdbroot", encodeURIComponent ($ ("#imdbRoot").text ()));
   xhr.setRequestHeader ("imdbdir", encodeURIComponent ($ ("#imdbDir").text ()));
   xhr.setRequestHeader ("picfound", picFound); // All 'wihtin 255' characters
@@ -4769,8 +4767,10 @@ console.log("reqDirs:dirList",dirList);
         dirList = dirList.split ("\n");
 console.log("reqDirs:dirList",dirList);
         var dim = (dirList.length - 2)/3;
+        // Remove the dim last lines, move into dirLabel (directory label, image paths)
         var dirLabel = dirList.splice (2 + 2*dim, dim);
-console.log("reqDirs:dirLabel",dirLabel);
+console.log("reqDirs:dirLabel",dirLabel,dim);
+        // Remove another dim last lines, move into dirCoco (directory content counter, texts)
         var dirCoco = dirList.splice (2 + dim, dim);
         $ ("#imdbPath").text (dirList [0].replace (/@/g, "/"))
         $ ("#userDir").text (dirList [0].slice (0, dirList [0].indexOf ("@")));
@@ -4792,10 +4792,11 @@ console.log("reqDirs:dirLabel",dirLabel);
         let test = $ ("#picFound").text ();
         test = test.slice (0, test.length - 5); // remove suffix
         for (let i=0; i<dirList.length; i++) {
+          // No "false picFound" (wrong suffix) dir.. entry will be tranferred into the new.. vectors:
           if (dirList [i].slice (1, test.length+1) !== test || dirList [i].slice (1) === $ ("#picFound").text ()) {
             newList.push (dirList [i])
             newCoco.push (dirCoco [i])
-            newLabel.push (dirLabel [ i])
+            newLabel.push (dirLabel [i])
           }
         }
         dirList = newList;
