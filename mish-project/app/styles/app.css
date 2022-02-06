@@ -910,9 +910,6 @@ a.imDir img {
 /*a.imDir * {
   color: #aef;
 }*/
-a.imDir *:hover {
-  color: #0ae;
-}
 /*.subAlbum.BUT_1:hover {
   border: 2px solid #aef;
 }*/

@@ -2106,7 +2106,7 @@ console.log("requestNames:IMBD_DIR",IMDB_DIR);
       } else {
         value = "";
       }
-      // Different from when images, paths in JStree titles include `imdbRoot`:
+      // Different from image titles, paths in JStree titles include `imdbRoot`:
       value = value.slice ($ ("#imdbRoot").text ().length);
       // Do not hide the introduction page at very first view = the first root show
       if (value) {
@@ -2124,9 +2124,9 @@ console.log("requestNames:IMBD_DIR",IMDB_DIR);
 
       $ ("div.ember-view.jstree").attr ("onclick", "return false");
       $ ("ul.jstree-container-ul.jstree-children").attr ("onclick", "return false");
+      // eslint-disable-next-line no-async-promise-executor
 
       var thisAlbumIndex = 0;
-      // eslint-disable-next-line no-async-promise-executor
       return new Promise (async resolve => {
         $ ("a.jstree-anchor").blur (); // Important?
         thisAlbumIndex = $ ("#imdbDirs").text ().split ("\n").indexOf (value);
@@ -2184,10 +2184,10 @@ console.log("requestNames:IMBD_DIR",IMDB_DIR);
             name: tmp [i].replace (/_/g, " ")
           });
         }
-        let tmp2 = [""];
-        if (value) {tmp2 = value.split ("/");}
-        if (tmp2 [tmp2.length - 1] === "") {tmp2 = tmp2.slice (0, -1)} // removes trailing /
-        tmp2 = tmp2.slice (1); // remove symbolic link name
+        //let tmp2 = [""];
+        let tmp2 = value.split ("/");
+        //if (tmp2 [tmp2.length - 1] === "") {tmp2 = tmp2.slice (0, -1)} // removes trailing /
+        tmp2 = tmp2.slice (1); // remove the first empty ´root´ entry
         if (typeof that.set === 'function') {
           if (tmp2.length > 0) {
             that.set ("albumName", tmp2 [tmp2.length - 1]);
@@ -2202,14 +2202,15 @@ console.log("requestNames:IMBD_DIR",IMDB_DIR);
         $.spinnerWait (true, 102);
 
         // REFRESH the displayed album
-        $ ("#reFr").trigger ("click");
+        $ ("#reFr").trigger ("click"); // Initiate refresh
+        await new Promise (z => setTimeout (z, 1000)); // Wait a second
         $ ("div.subAlbum").show ();
         //$ ("a.imDir").attr ("title", "Album");
         let n = $ ("a.imDir").length/2; // there is also a page bottom link line...
         let nsub = n;
         let z, iz, obj;
         //let fullAlbumName = $ ("#imdbRoot").text () + $ ("#imdbDir").text ().replace (/^[^/]*/, "");
-        let fullAlbumName = '<span title-1="' + $ ("#imdbRoot").text () + $ ("#imdbDir").text ().replace (/^[^/]*/, "") + '">”' + that.get ("albumName") + "” </span>"
+        let fullAlbumName = '<span title-1="' + $ ("#imdbRoot").text () + $ ("#imdbDir").text ().replace (/^[^/]*/, "") + '">' + that.get ("albumName") + " </span>"
         if (tmp [0] === "⌂hem") {
           $ ("a.imDir").each (function (index, element) {
             if (index < n) {z = 0;} else {z = n;}
@@ -2217,7 +2218,7 @@ console.log("requestNames:IMBD_DIR",IMDB_DIR);
             if (iz < 3) { // the first 3 are nav link symbols
               $ (element).attr ("title", returnTitles [iz]);
               $ (element).closest ("div.subAlbum").attr ("title", returnTitles [iz]);
-              $ (element).closest ("div.subAlbum").css ("display", navButtons [iz]); // added later
+              $ (element).closest ("div.subAlbum").css ("display", navButtons [iz]);
               if (!z) {
                 nsub--;
                 obj = $ (element).closest ("div.subAlbum");
@@ -2244,7 +2245,7 @@ console.log("requestNames:IMBD_DIR",IMDB_DIR);
             if (iz === 0) {
               $ (element).attr ("title", returnTitles [index + 2]);
               $ (element).closest ("div.subAlbum").attr ("title", returnTitles [index + 2]);
-              $ (element).closest ("div.subAlbum").css ("display", navButtons [index + 2]); // added later
+              $ (element).closest ("div.subAlbum").css ("display", navButtons [index + 2]);
               if (!z) {
                 nsub--;
                 obj = $ (element).closest ("div.subAlbum");
@@ -2399,7 +2400,7 @@ console.log("requestNames:IMBD_DIR",IMDB_DIR);
           } else {
             nodelem.style.backgroundColor=$ ("#bkgrColor").text ();
             if (yes) {
-              nodelem.style.display='block-inline';
+              nodelem.style.display='inline-block';
             }
           }
         }
@@ -2603,7 +2604,7 @@ console.log("requestNames:IMBD_DIR",IMDB_DIR);
       var toshow = document.getElementById ("i" + namepic);
       minipic = toshow.firstElementChild.firstElementChild.getAttribute ("src");
       origpic = toshow.firstElementChild.firstElementChild.getAttribute ("title");
-      origpic = $ ("#imdbPath").text () + "/" + origpic;
+      //origpic = $ ("#imdbPath").text () + "/" + origpic;
       var showpic = minipic.replace ("/_mini_", "/_show_");
       $ (".img_show").hide (); // Hide to get right savepos
       $ (".nav_links").hide ();
@@ -3850,8 +3851,9 @@ async function parentAlbum (tgt) {
   let albumDir, file, tmp, imgs;
   if (classes && -1 < classes.split (" ").indexOf ("symlink")) { // ...yes! a symlink...
     tmp = $ (tgt).parent ("div").parent ("div").find ("img").attr ("title");
-    tmp = $ ("#imdbPath").text () + "/" + tmp;
+    tmp = $ ("#imdbPath").text () + tmp;
     // ...then go to the linked picture:
+console.log("parentAlbum:tmp",tmp);
     getFilestat (tmp).then (async result => {
       result = result.replace (/(<br>)+/g, "\n");
       result = result.replace(/<(?:.|\n)*?>/gm, ""); // Remove <tags>
@@ -5368,12 +5370,10 @@ let doFindText = (sTxt, and, sWhr, exact) => {
         if (n === 0) {
           document.getElementById("yesBut").disabled = true;
           if (exact) {
-            //let btFind ="<br><button style=\"border:solid 2px white;background:#b0c4deaa;\" onclick='$(\"#dialog\").dialog(\"close\");$(\"div.subAlbum[title=" + returnTitles [2] + "]\")[0].click();$(\"#favorites\").click();'>TILLBAKA</button>";
             let btFind ="<br><button style=\"border:solid 2px white;background:#b0c4deaa;\" onclick='$(\"#dialog\").dialog(\"close\");$(\"#favorites\").click();'>TILLBAKA</button>";
             document.getElementById("dialog").innerHTML = btFind;
             $ ("#dialog button") [0].focus ();
           } else {
-            //let btFind ="<br><button style=\"border:solid 2px white;background:#b0c4deaa;\" onclick='$(\"#dialog\").dialog(\"close\");$(\"div.q[title=" + returnTitles [2] + "]\")[0].click();$(\"a.search\").click();'>TILLBAKA</button>";
             let btFind ="<br><button style=\"border:solid 2px white;background:#b0c4deaa;\" onclick='$(\"#dialog\").dialog(\"close\");$(\"a.search\").click();'>TILLBAKA</button>";
             document.getElementById("dialog").innerHTML = btFind;
             $ ("#dialog button") [0].focus ();
@@ -5578,7 +5578,7 @@ var prepTextEditDialog = () => {
     $ ('textarea[name="creator"]').val (text2.replace (/<br>/g, "\n"));
     var ednp = escapeDots (namepic);
     var fileName = $ ("#i" + ednp + " img").attr ("title");
-    fileName = $ ("#imdbLink").text () + "/" + fileName;
+    fileName = $ ("#imdbPath").text () + fileName;
     $ ("#i" + ednp + " .img_txt1" ).html (text1);
     $ ("#i" + ednp + " .img_txt1" ).attr ("title", text1.replace(/<[^>]+>/gm, " "));
     $ ("#i" + ednp + " .img_txt1" ).attr ("totip", text1.replace(/<[^>]+>/gm, " "));
@@ -5761,21 +5761,20 @@ function allowFunc () { // Called from setAllow (which is called from init(), lo
   //console.log(allow);
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function subaSelect (subName, path) { // ##### Sub-album link selected
+function subaSelect (subName) { // ##### Sub-album link selected
   //alert("subaSelect (" + subName + ", " + path + ")")
   subName = subName.replace (/&nbsp;/g, "_"); // Restore readable album name
   // NOTE: That restoring may be questionable with " " instead of "&nbsp;"
   $.spinnerWait (true, 113);
   let names = $ ("#imdbDirs").text ().split ("\n");
-  let name = $ ("#imdbDir").text ().slice ($ ("#imdbLink").text ().length); // Remove imdbLink
+  let name = $ ("#imdbDir").text ();
   // NOTE: ´name´ is the album we are leaving, if root then empty!
   let here, idx;
-  if (path) { // subName has full path except that '..' and similar is removed
-    idx = names.indexOf (subName);
-  } else if (subName === "⌂hem") { // go to top in tree = home
+  idx = names.indexOf (subName);
+  if (subName === "⌂hem") { // go to top in tree = home
     idx = 0;
   } else if (subName === "↖") { // go up in tree
-    name = name.replace (/((\/[^/])*)(\/[^/]*$)/, "$1");
+    name = name.replace (/\/[^/]*$/, "");
     idx = names.indexOf (name);
   } else if (subName === "⇆") { // go to most recent (by browser navigation)
     idx = savedAlbumIndex;
