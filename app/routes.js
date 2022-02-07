@@ -151,11 +151,10 @@ console.log("p2",p);
       linkto = execSync ("readlink " + file).toString ().trim ()
       if (linkto [0] !== '.') {linkto = './' + linkto}
     }
-    // Exclude the imdbLink name, nov 2019, in order to difficultize direct
-    // access to the original pictures on the server. This could be made even
-    // better, e.g., by selection of a random symlink name at program restart -
-    // remember though, the database 'filepath' column contains the imdbLink name!!!
-    var filex = file.replace (/^[^/]+\//, "./")
+    // Exclude IMDB from `file`, feb 2022, in order to difficultize direct
+    // access to the original pictures on the server.
+    // remember though, the database 'filepath' column contains the imdbLink name!!! OBSOLETE
+    var filex = '.' + file.slice (IMDB.length)
     var fileStat = "<i>Filnamn</i>: " + filex + "<br><br>"
     if (linkto) {
       fileStat = "<i>Filnamn</i>: " + linkto + "<br><br>"

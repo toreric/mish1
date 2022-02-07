@@ -3853,12 +3853,12 @@ async function parentAlbum (tgt) {
     tmp = $ (tgt).parent ("div").parent ("div").find ("img").attr ("title");
     tmp = $ ("#imdbPath").text () + tmp;
     // ...then go to the linked picture:
-console.log("parentAlbum:tmp",tmp);
     getFilestat (tmp).then (async result => {
       result = result.replace (/(<br>)+/g, "\n");
       result = result.replace(/<(?:.|\n)*?>/gm, ""); // Remove <tags>
       file = result.split ("\n") [0].replace (/^[^/]*\/(\.\.\/)*/, "/");
-      albumDir = file.replace (/^[^/]+(.*)\/[^/]+$/, "$1").trim ();
+      albumDir = file.slice ($ ("#imdPath").text ().length).replace (/\/[^/]*$/, "")
+      //albumDir = file.replace (/^[^/]+(.*)\/[^/]+$/, "$1").trim ();
       let idx = $ ("#imdbDirs").text ().split ("\n").indexOf (albumDir);
       if (idx < 0) {
         infoDia (null, null, "Tyvärr ...", "<br>Albumet <b>" + albumDir.replace (/^(.*\/)+/, "") + "</b> med den här bilden kan inte visas<br>(rätt till gömda album saknas)", "Ok", true);
@@ -3876,10 +3876,11 @@ console.log("parentAlbum:tmp",tmp);
       $ (".ember-view.jstree").jstree ("deselect_all");
       $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_" + (1 + idx))); // calls selectAlbum
       $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
-      let namepic = file.replace (/^(.*\/)*(.+)\.[^.]*$/, "$2");
+      let namepic = file.replace (/^(\/.*)*\/(.+)\.[^.]*$/, "$2");
+console.log("parentAlbum:namepic",namepic);
       return namepic;
     }).then (async (namepic) => {
-      await new Promise (z => setTimeout (z, 111*imgs)); // proportional pause
+      await new Promise (z => setTimeout (z, 333*imgs)); // proportional pause, was 111
       if (namepic) gotoMinipic (namepic);
     });
   } // ...else do nothing
@@ -4902,7 +4903,6 @@ console.log("getBaseNames:IMDB_DIR",IMDB_DIR);
 function getFilestat (filePath) { // Request a file's statistics/information
   return new Promise ( (resolve, reject) => {
     var xhr = new XMLHttpRequest ();
-console.log("getFilestat:filePath",filePath);
     xhr.open ('GET', 'filestat/' + filePath.replace (/\//g, "@"), true, null, null);
     setReqHdr (xhr, 17);
     xhr.onload = function () {
@@ -5513,7 +5513,7 @@ var prepTextEditDialog = () => {
         }
 
         if ($ ("#i" + ednp).hasClass ("symlink")) {
-          getFilestat (linkPath).then (result => {
+          getFilestat (linkPath).then (result => { // linkPath??
             //console.log (result); // The file info HTML, strip it:
             result = result.replace (/^.+: ((\.){1,2}\/)+/, $ ("#imdbPath").text () + "/");
             result = result.replace (/^([^<]+)<.+/, "$1");
@@ -5595,7 +5595,7 @@ var prepTextEditDialog = () => {
     // Get real file name if symlink:
     let linkPath = fileName;
     if ($ ("#i" + ednp).hasClass ("symlink")) {
-      getFilestat (linkPath).then (result => {
+      getFilestat (linkPath).then (result => { // linkPath??
         //console.log (result); // The file info HTML, strip it:
         result = result.replace (/^.+: ((\.){1,2}\/)+/, $ ("#imdbLink").text () + "/");
         result = result.replace (/^([^<]+)<.+/, "$1");
@@ -5808,10 +5808,10 @@ window.onpopstate = function () {
 // Show the (picture) file information dialog
 function showFileInfo () {
   var picName = $ ("#picName").text ();
-  var picOrig = $ ("#picOrig").text ();
+  var picture = $ ("#imdbPath").text () + $ ("#picOrig").text ();
   var title = "Information om originalbildfilen";
   var yes = "Ok";
-  getFilestat (picOrig).then (result => {
+  getFilestat (picture).then (result => {
     $ ("#temporary").text (result);
   }).then ( () => {
     if ($ ("#imdbDir").text ().indexOf (picFound) > -1) picName = picName.replace (/^(.+)\.[^.]+$/, "$1");
