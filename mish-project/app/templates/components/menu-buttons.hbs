@@ -199,7 +199,7 @@ function copyToClipboard (str) {    // Copies a filename (below mini-pic) to the
 <a href="null" id="download" style="display:none" download>DOWNLOAD-AREA</a>
 
 <div id="highUp" style=""></div>
-<div id="highUpSpacer" style="margin-bottom:0.7em"></div>
+<div id="highUpSpacer" style="margin-bottom:1.3em"></div>
 
 <!-- ///// RIGHT BUTTONS (NOTE: without href attributes) /////  -->
 <div class="nav_links" draggable="false" ondragstart="return false">
@@ -394,9 +394,9 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
   <div class="miniImgs">
     {{#each subaList as |suba|}}
       <div class="subAlbum" {{action 'subalbumSelect' suba.album}}>
-        <a class="imDir BLUET" style="background:transparent" title="{{suba.name}}">
+        <a class="imDir BLUET" style="background:transparent" title="Underalbum: {{suba.name}}">
           {{#if suba.image}}
-            <img src="rln{{suba.image}}" title="Underalbum {{suba.name}}"><br>
+            <img src="rln{{suba.image}}" title="Underalbum: {{suba.name}}"><br>
           {{/if}}
           <span>{{{suba.name}}}</span>
         </a>

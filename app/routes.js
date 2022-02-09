@@ -149,7 +149,7 @@ console.log("p2",p);
     var syml = await isSymlink (file)
     if (syml) {
       linkto = execSync ("readlink " + file).toString ().trim ()
-      if (linkto [0] !== '.') {linkto = './' + linkto}
+      if (linkto [0] !== '.') linkto = './' + linkto // Perhaps superfluous
     }
     // Exclude IMDB from `file`, feb 2022, in order to difficultize direct
     // access to the original pictures on the server.
@@ -212,7 +212,7 @@ console.log("=dirlist",dirlist);
             cmd = "echo -n `ls " + IMDB + dirlist [i] + "/_mini_* 2>/dev/null`"
             let pics = await execP (cmd)
             pics = pics.toString ().trim ().split (" ")
-console.log("pics:",dirlist [i],pics);
+//console.log("pics:",dirlist [i],pics);
             if (!pics [0]) {pics = []} // Remove a "" element
             let npics = pics.length
             if (npics > 0) {
@@ -301,11 +301,11 @@ console.log("pics:",dirlist [i],pics);
 
   // ##### #0.4 Read file basenames
   app.get ('/basenames/:imagedir', (req, res) => {
-    //OLD: IMDB_DIR = req.params.imagedir.replace (/@/g, "/")
-    findFiles (IMDB_DIR).then ( (files) => {
+    let albumDir = req.params.imagedir.replace (/@/g, "/")
+    findFiles (albumDir).then ( (files) => {
       var namelist = ""
       for (var i=0; i<files.length; i++) {
-        var file = files [i].slice ((IMDB + IMDB_DIR).length + 1)
+        var file = files [i].slice (albumDir.length + 1)
         if (acceptedFileName (file) && !brokenLink (files [i])) {
           file = file.replace (/\.[^.]*$/, "") // Remove ftype
           namelist = namelist +'\n'+ file
@@ -535,7 +535,7 @@ console.log ('/sortlist/:names' +'\n'+ names) // names <buffer> here converts to
     let files = filepaths.trim ().split ('\n')
     for (let i=0; i<files.length; i++) {
       await new Promise (z => setTimeout (z, 888))
-      await sqlUpdate (files [i])
+      await sqlUpdate ('.' + files [i].slice (IMDB.length))
     }
     res.location ('/')
     res.send ('')
@@ -691,14 +691,15 @@ console.log("  Request body =\n"+body)
       // Here `body` has the entire request body stored in it as a string
       var tmp = body.split ('\n')
       var fileName = tmp [0].trim () // the path is included here @***
+      var msgName = '.' + fileName.slice (IMDB.length)
 
       let okay = fs.constants.W_OK | fs.constants.R_OK
       fs.access (fileName, okay, async err => {
         if (err) {
-          res.send ("Cannot write to " + fileName)
-          console.log ('\033[31mNO WRITE PERMISSION to ' + fileName + '\033[0m')
+          res.send ("Cannot write to " + msgName)
+          console.log ('\033[31mNO WRITE PERMISSION to ' + msgName + '\033[0m')
         } else {
-          console.log ('Xmp.dc metadata will be saved into ' + fileName)
+          console.log ('Xmp.dc metadata will be saved into ' + msgName)
           body = tmp [1].trim () // These trimmings are probably superfluous
           // The set_xmp_... command strings will be single quoted, avoiding
           // most Bash shell interpretation. Thus slice out 's within 's (cannot
@@ -713,6 +714,7 @@ console.log("  Request body =\n"+body)
           //console.log (fileName + " '" + body + "'")
           if (fs.open)
           execSync ('set_xmp_creator ' + fileName + " '" + body + "'") // for txt2
+          // Reset modification time, this was metadata only:
           execSync ('touch -d "' + mtime + '" "' + fileName + '"')
           res.send ('')
           await new Promise (z => setTimeout (z, 888))
@@ -848,11 +850,11 @@ console.log("  Request body =\n"+body)
   // Kanhända nya 'sqlite-async' på NPM kan förbättra? Också fenomenet att för 'hastigt
   // uppladdade' filer ibland inte hinner registreras: 'SQLITE_BUSY: database is locked'?
 
-  function sqlUpdate (filepaths) {
+  function sqlUpdate (filepaths) { // Album server paths, complete Absolute
   return new Promise (async function (resolve, reject) {
     let pathlist = filepaths.trim ().split ("\n")
     for (let i=0; i<pathlist.length; i++) { // forLoop
-      let filePath = pathlist [i]
+      let filePath = '.' + pathlist [i].slice (IMDB.length) // Album relative path
       // No files in the #picFound album (may be occasionally uploaded,
       // temporary non-symlinks) and no symlinks should be processed:
       if (filePath.indexOf (picFound) > 0 || await isSymlink (filePath)) continue;
@@ -862,7 +864,7 @@ console.log("  Request body =\n"+body)
       let xmpParams = [], dbValues = {}
       let fileExists = false
       try {
-        let fd = fs.openSync (filePath, 'r+')
+        let fd = fs.openSync (pathlist [i], 'r+') // Complete server path
         if (fd) {
           fileExists = true
           fs.closeSync (fd)
@@ -893,8 +895,8 @@ console.log("  Request body =\n"+body)
         }
         dbValues =   /// Removed the $ prefix for better-sqlite3
         { filepath: filePath,
-          name:     pathArr [pathArr.length - 1].replace (/\.[^.]+$/, ""),
-          album:    removeDiacritics (filePath.replace (/^[^/]+(\/(.*\/)*)[^/]+$/, "$1")).toLowerCase (),
+          name:     pathArr [pathArr.length - 1].replace (/\.[^.]+$/, ""), // Remove extension
+          album:    removeDiacritics (filePath.replace (/^[^/]*(\/(.*\/)*)[^/]+$/, "$1")).toLowerCase (),
           description: xmpParams [0],
           creator:  xmpParams [1],
           source:   xmpParams [2],
