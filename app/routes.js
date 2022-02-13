@@ -198,10 +198,10 @@ console.log("p2",p);
     await cmdasync (cmd)
     setTimeout (function () {
       allDirs ().then (dirlist => { // dirlist entries start with the root album
-console.log("-dirlist",dirlist);
+//console.log("-dirlist",dirlist);
         areAlbums (dirlist).then (async dirlist => {
           dirlist = dirlist.sort ()
-console.log("=dirlist",dirlist);
+//console.log("=dirlist",dirlist);
           let dirtext = dirlist.join ("€")
           let dircoco = [] // directory content counter
           let dirlabel = [] // Album label thumbnail paths
@@ -322,7 +322,7 @@ console.log("=dirlist",dirlist);
     })
   })
   // ##### #0.5 Execute a shell command
-  app.get ('/execute/:command', (req, res) => {
+    app.get ('/execute/:command', (req, res) => {
     //console.log("pwd =",execSync ("pwd").toString ().trim ())
     //console.log(req.params.command)
     //console.log(decodeURIComponent (req.params.command))
@@ -535,7 +535,7 @@ console.log ('/sortlist/:names' +'\n'+ names) // names <buffer> here converts to
     let files = filepaths.trim ().split ('\n')
     for (let i=0; i<files.length; i++) {
       await new Promise (z => setTimeout (z, 888))
-      await sqlUpdate ('.' + files [i].slice (IMDB.length))
+      await sqlUpdate (files [i]) // One at a time
     }
     res.location ('/')
     res.send ('')
@@ -601,7 +601,7 @@ console.log ('/sortlist/:names' +'\n'+ names) // names <buffer> here converts to
       })
       .then (async () => {
         await new Promise (z => setTimeout (z, 888))
-        await sqlUpdate (IMDB_DIR +"/"+ file.originalname)
+        await sqlUpdate ('.' + IMDB_DIR +"/"+ file.originalname)
       }) // Add to the sql DB
       .then (console.log (++n_upl +' TMP: '+ file.path + ' written to' +'\nUPLOADED: '+ IMDB_DIR +"/"+ file.originalname))
       // Delete showfile and minifile if the main file is refreshed
@@ -629,7 +629,7 @@ console.log ('/sortlist/:names' +'\n'+ names) // names <buffer> here converts to
   app.post ('/saveorder', function (req, res, next) {
     //OLD:IMDB_DIR = req.params.imagedir.replace (/@/g, "/")
     var file = IMDB + IMDB_DIR + "/_imdb_order.txt"
-console.log("file",file);
+//console.log("file",file);
     execSync ('touch ' + file + '&&chmod 664 ' + file) // In case not yet created
     var body = []
     req.on ('data', (chunk) => {
@@ -638,7 +638,7 @@ console.log("file",file);
     }).on ('end', () => {
       body = Buffer.concat (body).toString () // Concatenate; then change the Buffer into String
       // At this point, do whatever with the request body (now a string)
-console.log("  Request body =\n"+body)
+//console.log("  Request body =\n"+body)
       fs.writeFileAsync (file, body).then (function () {
         console.log ("Saved file order ")
         //console.log ('\n'+body+'\n')
@@ -853,8 +853,10 @@ console.log("  Request body =\n"+body)
   function sqlUpdate (filepaths) { // Album server paths, complete Absolute
   return new Promise (async function (resolve, reject) {
     let pathlist = filepaths.trim ().split ("\n")
+console.log("sqlUpdate:pathlist",pathlist);
     for (let i=0; i<pathlist.length; i++) { // forLoop
       let filePath = '.' + pathlist [i].slice (IMDB.length) // Album relative path
+console.log("     filePath",filePath);
       // No files in the #picFound album (may be occasionally uploaded,
       // temporary non-symlinks) and no symlinks should be processed:
       if (filePath.indexOf (picFound) > 0 || await isSymlink (filePath)) continue;
@@ -887,7 +889,7 @@ console.log("  Request body =\n"+body)
         let xmpkey = ['description', 'creator', 'source']
         for (let j=0; j<xmpkey.length; j++) {
           // Important NOTE: this loop must correspond in both routes.js and ld_imdb.js
-          let cmd = 'xmpget ' + xmpkey [j] + ' ' + filePath
+          let cmd = 'xmpget ' + xmpkey [j] + ' ' + pathlist [i]
           // The removeDiacritics funtion may bypass some characters (e.g. Sw. åäöÅÄÖ)
           // Remove diacritics and make lowercase. Remove tags and double spaces.
           xmpParams [j] = removeDiacritics (execSync (cmd).toString ()).toLowerCase ()
@@ -978,7 +980,7 @@ console.log("  Request body =\n"+body)
 
   // ===== Read a directory's file content; in passing remove broken links
   function findFiles (dirName) {
-console.log("findFiles:dirName '" + dirName + "'");
+//console.log("findFiles:dirName '" + dirName + "'");
     return fs.readdirAsync ('rln' + IMDB + dirName).map (function (fileName) { // Cannot use mapSeries here (why?)
       var filepath = path.join (IMDB + dirName, fileName)
       var brli = brokenLink (filepath) // refers to server root
@@ -989,7 +991,7 @@ console.log("findFiles:dirName '" + dirName + "'");
       return fs.statAsync ('rln' + filepath).then (function (stat) {
         if (stat.mode & 0100000) {
           // See 'man 2 stat': S_IFREG bitmask for 'Regular file'
-console.log("  ",filepath);
+//console.log("  ",filepath);
           return filepath
         } else {
           return path.join (path.dirname (filepath), ".ignore") // fake dotted file

@@ -498,7 +498,7 @@ console.log("requestDirs:treePath",treePath);
     disabled: () => {
       return !(allow.delcreLink || allow.deleteImg || allow.adminAll);
     },
-    action () {// OK?: Här ska imdLink genogående ersättas av imdPath och bottagning görs
+    action () {// OK?: Här ska imdLink ofta ersättas av imdPath och bottagning görs
       //          med slice(imdpath.length) eller egentligen this.get ("imdPath").length
       // Decide whether also the ORIGINAL will be erased when a LINKED PICTURE is erased
       if (allow.deleteImg && $ ("#eraOrig") [0].checked === true) {
@@ -1451,7 +1451,7 @@ console.log("requestOrder:data",data);
       if (!IMDB_DIR) {IMDB_DIR = "/";} // Avoids empty parameter
       IMDB_DIR = IMDB_DIR.replace (/\//g, "@"); // For sub-directories
       var xhr = new XMLHttpRequest ();
-console.log("requestNames:IMBD_DIR",IMDB_DIR);
+  console.log("requestNames:IMBD_DIR",IMDB_DIR);
       xhr.open ('GET', 'imagelist/' + IMDB_DIR, true, null, null); // URL matches server-side routes.js
       setReqHdr (xhr, 2);
       var allfiles = [];
@@ -1479,7 +1479,7 @@ console.log("requestNames:IMBD_DIR",IMDB_DIR);
             $ ('.showCount .numHidden').text (' 0');
             $ ('.showCount .numMarked').text ('0');
             $ ("span.ifZero").hide ();
-            $ ('#navKeys').text ('false'); // Prevents unintended use of L/R arrows
+            $ ('#navKeys').text ('false'); // Protecs from unintended use of L/R arrows
           }
           for (i=0; i<n_files; i++) {
             if (result [j + 4]) {result [j + 4] = result [j + 4].replace (/&lt;br&gt;/g,"<br>");}
@@ -2116,7 +2116,7 @@ console.log("requestNames:IMBD_DIR",IMDB_DIR);
       }
       // If 'value' is `picFound`, recreate if timed out and is deleted:
       if (value.indexOf (picFound) > -1) {
-        let lpath = $ ("#imdbPath").text () + $ ("#picFound").text ();
+        let lpath = $ ("#imdbPath").text () + "/" + $ ("#picFound").text ();
         let cmd = "if [ -w " + lpath + " ];then e=1;else e=0;fi;echo $e"; // For details, use Node interactive!
         let exsts = (await execute (cmd)).toString ().trim ();
         if (exsts === "0") {
@@ -3706,11 +3706,10 @@ function load_imdb_images () {
   return new Promise (resolve => {
     $.spinnerWait (true);
     userLog ("Det här kan ta några minuter ...", true, 5000)
-    let cmd = '$( pwd )/ld_imdb.js -e';
+    let cmd = '$( pwd )/ld_imdb.js -e ' + $("#imdbPath").text ();
     execute (cmd).then ( () => {
       $.spinnerWait (false, 5008);
       userLog ("Image search texts updated");
-      $ ("div[aria-describedby='searcharea']").show ();
       $ ("button.updText").css ("float", "right");
       $ ("button.updText").hide ();
       resolve ("Done")
@@ -4070,6 +4069,7 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) {
           // Special case: Evaluate #temporary_1 for link || move.
           if (picName === "") {
             $.spinnerWait (true, 108);
+console.log("temporary_1\n" + $("#temporary_1").text ());
             serverShell ("temporary_1"); // Contains complete server file paths
             // Extract/construct sqlUpdate file list if there are any
             // move=... moveto=... lines in #temporary_1
@@ -4089,7 +4089,8 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) {
               files [i + 1] = files [i + 1] + name;
             }
             files = files.join ("\n");
-console.log("infoDia:files" + '\n0o33[36m' + files + '0o33[0m');
+console.log("infoDia:title" + title);
+console.log("infoDia:files" + "\n `" + files + "´");
             if (files.length > 0) {
               document.getElementById("reLd").disabled = false;
               later ( ( () => {
@@ -4561,7 +4562,7 @@ function moveFunc (picNames, picOrder) { // ===== Execute a move-these-files-to.
   // depending on actual file names, but well within the Bash line length limit.
 
   !picOrder; //!moveOrder; // Dummy calls, for names only referenced in codeMove:
-
+///***RÄTTA NEDAN
   var codeMove = "'var malbum=this.value;var mpath=\"\";if(this.selectedIndex===0){return false;}mpath=malbum.replace (/^[^/]*(.*)/,$(\"#imdbPath\").text()+\"$1\");var lpp=mpath.split(\"/\").length-1;if (lpp > 0)lpp=\"../\".repeat(lpp);else lpp=\"./\";console.log(\"Trying move to\",malbum);var picNames=$(\"#picNames\").text().split(\"\\n\");var picOrder=$(\"#picOrder\").text().split(\"\\n\");console.log(\"\"+picNames,\" \"+picOrder);cmd=[];for (let i=0;i<picNames.length;i++){var move=$(\"#imdbPath\").text()+\"/\"+document.getElementById(\"i\"+picNames[i]).getElementsByTagName(\"img\")[0].getAttribute(\"title\");var mini=move.replace(/([^/]+)(\\.[^/.]+)$/,\"_mini_$1.png\");var show=move.replace(/([^/]+)(\\.[^/.]+)$/,\"_show_$1.png\");var moveto=mpath+\"/\";var picfound=$(\"#picFound\").text();cmd.push(\"picfound=\"+picfound+\";move=\"+move+\";mini=\"+mini+\";show=\"+show+\";orgmove=$move;orgmini=$mini;orgshow=$show;moveto=\"+moveto+\";lpp=\"+lpp+\";lnksave=$(readlink -n $move);if [ $lnksave ];then move=$(echo $move|sed -e \\\"s/\\\\(.*$picfound.*\\\\)\\\\.[^.\\\\/]\\\\+\\\\(\\\\.[^.\\\\/]\\\\+$\\\\)/\\\\1\\\\2/\\\");mini=$(echo $mini|sed -e \\\"s/\\\\(.*$picfound.*\\\\)\\\\.[^.\\\\/]\\\\+\\\\(\\\\.[^.\\\\/]\\\\+$\\\\)/\\\\1\\\\2/\\\");show=$(echo $show|sed -e \\\"s/\\\\(.*$picfound.*\\\\)\\\\.[^.\\\\/]\\\\+\\\\(\\\\.[^.\\\\/]\\\\+$\\\\)/\\\\1\\\\2/\\\");lnkfrom=$(echo $lnksave|sed -e \\\"s/^\\\\(\\\\.\\\\{1,2\\\\}\\\\/\\\\)*//\\\" -e \\\"s,^,$lpp,\\\");lnkmini=$(echo $lnkfrom|sed -e \\\"s/\\\\([^/]\\\\+\\\\)\\\\(\\\\.[^/.]\\\\+\\\\)\\\\$/_mini_\\\\1\\\\.png/\\\");lnkshow=$(echo $lnkfrom|sed -e \\\"s/\\\\([^/]\\\\+\\\\)\\\\(\\\\.[^/.]\\\\+\\\\)\\\\$/_show_\\\\1\\\\.png/\\\");ln -sfn $lnkfrom $move;fi;mv -n $move $moveto;if [ $? -ne 0 ];then if [ $move != $orgmove ];then rm $move;fi;exit;else if [ $lnksave ];then ln -sfn $lnkmini $mini;ln -sfn $lnkshow $show;fi;mv -n $mini $show $moveto;if [ $move != $orgmove ];then rm $orgmove;fi;if [ $mini != $orgmini ];then rm $orgmini;fi;if [ $show != $orgshow ];then rm $orgshow;fi;fi;\");console.log(move,mini,show,moveto);}$(\"#temporary\").text(mpath);$(\"#temporary_1\").text (cmd.join(\"\\n\"));$(\"#yesBut\").text(\"Flytta\");'"
   // A log ...\");console.log(move,mini,show,moveto);}$...
   // may be inserted (or removed), and it is printed even at failure.
@@ -5228,6 +5229,7 @@ let prepSearchDialog = () => {
           load_imdb_images ().then ( () => {
             later ( ( () => {
               age_imdb_images ();
+              $ ("div[aria-describedby='searcharea']").show ();
             }), 2000);
           });
         }
@@ -5275,13 +5277,15 @@ alert (result);
       n = paths.length;
       let lpath = $ ("#imdbPath").text () + "/" + $ ("#picFound").text ();
       for (let i=0; i<n; i++) {
-        let chalb = paths [i].replace (/^[^/]+(.*)\/[^/]+$/, "$1");
+        let chalb = paths [i].replace (/^[^/]+(.*)\/[^/]+$/, "$1"); // in #imdbDirs format
         let idx = chalbs.indexOf (chalb);
         if (idx > -1) {
           counts [idx]++; // -- A hit in this album
           let fname = paths [i].replace (/^.*\/([^/]+$)/, "$1");
           let linkfrom = paths [i];
-          linkfrom = "../".repeat (lpath.split ("/").length - 1) + linkfrom.replace (/^[^/]*\//, "");
+console.log("doFindText:-linkfrom",linkfrom);
+          linkfrom = "../".repeat (linkfrom.split ("/").length - 1) + linkfrom.replace (/^[^/]*\//, "");
+console.log("doFindText:=linkfrom",linkfrom);
 
           // In order to show duplicates make the link names unique
           // by adding four random characters (r4) to the basename (n1)
@@ -5298,6 +5302,9 @@ alert (result);
           albs.push (paths [i])
         }
       }
+console.log("doFindText:result",result);
+console.log("doFindText:paths",paths);
+console.log("doFindText:albs",albs);
       for (let i=0; i<chalbs.length; i++) {
         if (counts [i]) {
           chalbs [i] = chalbs [i].replace (/ /g, "&nbsp;");
@@ -5308,6 +5315,7 @@ alert (result);
     }
     countAlbs.sort ();
     countAlbs.reverse ();
+console.log("doFindText:countAlbs",countAlbs);
     paths = albs;
     n = paths.length;
 
@@ -5365,10 +5373,11 @@ alert (result);
       yes ="Visa i <b>" + txt + "</b>";
     }), 40);
     let modal = false;
-    let p3 =  "<p style='margin:-0.3em 1.6em 0.2em 0;background:transparent'>" + sTxt + "</p>Funna i <span style='font-weight:bold'>" + $ ("#imdbRoot").text () + "</span>:&nbsp; " + n + (n>nLimit?" (fler än " + nLimit + " kan visas i sina album)":"");
+    let p3 =  "<p style='margin:-0.3em 1.6em 0.2em 0;background:transparent'>" + sTxt + "</p>Funna i <span style='font-weight:bold'>" + $ ("#imdbRoot").text () + "</span>:&nbsp; " + n + (n>nLimit?" (fler än " + nLimit + " kan ses i sina respektive album)":"");
     later ( ( () => {
 
-      let imdbx = new RegExp ($ ("#imdbLink").text () + "/", "g");
+      let imdbx = new RegExp ("imdb/", "g"); // NOTE: TILLFÄLLIGT
+console.log(paths.join ("\n").replace (/imdb\//g, "./"));
 
       // Run `serverShell ("temporary_1")` -> symlink creation, via `infoDia (null, "", ...
       infoDia (null, "", p3, "<div style='text-align:left;margin:0.3em 0 0 2em'>" + paths.join ("<br>").replace (imdbx, "./") + "</div>", yes, modal);
@@ -5460,7 +5469,7 @@ function searchText (searchString, and, searchWhere, exact) {
     str = str.replace (/\n/g, "");
   }
   if (!$ ("#imdbDir").text ()) {
-    $ ("#imdbDir").text ($ ("#imdbLink").text () + "/" + $ ("#picFound").text ());
+    $ ("#imdbDir").text ("/" + $ ("#picFound").text ());
   }
   let srchData = new FormData ();
   srchData.append ("like", str);

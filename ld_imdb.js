@@ -113,52 +113,51 @@ function removeDiacritics (str) {
 //=============================================================================
 // The core program begins here -- load image metadata into _imdb_images.sqlite
 if (process.argv [2] == "-e") {
-  // argv [3] = absolute albumRoot path if present, else assumed symlink 'imdb/'
+  // argv [3] = absolute albumRoot path if present, else assumed './'
   loadImageMetadata ()
 } else {
-  console.log ("  This program regenerates texts in a Mish metadata database")
+  console.log ("  This program regenerates texts in a Mish metadata sqlite database")
   console.log ("Usage: " + process.argv [1] + " -e [<absolute path to albumroot>]")
   console.log ("  Reloads image file text metadata into ./_imdb_images.sqlite")
-  console.log ("  or (preferred) <absolute path to albumroot>_imdb_images.sqlite")
+  console.log ("  or (preferred) <absolute path to albumroot>/_imdb_images.sqlite")
   console.log ("  from the images of the album tree after removing diacritic symbols")
   console.log ("Needs: node, xmpget")
-  console.log ("Note: This program is assumed to run in the www-album-roots root")
-  console.log ("  catalog if ./_imdb_images.sqliteb is used")
+  console.log ("Note: This program is assumed to run in the album collection (album")
+  console.log ("  root) catalog if ./_imdb_images.sqlite is used")
 }
 function loadImageMetadata () {
   const sqlite = require ("better-sqlite3")
   let execSync = require ('child_process').execSync
-  let imdbLink = "." // <<<<<<<<<< NOTE: must equal the init() setting + '/'
-  let albumRoot
+  let albumRoot = '.' // Default path
   if (process.argv [3]) albumRoot = process.argv [3] // Absolute path, preferred
-  else albumRoot = imdbLink // Default symlink, relative path (NOTE: may it's name vary?!)
+
   //    This Bash script line (cmd) is subdivided (by |) into 4 tasks:
   // 1. Find all '.imdb' file paths (with album directories)
   // 2. Remove all file names ('.imdb') from that path list, leaving the directories
   // 3. Use the list entries as arguments to find all non-"_*|.*" files in each directory (using depth=1)
   // 4. Accept only files having supported image file endings
   let cmd = 'find ' + albumRoot + ' -type f -name ".imdb" | sed "s/.imdb$//" | xargs -Ipath find path -maxdepth 1 -type f -not -name "_*" -not -name ".*" | egrep -i "(JPE?G|TIF{1,2}|PNG|GIF)$"'
+
   let pathlist = execSync (cmd)
   //console.log ("  pathlist:\n" + pathlist)
   pathlist = pathlist.toString ().trim ().split ("\n")
-
-  execSync ('rm -f ' + albumRoot + '_imdb_images.sqlite');
-  const db = new sqlite (albumRoot + "_imdb_images.sqlite");
+  execSync ('rm -f ' + albumRoot + '/' + '_imdb_images.sqlite')
+  const db = new sqlite (albumRoot + '/' + '_imdb_images.sqlite')
 
   db.pragma ("journal_mode = WAL") // Turn on write-ahead logging
   db.prepare ('CREATE TABLE imginfo (id INTEGER PRIMARY KEY, filepath TEXT UNIQUE, name TEXT, album TEXT, description TEXT, creator TEXT, source TEXT, subject TEXT, tcreated TEXT, tchanged TEXT)').run ()
 
   for (let i=0; i<pathlist.length; i++) {
     let filePath = pathlist [i]
-    // Replace albumRoot with imdbLink:
-    pathlist [i] = imdbLink + pathlist [i].slice (albumRoot.length);
+    // The path saved in the database:
+    pathlist [i] = '.' + pathlist [i].slice (albumRoot.length);
     let tmp = pathlist [i].split ("/")
     let param = []
     let xmpkey = ['description', 'creator', 'source']
     for (let j=0; j<xmpkey.length; j++) {
       // Important NOTE: this loop must correspond in both routes.js and ld_imdb.js
       let cmd = 'xmpget ' + xmpkey [j] + ' ' + filePath // [!]
-      // The removeDiacritics funtion may bypass some characters (e.g. Sw. åäöÅÄÖ)
+      // The removeDiacritics function may bypass some characters (e.g. Sw. åäöÅÄÖ), as modified (check!)
       // Remove diacritics and make lowercase. Remove tags and double spaces.
       param [j] = removeDiacritics (execSync (cmd).toString ()).toLowerCase ()
       param [j] = param [j].replace(/<[^>]+>/g, " ").replace (/  */g, " ").trim ()
