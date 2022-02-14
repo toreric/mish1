@@ -128,8 +128,12 @@ if (process.argv [2] == "-e") {
 function loadImageMetadata () {
   const sqlite = require ("better-sqlite3")
   let execSync = require ('child_process').execSync
-  let albumRoot = '.' // Default path
-  if (process.argv [3]) albumRoot = process.argv [3] // Absolute path, preferred
+  let albumRoot = './' // Default path
+  let arg3 = process.argv [3]
+  if (arg3) { // Absolute path, preferred
+    if (arg3.slice (-1) !== '/') arg3 += '/' // Ascertain a trailing slash
+    albumRoot = arg3
+  }
 
   //    This Bash script line (cmd) is subdivided (by |) into 4 tasks:
   // 1. Find all '.imdb' file paths (with album directories)
@@ -141,8 +145,8 @@ function loadImageMetadata () {
   let pathlist = execSync (cmd)
   //console.log ("  pathlist:\n" + pathlist)
   pathlist = pathlist.toString ().trim ().split ("\n")
-  execSync ('rm -f ' + albumRoot + '/' + '_imdb_images.sqlite')
-  const db = new sqlite (albumRoot + '/' + '_imdb_images.sqlite')
+  execSync ('rm -f ' + albumRoot + '_imdb_images.sqlite')
+  const db = new sqlite (albumRoot + '_imdb_images.sqlite')
 
   db.pragma ("journal_mode = WAL") // Turn on write-ahead logging
   db.prepare ('CREATE TABLE imginfo (id INTEGER PRIMARY KEY, filepath TEXT UNIQUE, name TEXT, album TEXT, description TEXT, creator TEXT, source TEXT, subject TEXT, tcreated TEXT, tchanged TEXT)').run ()
@@ -150,7 +154,7 @@ function loadImageMetadata () {
   for (let i=0; i<pathlist.length; i++) {
     let filePath = pathlist [i]
     // The path saved in the database:
-    pathlist [i] = '.' + pathlist [i].slice (albumRoot.length);
+    pathlist [i] = './' + pathlist [i].slice (albumRoot.length) // albumRoot includes a trailing slash
     let tmp = pathlist [i].split ("/")
     let param = []
     let xmpkey = ['description', 'creator', 'source']
@@ -165,7 +169,7 @@ function loadImageMetadata () {
     db.prepare ('INSERT INTO imginfo (filepath,name,album,description,creator,source,subject,tcreated,tchanged) VALUES ($filepath,$name,$album,$description,$creator,$source,$subject,$tcreated,$tchanged)').run ( {
       filepath: pathlist [i],
       name:     tmp [tmp.length -1].replace (/\.[^.]+$/, ""),
-      album:    removeDiacritics (pathlist [i].replace (/^[^/]+(\/(.*\/)*)[^/]+$/, "$1")).toLowerCase (),
+      album:    removeDiacritics (pathlist [i].replace (/^[^/]*(\/(.*\/)*)[^/]*$/, "$1")).toLowerCase (),
       description: param [0],
       creator:  param [1],
       source:   param [2],

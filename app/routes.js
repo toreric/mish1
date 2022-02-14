@@ -157,7 +157,8 @@ console.log("p2",p);
     var filex = '.' + file.slice (IMDB.length)
     var fileStat = "<i>Filnamn</i>: " + filex + "<br><br>"
     if (linkto) {
-      fileStat = "<i>Filnamn</i>: " + linkto + "<br><br>"
+      let lntx ="<small>(VISAS HÄR SOM LÄNKAD BILD)</small>";
+      fileStat = "<i>Filnamn</i>: " + linkto + "<br><span style='color:#0a4'>" + lntx + "</span><br>"
       fileStat += "<i>Länknamn</i>: <span style='color:#0a4'>" + filex + "</span><br><br>"
     }
     fileStat += "<i>Storlek</i>: " + stat.size/1000000 + " Mb<br>"
@@ -514,7 +515,7 @@ console.log ('/sortlist/:names' +'\n'+ names) // names <buffer> here converts to
   // ##### #5. Delete an original file, or a symlink, and its mini and show files   CHECK path
   app.get ('/delete/*?', function (req, res) {
     res.location ('/')
-    var fileName = req.params[0] // with path
+    var fileName = req.params[0].replace (/@/g, "/") // with path
     let tmp = rmPic (fileName)
     console.log (' ' + fileName + ' deleted')
     res.send (tmp) // tmp == 'DELETED'
@@ -803,13 +804,21 @@ console.log ('/sortlist/:names' +'\n'+ names) // names <buffer> here converts to
   // ===== Remove the files of a picture, filename with full web path
   //       (or deletes at least the primarily named file)
   function rmPic (fileName) {
+console.log("rmPic:fileName",fileName);
+    let picfile = path.parse (fileName).base
+console.log("rmPic:fileName",fileName);
     let pngname = path.parse (fileName).name + '.png'
-    let IMDB_dir = path.parse (fileName).dir + '/'
-    let IMDB_PATH = WWW_ROOT + '/' + IMDB_dir
-    fs.unlinkAsync (WWW_ROOT + '/' + fileName) // File not found isn't caught!
+console.log("rmPic:pngname",pngname);
+    let imdbImdDir = path.parse (fileName).dir
+console.log("rmPic:IMDB/IMDB_DIR",imdbImdDir);
+console.log("rmPic:IMDB+IMDB_DIR",IMDB + IMDB_DIR);
+console.log(imdbImdDir === (IMDB + IMDB_DIR));
+    let IMDB_PATH = IMDB + IMDB_DIR
+console.log("rmPic:IMDB_PATH",IMDB_PATH);
+    fs.unlinkAsync (IMDB_PATH + '/' + picfile) // File not found isn't caught!
     .then (sqlUpdate (fileName))
-    .then (fs.unlinkAsync (IMDB_PATH +'_mini_'+ pngname)) // File not found isn't caught!
-    .then (fs.unlinkAsync (IMDB_PATH +'_show_'+ pngname)) // File not found isn't caught!
+    .then (fs.unlinkAsync (IMDB_PATH +'/_mini_'+ pngname)) // File not found isn't caught!
+    .then (fs.unlinkAsync (IMDB_PATH +'/_show_'+ pngname)) // File not found isn't caught!
     .then ()
     .catch (function (error) {
       let tmp = ''

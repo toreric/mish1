@@ -1374,14 +1374,14 @@ console.log("eraseOriginals",eraseOriginals,"linked",linked,"nels",nels);
       IMDB_DIR = IMDB_DIR.replace (/\//g, "@"); // For passing sub-directories
       var that = this;
       var xhr = new XMLHttpRequest ();
-console.log("requestOrder:IMDB_DIR",IMDB_DIR);
+//console.log("requestOrder:IMDB_DIR",IMDB_DIR);
       xhr.open ('GET', 'sortlist/' + IMDB_DIR, true, null, null); // URL matches server-side routes.js
       setReqHdr (xhr, 1);
       xhr.onload = async function () {
-console.log("STATUS",this.status);
+//console.log("STATUS",this.status);
         if (this.status >= 200 && this.status < 300) {
           var data = xhr.response.trim ();
-console.log("requestOrder:data",data);
+//console.log("requestOrder:data",data);
           if (data.slice (0, 8) === '{"error"') {
             data = "Error!"; // This error text may also be generated elsewhere
           }
@@ -2290,14 +2290,13 @@ console.log("requestOrder:data",data);
         execute ("cat " + $ ("#imdbPath").text () + "/.imdb") // NOTE: Always the albumroot
         .then ( (res) => {
           openRoot = res.trim ();
-          if (openRoot) console.log("openRoot",openRoot);
+          if (openRoot) console.log ("NOTE: openRoot",openRoot);
           if (openRoot === "demo") { // SET THE ADMIN FLAG TO ALLOW ANYTHING!
             allowvalue = "1" + $ ("#allowValue").text ().slice (1);
             let tx = "MISH DEMO MISH DEMO MISH DEMO MISH DEMO MISH DEMO MISH DEMO MISH DEMO MISH DEMO ";
             $ ("span.usrlg").html (tx+tx+tx+tx);
           } else {
             $ ("span.usrlg").html ("");
-            //allowvalue = "0" + $ ("#allowValue").text ().slice (1);
           }
           $ ("#allowValue").text (allowvalue);
           that.actions.setAllow ();
@@ -3980,7 +3979,7 @@ function deleteFile (picPath) { // ===== Delete an image
   return new Promise ( (resolve, reject) => {
     // ===== XMLHttpRequest deleting 'picName'
     var xhr = new XMLHttpRequest ();
-    var origpic = picPath;
+    var origpic = picPath.replace (/\//g, "@");
 console.log("deleteFile:origpic",origpic);
     xhr.open ('GET', 'delete/' + origpic, true, null, null); // URL matches routes.js with *?
     setReqHdr (xhr, 8);
@@ -4069,7 +4068,7 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) {
           // Special case: Evaluate #temporary_1 for link || move.
           if (picName === "") {
             $.spinnerWait (true, 108);
-console.log("temporary_1\n" + $("#temporary_1").text ());
+//console.log("infoDia:temporary_1\n" + $("#temporary_1").text ());
             serverShell ("temporary_1"); // Contains complete server file paths
             // Extract/construct sqlUpdate file list if there are any
             // move=... moveto=... lines in #temporary_1
@@ -4089,8 +4088,8 @@ console.log("temporary_1\n" + $("#temporary_1").text ());
               files [i + 1] = files [i + 1] + name;
             }
             files = files.join ("\n");
-console.log("infoDia:title" + title);
-console.log("infoDia:files" + "\n `" + files + "´");
+//console.log("infoDia:title " + title);
+console.log("infoDia:files (for sqlUpdate)" + "\n `" + files + "´");
             if (files.length > 0) {
               document.getElementById("reLd").disabled = false;
               later ( ( () => {
@@ -5257,7 +5256,6 @@ let prepSearchDialog = () => {
 let doFindText = (sTxt, and, sWhr, exact) => {
   let nameOrder = [];
   searchText (sTxt, and, sWhr, exact).then (async result => {
-alert (result);
     if (!exact) centerMarkSave = "×"; // reset ´favorites' header´
     // replace '<' and '>' for presentation in the header below
     sTxt = sTxt.replace (/</g, "&lt;").replace (/>/g, "&gt;");
@@ -5275,7 +5273,7 @@ alert (result);
       // -- Prepare counters for all albums
       let counts = "0".repeat (chalbs.length).split ("").map (Number);
       n = paths.length;
-      let lpath = $ ("#imdbPath").text () + "/" + $ ("#picFound").text ();
+      let lpath = $ ("#imdbPath").text () + "/" + $ ("#picFound").text (); // NOTE: #picFound has no slash!
       for (let i=0; i<n; i++) {
         let chalb = paths [i].replace (/^[^/]+(.*)\/[^/]+$/, "$1"); // in #imdbDirs format
         let idx = chalbs.indexOf (chalb);
@@ -5283,9 +5281,9 @@ alert (result);
           counts [idx]++; // -- A hit in this album
           let fname = paths [i].replace (/^.*\/([^/]+$)/, "$1");
           let linkfrom = paths [i];
-console.log("doFindText:-linkfrom",linkfrom);
-          linkfrom = "../".repeat (linkfrom.split ("/").length - 1) + linkfrom.replace (/^[^/]*\//, "");
-console.log("doFindText:=linkfrom",linkfrom);
+//console.log("doFindText:-linkfrom",linkfrom);
+          linkfrom = "../" + linkfrom.replace (/^[^/]*\//, "");
+//console.log("doFindText:=linkfrom",linkfrom);
 
           // In order to show duplicates make the link names unique
           // by adding four random characters (r4) to the basename (n1)
@@ -5302,9 +5300,9 @@ console.log("doFindText:=linkfrom",linkfrom);
           albs.push (paths [i])
         }
       }
-console.log("doFindText:result",result);
-console.log("doFindText:paths",paths);
-console.log("doFindText:albs",albs);
+//console.log("doFindText:result",result);
+//console.log("doFindText:paths",paths);
+//console.log("doFindText:albs",albs);
       for (let i=0; i<chalbs.length; i++) {
         if (counts [i]) {
           chalbs [i] = chalbs [i].replace (/ /g, "&nbsp;");
@@ -5315,7 +5313,7 @@ console.log("doFindText:albs",albs);
     }
     countAlbs.sort ();
     countAlbs.reverse ();
-console.log("doFindText:countAlbs",countAlbs);
+//console.log("doFindText:countAlbs",countAlbs);
     paths = albs;
     n = paths.length;
 
@@ -5376,11 +5374,11 @@ console.log("doFindText:countAlbs",countAlbs);
     let p3 =  "<p style='margin:-0.3em 1.6em 0.2em 0;background:transparent'>" + sTxt + "</p>Funna i <span style='font-weight:bold'>" + $ ("#imdbRoot").text () + "</span>:&nbsp; " + n + (n>nLimit?" (fler än " + nLimit + " kan ses i sina respektive album)":"");
     later ( ( () => {
 
-      let imdbx = new RegExp ("imdb/", "g"); // NOTE: TILLFÄLLIGT
-console.log(paths.join ("\n").replace (/imdb\//g, "./"));
+//      let imdbx = new RegExp ("imdb/", "g"); // NOTE: TILLFÄLLIGT
+//console.log(paths.join ("\n"));
 
       // Run `serverShell ("temporary_1")` -> symlink creation, via `infoDia (null, "", ...
-      infoDia (null, "", p3, "<div style='text-align:left;margin:0.3em 0 0 2em'>" + paths.join ("<br>").replace (imdbx, "./") + "</div>", yes, modal);
+      infoDia (null, "", p3, "<div style='text-align:left;margin:0.3em 0 0 2em'>" + paths.join ("<br>") + "</div>", yes, modal);
 
       later ( ( () => {
         // In this section the hidden ´go back to previous album´ button is located
