@@ -498,8 +498,7 @@ console.log("requestDirs:treePath",treePath);
     disabled: () => {
       return !(allow.delcreLink || allow.deleteImg || allow.adminAll);
     },
-    action () {// OK?: Här ska imdLink ofta ersättas av imdPath och bottagning görs
-      //          med slice(imdpath.length) eller egentligen this.get ("imdPath").length
+    action () {
       // Decide whether also the ORIGINAL will be erased when a LINKED PICTURE is erased
       if (allow.deleteImg && $ ("#eraOrig") [0].checked === true) {
         eraseOriginals = true; // global
@@ -559,6 +558,10 @@ console.log("requestDirs:treePath",treePath);
             deleteFiles (picNames, nels, picPaths) and
             deleteFile (picName) was changed to deleteFile (picPath)
             */
+
+            // NOTE: A link will break when its original file disappears, thus need
+            // not be immediately deleted. Broken links are mostly harmless and will
+            // at some occasion be detected and removed by the server function findFiles
             let tmp = $ ("#imdbPath").text () + $ ("#i" + escapeDots (picNames [i]) + " a img").attr ("title");
             execute ("readlink -n " + tmp).then (res => {
               res = res.replace (/^(\.{1,2}\/)*/, $ ("#imdbPath").text () + "/");
@@ -670,7 +673,6 @@ console.log("eraseOriginals",eraseOriginals,"linked",linked,"nels",nels);
           "id": "yesBut",
           click: async function () {
             console.log ("To be deleted: " + picNames); // Autoconverted to csv srting
-            // NOTE: Must be a 'clean' call (no then or <await>): ?????
             // NOTE: nels is the number of pictures to be erased, picNames
             // & picPaths may have more of them (their size may be excessive)
             await deleteFiles (picNames, nels, picPaths);
@@ -3942,11 +3944,12 @@ async function deleteFiles (picNames, nels, picPaths) { // ===== Delete image(s)
       } else {
         await new Promise (z => setTimeout (z, 50));
         var result = await deleteFile (picPaths [i]);
-        if (result.slice (0,3) === "DEL") {
+        if (result.slice (0,6) === "DELETE") {
           delPaths.push (picPaths [i]);
           userLog ("DELETE", true, 500);
         } else {
-          console.log (result);
+          $ (".shortMessage").css ("color", "red");
+          userLog (result, false, 3500);
         }
       }
     }
@@ -4708,20 +4711,14 @@ function saveFavorites (favList) {
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function userLog (message, flashOnly, mstime) { // ===== Message to the log file and flash the user
-  if (!flashOnly) {
-    console.log (message);
-    /*var messes = $ ("#title span.usrlg").text ().trim ().split ("•");
-    if (messes.length === 1 && messes [0].length < 1) {messes = [];}
-    if (!(messes.length > 0 && messes [messes.length - 1].trim () === message.trim ())) {messes.push (message);}
-    if (messes.length > 5) {messes.splice (0, messes.length -5);}
-    messes = messes.join (" • ");*/
-    // discontinued: $ ("#title span.usrlg").text (messes);
-  }
+  if (!flashOnly) console.log (message);
   if (mstime) {
     $ (".shortMessage").text (message);
     $ (".shortMessage").show ();
     later ( ( () => {
       $ (".shortMessage").hide ();
+      // Reset in case e.g. red color was set (in this way) before call:
+      $ (".shortMessage").css ("color", "");
     }), mstime);
   }
 }

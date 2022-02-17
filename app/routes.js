@@ -67,12 +67,12 @@ module.exports = function (app) {
     }
     console.log ("")
 // 30 svart, 31 röd, 32 grön, 33 gul, 34 blå, 35 magenta, 36 cyan, 37 vit, 0 default
-console.log('\033[36m' + "originalUrl: " + decodeURIComponent (req.originalUrl) + '\033[0m');
-    console.log ("  WWW_ROOT:", WWW_ROOT)
-    console.log ("      IMDB:", IMDB)
-    console.log (" IMDB_ROOT:", IMDB_ROOT)
-    console.log ("  IMDB_DIR:", IMDB_DIR)
-    console.log ("  picFound:", picFound)
+console.log('\033[36m' + decodeURIComponent (req.originalUrl) + '\033[0m');
+    // console.log ("  WWW_ROOT:", WWW_ROOT)
+    // console.log ("      IMDB:", IMDB)
+    // console.log (" IMDB_ROOT:", IMDB_ROOT)
+    // console.log ("  IMDB_DIR:", IMDB_DIR)
+    // console.log ("  picFound:", picFound)
     if (show_imagedir) {
       console.log (req.params)
       console.log (req.hostname)
@@ -303,7 +303,7 @@ console.log("p2",p);
   // ##### #0.4 Read file basenames
   app.get ('/basenames/:imagedir', (req, res) => {
     let albumDir = req.params.imagedir.replace (/@/g, "/")
-    findFiles (albumDir).then ( (files) => {
+    findFiles (albumDir.slice (IMDB.length)).then ( (files) => {
       var namelist = ""
       for (var i=0; i<files.length; i++) {
         var file = files [i].slice (albumDir.length + 1)
@@ -465,7 +465,7 @@ console.log("/sortlist/:imdbtxtpath",imdbtxtpath);
 
     fs.readFileAsync (imdbtxtpath)
     .then (names => {
-console.log ('/sortlist/:names' +'\n'+ names) // names <buffer> here converts to <text>
+//console.log ('/sortlist/:names' +'\n'+ names) // names <buffer> here converts to <text>
       res.send (names) // Sent buffer arrives as text
     }).then (console.info ('File order sent from server'))
   })
@@ -517,8 +517,10 @@ console.log ('/sortlist/:names' +'\n'+ names) // names <buffer> here converts to
     res.location ('/')
     var fileName = req.params[0].replace (/@/g, "/") // with path
     let tmp = rmPic (fileName)
-    console.log (' ' + fileName + ' deleted')
-    res.send (tmp) // tmp == 'DELETED'
+    if (tmp === 'DELETED') {
+      console.log (' ' + fileName + ' deleted')
+    }
+    res.send (tmp) //
     //await sqlUpdate (fileName) NOTE: done from refreshing via #6.5 sqlupdate
   })
 
@@ -804,32 +806,26 @@ console.log ('/sortlist/:names' +'\n'+ names) // names <buffer> here converts to
   // ===== Remove the files of a picture, filename with full web path
   //       (or deletes at least the primarily named file)
   function rmPic (fileName) {
-console.log("rmPic:fileName",fileName);
     let picfile = path.parse (fileName).base
-console.log("rmPic:fileName",fileName);
     let pngname = path.parse (fileName).name + '.png'
-console.log("rmPic:pngname",pngname);
-    let imdbImdDir = path.parse (fileName).dir
-console.log("rmPic:IMDB/IMDB_DIR",imdbImdDir);
-console.log("rmPic:IMDB+IMDB_DIR",IMDB + IMDB_DIR);
-console.log(imdbImdDir === (IMDB + IMDB_DIR));
-    let IMDB_PATH = IMDB + IMDB_DIR
-console.log("rmPic:IMDB_PATH",IMDB_PATH);
-    fs.unlinkAsync (IMDB_PATH + '/' + picfile) // File not found isn't caught!
+    let imdbImdbDir = path.parse (fileName).dir
+    let IMDB_PATH = (IMDB + IMDB_DIR)
+    let tmp = 'Directory mismatch when "' + fileName.slice (IMDB.length) + '" is deleted'
+    if (imdbImdbDir !== IMDB_PATH) console.log ('INFO: \033[33m' + tmp + '\033[0m')
+    fs.unlinkAsync (imdbImdbDir + '/' + picfile) // File not found isn't caught!
     .then (sqlUpdate (fileName))
-    .then (fs.unlinkAsync (IMDB_PATH +'/_mini_'+ pngname)) // File not found isn't caught!
-    .then (fs.unlinkAsync (IMDB_PATH +'/_show_'+ pngname)) // File not found isn't caught!
+    .then (fs.unlinkAsync (imdbImdbDir +'/_mini_'+ pngname)) // File not found isn't caught!
+    .then (fs.unlinkAsync (imdbImdbDir +'/_show_'+ pngname)) // File not found isn't caught!
     .then ()
     .catch (function (error) {
-      let tmp = ''
       if (error.code === "ENOENT") {
-        tmp = 'FILE NOT FOUND: ' + IMDB_PATH + '_xxx_' + pngname
+        tmp = 'FILE NOT FOUND by ' + IMDB_ROOT + IMDB_DIR + '/' + picfile
+        console.log ('\033[31m' + tmp + '\033[0m')
         return tmp
       } else {
-        tmp = 'NO PERMISSION to' + WWW_ROOT + '/' + fileName
-        tmp = '\033[31m' + tmp + '\033[0m'
+        tmp = 'NO PERMISSION to ' + IMDB_ROOT + IMDB_DIR + '/' + picfile
+        console.log ('\033[31m' + tmp + '\033[0m')
         return tmp
-// ??? HÄR BORDE EN STOR VARNING KOMMA FRAM FÖR TEXT TILL FEL USER -- varför det?
       }
     })
     return 'DELETED'
@@ -991,6 +987,7 @@ console.log("     filePath",filePath);
   function findFiles (dirName) {
 //console.log("findFiles:dirName '" + dirName + "'");
     return fs.readdirAsync ('rln' + IMDB + dirName).map (function (fileName) { // Cannot use mapSeries here (why?)
+console.log("findFiles:fileName",fileName);
       var filepath = path.join (IMDB + dirName, fileName)
       var brli = brokenLink (filepath) // refers to server root
       if (brli) {
@@ -1166,7 +1163,7 @@ console.log("     filePath",filePath);
           console.error (err.message)
         }
       //}
-      console.log (' ' + filepath + ' created')
+      console.log (' .' + filepath.slice (IMDB.length) + ' created') // Hide absolute server path
     })
     return
   }
