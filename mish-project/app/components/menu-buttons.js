@@ -77,7 +77,7 @@ export default Component.extend (contextMenuMixin, {
       for (var i=0; i<treePath.length; i++) {
         treePath [i] = this.get ("imdbPath") + treePath [i].toString ();
       }
-console.log("requestDirs:treePath",treePath);
+//console.log("requestDirs:treePath",treePath);
       let albDat = aData (treePath);
       // Substitute the first name (in '{text:"..."') into ´ROOT: <root name>´:
       albDat = albDat.split (","); // else too long a string (??)
@@ -437,7 +437,7 @@ console.log("requestDirs:treePath",treePath);
           markBorders (tmpName);
         }
       }
-      picNames.reverse ();
+        picNames.reverse ();
       $ ("#picNames").text (picNames.join ("\n"));
       var picOrder = picNames;
       // Remove the random name suffix from any picture in #picFound:
@@ -449,7 +449,7 @@ console.log("requestDirs:treePath",treePath);
       $ ("#picOrder").text (picOrder.join ("\n"));
       nels = picNames.length;
       movetxt = "";
-      if (nels === 1) {moveFunc (picNames, picOrder); return;}
+      if (nels === 1) {moveFunc (picNames); return;}
       nelstxt = "Vill du flytta alla " + nels; // i18n new from when symlinks may be moved
       if (nels === 2) {nelstxt = "Vill du flytta båda två";} // i18n
 
@@ -462,7 +462,7 @@ console.log("requestDirs:treePath",treePath);
       }
       //console.log (nodelem0.parentNode.style.backgroundColor); // <- Checks this text content
       var mvTxt = "<br>ska flyttas till annat album"; // i18n
-      // Set dialog text content (picOrder == picNames.without.posfix):
+      // Set dialog text content (picOrder == picNames-without-suffix):
       $ ("#dialog").html (movetxt + "<b>" + nelstxt + "?</b><br>" + cosp (picOrder.reverse ()) + mvTxt);
       $ ("#dialog").dialog ( { // Initiate dialog
         title: "Flytta till... ", // i18n
@@ -478,8 +478,7 @@ console.log("requestDirs:treePath",treePath);
         "id": "allButt", // Process all
         click: function () {
           $ (this).dialog ('close');
-          //console.log("picOrder", picOrder);
-          moveFunc (picNames, picOrder);
+          moveFunc (picNames);
         }
       },
       {
@@ -1031,12 +1030,19 @@ console.log("eraseOriginals",eraseOriginals,"linked",linked,"nels",nels);
           n = newdata.length;
           // Transform the elements for HBS template use:
           for (i=0; i<n; i++) {
-            newdata [i].linkto = newdata [i].orig; // Added, see requestNames, 'row number eight'
+            newdata [i].linkto = newdata [i].orig;
+            // Added, see requestNames, '´row´ number eight to nine'
+            // 7 symlink:   SPACE, else the value for linkto
+            // 8 linkto:    which is set in refreshAll
+            // 9 albname:   short name for symlink's original album
             if (newdata [i].symlink === "&") {
               newdata [i].symlink = "";
             } else {
-              newdata [i].orig = newdata [i].symlink;
+              let tmp = newdata [i].symlink;
+              newdata [i].orig = tmp;
               newdata [i].symlink = "symlink";
+              tmp = tmp.replace (/^([.]*\/)+/, $ ("#imdbRoot").text () + "/").replace (/^([^/]*\/)*([^/]+)\/[^/]+$/, "$2");
+              newdata [i].albname = removeUnderscore (tmp, true);
             }
           }
 
@@ -1453,7 +1459,7 @@ console.log("eraseOriginals",eraseOriginals,"linked",linked,"nels",nels);
       if (!IMDB_DIR) {IMDB_DIR = "/";} // Avoids empty parameter
       IMDB_DIR = IMDB_DIR.replace (/\//g, "@"); // For sub-directories
       var xhr = new XMLHttpRequest ();
-  console.log("requestNames:IMBD_DIR",IMDB_DIR);
+//console.log("requestNames:IMBD_DIR",IMDB_DIR);
       xhr.open ('GET', 'imagelist/' + IMDB_DIR, true, null, null); // URL matches server-side routes.js
       setReqHdr (xhr, 2);
       var allfiles = [];
@@ -1467,7 +1473,8 @@ console.log("eraseOriginals",eraseOriginals,"linked",linked,"nels",nels);
             txt1: 'description', // for metadata
             txt2: 'creator',     // for metadata
             symlink: ' ',        // SPACE, else the value for linkto
-            linkto: ''           //   which is set in refreshAll
+            linkto: '',          //   which is set in refreshAll
+            albname: ''          //   "
           });
           var NEPF = 7; // Number of properties in Fobj
           var result = xhr.response;
@@ -4008,6 +4015,7 @@ console.log("deleteFile:origpic",origpic);
   });
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// Update the sqlite text database (any symlink will be auto-omitted)
 function sqlUpdate (picPaths) { // Must be complete server paths
   if (!picPaths) return;
   let data = new FormData ();
@@ -4087,12 +4095,12 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) {
               }
             }
             for (let i=0; i<files.length; i+= 2) {
-              let name = files [i].replace (/^(.*\/)*/, ""); // Not harmful but unnessecary(?)
+              let name = files [i].replace (/^(.*\/)*/, "");
               files [i + 1] = files [i + 1] + name;
             }
-            files = files.join ("\n");
+              files = files.join ("\n");
 //console.log("infoDia:title " + title);
-console.log("infoDia:files (for sqlUpdate)" + "\n `" + files + "´");
+console.log("infoDia:files for sqlUpdate (autodetecting and skipping symlinks)" + "\n `" + files + "´");
             if (files.length > 0) {
               document.getElementById("reLd").disabled = false;
               later ( ( () => {
@@ -4507,7 +4515,7 @@ function linkFunc (picNames) { // ===== Execute a link-these-files-to... request
   albums = albums.split ("\n");
   var curr = $ ("#imdbDir").text ();
   var picf = $ ("#picFound").text (); // Remove if possibly picFound
-  if (curr) {curr = curr.toString ();} else {curr = "";}
+  //if (curr) curr = curr.toString (); else {curr = "";}
   var lalbum = [];
   var i;
   for (i=0; i<albums.length; i++) { // Remove current and tmp album from options
@@ -4522,8 +4530,8 @@ function linkFunc (picNames) { // ===== Execute a link-these-files-to... request
   //var r = $ ("#imdbRoot").text ();
   var codeSelect = '<select class="selectOption" onchange=' + codeLink + '>\n<option value="">Välj ett album:</option>';
   for (i=0; i<lalbum.length; i++) {
-    var v = lalbum [i];
-    codeSelect += '\n<option value ="' + v + '">' + '.' + v + '</option>';
+    let v = lalbum [i];
+    codeSelect += '\n<option value="' + v + '">' + '.' + v + '</option>';
   }
   codeSelect += "\n</select>"
   //codeSelect += '<br>(eller avbryt med "Ok" utan att välja album)';
@@ -4535,16 +4543,16 @@ function linkFunc (picNames) { // ===== Execute a link-these-files-to... request
   $ ("select.selectOption").trigger ("focus");
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function moveFunc (picNames, picOrder) { // ===== Execute a move-these-files-to... request
+function moveFunc (picNames) { // ===== Execute a move-these-files-to... request
   // When moveFunc is called, picNames should also be saved as string in #picNames
   // MoveFunc SHOULD reset #imdbDir to the target album and ALSO update its server #sortOrder!
   var albums = $ ("#imdbDirs").text (); // Album paths available
   albums = albums.split ("\n");
-  let curr = $ ("#imdbDir");
-  let picf = $ ("#picFound").text () // Remove if possibly picFound
-  if (curr) curr = curr.toString (); else curr = ""; // ??
+  let curr = $ ("#imdbDir").text ();
+  let picf = $ ("#picFound").text (); // Remove if possibly picFound
+  //if (curr) curr = curr.toString (); else curr = ""; // ??
   let malbum = [];
-  for (let i=0; i<albums.length; i++) { // Remove current and find result albums from options
+  for (let i=0; i<albums.length; i++) { // Remove current and tmp album from options
     if (albums [i] !== curr && albums [i].indexOf (picf) < 0) {
       malbum.push (albums [i]);
     }
@@ -4559,23 +4567,24 @@ function moveFunc (picNames, picOrder) { // ===== Execute a move-these-files-to.
   // picfound = the name of the temporary album where found pictures are kept
   // picfound in the path means that a random suffix has to be removed from names*
 
-  // Beware of the algorithm with all regular expression escapes in the text put into
-  // #temporary_1, a Bash text string containing in the magnitude of 1000 characters,
+  // (Beware of!) The algorithm with all regular expression escapes in the text put into
+  // #temporary_1, is a Bash text string containing in the magnitude of 1000 characters,
   // depending on actual file names, but well within the Bash line length limit.
 
-  !picOrder; //!moveOrder; // Dummy calls, for names only referenced in codeMove:
+  //!picOrder; //!moveOrder; // Dummy calls, for names only referenced in codeMove:
 ///***RÄTTA NEDAN
-  var codeMove = "'var malbum=this.value;var mpath=\"\";if(this.selectedIndex===0){return false;}mpath=malbum.replace (/^[^/]*(.*)/,$(\"#imdbPath\").text()+\"$1\");var lpp=mpath.split(\"/\").length-1;if (lpp > 0)lpp=\"../\".repeat(lpp);else lpp=\"./\";console.log(\"Trying move to\",malbum);var picNames=$(\"#picNames\").text().split(\"\\n\");var picOrder=$(\"#picOrder\").text().split(\"\\n\");console.log(\"\"+picNames,\" \"+picOrder);cmd=[];for (let i=0;i<picNames.length;i++){var move=$(\"#imdbPath\").text()+\"/\"+document.getElementById(\"i\"+picNames[i]).getElementsByTagName(\"img\")[0].getAttribute(\"title\");var mini=move.replace(/([^/]+)(\\.[^/.]+)$/,\"_mini_$1.png\");var show=move.replace(/([^/]+)(\\.[^/.]+)$/,\"_show_$1.png\");var moveto=mpath+\"/\";var picfound=$(\"#picFound\").text();cmd.push(\"picfound=\"+picfound+\";move=\"+move+\";mini=\"+mini+\";show=\"+show+\";orgmove=$move;orgmini=$mini;orgshow=$show;moveto=\"+moveto+\";lpp=\"+lpp+\";lnksave=$(readlink -n $move);if [ $lnksave ];then move=$(echo $move|sed -e \\\"s/\\\\(.*$picfound.*\\\\)\\\\.[^.\\\\/]\\\\+\\\\(\\\\.[^.\\\\/]\\\\+$\\\\)/\\\\1\\\\2/\\\");mini=$(echo $mini|sed -e \\\"s/\\\\(.*$picfound.*\\\\)\\\\.[^.\\\\/]\\\\+\\\\(\\\\.[^.\\\\/]\\\\+$\\\\)/\\\\1\\\\2/\\\");show=$(echo $show|sed -e \\\"s/\\\\(.*$picfound.*\\\\)\\\\.[^.\\\\/]\\\\+\\\\(\\\\.[^.\\\\/]\\\\+$\\\\)/\\\\1\\\\2/\\\");lnkfrom=$(echo $lnksave|sed -e \\\"s/^\\\\(\\\\.\\\\{1,2\\\\}\\\\/\\\\)*//\\\" -e \\\"s,^,$lpp,\\\");lnkmini=$(echo $lnkfrom|sed -e \\\"s/\\\\([^/]\\\\+\\\\)\\\\(\\\\.[^/.]\\\\+\\\\)\\\\$/_mini_\\\\1\\\\.png/\\\");lnkshow=$(echo $lnkfrom|sed -e \\\"s/\\\\([^/]\\\\+\\\\)\\\\(\\\\.[^/.]\\\\+\\\\)\\\\$/_show_\\\\1\\\\.png/\\\");ln -sfn $lnkfrom $move;fi;mv -n $move $moveto;if [ $? -ne 0 ];then if [ $move != $orgmove ];then rm $move;fi;exit;else if [ $lnksave ];then ln -sfn $lnkmini $mini;ln -sfn $lnkshow $show;fi;mv -n $mini $show $moveto;if [ $move != $orgmove ];then rm $orgmove;fi;if [ $mini != $orgmini ];then rm $orgmini;fi;if [ $show != $orgshow ];then rm $orgshow;fi;fi;\");console.log(move,mini,show,moveto);}$(\"#temporary\").text(mpath);$(\"#temporary_1\").text (cmd.join(\"\\n\"));$(\"#yesBut\").text(\"Flytta\");'"
+  var codeMove = "'var malbum=this.value;var mpath=\"\";if(this.selectedIndex===0)return false;mpath = $(\"#imdbPath\").text() + malbum;var lpp=malbum.split(\"/\").length-1;if (lpp > 0)lpp=\"../\".repeat(lpp);else lpp=\"./\";console.log(\"Trying move to .\" + malbum);var picNames=$(\"#picNames\").text().split(\"\\n\");var picOrder=$(\"#picOrder\").text().split(\"\\n\");console.log(\"\"+picNames,\" \"+picOrder);cmd=[];for (let i=0;i<picNames.length;i++){var move=$(\"#imdbPath\").text()+document.getElementById(\"i\"+picNames[i]).getElementsByTagName(\"img\")[0].getAttribute(\"title\");var mini=move.replace(/([^/]+)(\\.[^/.]+)$/,\"_mini_$1.png\");var show=move.replace(/([^/]+)(\\.[^/.]+)$/,\"_show_$1.png\");var moveto=mpath+\"/\";var picfound=$(\"#picFound\").text();cmd.push(\"picfound=\"+picfound+\";move=\"+move+\";mini=\"+mini+\";show=\"+show+\";orgmove=$move;orgmini=$mini;orgshow=$show;moveto=\"+moveto+\";lpp=\"+lpp+\";lnksave=$(readlink -n $move);if [ $lnksave ];then move=$(echo $move|sed -e \\\"s/\\\\(.*$picfound.*\\\\)\\\\.[^.\\\\/]\\\\+\\\\(\\\\.[^.\\\\/]\\\\+$\\\\)/\\\\1\\\\2/\\\");mini=$(echo $mini|sed -e \\\"s/\\\\(.*$picfound.*\\\\)\\\\.[^.\\\\/]\\\\+\\\\(\\\\.[^.\\\\/]\\\\+$\\\\)/\\\\1\\\\2/\\\");show=$(echo $show|sed -e \\\"s/\\\\(.*$picfound.*\\\\)\\\\.[^.\\\\/]\\\\+\\\\(\\\\.[^.\\\\/]\\\\+$\\\\)/\\\\1\\\\2/\\\");lnkfrom=$(echo $lnksave|sed -e \\\"s/^\\\\(\\\\.\\\\{1,2\\\\}\\\\/\\\\)*//\\\" -e \\\"s,^,$lpp,\\\");lnkmini=$(echo $lnkfrom|sed -e \\\"s/\\\\([^/]\\\\+\\\\)\\\\(\\\\.[^/.]\\\\+\\\\)\\\\$/_mini_\\\\1\\\\.png/\\\");lnkshow=$(echo $lnkfrom|sed -e \\\"s/\\\\([^/]\\\\+\\\\)\\\\(\\\\.[^/.]\\\\+\\\\)\\\\$/_show_\\\\1\\\\.png/\\\");ln -sfn $lnkfrom $move;fi;mv -n $move $moveto;if [ $? -ne 0 ];then if [ $move != $orgmove ];then rm $move;fi;exit;else if [ $lnksave ];then ln -sfn $lnkmini $mini;ln -sfn $lnkshow $show;fi;mv -n $mini $show $moveto;if [ $move != $orgmove ];then rm $orgmove;fi;if [ $mini != $orgmini ];then rm $orgmini;fi;if [ $show != $orgshow ];then rm $orgshow;fi;fi;\");console.log(move,mini,show,moveto);}$(\"#temporary\").text(mpath);$(\"#temporary_1\").text (cmd.join(\"\\n\"));$(\"#yesBut\").text(\"Flytta\");'"
   // A log ...\");console.log(move,mini,show,moveto);}$...
   // may be inserted (or removed), and it is printed even at failure.
   // Here checkNames cannot be called (like in linkFunc) since  #temporary_1 is not usable (already occupied)
 
   //console.log("codeMove",codeMove);
-  let r = $ ("#imdbRoot").text ();
+  //let r = $ ("#imdbRoot").text ();
   let codeSelect = '<select class="selectOption" onchange=' + codeMove + '><option value="">Välj ett album:</option>';
   for (let i=0; i<malbum.length; i++) {
-    let v = r + malbum [i];
-    codeSelect += '<option value ="' +v+ '">' +v+ '</option>';
+    //let v = r + malbum [i];
+    let v = malbum [i];
+    codeSelect += '\n<option value="' + v + '">' + '.' + v + '</option>';
   }
   codeSelect += "</select>"
   //codeSelect += '<br>(eller avbryt med "Ok" utan att välja album)';
@@ -5610,7 +5619,7 @@ var prepTextEditDialog = () => {
     if ($ ("#i" + ednp).hasClass ("symlink")) {
       getFilestat (linkPath).then (result => { // linkPath??
         //console.log (result); // The file info HTML, strip it:
-        result = result.replace (/^.+: ((\.){1,2}\/)+/, $ ("#imdbLink").text () + "/");
+        result = result.replace (/^.+: ((\.){1,2}\/)+/, $ ("#imdbPath").text () + "/");
         result = result.replace (/^([^<]+)<.+/, "$1");
         fileName = result;
       }).then ( () => {

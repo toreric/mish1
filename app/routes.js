@@ -693,6 +693,7 @@ console.log("/sortlist/:imdbtxtpath",imdbtxtpath);
       body = Buffer.concat (body).toString ()
       // Here `body` has the entire request body stored in it as a string
       var tmp = body.split ('\n')
+console.log("savetext body",tmp);
       var fileName = tmp [0].trim () // the path is included here @***
       var msgName = '.' + fileName.slice (IMDB.length)
 
@@ -861,11 +862,10 @@ console.log("/sortlist/:imdbtxtpath",imdbtxtpath);
 console.log("sqlUpdate:pathlist",pathlist);
     for (let i=0; i<pathlist.length; i++) { // forLoop
       let filePath = '.' + pathlist [i].slice (IMDB.length) // Album relative path
-console.log("     filePath",filePath);
       // No files in the #picFound album (may be occasionally uploaded,
       // temporary non-symlinks) and no symlinks should be processed:
-      if (filePath.indexOf (picFound) > 0 || await isSymlink (filePath)) continue;
-      //console.log("sqlUpdate",filePath)
+      if (filePath.indexOf (picFound) > 0 || await isSymlink (pathlist [i])) continue;
+console.log("sqlUpdate " + filePath + " = " + pathlist [i])
       // Classify the file as existing or not
       let pathArr = filePath.split ("/")
       let xmpParams = [], dbValues = {}
@@ -987,7 +987,7 @@ console.log("     filePath",filePath);
   function findFiles (dirName) {
 //console.log("findFiles:dirName '" + dirName + "'");
     return fs.readdirAsync ('rln' + IMDB + dirName).map (function (fileName) { // Cannot use mapSeries here (why?)
-console.log("findFiles:fileName",fileName);
+//console.log("findFiles:fileName",fileName);
       var filepath = path.join (IMDB + dirName, fileName)
       var brli = brokenLink (filepath) // refers to server root
       if (brli) {

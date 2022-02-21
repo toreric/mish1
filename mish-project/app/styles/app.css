@@ -1148,10 +1148,11 @@ button.goAlbum {
   font-size: 80%;
   padding: 0 0.25em 0.15em 0.25em;
   text-align: left;
-  width: 7.7em;
+  max-width: 11.65em;
   color: #0b0;
   border: 0;
   background: transparent;
+  word-wrap: break-word;
 }
 div.img_mini.symlink button.goAlbum {
   display: block;

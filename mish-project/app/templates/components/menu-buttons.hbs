@@ -429,7 +429,7 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
         </a>
         <div id="" class="markFalse" alt="MARKER" title="Markera" {{action 'toggleMark' file.name}}  draggable="false" ondragstart="return false"><img src="/images/markericon.svg" draggable="false" ondragstart="return false" class="mark">
           <!-- The action of this button triggers the parent album of a link -->
-          <button class="goAlbum" title="...med originalbilden" onclick="this.parentElement.click ()" {{action 'parAlb' file.name}}>Till albumet...</button>
+          <button class="goAlbum" title="där originalet är" onclick="this.parentElement.click ()" {{action 'parAlb' file.name}}>Gå till ”{{file.albname}}”</button>
         </div>
         <div class="img_name" title="Click = Copy!" totip="Click = Copy!" onclick="copyToClipboard(this.innerHTML)">
           {{file.name}}
