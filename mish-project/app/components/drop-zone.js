@@ -9,6 +9,13 @@ import { later } from '@ember/runloop';
 import { Promise } from 'rsvp';
 
 export default Component.extend({
+
+  // Parameters in form's dzparam hidden field (see .hbs file)
+  userDir:  "unset", // Root of album collections (server's IMDB_HOME)
+  imdbPath: "unset", // Absolute path to current root album == album collection (server's IMDB)
+  imdbDir:  "unset", // Current album directory (server's IMDB_DIR)
+  picFound: "unset", // Current search result directory (server's picFound)
+
   classNames: ['dropzone'],
 
   myDropzone: () => {return document.body || undefined},
@@ -213,6 +220,7 @@ export default Component.extend({
       // Fix flickering dragging over child elements: https://github.com/enyo/dropzone/issues/438
       dragenter: this.noop,
       dragleave: this.noop,
+
       init: function () {
         onDragEnterLeaveHandler(this);
         document.getElementById("uploadWarning").style.display = "none";
@@ -263,7 +271,7 @@ export default Component.extend({
         this.on("queuecomplete", function() {
           document.getElementById("uploadPics").style.display = "none";
           document.getElementById("uploadWarning").style.display = "none";
-          $ ("#uploadFinished").text ("UPPLADDNINGEN FÄRDIG");
+          $ ("#uploadFinished").text ("INGEN UPPLADDNING PÅGÅR");
           this.options.autoProcessQueue = false;
           let n = this.files.length;
           console.log (secNow (), "drop-zone queuecomplete"); // Upload end
@@ -311,6 +319,19 @@ export default Component.extend({
     this.set('myDropzone', new Dropzone(region, this.dropzoneOptions));
   },
 
+  // didRender () {
+  //   this._super (...arguments);
+  //   $ (document).ready ( () => {
+  //
+  //     // Set parameters in form's dzparam hidden field (see .hbs), needed by server
+  //     this.set ("userDir", $ ("#userDir").text ());
+  //     this.set ("imdbPath", $ ("#imdbPath").text ());
+  //     this.set ("imdbDir", $ ("#imdbDir").text ());
+  //     this.set ("picFound", $ ("#picFound").text ());
+  //
+  //   });
+  // },
+  //
   //insertDropzone: Ember.on('didInsertElement', function() {
   didInsertElement () {
     let _this = this;
@@ -355,7 +376,7 @@ export default Component.extend({
 
   actions: {
     closeThis() {
-      document.getElementById ("divDropbox").style.display = "none";
+      document.getElementById ("divDropZone").style.display = "none";
     },
 
     removeAllFiles() {
@@ -378,17 +399,25 @@ export default Component.extend({
 
     processQueue() {
       return new Promise ( () => {
+
+        // Set parameters in form's dzparam hidden field (see .hbs), needed by server (doesn't work)
+        this.set ("userDir", $ ("#userDir").text ());
+        this.set ("imdbPath", $ ("#imdbPath").text ());
+        this.set ("imdbDir", $ ("#imdbDir").text ());
+        this.set ("picFound", $ ("#picFound").text ());
+later ( () => { // Wait
         this.myDropzone.options.autoProcessQueue = false;
         qlen = this.myDropzone.getQueuedFiles().length;
         if (qlen > 0) {
           $ (".spinner").show ();
           document.getElementById("reLd").disabled = true;
           document.getElementById("saveOrder").disabled = true;
-          document.getElementById("showDropbox").disabled = true;
+          document.getElementById("showDropZone").disabled = true;
           this.myDropzone.options.autoProcessQueue = true;
           console.log (secNow (), "drop-zone processQueue:", qlen); // Upload begin
           this.myDropzone.processQueue ();
         }
+}, 1999);
       }).then ( () => {
         // Kanske här?
       });

@@ -1789,7 +1789,7 @@ img.dotted {
       cursor: pointer;
       text-decoration: none; }
     a:hover {
-      color: deepskyblue;
+      color: deepskyblue!important;
       text-decoration: none; }
     .dropzone .dz-preview .dz-remove {
       background-color: white;

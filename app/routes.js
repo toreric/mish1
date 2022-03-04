@@ -8,17 +8,16 @@ module.exports = function (app) {
   var upload = multer ( {dest: '/tmp'}) // tmp upload
   var exec = require ('child_process').exec
   var execSync = require ('child_process').execSync
-  //var bodyParser = require ('body-parser')
-  //app.use (bodyParser.urlencoded ( {extended: false}))
+  var bodyParser = require ('body-parser')
+  app.use (bodyParser.urlencoded ( {extended: false}))
   //app.use (bodyParser.json())
   //const sqlitePromise = require ('sqlite3-promisify')
+  // var sqlite3 = require('sqlite3') //.verbose ()
+  // const TransactionDatabase = require ("sqlite3-transactions").TransactionDatabase
+  // var setdb = new sqlite3.Database('_imdb_settings.sqlite')
+  // var sqlite = require ('sqlite') // This is sqlite3 'with await', 2019!
 
-  /*var sqlite3 = require('sqlite3') //.verbose ()
-  const TransactionDatabase = require ("sqlite3-transactions").TransactionDatabase
-  var setdb = new sqlite3.Database('_imdb_settings.sqlite')
-  var sqlite = require ('sqlite') // This is sqlite3 'with await', 2019! */
-
-  const SQLite = require ("better-sqlite3")
+  const SQLite = require ('better-sqlite3')
   const setdb = new SQLite('_imdb_settings.sqlite')
 
   //var jsdom = require('jsdom')
@@ -39,7 +38,7 @@ module.exports = function (app) {
   // ----- Image database directory
   let IMDB_DIR = "" // Must be set in route
   // ----- Name of symlink pointing to IMDB_ROOT
-  let IMDB_LINK = "."    // <<<<<<<<<< OLD: must equal init () setting!
+  //let IMDB_LINK = "."    // <<<<<<<<<< OLD: must equal init () setting!
   //NEW This will be the absolute current abum root path IMDB
   let IMDB = "" // Replaces the former ´link-to-album´ task of 'imdb' (IMDB_LINK)
   // ----- Base name of search result albums
@@ -55,19 +54,21 @@ module.exports = function (app) {
   // Remember to check 'Express route tester'!
   // ##### #0. General passing point
   app.all ('*', async function (req, res, next) {
-    let tmp = req.get ('imdbroot')
-    if (tmp) {
-      IMDB_ROOT = decodeURIComponent (tmp)
-      IMDB_DIR = decodeURIComponent (req.get ('imdbdir'))
-      IMDB = IMDB_HOME + "/" + IMDB_ROOT
-      picFound = req.get ('picfound')
-      // Remove all too old picFound files
-      let cmd = 'find -L ' + IMDB + ' -type d -name "' + picFound + '*" -amin +' + toold + ' | xargs rm -rf'
-      await cmdasync (cmd)
+    if (req.originalUrl !== '/upload') { // Upload with dropzone: 'req' used else!
+      let tmp = req.get ('imdbroot')
+      if (tmp) {
+        IMDB_ROOT = decodeURIComponent (tmp)
+        IMDB_DIR = decodeURIComponent (req.get ('imdbdir'))
+        IMDB = IMDB_HOME + "/" + IMDB_ROOT
+        picFound = req.get ('picfound')
+        // Remove all too old picFound files
+        let cmd = 'find -L ' + IMDB + ' -type d -name "' + picFound + '*" -amin +' + toold + ' | xargs rm -rf'
+        await cmdasync (cmd)
+      }
     }
-    console.log ("")
-// 30 svart, 31 röd, 32 grön, 33 gul, 34 blå, 35 magenta, 36 cyan, 37 vit, 0 default
-console.log('\033[36m' + decodeURIComponent (req.originalUrl) + '\033[0m');
+    // console.log ("")
+    // 30 svart, 31 röd, 32 grön, 33 gul, 34 blå, 35 magenta, 36 cyan, 37 vit, 0 default
+    // console.log('\033[36m' + decodeURIComponent (req.originalUrl) + '\033[0m');
     // console.log ("  WWW_ROOT:", WWW_ROOT)
     // console.log ("      IMDB:", IMDB)
     // console.log (" IMDB_ROOT:", IMDB_ROOT)
@@ -104,7 +105,6 @@ console.log("p1",q);
         //p [3] = req.params.p.toString ().replace (/^([^/]*\/*){3}/, "")
         if (p [2] && p [3]) p [2] = p [2] + "/" + p [3]
       }
-      setRootLink (IMDB_HOME, IMDB_ROOT, IMDB_LINK)
       // A few seconds cookie:
       res.cookie (p [0], p [1] + "/" + p [2], {httpOnly: false, expires: new Date (Date.now () + 9000)}).redirect ("../..")
 console.log("p2",p);
@@ -157,7 +157,7 @@ console.log("p2",p);
     var filex = '.' + file.slice (IMDB.length)
     var fileStat = "<i>Filnamn</i>: " + filex + "<br><br>"
     if (linkto) {
-      let lntx ="<small>(VISAS HÄR SOM LÄNKAD BILD)</small>";
+      let lntx ="<small span style='color:#0a4'>VISAS HÄR SOM LÄNKAD BILD</small>:";
       fileStat = "<i>Filnamn</i>: " + linkto + "<br><span style='color:#0a4'>" + lntx + "</span><br>"
       fileStat += "<i>Länknamn</i>: <span style='color:#0a4'>" + filex + "</span><br><br>"
     }
@@ -175,14 +175,6 @@ console.log("p2",p);
   // ##### #0.1.9 Set IMDB_ROOT and picFound basename  OBSOLETE? - NO!
   // Keep it for returning IMDB if/when only imdbroot is set!
   app.get ('/imdbroot/:imdbroot', async function (req, res) {
-//     let p = req.params.imdbroot.trim ().split ("@")
-// console.log(p);
-    //OLD: IMDB_ROOT = p [0]                 NEVER REACHED!!!!!
-    //OLD: picFound = p [1]
-    //console.log("0.1.9", IMDB_HOME, IMDB_ROOT, IMDB_LINK, picFound);
-    // IMDB_LINK = symlink pointing to current album root
-    //setRootLink (IMDB_HOME, IMDB_ROOT, IMDB_LINK)
-    //await new Promise (z => setTimeout (z, 400))
     res.send (IMDB)
   })
 
@@ -199,10 +191,8 @@ console.log("p2",p);
     await cmdasync (cmd)
     setTimeout (function () {
       allDirs ().then (dirlist => { // dirlist entries start with the root album
-//console.log("-dirlist",dirlist);
         areAlbums (dirlist).then (async dirlist => {
           dirlist = dirlist.sort ()
-//console.log("=dirlist",dirlist);
           let dirtext = dirlist.join ("€")
           let dircoco = [] // directory content counter
           let dirlabel = [] // Album label thumbnail paths
@@ -213,7 +203,6 @@ console.log("p2",p);
             cmd = "echo -n `ls " + IMDB + dirlist [i] + "/_mini_* 2>/dev/null`"
             let pics = await execP (cmd)
             pics = pics.toString ().trim ().split (" ")
-//console.log("pics:",dirlist [i],pics);
             if (!pics [0]) {pics = []} // Remove a "" element
             let npics = pics.length
             if (npics > 0) {
@@ -350,16 +339,6 @@ console.log("p2",p);
     var status = "viewer"
     var allow = "?"
     try {
-      //setdb.serialize ( () => {
-        //###  Uncomment the following to get a full user credentials log listout  ###//
-        /*setdb.all ("SELECT name, pass, user.status, class.allow FROM user LEFT JOIN class ON user.status = class.status ORDER BY name;", (error,rows) => {
-          if (!rows) {rows = []}
-          console.log('----------------')
-          for (var i=0; i<rows.length; i++) {
-            console.log(rows [i].name, rows [i].pass, rows [i].status, rows [i].allow)
-          }
-          console.log('----------------')
-        })*/
       let row = setdb.prepare ("SELECT pass, status FROM user WHERE name = $name").get ( {name: name})
       if (row) {
         password = row.pass
@@ -369,27 +348,6 @@ console.log("p2",p);
       if (row) {
         allow = row.allow
       }
-      /*, (error, row) => {
-          if (error) {throw error}
-          if (row) {
-            password = row.pass
-            status = row.status
-          }
-          // Must be nested, cannot be serialized (keeps 'status'):
-          setdb.get ("SELECT allow FROM class WHERE status = $status", {
-            $status: status
-          }, (error, row) => {
-            if (error) {throw error}
-            if (row) {
-              allow = row.allow
-            }
-            //console.log ("Login attempt " + name + " (" + status + ")")
-            res.location ('/')
-            res.send (password +"\n"+ status +"\n"+ allow)
-            //res.end ()
-          })
-        })
-      })*/
       res.location ('/')
       res.send (password +"\n"+ status +"\n"+ allow)
     } catch (err) {
@@ -453,7 +411,7 @@ console.log("p2",p);
   app.get ('/sortlist/:imagedir', async function (req, res) {
     //OLD: IMDB_DIR = req.params.imagedir.replace (/@/g, "/")
     var imdbtxtpath = IMDB + IMDB_DIR + '/_imdb_order.txt'
-console.log("/sortlist/:imdbtxtpath",imdbtxtpath);
+//console.log("/sortlist/:imdbtxtpath",imdbtxtpath);
     try { // Create _imdb_order.txt if missing
       fd = await fs.openAsync (imdbtxtpath, 'r') // check
       await fs.closeAsync (fd)
@@ -507,7 +465,7 @@ console.log("/sortlist/:imdbtxtpath",imdbtxtpath);
   // ##### #4. Download full-size original image file: Get the host name in responseURL   CHECK path
   app.get ('/download/*?', function (req, res) {
     var fileName = req.params[0] // with path
-    console.log ('Download of ' + fileName + " requested")
+    console.log ('Download of .' + fileName.slice (IMDB.length + 3) + ' requested')
     res.location ('/')
     res.send (fileName)
   })
@@ -577,7 +535,6 @@ console.log("/sortlist/:imdbtxtpath",imdbtxtpath);
     await execP (cmd)
   })
 
-
   // ##### #7.1 Used by dropzone.js OBSOLETE
   app.post ('/setimdbdir/:imagedir', function (req, res) {
     //IMDB_DIR = req.params.imagedir.replace (/@/g, "/")
@@ -589,11 +546,11 @@ console.log("/sortlist/:imdbtxtpath",imdbtxtpath);
   // Called from the drop-zone component, NOTE: The name 'file' is mandatory!
   app.post ('/upload', upload.array ('file'), async function (req, res, next) {
     console.log ("IMDB_DIR =", IMDB_DIR)
-    if (!IMDB_DIR) { // If not already set: refrain
-      console.log ("Image directory missing, cannot upload")
-      return
-    }
-    // ----- Image data base absolute path
+    // if (!IMDB_DIR) { // If not already set: refrain
+    //   console.log ("Image directory missing, cannot upload")
+    //   return
+    // }
+    // ----- Image album absolute path
     var IMDB_PATH = IMDB + IMDB_DIR + '/'
     await Promise.mapSeries (req.files, function (file) { // Can we use mapSeries here?
       file.originalname = file.originalname.replace (/ /g, "_") // Spaces prohibited
@@ -607,7 +564,7 @@ console.log("/sortlist/:imdbtxtpath",imdbtxtpath);
         await sqlUpdate ('.' + IMDB_DIR +"/"+ file.originalname)
       }) // Add to the sql DB
       .then (console.log (++n_upl +' TMP: '+ file.path + ' written to' +'\nUPLOADED: '+ IMDB_DIR +"/"+ file.originalname))
-      // Delete showfile and minifile if the main file is refreshed
+      // Delete showfile and minifile since the main file may be refreshed (auto-regenerated)
       .then(pngname = path.parse (file.originalname).name + '.png')
       // File not found isn't caught, see Express unhandledRejection!
       .then (fs.unlinkAsync ('rln' + IMDB_PATH +'_mini_'+ pngname)) // see Express
@@ -632,16 +589,13 @@ console.log("/sortlist/:imdbtxtpath",imdbtxtpath);
   app.post ('/saveorder', function (req, res, next) {
     //OLD:IMDB_DIR = req.params.imagedir.replace (/@/g, "/")
     var file = IMDB + IMDB_DIR + "/_imdb_order.txt"
-//console.log("file",file);
     execSync ('touch ' + file + '&&chmod 664 ' + file) // In case not yet created
     var body = []
     req.on ('data', (chunk) => {
-//console.log(chunk)
       body.push (chunk) // body will be a Buffer array: <buffer 39 35 33 2c 30 ... >, <buf... etc.
     }).on ('end', () => {
       body = Buffer.concat (body).toString () // Concatenate; then change the Buffer into String
       // At this point, do whatever with the request body (now a string)
-//console.log("  Request body =\n"+body)
       fs.writeFileAsync (file, body).then (function () {
         console.log ("Saved file order ")
         //console.log ('\n'+body+'\n')
@@ -658,16 +612,12 @@ console.log("/sortlist/:imdbtxtpath",imdbtxtpath);
   // ##### #8.1 Save the .imdb_favorites file
   //            Called from the menu-buttons component's favorite dialog
   app.post ('/savefavor/:rootdir', function (req, res, next) {
-    //OLD: let file = IMDB_HOME + "/" + req.params.rootdir.trim () + "/.imdb_favorites"
     let file = IMDB + "/.imdb_favorites"
-    //console.log(8.1, file);
     var body = []
     req.on ('data', (chunk) => {
       body.push (chunk) // body will be a Buffer array: <buffer 39 35 33 2c 30 ... >, <buf... etc.
     }).on ('end', () => {
-      //console.log(8.1, body);
       body = Buffer.concat (body).toString () // Concatenate; then change the Buffer into String
-      //console.log(8.1, body);
       fs.writeFileAsync (file, body).then (function () {
         console.log ("Saved favorites ")
       })
@@ -682,9 +632,6 @@ console.log("/sortlist/:imdbtxtpath",imdbtxtpath);
 
   // ##### #9. Save Xmp.dc.description and Xmp.dc.creator using exiv2
   app.post ('/savetext/:imagedir', function (req, res, next) {
-    //console.log("Accessing 'app.post, savetext'")
-    //OLD: IMDB_DIR = req.params.imagedir.replace (/@/g, "/")
-    // The above is superfluous and has, so far, no use here, since please note:
     // The imagedir directory path is already included in the file name here @***
     var body = []
     req.on ('data', (chunk) => {
@@ -693,7 +640,6 @@ console.log("/sortlist/:imdbtxtpath",imdbtxtpath);
       body = Buffer.concat (body).toString ()
       // Here `body` has the entire request body stored in it as a string
       var tmp = body.split ('\n')
-console.log("savetext body",tmp);
       var fileName = tmp [0].trim () // the path is included here @***
       var msgName = '.' + fileName.slice (IMDB.length)
 
@@ -731,10 +677,6 @@ console.log("savetext body",tmp);
 
   // ##### #10. Search text, case insensitively, in _imdb_images.sqlite
   app.post ('/search/:imdbroot', upload.none (), function (req, res, next) {
-
-    //OLD: IMDB_ROOT = req.params.imdbroot.replace (/@/g, "/").trim ()
-    // IMDB_LINK was Symlink pointing to current albums
-    //setRootLink (IMDB_HOME, IMDB_ROOT, IMDB_LINK)
     // Convert everything to lower case
     // The removeDiacritics funtion bypasses some characters (e.g. Sw. åäöÅÄÖ)
     let like = removeDiacritics (req.body.like).toLowerCase ()
@@ -759,29 +701,6 @@ console.log("savetext body",tmp);
         res.send (foundpaths.trim ())
       }, 1000)
       db.close ()
-
-      /*db.serialize ( () => {
-        let sql = 'SELECT id, filepath, ' + columns + ' AS txtstr FROM imginfo WHERE ' + like
-        db.all (sql, [], function (err, rows) {
-          foundpath = ""
-          if (rows) {
-            tempstore = rows
-            setTimeout ( () => {
-              tempstore.forEach( (row) => {
-                foundpath += row.filepath.trim () + "\n"
-              })
-              res.send (foundpath.trim ())
-              //res.end ()
-            }, 1000)
-          } else {
-            err = "Error: The images database is out of order"
-            console.error (err)
-            res.send (err)
-            //res.end ()
-          }
-        })
-        db.close ()
-      })*/
     } catch (err) {
       console.error ("€RR", err.message)
     } // End try ----------
@@ -859,13 +778,11 @@ console.log("savetext body",tmp);
   function sqlUpdate (filepaths) { // Album server paths, complete Absolute
   return new Promise (async function (resolve, reject) {
     let pathlist = filepaths.trim ().split ("\n")
-console.log("sqlUpdate:pathlist",pathlist);
     for (let i=0; i<pathlist.length; i++) { // forLoop
       let filePath = '.' + pathlist [i].slice (IMDB.length) // Album relative path
       // No files in the #picFound album (may be occasionally uploaded,
       // temporary non-symlinks) and no symlinks should be processed:
       if (filePath.indexOf (picFound) > 0 || await isSymlink (pathlist [i])) continue;
-console.log("sqlUpdate " + filePath + " = " + pathlist [i])
       // Classify the file as existing or not
       let pathArr = filePath.split ("/")
       let xmpParams = [], dbValues = {}
@@ -881,8 +798,6 @@ console.log("sqlUpdate " + filePath + " = " + pathlist [i])
       }
       const db = new SQLite (IMDB + "/_imdb_images.sqlite")
       db.pragma ("journal_mode = WAL") // Turn on write-ahead logging
-      //let db = await sqlite.open (IMDB_LINK + '/_imdb_images.sqlite')
-      //await db.run ("PRAGMA journal_mode=WAL")
       let sqlGetId = "SELECT id FROM imginfo WHERE filepath='" + filePath + "'"
       row = db.prepare (sqlGetId).get ()
       //row = await db.get (sqlGetId)
@@ -972,7 +887,7 @@ console.log("sqlUpdate " + filePath + " = " + pathlist [i])
   }
 
   // ===== Check if an image/file name can be accepted
-  // Also, cf. 'acceptedFiles' in menu-buttons.hbs (for Dropbox/drop-zone)
+  // Also, cf. 'acceptedFiles' in menu-buttons.hbs (for DropZone/drop-zone)
   function acceptedFileName (name) {
     // This function must equal the acceptedFileName function in drop-zone.js
     var acceptedName = 0 === name.replace (/[-_.a-zA-Z0-9]+/g, "").length
@@ -985,9 +900,7 @@ console.log("sqlUpdate " + filePath + " = " + pathlist [i])
 
   // ===== Read a directory's file content; in passing remove broken links
   function findFiles (dirName) {
-//console.log("findFiles:dirName '" + dirName + "'");
     return fs.readdirAsync ('rln' + IMDB + dirName).map (function (fileName) { // Cannot use mapSeries here (why?)
-//console.log("findFiles:fileName",fileName);
       var filepath = path.join (IMDB + dirName, fileName)
       var brli = brokenLink (filepath) // refers to server root
       if (brli) {
@@ -997,7 +910,6 @@ console.log("sqlUpdate " + filePath + " = " + pathlist [i])
       return fs.statAsync ('rln' + filepath).then (function (stat) {
         if (stat.mode & 0100000) {
           // See 'man 2 stat': S_IFREG bitmask for 'Regular file'
-//console.log("  ",filepath);
           return filepath
         } else {
           return path.join (path.dirname (filepath), ".ignore") // fake dotted file
@@ -1142,11 +1054,11 @@ console.log("sqlUpdate " + filePath + " = " + pathlist [i])
   // GIFs are resized into GIFs to preserve their special properties.
   // The formal file extension PNG will still be kept for all resized files.
   async function rzFile (origpath, filepath, size) {
-    var filepath1 = filepath // Is PNG as originally intended
+    var filepath1 = filepath // Set 'png' as in filepath
     if (origpath.search (/gif$/i) > 0) {
-      filepath1 = filepath.replace (/png$/i, 'gif')
+      filepath1 = filepath.replace (/png$/i, 'gif') // gif to gif
     } else {
-      filepath1 = filepath.replace (/png$/i, 'jpg')
+      filepath1 = filepath.replace (/png$/i, 'jpg') // Others to jpg
     }
     var imckcmd
     imckcmd = "convert " + origpath + " -antialias -quality 80 -resize " + size + " -strip " + filepath1
@@ -1157,7 +1069,7 @@ console.log("sqlUpdate " + filePath + " = " + pathlist [i])
         return
       }
       //if (filepath1 !== filepath) {
-        try { // Rename to 'fake PNG' and adjust mode
+        try { // Rename to 'fake png' and adjust mode
           execSync ("mv " + filepath1 + " " + filepath + "&&chmod 664 " + filepath)
         } catch (err) {
           console.error (err.message)
@@ -1264,14 +1176,6 @@ console.log("sqlUpdate " + filePath + " = " + pathlist [i])
     })
   }
 
-  /*/ ===== Point the symlink to the chosen album root directory  will be OBSOLETE
-  function setRootLink (IMDB_HOME, IMDB_ROOT, imdbLink) {
-    //console.log ("\nIMDB_HOME:", IMDB_HOME)
-    if (!IMDB_ROOT || IMDB_ROOT === "") {IMDB_ROOT = execSync ("echo $IMDB_ROOT").toString ().trim ()}
-    if (IMDB_ROOT === "undefined") {IMDB_ROOT = "/"}
-    // Establish the symlink to the chosen album root directory
-    execSync ("ln -sfn " + IMDB_HOME + "/" + IMDB_ROOT + " " + imdbLink)
-  }*/
 }
 // End module.exports
 

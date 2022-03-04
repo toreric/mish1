@@ -4,6 +4,9 @@
   <div style="margin: 0 0 0.2em 0"><p id="uploadWarning"></p></div>
 
 <form method="post" enctype="multipart/form-data" action="." class="">
+  <input type="hidden" name="dzpar" value="{{userDir}}@{{imdbPath}}@{{imdbDir}}@{{picFound}}" />
+  <input type="hidden" name="dzparam" value="{{picFound}}" />
+
   <button id="uploadPics" style="cursor:pointer;background:#ddd;display:none"
   type="submit" class="btn-std" {{action 'processQueue'}}>&nbsp;Ladda upp&nbsp;</button>
 

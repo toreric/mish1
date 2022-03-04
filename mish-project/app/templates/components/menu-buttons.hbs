@@ -42,7 +42,7 @@ function copyToClipboard (str) {    // Copies a filename (below mini-pic) to the
       <input type="password" class="cred password" size="10" title="Lösenord" placeholder="Password">
       <span class="cred name"></span>
       <span class="cred status" {{action "toggleSettings"}}></span>
-      <span id ="showDropbox" class="picLinker" style="margin:0 0 0 0.5em;display:none" {{action "showDropbox"}}>UPPLADDNING</span>
+      <span id ="showDropZone" class="picLinker" style="margin:0 0 0 0.5em;display:none" {{action "showDropZone"}}>UPPLADDNING</span>
     </div>
     <div class="settings" draggable="false" ondragstart="return false" style="display:none">
       <div class="check">
@@ -98,7 +98,7 @@ function copyToClipboard (str) {    // Copies a filename (below mini-pic) to the
 </div>
 
 <!-- ///// DROPBOX  CONTAINER ///// -->
-<div id="divDropbox" style="display:none">
+<div id="divDropZone" style="display:none">
   {{#drop-zone url='/upload' autoProcessQueue=false  acceptedFiles='image/jpeg,image/tiff,image/png,image/gif'}}
   {{/drop-zone}}
 </div>
@@ -339,7 +339,7 @@ Vänta ej inbjudan,
 klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dalenochHolm%C3%B6n" target="jitsi_window" draggable="false" ondragstart="return false" style="display:none;padding:0 0.25em 0.2em 0.125em;line-height:1.25em" onclick="$(this).hide()">▣</a>
 </div>
 
-<img src="/images/snurra.svg" class="spinner" draggable="false" ondragstart="return false" {{action 'hideSpinner'}} style="">
+<img src="/images/snurra.svg" class="spinner" draggable="false" ondragstart="return false" {{action 'hideSpinner'}} style="" totip="V Ä N T A ! — eller stoppa med klick om det snurrar för länge">
 
 <!-- ///// HELP TEXT JQUERY DIALOG ///// -->
 <div id="helpText" style="display:none">
@@ -394,9 +394,9 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
   <div class="miniImgs">
     {{#each subaList as |suba|}}
       <div class="subAlbum" {{action 'subalbumSelect' suba.album}}>
-        <a class="imDir BLUET" style="background:transparent" title="Underalbum: {{suba.name}}">
+        <a class="imDir BLUET" style="background:transparent" title-1="Underalbum: {{suba.name}}">
           {{#if suba.image}}
-            <img src="rln{{suba.image}}" title="Underalbum: {{suba.name}}"><br>
+            <img src="rln{{suba.image}}"><br>
           {{/if}}
           <span>{{{suba.name}}}</span>
         </a>
