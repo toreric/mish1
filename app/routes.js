@@ -268,7 +268,7 @@ console.log("p2",p);
         res.location ('/')
         res.sloadend (error.message)
       })
-    }, 1000)
+    }, 2000) // Was 1000
   })
 
   // ##### #0.3 readSubdir (album subdirs) to selected rootdir  ...
@@ -449,7 +449,8 @@ console.log("p2",p);
 
   // ##### #3. Get full-size (djvu?) file   CHECK path
   app.get ('/fullsize/*?', function (req, res) {
-    var fileName = req.params[0] // with path
+    var fileName = req.params[0] // with path but servers may remove first `/`:
+    if (fileName.slice (0, 1) !== "/") fileName = "/" + fileName;
     //console.log (fileName)
     // Make a temporary .djvu file with the mkdjvu script
     // Plugins missing for most browsers January 2019
@@ -545,25 +546,20 @@ console.log("p2",p);
   // ##### #7.2 Image upload, using Multer multifile and Bluebird promise upload
   // Called from the drop-zone component, NOTE: The name 'file' is mandatory!
   app.post ('/upload', upload.array ('file'), async function (req, res, next) {
-    console.log ("IMDB_DIR =", IMDB_DIR)
-    // if (!IMDB_DIR) { // If not already set: refrain
-    //   console.log ("Image directory missing, cannot upload")
-    //   return
-    // }
+    console.log ("Upload to ." + IMDB_DIR)
     // ----- Image album absolute path
     var IMDB_PATH = IMDB + IMDB_DIR + '/'
     await Promise.mapSeries (req.files, function (file) { // Can we use mapSeries here?
       file.originalname = file.originalname.replace (/ /g, "_") // Spaces prohibited
-      //console.log (file.originalname)
       fs.readFileAsync (file.path)
       .then (contents => {
         fs.writeFileAsync (IMDB_PATH + file.originalname, contents, 'binary')
       })
       .then (async () => {
         await new Promise (z => setTimeout (z, 888))
-        await sqlUpdate ('.' + IMDB_DIR +"/"+ file.originalname)
+        await sqlUpdate (IMDB_PATH + file.originalname)
       }) // Add to the sql DB
-      .then (console.log (++n_upl +' TMP: '+ file.path + ' written to' +'\nUPLOADED: '+ IMDB_DIR +"/"+ file.originalname))
+      .then (console.log (++n_upl +' TMP: '+ file.path + ' written to,' +'\n  UPLOADED to: .'+ IMDB_DIR +"/"+ file.originalname))
       // Delete showfile and minifile since the main file may be refreshed (auto-regenerated)
       .then(pngname = path.parse (file.originalname).name + '.png')
       // File not found isn't caught, see Express unhandledRejection!
