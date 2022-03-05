@@ -846,6 +846,7 @@ export default Component.extend (contextMenuMixin, {
               //$ ("#title a.proid") [0].focus () cannot be replaced by $ ("#title a.proid") [0].trigger ("focus"):
               $ ("#title a.proid") [0].focus ();
               //this.actions.selectRoot ("");
+              startInfoPage ();
             }), 1000);
           }), 1000);
 
@@ -2096,139 +2097,168 @@ export default Component.extend (contextMenuMixin, {
     },
     selectAlbum (that) { // ##### triggered by a click within the JStree
 
-      //gotoAtop ();
+      return new Promise ( async () => {
 
-    return new Promise ( async () => {
-
-      $.spinnerWait (true, 101);
-      document.getElementById ("imageList").className = "hide-all";
-      $ (".miniImgs").hide ();
-      //scrollTo (null, 0);
-      let value = $ ("a[aria-selected='true']"); // Ok
-      //let value = $ ("a.jstree-clicked"); // Ok, alternative
-      if (value && value.length > 0) { // ´value´ will change to its ´title´-contained album path:
-        value = value.attr ("title").toString (); // JStree title
-      } else {
-        value = "";
-      }
-      // Different from image titles, paths in JStree titles include `imdbRoot`:
-      value = value.slice ($ ("#imdbRoot").text ().length);
-      // Do not hide the introduction page at very first view = the first root show
-      if (value) {
-        $ ("iframe.intro").hide ();
-      }
-      // If 'value' is `picFound`, recreate if timed out and is deleted:
-      if (value.indexOf (picFound) > -1) {
-        let lpath = $ ("#imdbPath").text () + "/" + $ ("#picFound").text ();
-        let cmd = "if [ -w " + lpath + " ];then e=1;else e=0;fi;echo $e"; // For details, use Node interactive!
-        let exsts = (await execute (cmd)).toString ().trim ();
-        if (exsts === "0") {
-          await execute ("rm -rf " +lpath+ "&&mkdir -m0775 " +lpath+ "&&touch " +lpath+ "/.imdb&&chmod 664 " +lpath+ "/.imdb");
+        $.spinnerWait (true, 101);
+        document.getElementById ("imageList").className = "hide-all";
+        $ (".miniImgs").hide ();
+        //scrollTo (null, 0);
+        let value = $ ("a[aria-selected='true']"); // Ok
+        //let value = $ ("a.jstree-clicked"); // Ok, alternative
+        if (value && value.length > 0) { // ´value´ will change to its ´title´-contained album path:
+          value = value.attr ("title").toString (); // JStree title
+        } else {
+          value = "";
         }
-      }
-
-      $ ("div.ember-view.jstree").attr ("onclick", "return false");
-      $ ("ul.jstree-container-ul.jstree-children").attr ("onclick", "return false");
-      // eslint-disable-next-line no-async-promise-executor
-
-      var thisAlbumIndex = 0;
-      return new Promise (async resolve => {
-        $ ("a.jstree-anchor").blur (); // Important?
-        thisAlbumIndex = $ ("#imdbDirs").text ().split ("\n").indexOf (value);
-        if (value !== $ ("#imdbDir").text ()) {
-          // save the index of the preceeding album
-          savedAlbumIndex = $ ("#imdbDirs").text ().split ("\n").indexOf ($ ("#imdbDir").text ());
-          $ ("#backImg").text ("");
-          $ ("#picName").text ("");
-          $ ("#picOrig").text ("");
-          //$ ("#sortOrder").text ("");
-          $ (".showCount").hide ();
+        // Different from image titles, paths in JStree titles include `imdbRoot`:
+        value = value.slice ($ ("#imdbRoot").text ().length);
+        // Do not hide the introduction page at very first view = the first root show
+        if (value) {
+          $ ("iframe.intro").hide ();
         }
-        let imdbDir = value;
-        $ ("#imdbDir").text (value);
-        let selDir = value;
-        let selDirs = $ ("#imdbDirs").text ().split ("\n");
-        let selPics = $ ("#imdbLabels").text ().split ("\n");
-        let tmp = [""]; // root
-        let tmp1 = [""];
-        if (selDir) { // not root
-          tmp = ["⌂hem", "↖", "⇆"]; // navButtons
-          tmp1 = ["", "", ""];
+        // If 'value' is `picFound`, recreate if timed out and is deleted:
+        if (value.indexOf (picFound) > -1) {
+          let lpath = $ ("#imdbPath").text () + "/" + $ ("#picFound").text ();
+          let cmd = "if [ -w " + lpath + " ];then e=1;else e=0;fi;echo $e"; // For details, use Node interactive!
+          let exsts = (await execute (cmd)).toString ().trim ();
+          if (exsts === "0") {
+            await execute ("rm -rf " +lpath+ "&&mkdir -m0775 " +lpath+ "&&touch " +lpath+ "/.imdb&&chmod 664 " +lpath+ "/.imdb");
+          }
         }
-        let i0 = selDirs.indexOf (selDir);
-        for (let i=i0; i<selDirs.length; i++) {
-          if (selDir === selDirs [i].slice (0, selDir.length)) {
-            let cand = selDirs [i].slice (selDir.length);
-            if (cand.indexOf ("/") === 0 && cand.replace (/^(\/[^/]+).*$/, "$1") === cand) {
-              if (cand.slice (1) !== $ ("#picFound").text ()) {
-                //tmp.push (cand.slice (1).replace (/_/g, " "));
-                tmp.push (cand.slice (1));
-                tmp1.push (selPics [i]);
+
+        $ ("div.ember-view.jstree").attr ("onclick", "return false");
+        $ ("ul.jstree-container-ul.jstree-children").attr ("onclick", "return false");
+        // eslint-disable-next-line no-async-promise-executor
+
+        var thisAlbumIndex = 0;
+        return new Promise (async resolve => {
+          $ ("a.jstree-anchor").blur (); // Important?
+          thisAlbumIndex = $ ("#imdbDirs").text ().split ("\n").indexOf (value);
+          if (value !== $ ("#imdbDir").text ()) {
+            // save the index of the preceeding album
+            savedAlbumIndex = $ ("#imdbDirs").text ().split ("\n").indexOf ($ ("#imdbDir").text ());
+            $ ("#backImg").text ("");
+            $ ("#picName").text ("");
+            $ ("#picOrig").text ("");
+            //$ ("#sortOrder").text ("");
+            $ (".showCount").hide ();
+          }
+          let imdbDir = value;
+          $ ("#imdbDir").text (value);
+          let selDir = value;
+          let selDirs = $ ("#imdbDirs").text ().split ("\n");
+          var selPics = $ ("#imdbLabels").text ().split ("\n");
+//console.log(selPics); //OK
+          let tmp = [""]; // root
+          let tmp1 = [""];
+          if (selDir) { // not root
+            tmp = ["⌂hem", "↖", "⇆"]; // navButtons
+            tmp1 = ["", "", ""];
+          }
+          let i0 = selDirs.indexOf (selDir);
+//console.log("i0:",i0,"selDir:",selDir); //OK
+          for (let i=i0; i<selDirs.length; i++) {
+            if (selDir === selDirs [i].slice (0, selDir.length)) {
+              let cand = selDirs [i].slice (selDir.length);
+//console.log("i:",i,"cand:",cand,cand.replace (/^(\/[^/]+).*$/, "$1")); //OK
+              if (cand.indexOf ("/") === 0 && cand.replace (/^(\/[^/]+).*$/, "$1") === cand) {
+                if (cand.slice (1) !== $ ("#picFound").text ()) {
+//console.log("* i:",i,"cand:",cand,cand.replace (/^(\/[^/]+).*$/, "$1"),selPics [i]); //ERROR
+                  //tmp.push (cand.slice (1).replace (/_/g, " "));
+                  tmp.push (cand.slice (1));
+                  tmp1.push (selPics [i]); //ERROR
+                }
               }
             }
           }
-        }
-        if (tmp [0] === "") {
-          if (savedAlbumIndex > 0) {
-            tmp [0] = "⇆";
-          } else {
-            tmp = tmp.slice (1); // at root
-            tmp1 = tmp1.slice (1); // at root
+//console.log(tmp,tmp1);
+          if (tmp [0] === "") {
+            if (savedAlbumIndex > 0) {
+              tmp [0] = "⇆";
+            } else {
+              tmp = tmp.slice (1); // at root
+              tmp1 = tmp1.slice (1); // at root
+            }
           }
-        }
-        var Aobj = EmberObject.extend ({
-          album: '',
-          image: '',
-          name: ''
-        }); // NOTE: For the album menu rows in menu-buttons.hbs (a.imDir)
-        let a = [];
-        for (let i=0; i<tmp.length; i++) {
-          a [i] = Aobj.create ({
-            album: tmp [i],
-            image: tmp1 [i],
-            name: tmp [i].replace (/_/g, " ")
-          });
-        }
-        //let tmp2 = [""];
-        let tmp2 = value.split ("/");
-        //if (tmp2 [tmp2.length - 1] === "") {tmp2 = tmp2.slice (0, -1)} // removes trailing /
-        tmp2 = tmp2.slice (1); // remove the first empty ´root´ entry
-        if (typeof that.set === 'function') {
-          if (tmp2.length > 0) {
-            that.set ("albumName", tmp2 [tmp2.length - 1]);
-          } else {
-            that.set ("albumName", that.get ("imdbRoot"));
+          var Aobj = EmberObject.extend ({
+            album: '',
+            image: '',
+            name: ''
+          }); // NOTE: For the album menu rows in menu-buttons.hbs (a.imDir)
+          let a = [];
+          for (let i=0; i<tmp.length; i++) {
+            a [i] = Aobj.create ({
+              album: tmp [i],
+              image: tmp1 [i],
+              name: tmp [i].replace (/_/g, " ")
+            });
           }
-        }
-        if (value) {
-          $ (".imDir.path").attr ("title-1", $ ("#imdbRoot").text () + $ ("#imdbDir").text ());
-        }
-        that.set ("subaList", a); // triggers load of subalbum links into menu-buttons.hbs
-        $.spinnerWait (true, 102);
-
-        // REFRESH the displayed album
-        $ ("#reFr").trigger ("click"); // Initiate refresh
-        await new Promise (z => setTimeout (z, 1000)); // Wait a second
-        $ ("div.subAlbum").show ();
-        //$ ("a.imDir").attr ("title", "Album");
-        let n = $ ("a.imDir").length/2; // there is also a page bottom link line...
-        let nsub = n;
-        let z, iz, obj;
-        //let fullAlbumName = $ ("#imdbRoot").text () + $ ("#imdbDir").text ().replace (/^[^/]*/, "");
-        let fullAlbumName = '<span title-1="' + $ ("#imdbRoot").text () + $ ("#imdbDir").text ().replace (/^[^/]*/, "") + '">' + that.get ("albumName") + " </span>"
-        if (tmp [0] === "⌂hem") {
-          $ ("a.imDir").each (function (index, element) {
-            if (index < n) {z = 0;} else {z = n;}
-            iz = index - z;
-            if (iz < 3) { // the first 3 are nav link symbols
-              $ (element).attr ("title-1", returnTitles [iz]);
-//              $ (element).closest ("div.subAlbum").attr ("title-1", returnTitles [iz]);
-              $ (element).closest ("div.subAlbum").css ("display", navButtons [iz]);
-              if (!z) {
-                nsub--;
-                obj = $ (element).closest ("div.subAlbum");
-                obj.addClass ("BUT_1");
-                if (iz === 2) {
+          //let tmp2 = [""];
+          let tmp2 = value.split ("/");
+          //if (tmp2 [tmp2.length - 1] === "") {tmp2 = tmp2.slice (0, -1)} // removes trailing /
+          tmp2 = tmp2.slice (1); // remove the first empty ´root´ entry
+          if (typeof that.set === 'function') {
+            if (tmp2.length > 0) {
+              that.set ("albumName", tmp2 [tmp2.length - 1]);
+            } else {
+              that.set ("albumName", that.get ("imdbRoot"));
+            }
+          }
+          if (value) {
+            $ (".imDir.path").attr ("title-1", $ ("#imdbRoot").text () + $ ("#imdbDir").text ());
+          }
+          $.spinnerWait (true, 102);
+          that.set ("subaList", a); // triggers load of subalbum links into menu-buttons.hbs
+//console.log(a);
+          // REFRESH the displayed album
+          $ ("#reFr").trigger ("click"); // Initiate refresh
+          await new Promise (z => setTimeout (z, 1000)); // Wait a second
+          $ ("div.subAlbum").show ();
+          //$ ("a.imDir").attr ("title", "Album");
+          let n = $ ("a.imDir").length/2; // there is also a page bottom link line...
+          let nsub = n;
+          let z, iz, obj;
+          //let fullAlbumName = $ ("#imdbRoot").text () + $ ("#imdbDir").text ().replace (/^[^/]*/, "");
+          let fullAlbumName = '<span title-1="' + $ ("#imdbRoot").text () + $ ("#imdbDir").text ().replace (/^[^/]*/, "") + '">' + that.get ("albumName") + " </span>"
+          if (tmp [0] === "⌂hem") {
+            $ ("a.imDir").each (function (index, element) {
+              if (index < n) {z = 0;} else {z = n;}
+              iz = index - z;
+              if (iz < 3) { // the first 3 are nav link symbols
+                $ (element).attr ("totip", returnTitles [iz]);
+                //$ (element).closest ("div.subAlbum").attr ("title-1", returnTitles [iz]);
+                $ (element).closest ("div.subAlbum").css ("display", navButtons [iz]);
+                if (!z) {
+                  nsub--;
+                  obj = $ (element).closest ("div.subAlbum");
+                  obj.addClass ("BUT_1");
+                  if (iz === 2) {
+                    if (imdbDir.indexOf (picFound) > -1) {
+                      obj.after ("<div class=\"BUT_2\"> är ett tillfälligt album: utan underalbum</div><br>"); // i18n
+                    } else if (nsub < 1) {
+                      obj.after ("<div class=\"BUT_2\"> har: inga underalbum</div><br>"); // i18n
+                    } else if (nsub === 1) {
+                      obj.after ("<div class=\"BUT_2\"> har: ett underalbum</div><br>"); // i18n
+                    } else {
+                      obj.after ("<div class=\"BUT_2\"> har: " + nsub + " underalbum</div><br>"); // i18n
+                    }
+                    obj.after (fullAlbumName);
+                  }
+                }
+              }
+            });
+          } else if (tmp [0] === "⇆") {
+            $ ("a.imDir").each (function (index, element) {
+              if (index < n) {z = 0;} else {z = n;}
+              iz = index - z;
+              if (iz === 0) {
+                $ (element).attr ("totip", returnTitles [index + 2]);
+                //$ (element).closest ("div.subAlbum").attr ("title-1", returnTitles [index + 2]);
+                $ (element).closest ("div.subAlbum").css ("display", navButtons [index + 2]);
+                if (!z) {
+                  nsub--;
+                  obj = $ (element).closest ("div.subAlbum");
+                  obj.addClass ("BUT_1");
                   if (imdbDir.indexOf (picFound) > -1) {
                     obj.after ("<div class=\"BUT_2\"> är ett tillfälligt album: utan underalbum</div><br>"); // i18n
                   } else if (nsub < 1) {
@@ -2241,56 +2271,30 @@ export default Component.extend (contextMenuMixin, {
                   obj.after (fullAlbumName);
                 }
               }
-            }
-          });
-        } else if (tmp [0] === "⇆") {
-          $ ("a.imDir").each (function (index, element) {
-            if (index < n) {z = 0;} else {z = n;}
-            iz = index - z;
-            if (iz === 0) {
-              $ (element).attr ("title-1", returnTitles [index + 2]);
-//              $ (element).closest ("div.subAlbum").attr ("title-1", returnTitles [index + 2]);
-              $ (element).closest ("div.subAlbum").css ("display", navButtons [index + 2]);
-              if (!z) {
-                nsub--;
-                obj = $ (element).closest ("div.subAlbum");
-                obj.addClass ("BUT_1");
-                if (imdbDir.indexOf (picFound) > -1) {
-                  obj.after ("<div class=\"BUT_2\"> är ett tillfälligt album: utan underalbum</div><br>"); // i18n
-                } else if (nsub < 1) {
-                  obj.after ("<div class=\"BUT_2\"> har: inga underalbum</div><br>"); // i18n
-                } else if (nsub === 1) {
-                  obj.after ("<div class=\"BUT_2\"> har: ett underalbum</div><br>"); // i18n
-                } else {
-                  obj.after ("<div class=\"BUT_2\"> har: " + nsub + " underalbum</div><br>"); // i18n
-                }
-                obj.after (fullAlbumName);
-              }
-            }
-          });
-        } else {
-          obj = $ ("div.subAlbum").first ();
-          obj.before (fullAlbumName);
-          if (imdbDir.indexOf (picFound) > -1) {
-            obj.after ("<div class=\"BUT_2\"> Tillfälligt album: utan underalbum</div><br>"); // i18n
-          } else if (nsub < 1) {
-            obj.before ("<div class=\"BUT_2\"> har: inga underalbum</div><br>"); // i18n
-          } else if (nsub === 1) {
-            obj.before ("<div class=\"BUT_2\"> har: ett underalbum</div><br>"); // i18n
+            });
           } else {
-            obj.before ("<div class=\"BUT_2\"> har: " + nsub + " underalbum</div><br>"); // i18n
+            obj = $ ("div.subAlbum").first ();
+            obj.before (fullAlbumName);
+            if (imdbDir.indexOf (picFound) > -1) {
+              obj.after ("<div class=\"BUT_2\"> Tillfälligt album: utan underalbum</div><br>"); // i18n
+            } else if (nsub < 1) {
+              obj.before ("<div class=\"BUT_2\"> har: inga underalbum</div><br>"); // i18n
+            } else if (nsub === 1) {
+              obj.before ("<div class=\"BUT_2\"> har: ett underalbum</div><br>"); // i18n
+            } else {
+              obj.before ("<div class=\"BUT_2\"> har: " + nsub + " underalbum</div><br>"); // i18n
+            }
           }
-        }
-        // Don't show imdbRoot
-        console.log ("Album " + "." + imdbDir + ", nsub = " + nsub);
+          // Don't show imdbRoot
+          console.log ("Album " + "." + imdbDir + ", nsub = " + nsub);
 
-        if (imdbDir_is_picFound ()) $ ("span.centerMark").text (centerMarkSave);
-        else $ ("span.centerMark").text ("×"); // reset ´favorites' header´
+          if (imdbDir_is_picFound ()) $ ("span.centerMark").text (centerMarkSave);
+          else $ ("span.centerMark").text ("×"); // reset ´favorites' header´
 
-        $.spinnerWait (true, 104);
-        resolve (true);
+          $.spinnerWait (true, 104);
+          resolve (true);
         }).then ( () => { // End return new Promise
-          execute ("cat " + $ ("#imdbPath").text () + "/.imdb") // NOTE: Always the albumroot
+          execute ("cat " + $ ("#imdbPath").text () + "/.imdb 2>/dev/null") // NOTE: Always the albumroot
           .then ( (res) => {
             openRoot = res.trim ();
             if (openRoot) console.log ("NOTE: openRoot",openRoot);
@@ -2319,6 +2323,7 @@ export default Component.extend (contextMenuMixin, {
             if (thisAlbumIndex > 0) gotoAtop ();
             else scrollTo (null, 0);
             $.spinnerWait (true, 105);
+            $.spinnerWait (false, 4937);
           });
         });
       }); // End return new Promise
@@ -2692,8 +2697,8 @@ export default Component.extend (contextMenuMixin, {
           }
         }
         later ( (async () => {
-          //let yhigh = $ ("#highUp").offset ().top;
-          let yhigh = 66;
+          let yhigh = $ ("#highUp").offset ().top;
+          //let yhigh = 66;
           let yhere = window.pageYOffset;
           let ylow = $ ("#lowDown").offset ().top;
           if (yhere > 0 && (yhere < yhigh || ylow < yhere)) {
@@ -2987,7 +2992,6 @@ export default Component.extend (contextMenuMixin, {
         var xhr = new XMLHttpRequest ();
         var origpic = $ (".img_show img:first").attr ("title"); // With path
         origpic = $ ("#imdbPath").text () + origpic;
-//console.log("fullSize:origpic",origpic);
         xhr.open ('GET', 'fullsize/' + origpic, true, null, null); // URL matches routes.js with *?
         setReqHdr (xhr, 5);
         xhr.onload = function () {
@@ -2996,7 +3000,7 @@ export default Component.extend (contextMenuMixin, {
             // NOTE: djvuName is the name of a PNG file, changed 2019, see routes.js
             var djvuName = xhr.response;
             //var dejavu = window.open (djvuName  + '?djvuopts&amp;zoom=100', 'dejavu', 'width=916,height=600,resizable=yes,location=no,titlebar=no,toolbar=no,menubar=no,scrollbars=yes,status=no'); // Use the PNG file instead (wrongly named):
-            var dejavu = window.open (djvuName, 'dejavu', 'width=916,height=600,resizable=yes,location=no,titlebar=no,toolbar=no,menubar=no,scrollbars=yes,status=no');
+            var dejavu = window.open ("./" + djvuName, 'dejavu', 'width=916,height=600,resizable=yes,location=no,titlebar=no,toolbar=no,menubar=no,scrollbars=yes,status=no');
             if (dejavu) {
               dejavu.focus (); // NOTE: dejavu.trigger ... cannot be used here
             } else {
@@ -3306,7 +3310,7 @@ export default Component.extend (contextMenuMixin, {
                   $ (".ember-view.jstree").jstree ("close_all");
                   $ (".ember-view.jstree").jstree ("open_node", "#j1_1");
                   $ (".ember-view.jstree").jstree ("select_node", "#j1_1"); // calls selectAlbum
-                  startInfoPage (); // Also at selectRoot
+                  // startInfoPage (); // Also at init and selectRoot
                 }), 1000);
               }), 500);
               // Next lines are a 'BUG SAVER'. Else, is all not initiated...?
@@ -3706,7 +3710,7 @@ function load_imdb_images () {
   return new Promise (resolve => {
     $.spinnerWait (true);
     userLog ("Det här kan ta några minuter ...", true, 5000)
-    let cmd = '$( pwd )/ld_imdb.js -e ' + $("#imdbPath").text ();
+    let cmd = '$( pwd )/ld_imdb.js -e ' + $("#imdbPath").text (); // pwd = present working dir
     execute (cmd).then ( () => {
       $.spinnerWait (false, 5008);
       userLog ("Image search texts updated");
@@ -3779,7 +3783,8 @@ $.spinnerWait = async function (runWait, delay) { // Delay is used only to end w
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 async function startInfoPage () { // Compose the information display page
   // ... but first show any info message:
-  let news = await execute ("cat  " + $ ("#imdbPath").text () + "/_imdb_news.txt");
+if (!$ ("#imdbPath").text ()) return;
+  let news = await execute ("cat " + $ ("#imdbPath").text () + "/_imdb_news.txt 2>/dev/null");
   if (news.indexOf ("Command failed") > -1) news = "";
   if (news.trim ()) //news = await execute ('echo "Mish "$(date "+%k:%M %A %e %B %Y")');
   userLog (news, true, 10000);
@@ -3793,7 +3798,7 @@ async function startInfoPage () { // Compose the information display page
   } else {
     linktext = "https://" + linktext + "/";
   }
-  execute ("cat " + $ ("#imdbPath").text () + "/_imdb_intro.txt | egrep '^/'").then (result => {
+  execute ("cat " + $ ("#imdbPath").text () + "/_imdb_intro.txt 2>/dev/null | egrep '^/' 2>/dev/null").then (result => {
     $ ("#imdbIntro").text (result);
     var intro = result.split ("\n");
     if (intro.length < 1 || intro [0].indexOf ("Command failed") === 0) {
@@ -3814,6 +3819,7 @@ async function startInfoPage () { // Compose the information display page
       iText [i - 1].innerHTML = "";
     }
     // Adjust to load only available images
+    $ (".proid.introbutt").show ();
     if (intro.length > 0) {
       if (intro.length < nIm) nIm = intro.length + 1;
       for (let i=1; i<nIm; i++) { // i=0 is the logo picture
@@ -3840,9 +3846,9 @@ async function startInfoPage () { // Compose the information display page
           iImages [i].style.border = "1px solid gray";
           iImages [i].style.borderRadius = "4px";
         }
-        iImages [i].setAttribute ("src", imgSrc);
+          iImages [i].setAttribute ("src", imgSrc);
       }
-    }
+    } else $ (".proid.introbutt").hide ();
   });
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -3915,8 +3921,8 @@ function gotoMinipic (namepic) {
       } else {
         y = 0;
       }
-      //let t = $ ("#highUp").offset ().top;
-      let t = 66;
+      let t = $ ("#highUp").offset ().top;
+      //let t = 66;
       if (t > y) {y = t;}
       scrollTo (null, y);
       resetBorders (); // Reset all borders
@@ -3928,10 +3934,11 @@ function gotoMinipic (namepic) {
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Go to an album's basic top position
 function gotoAtop () {
-  //later ( ( () => {
-    scrollTo (null, 66); // Alternative to #highUp
-  //}), 3200);
-  //scrollTo (null, $ (".proid.toggbkg").offset ().top + 34); // Alternative to #highUp
+  later ( ( () => {
+    let t = $ ("#highUp").offset ().top;
+    scrollTo (null, t);
+  }), 1001);
+  //scrollTo (null, 66); // Alternative to #highUp
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 async function deleteFiles (picNames, nels, picPaths) { // ===== Delete image(s)
@@ -4564,7 +4571,9 @@ function moveFunc (picNames) { // ===== Execute a move-these-files-to... request
   // #temporary_1, is a Bash text string containing in the magnitude of 1000 characters,
   // depending on actual file names, but well within the Bash line length limit.
 
-  var codeMove = "'var malbum=this.value;var mpath=\"\";if(this.selectedIndex===0)return false;mpath = $(\"#imdbPath\").text() + malbum;var lpp=malbum.split(\"/\").length-1;if (lpp > 0)lpp=\"../\".repeat(lpp);else lpp=\"./\";console.log(\"Trying move to .\" + malbum);var picNames=$(\"#picNames\").text().split(\"\\n\");var picOrder=$(\"#picOrder\").text().split(\"\\n\");console.log(\"\"+picNames,\" \"+picOrder);cmd=[];for (let i=0;i<picNames.length;i++){var move=$(\"#imdbPath\").text()+document.getElementById(\"i\"+picNames[i]).getElementsByTagName(\"img\")[0].getAttribute(\"title\");var mini=move.replace(/([^/]+)(\\.[^/.]+)$/,\"_mini_$1.png\");var show=move.replace(/([^/]+)(\\.[^/.]+)$/,\"_show_$1.png\");var moveto=mpath+\"/\";var picfound=$(\"#picFound\").text();cmd.push(\"picfound=\"+picfound+\";move=\"+move+\";mini=\"+mini+\";show=\"+show+\";orgmove=$move;orgmini=$mini;orgshow=$show;moveto=\"+moveto+\";lpp=\"+lpp+\";lnksave=$(readlink -n $move);if [ $lnksave ];then move=$(echo $move|sed -e \\\"s/\\\\(.*$picfound.*\\\\)\\\\.[^.\\\\/]\\\\+\\\\(\\\\.[^.\\\\/]\\\\+$\\\\)/\\\\1\\\\2/\\\");mini=$(echo $mini|sed -e \\\"s/\\\\(.*$picfound.*\\\\)\\\\.[^.\\\\/]\\\\+\\\\(\\\\.[^.\\\\/]\\\\+$\\\\)/\\\\1\\\\2/\\\");show=$(echo $show|sed -e \\\"s/\\\\(.*$picfound.*\\\\)\\\\.[^.\\\\/]\\\\+\\\\(\\\\.[^.\\\\/]\\\\+$\\\\)/\\\\1\\\\2/\\\");lnkfrom=$(echo $lnksave|sed -e \\\"s/^\\\\(\\\\.\\\\{1,2\\\\}\\\\/\\\\)*//\\\" -e \\\"s,^,$lpp,\\\");lnkmini=$(echo $lnkfrom|sed -e \\\"s/\\\\([^/]\\\\+\\\\)\\\\(\\\\.[^/.]\\\\+\\\\)\\\\$/_mini_\\\\1\\\\.png/\\\");lnkshow=$(echo $lnkfrom|sed -e \\\"s/\\\\([^/]\\\\+\\\\)\\\\(\\\\.[^/.]\\\\+\\\\)\\\\$/_show_\\\\1\\\\.png/\\\");ln -sfn $lnkfrom $move;fi;mv -n $move $moveto;if [ $? -ne 0 ];then if [ $move != $orgmove ];then rm $move;fi;exit;else if [ $lnksave ];then ln -sfn $lnkmini $mini;ln -sfn $lnkshow $show;fi;mv -n $mini $show $moveto;if [ $move != $orgmove ];then rm $orgmove;fi;if [ $mini != $orgmini ];then rm $orgmini;fi;if [ $show != $orgshow ];then rm $orgshow;fi;fi;\");}$(\"#temporary\").text(mpath);$(\"#temporary_1\").text (cmd.join(\"\\n\"));$(\"#yesBut\").text(\"Flytta\");'"
+  // May be inserted for testing between th double ';;'s: ”console.log(\"\"+picNames,\" \"+picOrder)”
+
+  var codeMove = "'var malbum=this.value;var mpath=\"\";if(this.selectedIndex===0)return false;mpath = $(\"#imdbPath\").text() + malbum;var lpp=malbum.split(\"/\").length-1;if (lpp > 0)lpp=\"../\".repeat(lpp);else lpp=\"./\";console.log(\"Move to .\" + malbum);var picNames=$(\"#picNames\").text().split(\"\\n\");var picOrder=$(\"#picOrder\").text().split(\"\\n\");;cmd=[];for (let i=0;i<picNames.length;i++){var move=$(\"#imdbPath\").text()+document.getElementById(\"i\"+picNames[i]).getElementsByTagName(\"img\")[0].getAttribute(\"title\");var mini=move.replace(/([^/]+)(\\.[^/.]+)$/,\"_mini_$1.png\");var show=move.replace(/([^/]+)(\\.[^/.]+)$/,\"_show_$1.png\");var moveto=mpath+\"/\";var picfound=$(\"#picFound\").text();cmd.push(\"picfound=\"+picfound+\";move=\"+move+\";mini=\"+mini+\";show=\"+show+\";orgmove=$move;orgmini=$mini;orgshow=$show;moveto=\"+moveto+\";lpp=\"+lpp+\";lnksave=$(readlink -n $move);if [ $lnksave ];then move=$(echo $move|sed -e \\\"s/\\\\(.*$picfound.*\\\\)\\\\.[^.\\\\/]\\\\+\\\\(\\\\.[^.\\\\/]\\\\+$\\\\)/\\\\1\\\\2/\\\");mini=$(echo $mini|sed -e \\\"s/\\\\(.*$picfound.*\\\\)\\\\.[^.\\\\/]\\\\+\\\\(\\\\.[^.\\\\/]\\\\+$\\\\)/\\\\1\\\\2/\\\");show=$(echo $show|sed -e \\\"s/\\\\(.*$picfound.*\\\\)\\\\.[^.\\\\/]\\\\+\\\\(\\\\.[^.\\\\/]\\\\+$\\\\)/\\\\1\\\\2/\\\");lnkfrom=$(echo $lnksave|sed -e \\\"s/^\\\\(\\\\.\\\\{1,2\\\\}\\\\/\\\\)*//\\\" -e \\\"s,^,$lpp,\\\");lnkmini=$(echo $lnkfrom|sed -e \\\"s/\\\\([^/]\\\\+\\\\)\\\\(\\\\.[^/.]\\\\+\\\\)\\\\$/_mini_\\\\1\\\\.png/\\\");lnkshow=$(echo $lnkfrom|sed -e \\\"s/\\\\([^/]\\\\+\\\\)\\\\(\\\\.[^/.]\\\\+\\\\)\\\\$/_show_\\\\1\\\\.png/\\\");ln -sfn $lnkfrom $move;fi;mv -n $move $moveto;if [ $? -ne 0 ];then if [ $move != $orgmove ];then rm $move;fi;exit;else if [ $lnksave ];then ln -sfn $lnkmini $mini;ln -sfn $lnkshow $show;fi;mv -n $mini $show $moveto;if [ $move != $orgmove ];then rm $orgmove;fi;if [ $mini != $orgmini ];then rm $orgmini;fi;if [ $show != $orgshow ];then rm $orgshow;fi;fi;\");}$(\"#temporary\").text(mpath);$(\"#temporary_1\").text (cmd.join(\"\\n\"));$(\"#yesBut\").text(\"Flytta\");'"
   // A log ...\");console.log(move,mini,show,moveto);}$...
   // may be inserted (or removed), and it is printed even at failure.
   // Here checkNames cannot be called (like in linkFunc) since  #temporary_1 is not usable (already occupied)

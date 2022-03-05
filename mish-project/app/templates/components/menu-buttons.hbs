@@ -31,10 +31,10 @@ function copyToClipboard (str) {    // Copies a filename (below mini-pic) to the
 }
 </script>
 
-<!-- ///// HEADER AND ALSO THE LOGIN AND SETTINGS BUTTON ///// -->
+<!-- ///// HEADER AND ALSO THE LOGIN AND SETTINGS BUTTONS ///// -->
 <div id="title" class="BACKG BLUET" draggable="false" ondragstart="return false">
   <form action="">
-    <a class="proid" title="" onclick="window.scrollTo(0,0);$.maMeHi();$('iframe.intro').toggle();$('#searcharea').dialog('close')" style="display:none">Mish&nbsp;<small>introduktion</small></a>
+    <a class="proid introbutt" title="" onclick="window.scrollTo(0,0);$.maMeHi();$('iframe.intro').toggle();$('#searcharea').dialog('close')" style="display:none">Mish&nbsp;<small>introduktion</small></a>
     <a class="proid toggbkg" style="margin:0.5em 0 0 0.7em" title="" {{action 'toggleBackg'}}><small>MÖRK/LJUS</small></a>
     <div style="display:inline-block;vertical-align:top;margin:0.4em 0 0 1em">
       <button type="submit" class="cred login" title="" {{action "logIn"}}>Logga in</button>
@@ -199,7 +199,7 @@ function copyToClipboard (str) {    // Copies a filename (below mini-pic) to the
 <a href="null" id="download" style="display:none" download>DOWNLOAD-AREA</a>
 
 <div id="highUp" style=""></div>
-<div id="highUpSpacer" style="margin-bottom:1.3em"></div>
+<div id="highUpSpacer" style="margin-bottom:1em"></div>
 
 <!-- ///// RIGHT BUTTONS (NOTE: without href attributes) /////  -->
 <div class="nav_links" draggable="false" ondragstart="return false">
@@ -357,7 +357,6 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
     <a id="reFr0" class="helpIcon"><img draggable="false" ondragstart="return false" src="/images/reload.png"></a> Ladda om albumet, återställ eventuella osparade ändringar¹³ (’ångerknapp’, men avser ej textändringar)<br>
     <a id="toggleName0">N</a> Visa/dölj namn på bilden (filnamn utan .filtyp)<br>
     <a id="toggleHide0"></a> Visa/dölj ’gömda bilder’ (gömda med bildens högerklick-meny)<br>
-    <!--a id="upLoad0">U</a> Visa/dölj panelen för uppladdning av (fler) bilder<br -->
     <a id="saveOrder0" class="helpIcon">S</a> Spara bildändringar¹ som annars är tillfälliga och kan återställas²<br>
     <a id="do_mail0" class="helpIcon" src="/images/mail.svg"></a> Skicka fråga eller annat meddelande till albumadministratören<br>
     <a class="helpIcon">↑</a> Gå upp till överst på sidan</p>
@@ -393,8 +392,8 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
 <p class='albumsHdr' draggable="false" ondragstart="return false">
   <div class="miniImgs">
     {{#each subaList as |suba|}}
-      <div class="subAlbum" {{action 'subalbumSelect' suba.album}}>
-        <a class="imDir BLUET" style="background:transparent" title-1="Underalbum: {{suba.name}}">
+      <div class="subAlbum" {{action 'subalbumSelect' suba.album}} totip="Underalbum ”{{suba.name}}”">
+        <a class="imDir BLUET" style="background:transparent">
           {{#if suba.image}}
             <img src="rln{{suba.image}}"><br>
           {{/if}}

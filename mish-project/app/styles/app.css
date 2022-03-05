@@ -900,7 +900,8 @@ strong.albumName {
 }
 a.imDir span{
   background: transparent;
-  word-wrap: break-word;
+  word-wrap: anywhere;
+  max-width: 92px;
 }
 a.imDir img {
   height: 60px;
