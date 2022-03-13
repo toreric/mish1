@@ -392,7 +392,12 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
 <p class='albumsHdr' draggable="false" ondragstart="return false">
   <div class="miniImgs">
     {{#each subaList as |suba|}}
+<<<<<<< HEAD
       <div class="subAlbum" {{action 'subalbumSelect' suba.album}} totip="Underalbum ”{{suba.name}}”">
+=======
+      <div class="subAlbum" {{action 'subalbumSelect' suba.album}} title="Underalbum
+”{{suba.name}}”" totip="Underalbum ”{{suba.name}}”">
+>>>>>>> f1d16fb1e7732bd1b7a130b854172c96b11934ac
         <a class="imDir BLUET" style="background:transparent">
           {{#if suba.image}}
             <img src="rln{{suba.image}}"><br>
