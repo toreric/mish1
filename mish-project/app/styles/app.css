@@ -1452,6 +1452,13 @@ select {
   padding: 0.6em 0.4em 0.6em 0.4em;
   color: white;
 }
+.mainMenu p a.rootQuest {
+  width: auto;
+  border-radius: 4px;
+  padding: 0;
+  margin-left: 0.5em;
+  font-size: 125%;
+}
 .mainMenu p a:hover {
   color: #7df;
 }

@@ -775,7 +775,7 @@ export default Component.extend (contextMenuMixin, {
     $ (document).ready ( () => {
 
       // Here is the base IMDB_LINK setting, to use also in ld_imdb.js:
-      $ ("#imdbLink").text ("."); // <<<<<<<<<< == IMDB_LINK in routes.js
+      $ ("#imdbLink").text ("."); // <<< == IMDB_LINK in routes.js
 
       $ ("#menuButton").attr ("title", htmlSafe ("Meny")); // i18n
       // Remember update *.hbs
@@ -847,6 +847,9 @@ export default Component.extend (contextMenuMixin, {
               $ ("#title a.proid") [0].focus ();
               //this.actions.selectRoot ("");
               startInfoPage ();
+
+              $ (".mainMenu p a.rootQuest").attr ("totip", rootAdv);
+
             }), 1000);
           }), 1000);
 
@@ -1057,11 +1060,12 @@ export default Component.extend (contextMenuMixin, {
           //console.log("NOTE: newdata will trigger the thumbnails reload:",this.get ("allNames"));
           preloadShowImg = []; // Preload show images:
           let nWarn = 100;
+          $.spinnerWait (true, 100*n);
           for (i=0; i<n; i++) {
-            $.spinnerWait (true, 123);
             preloadShowImg [i] = new Image();
             preloadShowImg [i].src = "rln" + newdata [i].show;
           }
+          $.spinnerWait (false, 1123);
           if ( (n > nWarn) && (allow.imgUpload || allow.adminAll)) {
             infoDia (null, null, "M Ä N G D V A R N I N G", "<b><br>Fler än etthundra (100) bilder!<br></b>", "... uppfattat!", true);
           }
@@ -2147,12 +2151,7 @@ export default Component.extend (contextMenuMixin, {
           $ ("#imdbDir").text (value);
           let selDir = value;
           let selDirs = $ ("#imdbDirs").text ().split ("\n");
-<<<<<<< HEAD
-          var selPics = $ ("#imdbLabels").text ().split ("\n");
-//console.log(selPics); //OK
-=======
           let selPics = $ ("#imdbLabels").text ().split ("\n");
->>>>>>> f1d16fb1e7732bd1b7a130b854172c96b11934ac
           let tmp = [""]; // root
           let tmp1 = [""];
           if (selDir) { // not root
@@ -2160,7 +2159,6 @@ export default Component.extend (contextMenuMixin, {
             tmp1 = ["", "", ""];
           }
           let i0 = selDirs.indexOf (selDir);
-<<<<<<< HEAD
 //console.log("i0:",i0,"selDir:",selDir); //OK
           for (let i=i0; i<selDirs.length; i++) {
             if (selDir === selDirs [i].slice (0, selDir.length)) {
@@ -2172,24 +2170,11 @@ export default Component.extend (contextMenuMixin, {
                   //tmp.push (cand.slice (1).replace (/_/g, " "));
                   tmp.push (cand.slice (1));
                   tmp1.push (selPics [i]); //ERROR
-=======
-          for (let i=i0; i<selDirs.length; i++) {
-            if (selDir === selDirs [i].slice (0, selDir.length)) {
-              let cand = selDirs [i].slice (selDir.length);
-              if (cand.indexOf ("/") === 0 && cand.replace (/^(\/[^/]+).*$/, "$1") === cand) {
-                if (cand.slice (1) !== $ ("#picFound").text ()) {
-                  //tmp.push (cand.slice (1).replace (/_/g, " "));
-                  tmp.push (cand.slice (1));
-                  tmp1.push (selPics [i]);
->>>>>>> f1d16fb1e7732bd1b7a130b854172c96b11934ac
                 }
               }
             }
           }
-<<<<<<< HEAD
 //console.log(tmp,tmp1);
-=======
->>>>>>> f1d16fb1e7732bd1b7a130b854172c96b11934ac
           if (tmp [0] === "") {
             if (savedAlbumIndex > 0) {
               tmp [0] = "⇆";
@@ -2225,15 +2210,9 @@ export default Component.extend (contextMenuMixin, {
           if (value) {
             $ (".imDir.path").attr ("title-1", $ ("#imdbRoot").text () + $ ("#imdbDir").text ());
           }
-<<<<<<< HEAD
           $.spinnerWait (true, 102);
           that.set ("subaList", a); // triggers load of subalbum links into menu-buttons.hbs
 //console.log(a);
-=======
-          that.set ("subaList", a); // triggers load of subalbum links into menu-buttons.hbs
-          $.spinnerWait (true, 102);
-
->>>>>>> f1d16fb1e7732bd1b7a130b854172c96b11934ac
           // REFRESH the displayed album
           $ ("#reFr").trigger ("click"); // Initiate refresh
           await new Promise (z => setTimeout (z, 1000)); // Wait a second
@@ -2250,11 +2229,7 @@ export default Component.extend (contextMenuMixin, {
               iz = index - z;
               if (iz < 3) { // the first 3 are nav link symbols
                 $ (element).attr ("totip", returnTitles [iz]);
-<<<<<<< HEAD
                 //$ (element).closest ("div.subAlbum").attr ("title-1", returnTitles [iz]);
-=======
-  //              $ (element).closest ("div.subAlbum").attr ("title-1", returnTitles [iz]);
->>>>>>> f1d16fb1e7732bd1b7a130b854172c96b11934ac
                 $ (element).closest ("div.subAlbum").css ("display", navButtons [iz]);
                 if (!z) {
                   nsub--;
@@ -2281,11 +2256,7 @@ export default Component.extend (contextMenuMixin, {
               iz = index - z;
               if (iz === 0) {
                 $ (element).attr ("totip", returnTitles [index + 2]);
-<<<<<<< HEAD
                 //$ (element).closest ("div.subAlbum").attr ("title-1", returnTitles [index + 2]);
-=======
-  //              $ (element).closest ("div.subAlbum").attr ("title-1", returnTitles [index + 2]);
->>>>>>> f1d16fb1e7732bd1b7a130b854172c96b11934ac
                 $ (element).closest ("div.subAlbum").css ("display", navButtons [index + 2]);
                 if (!z) {
                   nsub--;
@@ -2355,7 +2326,7 @@ export default Component.extend (contextMenuMixin, {
             if (thisAlbumIndex > 0) gotoAtop ();
             else scrollTo (null, 0);
             $.spinnerWait (true, 105);
-            $.spinnerWait (false, 4937);
+            //$.spinnerWait (false, 4937);
           });
         });
       }); // End return new Promise
@@ -3426,7 +3397,7 @@ export default Component.extend (contextMenuMixin, {
             else $ ("#netMeeting").hide ();
 
           }, 2000);
-          $.spinnerWait (false, 2007);
+//          $.spinnerWait (false, 2007);
         }, 2000);
       } // end Confirm
       //¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
@@ -3641,6 +3612,7 @@ let nopsGif = "GIF-fil kan bara ha tillfällig text"; // i18n
 let openRoot = ""; // If "demo" then SETS THE ADMIN FLAG TO ALLOW ANYTHING!
 let picFound = "Funna_bilder"; // i18n
 let preloadShowImg = [];
+let rootAdv = "Välj här albumsamling om den inte redan är förvald. Det kan finnas fler än ett alterativ. Om det ser ut att ha hakat upp sig: Ladda om webbläsaren! Ingångsalbumet till en albumsamling kallas också ”rot-album” – det förgrenar sig sedan nedåt – ”cyberträd” växer ofta med roten uppåt!";
 let loginStatus = "";
 let tempStore = "";
 // Paths for pictures to be soon updated in _imdb_images.sqlite (using sqlUpdate; then clear pathsUpdate!):
@@ -3773,8 +3745,8 @@ function hideShow_g () {
 $.spinnerWait = async function (runWait, delay) { // Delay is used only to end waiting (runWait false)
   if (!delay) delay = 0;
   $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
-  var s = 0; // s is used as debug switch to get ON printout
-  var t = 0; // t is used as debug switch to get OFF printout
+  var s = 1; // s is used as debug switch to get ON printout
+  var t = 1; // t is used as debug switch to get OFF printout
   if (runWait) {
     if (s) {
       s = await execute ('echo $(date "+%s.%3N")');
