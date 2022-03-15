@@ -2087,6 +2087,7 @@ export default Component.extend (contextMenuMixin, {
             $ (".ember-view.jstree").jstree ("close_all");
             $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
             $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_1")); // calls selectAlbum
+            $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
             userLog ("START " + imdbroot);
             $ ("a.proid:first-of-type").attr ("style", "display:"); // Revoke display:none
           }
@@ -3232,7 +3233,7 @@ export default Component.extend (contextMenuMixin, {
             $ (".ember-view.jstree").jstree ("deselect_all");
             $ (".ember-view.jstree").jstree ("close_all");
             $ (".ember-view.jstree").jstree ("open_node", "#j1_1");
-            $ (".ember-view.jstree").jstree ("select_node", "#j1_1"); // calls selectAlbum
+//            $ (".ember-view.jstree").jstree ("select_node", "#j1_1"); // calls selectAlbum
           }), 2000);
         }, 2000);                 // *NOTE: Preserved here just as an example
         $.spinnerWait (false, 4006);
@@ -3308,13 +3309,13 @@ export default Component.extend (contextMenuMixin, {
                 if (picFindCoo) picFind = picFindCoo.split ("/");
                 else picFind = ["", ""];
                 if ($ ("#imdbRoots").text ().split ("\n").indexOf (picFind [0]) < 1) picFind = ["", ""];
-                later ( ( () => {
-                  $ (".ember-view.jstree").jstree ("deselect_all");
-                  $ (".ember-view.jstree").jstree ("close_all");
-                  $ (".ember-view.jstree").jstree ("open_node", "#j1_1");
-                  $ (".ember-view.jstree").jstree ("select_node", "#j1_1"); // calls selectAlbum
-                  // startInfoPage (); // Also at init and selectRoot
-                }), 1000);
+                // later ( ( () => {
+                //   $ (".ember-view.jstree").jstree ("deselect_all");
+                //   $ (".ember-view.jstree").jstree ("close_all");
+                //   $ (".ember-view.jstree").jstree ("open_node", "#j1_1");
+                //   $ (".ember-view.jstree").jstree ("select_node", "#j1_1"); // calls selectAlbum
+                //   // startInfoPage (); // Also at init and selectRoot
+                // }), 1000);
               }), 500);
               // Next lines are a 'BUG SAVER'. Else, is all not initiated...?
               // And the delay appears to be important, 2000 is too little.
@@ -3421,7 +3422,7 @@ export default Component.extend (contextMenuMixin, {
             $ ("#title span.cred.name").html ("<b>"+ usr +"</b>");
             $ ("#title span.cred.status").html ("["+ status +"]");
             let tmp = "Du är inloggad som ’" + usr + "’ med [" + status + "]-rättigheter"; // i18n
-            let tmp1 = " (För medverkande: Logga ut före ny inloggning)";
+            let tmp1 = " (logga ut före annan inloggning)";
             $ ("#title button.cred").attr ("title", tmp + tmp1);
             $ (".cred.name").attr ("title", tmp);
             $ (".cred.status").attr ("title", "Se dina rättigheter");
@@ -3438,9 +3439,9 @@ export default Component.extend (contextMenuMixin, {
                 $ (".ember-view.jstree").jstree ("close_all");
                 $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
                 later ( ( () => {
-                  $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_1")); // calls selectAlbum
+//                  $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_1")); // calls selectAlbum
                   // Show the unchecked erase-link&&source checkbox if relevant
-                  eraseOriginals = false;
+                  eraseOriginals = false; // Global switch
                   if ( (allow.deleteImg || allow.adminAll) && ["admin", "editall"].indexOf (loginStatus) > -1) {
                     $ ("#title span.eraseCheck").css ("display", "inline");
                     $ ("#eraOrig") [0].checked = false;
@@ -3612,7 +3613,7 @@ let nopsGif = "GIF-fil kan bara ha tillfällig text"; // i18n
 let openRoot = ""; // If "demo" then SETS THE ADMIN FLAG TO ALLOW ANYTHING!
 let picFound = "Funna_bilder"; // i18n
 let preloadShowImg = [];
-let rootAdv = "Välj här albumsamling om den inte redan är förvald. Det kan finnas fler än ett alterativ. Om det ser ut att ha hakat upp sig: Ladda om webbläsaren! Ingångsalbumet till en albumsamling kallas också ”rot-album” – det förgrenar sig sedan nedåt – ”cyberträd” växer ofta med roten uppåt!";
+let rootAdv = "Välj här albumsamling om den inte redan är förvald. Det kan finnas fler än ett alterativ. Om det ser ut att ha hakat upp sig: Ladda om webbläsaren! Ingångsalbumet till en albumsamling kallas också ”rot-album” – det förgrenar sig sedan nedåt – ”cyberträd” kan växa med roten uppåt!";
 let loginStatus = "";
 let tempStore = "";
 // Paths for pictures to be soon updated in _imdb_images.sqlite (using sqlUpdate; then clear pathsUpdate!):
@@ -3887,8 +3888,9 @@ async function parentAlbum (tgt) {
       imgs = Number (imgs.replace (/^.*\(([0-9]+)\).*$/, "$1"));
       if (imgs < 2) imgs = 2; // for a minimum wait time
       $ (".ember-view.jstree").jstree ("close_all");
-      $ (".ember-view.jstree").jstree ("_open_to", "#j1_" + (1 + idx));
+//      $ (".ember-view.jstree").jstree ("_open_to", "#j1_" + (1 + idx));
       $ (".ember-view.jstree").jstree ("deselect_all");
+      $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
       $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_" + (1 + idx))); // calls selectAlbum
       $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
       let namepic = file.replace (/^(\/.*)*\/(.+)\.[^.]*$/, "$2");
@@ -5864,6 +5866,7 @@ function selectJstreeNode (idx) {
   $ (".ember-view.jstree").jstree ("close_all");
   $ (".ember-view.jstree").jstree ("_open_to", "#j1_" + (1 + idx));
   $ (".ember-view.jstree").jstree ("deselect_all");
+  $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
   $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_" + (1 + idx))); // calls selectAlbum
   $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
 }
