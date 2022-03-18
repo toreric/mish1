@@ -61,7 +61,7 @@ module.exports = function (app) {
         IMDB_DIR = decodeURIComponent (req.get ('imdbdir'))
         IMDB = IMDB_HOME + "/" + IMDB_ROOT
         picFound = req.get ('picfound')
-        // Remove all too old picFound files
+        // Remove all too old picFound files, NOTE the added random <.01yz>
         let cmd = 'find -L ' + IMDB + ' -type d -name "' + picFound + '*" -amin +' + toold + ' | xargs rm -rf'
         await cmdasync (cmd)
       }

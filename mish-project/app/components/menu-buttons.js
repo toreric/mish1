@@ -1164,13 +1164,6 @@ export default Component.extend (contextMenuMixin, {
 
       // Ctrl + click may replace right-click on Mac/Safari
       if (evnt.ctrlKey) {
-        /*if ($ (tgt).hasClass ("mark")) {
-          if (allow.imgHidden || allow.adminAll) {
-            // Right click on the marker area of a thumbnail...
-            parentAlbum (tgt);
-          }
-          return;
-        }*/
         $(tgt.parentElement.firstElementChild).trigger('contextmenu');
         // Has to be repeated because of this extra contextmenu trigging. Keeps the menu
         // by the pointer for both rightclick, Ctrl + rightclic, and Ctrl + leftclick:
@@ -1182,13 +1175,6 @@ export default Component.extend (contextMenuMixin, {
         $ ("div.context-menu-container").css ("left", (viewLeft + tmpLeft) + "px");
         return;
       }
-      /*if ($ (tgt).hasClass ("mark")) {
-        if ( evnt.button === 2 && (allow.imgHidden || allow.adminAll)) {
-          // Right click on the marker area of a thumbnail...
-          parentAlbum (tgt);
-        }
-        return;
-      }*/
       if (evnt.button === 2) return; // ember-context-menu should take it
       var namepic = tgt.parentElement.parentElement.id.slice (1);
 
@@ -2083,13 +2069,14 @@ export default Component.extend (contextMenuMixin, {
           var imdbroot = $ ("#imdbRoot").text ();
           if (imdbroot) {
             $ (".mainmenu, .mainMenu p").show ();
-            $ (".ember-view.jstree").jstree ("deselect_all");
             $ (".ember-view.jstree").jstree ("close_all");
+            $ (".ember-view.jstree").jstree ("deselect_all");
             $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
+            $ (".ember-view.jstree").jstree ("_open_to", "#j1_1");
             $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_1")); // calls selectAlbum
             $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
             userLog ("START " + imdbroot);
-            $ ("a.proid:first-of-type").attr ("style", "display:"); // Revoke display:none
+//            $ ("a.proid:first-of-type").attr ("style", "display:"); // Revoke display:none
           }
         }).then ( () => {
           startInfoPage ()
@@ -2727,6 +2714,7 @@ export default Component.extend (contextMenuMixin, {
 
       if ($ (".toggleAuto").text () === "STOP") return; // Auto slide show is running
       if (!(allow.saveChanges || allow.adminAll)) return;
+      resetBorders (); // Reset all borders
 
       $ ("#link_show a").css ('opacity', 0);
       new Promise (resolve => {
@@ -2759,7 +2747,7 @@ export default Component.extend (contextMenuMixin, {
           if (saveOrderFunc) {
             saveOrderFunc (newOrder).then ( () => { // Save on server disk
               document.getElementById ("saveOrder").blur ();
-              resetBorders (); // Reset all borders
+              //resetBorders (); // TOO LATE for gotoMinipic: removes the new marker
             });
           }
           if (spinTrue) $.spinnerWait (false, 1003);
@@ -3253,7 +3241,7 @@ export default Component.extend (contextMenuMixin, {
         this.actions.setAllow ();
         var albFind;
         var picFind;
-        loginError ().then (isLoginError => {
+        loginError ().then (async isLoginError => {
           if (isLoginError) {
             // Update aug 2017: will never happen!
             $ ("#title button.cred").text ("Logga in");
@@ -3290,16 +3278,8 @@ export default Component.extend (contextMenuMixin, {
               this.actions.selectRoot (tmpRoot, this);
               this.set ("albumData", []); // Triggers jstree rebuild in requestDirs
               $ ("#requestDirs").trigger ("click");
-              // Regenerate the picFound album: the shell commands must execute in sequence
-              let lpath = $ ("#imdbPath").text () + "/" + $ ("#picFound").text ();
-              //execute ("rm -rf " +lpath+ " && mkdir -m0775 " +lpath+ " && touch " +lpath+ "/.imdb").then ();
-              execute ("rm -rf " +lpath+ "&&mkdir -m0775 " +lpath+ "&&touch " +lpath+ "/.imdb&&chmod 664 " +lpath+ "/.imdb").then ();
-              // Remove all too old picFound album catalogs:
-              let toold = 60; // minutes. NOTE: Also defined in routes.js, please MAKE COMMON!!
-              let dir = this.get ("imdbPath") + this.get ("imdbRoot"); // NOTE: Remember the added random <.01yz>:
-              execute ('find -L ' + dir + ' -type d -name "' + picFound + '*" -amin +' + toold + ' | xargs rm -rf').then ();
-              userLog ("START " + $ ("#imdbRoot").text ());
-              $ ("a.proid:first-of-type").attr ("style", "display:"); // Revoke display:none
+              userLog ("START. " + $ ("#imdbRoot").text ());
+//              $ ("a.proid:first-of-type").attr ("style", "display:"); // Revoke display:none
               later ( ( () => {
                 // The getCookie result is used here, detects external "/album/..." probably OBSOLETE
                 // and external "/find/...", but NOTE: Only one of them, never both probably OBSOLETE
@@ -3309,13 +3289,6 @@ export default Component.extend (contextMenuMixin, {
                 if (picFindCoo) picFind = picFindCoo.split ("/");
                 else picFind = ["", ""];
                 if ($ ("#imdbRoots").text ().split ("\n").indexOf (picFind [0]) < 1) picFind = ["", ""];
-                // later ( ( () => {
-                //   $ (".ember-view.jstree").jstree ("deselect_all");
-                //   $ (".ember-view.jstree").jstree ("close_all");
-                //   $ (".ember-view.jstree").jstree ("open_node", "#j1_1");
-                //   $ (".ember-view.jstree").jstree ("select_node", "#j1_1"); // calls selectAlbum
-                //   // startInfoPage (); // Also at init and selectRoot
-                // }), 1000);
               }), 500);
               // Next lines are a 'BUG SAVER'. Else, is all not initiated...?
               // And the delay appears to be important, 2000 is too little.
@@ -3323,7 +3296,7 @@ export default Component.extend (contextMenuMixin, {
                 $ ("#j1_1_anchor").trigger ("click");
                 // Remove any confusing browser message (saved logins etc.)
                 $ ("#title span.cred.name").trigger ("click");
-              }), 6000);
+              }), 3000); // Was 6000
             }
           //$ ("#title a.proid") [0].focus () cannot be replaced by $ ("#title a.proid") [0].trigger ("focus"):
           $ ("#title a.proid") [0].focus ();
@@ -3575,8 +3548,14 @@ export default Component.extend (contextMenuMixin, {
     },
     //============================================================================================
     parAlb (name) { // #### Go to a (in DOM) linked picture's original (source) album
+
+//console.log("name",name);
+
       let tmp = escapeDots (name);
-      let   tgt = $ ("#i" + tmp + " img");
+      let tgt = $ ("#i" + tmp + " img") [0];
+
+//console.log("tgt",tgt);
+
       parentAlbum (tgt);
     },
     //============================================================================================
@@ -3746,8 +3725,8 @@ function hideShow_g () {
 $.spinnerWait = async function (runWait, delay) { // Delay is used only to end waiting (runWait false)
   if (!delay) delay = 0;
   $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
-  var s = 1; // s is used as debug switch to get ON printout
-  var t = 1; // t is used as debug switch to get OFF printout
+  var s = 0; // s is used as debug switch to get ON printout
+  var t = 0; // t is used as debug switch to get OFF printout
   if (runWait) {
     if (s) {
       s = await execute ('echo $(date "+%s.%3N")');
@@ -3787,8 +3766,9 @@ $.spinnerWait = async function (runWait, delay) { // Delay is used only to end w
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 async function startInfoPage () { // Compose the information display page
+  $ (".proid.introbutt").hide ();
   // ... but first show any info message:
-if (!$ ("#imdbPath").text ()) return;
+  if (!$ ("#imdbPath").text ()) return;
   let news = await execute ("cat " + $ ("#imdbPath").text () + "/_imdb_news.txt 2>/dev/null");
   if (news.indexOf ("Command failed") > -1) news = "";
   if (news.trim ()) //news = await execute ('echo "Mish "$(date "+%k:%M %A %e %B %Y")');
@@ -3803,7 +3783,7 @@ if (!$ ("#imdbPath").text ()) return;
   } else {
     linktext = "https://" + linktext + "/";
   }
-  execute ("cat " + $ ("#imdbPath").text () + "/_imdb_intro.txt 2>/dev/null | egrep '^/' 2>/dev/null").then (result => {
+  execute ("cat " + $ ("#imdbPath").text () + "/_imdb_intro.txt | egrep '^/'").then (result => {
     $ ("#imdbIntro").text (result);
     var intro = result.split ("\n");
     if (intro.length < 1 || intro [0].indexOf ("Command failed") === 0) {
@@ -3824,8 +3804,8 @@ if (!$ ("#imdbPath").text ()) return;
       iText [i - 1].innerHTML = "";
     }
     // Adjust to load only available images
-    $ (".proid.introbutt").show ();
     if (intro.length > 0) {
+      $ (".proid.introbutt").show ();
       if (intro.length < nIm) nIm = intro.length + 1;
       for (let i=1; i<nIm; i++) { // i=0 is the logo picture
         let im1 = i - 1;
@@ -3853,20 +3833,24 @@ if (!$ ("#imdbPath").text ()) return;
         }
           iImages [i].setAttribute ("src", imgSrc);
       }
-    } else $ (".proid.introbutt").hide ();
+    }
   });
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Show a symlink's 'parent' album; tgt is a mini-IMG, hopefully a linked one...
 async function parentAlbum (tgt) {
+
+//console.log("tgt",tgt);
+
   if (!tgt) {
     await new Promise (z => setTimeout (z, 4000));
     tgt = document.getElementsByClassName ("img_mini") [0].getElementsByTagName ("img") [1];
   }
-  let classes = $ (tgt).parent ("div").parent ("div").attr("class");
+  let classes = $ (tgt).parent ("a").parent ("div").attr("class");
+//console.log("classes",classes);
   let albumDir, file, tmp, imgs;
   if (classes && -1 < classes.split (" ").indexOf ("symlink")) { // ...yes! a symlink...
-    tmp = $ (tgt).parent ("div").parent ("div").find ("img").attr ("title");
+    tmp = $ (tgt).parent ("a").parent ("div").find ("img").attr ("title");
     tmp = $ ("#imdbPath").text () + tmp;
     // ...then go to the linked picture:
     getFilestat (tmp).then (async result => {
@@ -3888,16 +3872,16 @@ async function parentAlbum (tgt) {
       imgs = Number (imgs.replace (/^.*\(([0-9]+)\).*$/, "$1"));
       if (imgs < 2) imgs = 2; // for a minimum wait time
       $ (".ember-view.jstree").jstree ("close_all");
-//      $ (".ember-view.jstree").jstree ("_open_to", "#j1_" + (1 + idx));
       $ (".ember-view.jstree").jstree ("deselect_all");
       $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
+      $ (".ember-view.jstree").jstree ("_open_to", "#j1_" + (1 + idx));
       $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_" + (1 + idx))); // calls selectAlbum
       $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
       let namepic = file.replace (/^(\/.*)*\/(.+)\.[^.]*$/, "$2");
-//console.log("parentAlbum:namepic",namepic);
+//console.log("parentAlbum:namepic imgs",namepic,imgs);
       return namepic;
     }).then (async (namepic) => {
-      await new Promise (z => setTimeout (z, 333*imgs)); // proportional pause, was 111
+      await new Promise (z => setTimeout (z, 111*imgs)); // proportional pause, was 111
       if (namepic) gotoMinipic (namepic);
     });
   } // ...else do nothing
@@ -5864,9 +5848,9 @@ function emailOk(email) {
  */
 function selectJstreeNode (idx) {
   $ (".ember-view.jstree").jstree ("close_all");
-  $ (".ember-view.jstree").jstree ("_open_to", "#j1_" + (1 + idx));
   $ (".ember-view.jstree").jstree ("deselect_all");
   $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
+  $ (".ember-view.jstree").jstree ("_open_to", "#j1_" + (1 + idx));
   $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_" + (1 + idx))); // calls selectAlbum
   $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
 }
