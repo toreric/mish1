@@ -6,7 +6,7 @@ The main project is the 'mish-project' containing the application core. It may b
 
 I have decided not to use the Ember data model in order to try making the system better self-contained and movable. The aim is to make possible to show an 'unlimited' number of albums or photo directories/folders/galleries or whatever you call them.
 
-A root album is a chosen file tree root directory where each subdirectory may be recognized as an album. Each album (also the root album) is suggested to contain a maximum of about a hundred pictures, which is roughly reasonable for keeping overview on a computer screen. Picture thumbnails (if any) appear alongside sub-album references (if any), equivalent to a file tree.
+An 'albun collection' or 'root album' is a chosen file tree root directory where each subdirectory may be recognized as an album. Each album (also the root album) is suggested to contain a maximum of about one hundred pictures, which is roughly reasonable for keeping overview on a computer screen. Picture thumbnails (if any) appear alongside sub-album references (if any), equivalent to a file tree.
 
 A directory qualifies as an autodetectable album when it contains a file named '.imdb' (my acronyme for 'image database', not to be mixed up with ...).
 
@@ -14,4 +14,4 @@ A main idea is to keep all information, such as picture legend etc., as metadata
 
 See the Wiki for further reading!
 
-Please mail me for better information 
+Please mail me for better information

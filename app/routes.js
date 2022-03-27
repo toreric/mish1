@@ -68,12 +68,12 @@ module.exports = function (app) {
     }
     // console.log ("")
     // 30 svart, 31 röd, 32 grön, 33 gul, 34 blå, 35 magenta, 36 cyan, 37 vit, 0 default
-    // console.log('\033[36m' + decodeURIComponent (req.originalUrl) + '\033[0m');
-    // console.log ("  WWW_ROOT:", WWW_ROOT)
-    // console.log ("      IMDB:", IMDB)
-    // console.log (" IMDB_ROOT:", IMDB_ROOT)
-    // console.log ("  IMDB_DIR:", IMDB_DIR)
-    // console.log ("  picFound:", picFound)
+    console.log('\033[36m' + decodeURIComponent (req.originalUrl) + '\033[0m');
+    console.log ("  WWW_ROOT:", WWW_ROOT)
+    console.log ("      IMDB:", IMDB)
+    console.log (" IMDB_ROOT:", IMDB_ROOT)
+    console.log ("  IMDB_DIR:", IMDB_DIR)
+    console.log ("  picFound:", picFound)
     if (show_imagedir) {
       console.log (req.params)
       console.log (req.hostname)
@@ -137,7 +137,7 @@ console.log("p2",p);
     }, 100)
   })
 
-  // ##### #0.1 Get file information CHECK path!
+  // ##### #0.1 Get file information
   app.get ('/filestat/:path', async function (req, res) {
 
     var LT = "se-SV" // Language tag for dateTime, environment locales are different!

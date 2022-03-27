@@ -10,12 +10,6 @@ import { Promise } from 'rsvp';
 
 export default Component.extend({
 
-  // Parameters in form's dzparam hidden field (see .hbs file)
-  userDir:  "unset", // Root of album collections (server's IMDB_HOME)
-  imdbPath: "unset", // Absolute path to current root album == album collection (server's IMDB)
-  imdbDir:  "unset", // Current album directory (server's IMDB_DIR)
-  picFound: "unset", // Current search result directory (server's picFound)
-
   classNames: ['dropzone'],
 
   myDropzone: () => {return document.body || undefined},
@@ -319,20 +313,6 @@ export default Component.extend({
     this.set('myDropzone', new Dropzone(region, this.dropzoneOptions));
   },
 
-  // didRender () {
-  //   this._super (...arguments);
-  //   $ (document).ready ( () => {
-  //
-  //     // Set parameters in form's dzparam hidden field (see .hbs), needed by server
-  //     this.set ("userDir", $ ("#userDir").text ());
-  //     this.set ("imdbPath", $ ("#imdbPath").text ());
-  //     this.set ("imdbDir", $ ("#imdbDir").text ());
-  //     this.set ("picFound", $ ("#picFound").text ());
-  //
-  //   });
-  // },
-  //
-  //insertDropzone: Ember.on('didInsertElement', function() {
   didInsertElement () {
     let _this = this;
     this.getDropzoneOptions();
@@ -399,13 +379,7 @@ export default Component.extend({
 
     processQueue() {
       return new Promise ( () => {
-
-        // Set parameters in form's dzparam hidden field (see .hbs), needed by server (doesn't work)
-        this.set ("userDir", $ ("#userDir").text ());
-        this.set ("imdbPath", $ ("#imdbPath").text ());
-        this.set ("imdbDir", $ ("#imdbDir").text ());
-        this.set ("picFound", $ ("#picFound").text ());
-later ( () => { // Wait
+        $ ("#prepServer").trigger ("click");
         this.myDropzone.options.autoProcessQueue = false;
         qlen = this.myDropzone.getQueuedFiles().length;
         if (qlen > 0) {
@@ -417,14 +391,9 @@ later ( () => { // Wait
           console.log (secNow (), "drop-zone processQueue:", qlen); // Upload begin
           this.myDropzone.processQueue ();
         }
-}, 1999);
       }).then ( () => {
-        // Kanske här?
+        // ?
       });
-      /*setImdbDir ().then (imdbDir => { // Ensure the server imdbDir is set!
-        if (imdbDir) {
-        }
-      });*/
     }
 
   },

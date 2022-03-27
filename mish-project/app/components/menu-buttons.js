@@ -499,7 +499,7 @@ export default Component.extend (contextMenuMixin, {
     },
     action () {
       // Decide whether also the ORIGINAL will be erased when a LINKED PICTURE is erased
-      if (allow.deleteImg && $ ("#eraOrig") [0].checked === true) {
+      if ((allow.deleteImg || allow.adminAll) && $ ("#eraOrig") [0].checked === true) {
         eraseOriginals = true; // global
       } else {
         eraseOriginals = false;
@@ -833,7 +833,7 @@ export default Component.extend (contextMenuMixin, {
             $ ("#imdbRoots").text (rootList);
           }
         }), 25);
-        later ( (async () => {
+        later ( ( () => {
           scrollTo (0, 0); // To top of screen:
           //$ ("#title a.proid") [0].focus () cannot be replaced by $ ("#title a.proid") [0].trigger ("focus"):
           $ ("#title a.proid") [0].focus ();
@@ -846,13 +846,9 @@ export default Component.extend (contextMenuMixin, {
               //$ ("#title a.proid") [0].focus () cannot be replaced by $ ("#title a.proid") [0].trigger ("focus"):
               $ ("#title a.proid") [0].focus ();
               //this.actions.selectRoot ("");
-              startInfoPage ();
-
               $ (".mainMenu p a.rootQuest").attr ("totip", rootAdv);
-
-            }), 1000);
+            }), 2000);
           }), 1000);
-
         }), 200);
       }), 200);
     });
@@ -921,7 +917,7 @@ export default Component.extend (contextMenuMixin, {
 
       }), 10);
 
-      returnTitles = ["HEM till ”" + $ ("#imdbRoot").text () + "” (rot-albumet)", "MOT ”" + $ ("#imdbRoot").text () + "”", "TILL SENASTE album"]; // Global, i18n
+      returnTitles = ["HEM till ”" + $ ("#imdbRoot").text () + "” (rot-albumet)", "mot ”" + $ ("#imdbRoot").text () + "”", "till SENASTE album"]; // Global, i18n
     });
   },
 
@@ -1244,7 +1240,7 @@ export default Component.extend (contextMenuMixin, {
         if ($ (".toggleAuto").text () === "STOP") { // Auto slide show is running
           later ( ( () => {
             $ (".nav_links .toggleAuto").text ("AUTO");
-            $ (".nav_links .toggleAuto").attr ("title", "Avsluta bildbyte [Esc]"); //i18n
+            $ (".nav_links .toggleAuto").attr ("title", "Automatiskt bildbyte [A]"); //i18n
             that.runAuto (false);
           }), 100);
           if (Z) {console.log ('*d');}
@@ -1839,6 +1835,12 @@ export default Component.extend (contextMenuMixin, {
           "id": "yesBut",
           click: function () {
 
+            // function selectElement(id, valueToSelect) {
+            //     let element = document.getElementById(id);
+            //     element.value = valueToSelect;
+            //     element.dispatchEvent(new Event('change')); // important
+            // }
+
             if (opt === "new") {
               // Check the proposed album name:
               var nameNew = document.querySelector ("input.nameNew").value;
@@ -1883,22 +1885,30 @@ export default Component.extend (contextMenuMixin, {
                   }), 100);
                 } else {
                   console.log ("Album created: " + nameNew);
-                  userLog ("CREATED " + nameNew + ", RESTARTING", false, 10000);
+                  userLog ("CREATED " + nameNew + ", RELOADING", false, 10000);
                   later ( ( () => {
-                    location.reload ();
+                    that.actions.selectRoot ($ ("#imdbRoot").text (), that);
+                    // $ ("#rootSel").val ($ ("#rootSel option").text());
+                    // $ ("#rootSel").val ($ ("#imdbRoot").text ());
+                    // selectElement("rootSel", $ ("#imdbRoot").text ());
+                    // $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_1")); // calls selectAlbum
+                    //location.reload ();
+                    //$ ("#reFr").trigger ("click");
                   }), 2000);
                 }
               });
 
             } else if (opt === "erase") {
               // Ignore hidden (dotted) files
-              cmd = "ls -1 " + $ ("#imdbDir").text ()
+              cmd = "ls -1 " + $ ("#imdbPath").text () + $ ("#imdbDir").text ();
               execute (cmd).then (res => {
                 res = res.split ("\n");
                 var n = 0;
                 for (let i=0; i<res.length; i++) {
                   var a = res [i].trim ()
-                  if (!(a === "" || a.indexOf ("_imdb_") === 0 || a.indexOf ("_mini_") === 0 || a.indexOf ("_show_") === 0)) {n++;}
+                  if (!(a === "" || a.indexOf ("_imdb_") === 0 || a.indexOf ("_mini_") === 0 || a.indexOf ("_show_") === 0)) {
+                    n++;
+                  }
                 }
                 // If n==0, any hidden (dotted) files are deleted along with _imdb_ files etc.
                 if (n) {
@@ -1908,12 +1918,17 @@ export default Component.extend (contextMenuMixin, {
                     infoDia (null, null, album, " <br><b>Albumet måste tömmas</b><br>för att kunna raderas", "Ok", true);
                   }), 100);
                 } else {
-                  cmd = "rm -rf " + $ ("#imdbDir").text ();
-                  console.log (cmd);
+                  cmd = "rm -rf " + $ ("#imdbPath").text () + $ ("#imdbDir").text ();
                   execute (cmd).then ( () => {
-                    userLog ("DELETED " + nameText + ", RESTARTING");
+                    userLog ("DELETED " + nameText + ", RELOADING");
                     later ( ( () => {
-                      location.reload ();
+                      that.actions.selectRoot ($ ("#imdbRoot").text (), that);
+                      // $ ("#rootSel").val ($ ("#rootSel option").text());
+                      // $ ("#rootSel").val ($ ("#imdbRoot").text ());
+                      // selectElement("rootSel", $ ("#imdbRoot").text ());
+                      // $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_1")); // calls selectAlbum
+                      //location.reload ();
+                      //$ ("#reFr").trigger ("click");
                     }), 2000);
                   });
                 }
@@ -2006,16 +2021,36 @@ export default Component.extend (contextMenuMixin, {
       // Deppink triggers seconds/textline
       var colorText = $ (".nav_links span a.speedBase").css ('color');
       //console.log (colorText);
-      if ( colorText !== 'rgb(255, 20, 147)') { // not deeppink but gray or hoover-color
+      if ( colorText !== 'rgb(255, 20, 147)') { // not deeppink
         $ (".nav_links span a.speedBase").css ('color', 'deeppink'); // 'rgb(255, 20, 147)'
       } else {
         $ (".nav_links span a.speedBase").css ('color', 'gray'); // 'rgb(128, 128, 128)'
       }
     },
     //============================================================================================
+    prepServer () { // ##### Dummy call to keep the server instance during uploads
+      return new Promise ( (resolve) => {
+        var xhr = new XMLHttpRequest ();
+        xhr.open ('GET', 'imdbroot/@', true, null, null);
+        setReqHdr (xhr, 44); // important
+        xhr.onload = function () {
+          var result = xhr.response;
+          $ ("#imdbPath").text (result);
+          resolve (true);
+        };
+        xhr.send ();
+      }).catch (error => {
+        if (error.status !== 404) {
+          console.error (error.message);
+        } else {
+          console.log (error.status, error.statusText, "or NodeJS server error?");
+        }
+      }).then ( () => {});
+    },
+    //============================================================================================
     selectRoot (value, what) { // ##### Select album root dir from selectbox
       // Check if there is a rootcookie(?)
-
+console.log("selectRoot-",value);
       if (what) var that = what; else that = this;
       $ (".mainMenu p:gt(2)").hide (); // The selectbox is in the third <p> item
       // Close all dialogs/windows
@@ -2027,8 +2062,10 @@ export default Component.extend (contextMenuMixin, {
       document.getElementById ("divDropZone").style.display = "none";
 
       if (value.indexOf (" ") > -1) value = ""; // NOTE: Space flags the header line !!
-      if (value === "" || value === $ ("#imdbRoot").text ()) {
+      if (value === "") {
+        //if (value === "" || value === $ ("#imdbRoot").text ()) {
         $ (".mainMenu p:gt(2)").show (); // The selectbox is in the third <p> item
+console.log("selectRoot=",value);
         return;
       }
 
@@ -2072,9 +2109,7 @@ export default Component.extend (contextMenuMixin, {
             $ (".ember-view.jstree").jstree ("close_all");
             $ (".ember-view.jstree").jstree ("deselect_all");
             $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
-            $ (".ember-view.jstree").jstree ("_open_to", "#j1_1");
             $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_1")); // calls selectAlbum
-            $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
             userLog ("START " + imdbroot);
 //            $ ("a.proid:first-of-type").attr ("style", "display:"); // Revoke display:none
           }
@@ -2446,6 +2481,7 @@ export default Component.extend (contextMenuMixin, {
       if ($ (".toggleAuto").text () === "STOP") return; // Auto slide show is running
       $ ("iframe.intro").hide ();
       mainMenuHide ();
+
       $ ("#link_show a").css ('opacity', 0);
       if (document.getElementById ("divDropZone").style.display === "none") {
         document.getElementById ("divDropZone").style.display = "block";
@@ -2667,7 +2703,6 @@ export default Component.extend (contextMenuMixin, {
     //============================================================================================
     async refresh () { // ##### Reload the imageList and update the sort order, #reFr hidden Jan 2022
 
-      //if ($ ("#imdbRoot").text () === "") return;
       if ($ (".toggleAuto").text () === "STOP") return; // Auto slide show is running
       document.getElementById ("imageList").className = "hide-all";
 
@@ -2973,6 +3008,10 @@ export default Component.extend (contextMenuMixin, {
       if (window.screen.width < 500) return;
       if (!(allow.imgOriginal || allow.adminAll)) return;
       var name = $ ("#picName").text ();
+      if ($ ("#i" + escapeDots (name) + " img").attr ("title").search (/\.gif$/i) > 0) {
+        userLog ("GIFs cannot be full sized", false, 5000);
+        return;
+      }
       // Only selected user classes may view or download protected images
       if ( (name.startsWith ("Vbm") || name.startsWith ("CPR")) && ["admin", "editall", "edit"].indexOf (loginStatus) < 0) {
         userLog (name + " COPYRIGHT©protected");
@@ -3217,12 +3256,12 @@ export default Component.extend (contextMenuMixin, {
         this.set ("albumData", []); // Triggers jstree rebuild in requestDirs
         setTimeout (function () { // *NOTE: Normally, later replaces setTimeout
           $ ("#requestDirs").trigger ("click");
-          later ( ( () => {
-            $ (".ember-view.jstree").jstree ("deselect_all");
-            $ (".ember-view.jstree").jstree ("close_all");
-            $ (".ember-view.jstree").jstree ("open_node", "#j1_1");
-//            $ (".ember-view.jstree").jstree ("select_node", "#j1_1"); // calls selectAlbum
-          }), 2000);
+          // later ( ( () => {
+          //   $ (".ember-view.jstree").jstree ("deselect_all");
+          //   $ (".ember-view.jstree").jstree ("close_all");
+          //   $ (".ember-view.jstree").jstree ("open_node", "#j1_1");
+          //   $ (".ember-view.jstree").jstree ("select_node", "#j1_1"); // calls selectAlbum
+          // }), 2000);
         }, 2000);                 // *NOTE: Preserved here just as an example
         $.spinnerWait (false, 4006);
         return;
@@ -3279,7 +3318,7 @@ export default Component.extend (contextMenuMixin, {
               this.set ("albumData", []); // Triggers jstree rebuild in requestDirs
               $ ("#requestDirs").trigger ("click");
               userLog ("START. " + $ ("#imdbRoot").text ());
-//              $ ("a.proid:first-of-type").attr ("style", "display:"); // Revoke display:none
+              //$ ("a.proid:first-of-type").attr ("style", "display:"); // Revoke display:none
               later ( ( () => {
                 // The getCookie result is used here, detects external "/album/..." probably OBSOLETE
                 // and external "/find/...", but NOTE: Only one of them, never both probably OBSOLETE
@@ -3294,6 +3333,8 @@ export default Component.extend (contextMenuMixin, {
               // And the delay appears to be important, 2000 is too little.
               later ( ( () => {
                 $ ("#j1_1_anchor").trigger ("click");
+                $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
+                $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_1")); // calls selectAlbum
                 // Remove any confusing browser message (saved logins etc.)
                 $ ("#title span.cred.name").trigger ("click");
               }), 3000); // Was 6000
@@ -3766,7 +3807,6 @@ $.spinnerWait = async function (runWait, delay) { // Delay is used only to end w
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 async function startInfoPage () { // Compose the information display page
-  $ (".proid.introbutt").hide ();
   // ... but first show any info message:
   if (!$ ("#imdbPath").text ()) return;
   let news = await execute ("cat " + $ ("#imdbPath").text () + "/_imdb_news.txt 2>/dev/null");
@@ -3804,6 +3844,7 @@ async function startInfoPage () { // Compose the information display page
       iText [i - 1].innerHTML = "";
     }
     // Adjust to load only available images
+    $ (".proid.introbutt").hide ();
     if (intro.length > 0) {
       $ (".proid.introbutt").show ();
       if (intro.length < nIm) nIm = intro.length + 1;
@@ -3876,7 +3917,6 @@ async function parentAlbum (tgt) {
       $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
       $ (".ember-view.jstree").jstree ("_open_to", "#j1_" + (1 + idx));
       $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_" + (1 + idx))); // calls selectAlbum
-      $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
       let namepic = file.replace (/^(\/.*)*\/(.+)\.[^.]*$/, "$2");
 //console.log("parentAlbum:namepic imgs",namepic,imgs);
       return namepic;
@@ -3898,14 +3938,16 @@ window.gotoMinipic = function (namepic) {
 }
 // Position to a minipic and highlight its border, 'main' function
 function gotoMinipic (namepic) {
-  let hs = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
   let spinner = document.querySelector("img.spinner");
   let timer;
-  (function repeater () {
+  (async function repeater () {
+    let hs = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
     timer = setTimeout (repeater, 500);
     if (spinner.style.display === "none") {
       clearTimeout (timer);
+      //await new Promise (z => setTimeout (z, 654));
       let y, p = $ ("#i" + escapeDots (namepic));
+      //scrollTo (null, 0);
       if (p.offset ()) {
         y = p.offset ().top + p.height ()/2 - hs/2;
       } else {
@@ -3913,11 +3955,13 @@ function gotoMinipic (namepic) {
       }
       let t = $ ("#highUp").offset ().top;
       //let t = 66;
+      await new Promise (z => setTimeout (z, 654));
       if (t > y) {y = t;}
       scrollTo (null, y);
       resetBorders (); // Reset all borders
-      $.spinnerWait (false, 3009)
+      //$.spinnerWait (false, 3009)
       markBorders (namepic); // Mark this one
+      //console.log("scrollTo",y,hs);
     }
   } ());
 }
@@ -3927,7 +3971,7 @@ function gotoAtop () {
   later ( ( () => {
     let t = $ ("#highUp").offset ().top;
     scrollTo (null, t);
-  }), 1001);
+  }), 124);
   //scrollTo (null, 66); // Alternative to #highUp
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -4772,6 +4816,7 @@ function reqDirs (imdbroot) { // Read the dirs in the album root
         // Remove another dim last lines, move into dirCoco (directory content counter, texts)
         var dirCoco = dirList.splice (2 + dim, dim);
         $ ("#imdbPath").text (dirList [0].replace (/@/g, "/"))
+        startInfoPage ();
         $ ("#userDir").text (dirList [0].slice (0, dirList [0].indexOf ("@")));
         $ ("#imdbRoot").text (dirList [0].slice (dirList [0].indexOf ("@") + 1));
         dirList = dirList.slice (1);
@@ -5852,7 +5897,6 @@ function selectJstreeNode (idx) {
   $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
   $ (".ember-view.jstree").jstree ("_open_to", "#j1_" + (1 + idx));
   $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_" + (1 + idx))); // calls selectAlbum
-  $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
 }
 window.selectJstreeNode = function (idx) { // for child window (iframe)
   selectJstreeNode (idx);

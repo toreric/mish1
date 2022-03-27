@@ -167,7 +167,6 @@ function copyToClipboard (str) {    // Copies a filename (below mini-pic) to the
 <div id="imdbCoco" title="albums content counts" style="display:none"></div>
 <div id="imdbDir" title="path to album" style="display:none"></div>
 <div id="imdbDirs" title="paths to albums" style="display:none"></div>
-<div id="imdbHome" title="where album roots should be found" style="display:none"></div>
 <div id="imdbIntro" title="introduction info" style="display:none"></div>
 <div id="imdbLabels" title="paths to album labels" style="display:none"></div>
 <div id="imdbLink" title="link name to this album collection" style="display:none"></div>
@@ -189,14 +188,15 @@ function copyToClipboard (str) {    // Copies a filename (below mini-pic) to the
 <div id="temporary_1" style="display:none"></div>
 <div id="topMargin" title="pixels above slide shown" style="display:none">18</div>
 <div id="uploadNames" title="last uploaded" style="display:none"></div>
-<div id="userDir" title="user's home or choice" style="display:none"></div>
+<div id="userDir" title="user's home or choice where album roots should be found" style="display:none"></div>
 
 <!-- ///// SPECIAL PLACEHOLDERS/LINKS (hidden) ///// -->
 <button style="display:none;" id="albumEditOption" {{action 'albumEditOption'}}></button>
+<button style="display:none;" id="prepServer" {{action 'prepServer'}}></button>
 <!-- input style="display:none;" id="fileDialog" type="file" nwdirectory directory -->
 <input style="display:none" id="requestDirs" onclick={{perform requestDirs}}>
 <div class="shortMessage blackBorder" style="display:none">RT-log-message</div>
-<a href="null" id="download" style="display:none" download>DOWNLOAD-AREA</a>
+<a href="" id="download" style="display:none" download>DOWNLOAD-AREA</a>
 
 <div id="highUp" style=""></div>
 <div id="highUpSpacer" style="margin-bottom:1em"></div>
