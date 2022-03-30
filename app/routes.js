@@ -558,7 +558,7 @@ console.log("p2",p);
         await new Promise (z => setTimeout (z, 888))
         await sqlUpdate (IMDB_PATH + file.originalname)
       }) // Add to the sql DB
-      .then (console.log (++n_upl +' TMP: '+ file.path + ' written to,' +'\n  UPLOADED to: .'+ IMDB_DIR +"/"+ file.originalname))
+      .then (console.log (++n_upl +' TMP: '+ file.path + ' written\n  UPLOADED to: .'+ IMDB_DIR +"/"+ file.originalname))
       // Delete showfile and minifile since the main file may be refreshed (auto-regenerated)
       .then(pngname = path.parse (file.originalname).name + '.png')
       // File not found isn't caught, see Express unhandledRejection!

@@ -640,7 +640,7 @@ export default Component.extend (contextMenuMixin, {
         // 1 remove all "<album>/"s, leaving the last (or first if no more)
         // 2 if "<picFound>", remove the disturbing distinguishing random extension
         //   from most GUI labels (but, NOTE, use it in the JStree label for clarity)
-        var nameText = $ ("#imdbRoot").text () + $ ("#imdbDir").text ().replace (/^(.*[/])*/, "");
+        var nameText = $ ("#imdbRoot").text () + $ ("#imdbDir").text ();
         if (nameText.indexOf (picFound) > -1) nameText = nameText.replace (/^(.+)\.[^.]+$/, "$1");
 
         var eraseText = "Radera i " + nameText + ":";
