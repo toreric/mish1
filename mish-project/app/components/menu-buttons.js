@@ -1,6 +1,9 @@
 /* eslint-disable no-console */
 // eslint ember/avoid-leaking-state-in-ember-objects: "off" */
 // (cannot use ember-context-menu with the 'leaking-state' rule)
+
+///* global Dropzone*/
+
 import Component from '@ember/component'
 import EmberObject from '@ember/object';
 import $ from 'jquery';
@@ -10,6 +13,14 @@ import { Promise } from 'rsvp';
 import { htmlSafe } from '@ember/string';
 import { task } from 'ember-concurrency';
 import contextMenuMixin from 'ember-context-menu';
+
+
+import Dropzone from "dropzone";
+let myDropzone = new Dropzone ("#my-form");
+myDropzone.on ("addedfile", file => {
+  console.log (`File added: ${file.name}`);
+});
+
 
 export default Component.extend (contextMenuMixin, {
 
@@ -3605,7 +3616,8 @@ console.log("selectRoot=",value);
       subaSelect (subal);
     }
   }
-});
+}); // END export default Component.extend
+
 // G L O B A L S, that is, 'outside' (global) variables and functions (globals)
    //////////////////////////////////////////////////////////////////////////////////////
 var BLINK; // setInterval return handle

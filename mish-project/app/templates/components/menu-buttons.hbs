@@ -97,11 +97,44 @@ function copyToClipboard (str) {    // Copies a filename (below mini-pic) to the
   <br><span class="usrlg"></span><!-- User information log -->
 </div>
 
+
+
 <!-- ///// DROPBOX  CONTAINER ///// -->
 <div id="divDropZone" style="display:none">
+  <div class="" style="display:inline-block;background:white;position:relative;z-index:26">
+
+    <div style="margin: 0 0 0.2em 0"><p id="uploadWarning"></p></div>
+
+    <form id="my-form" method="post" enctype="multipart/form-data" action="." class="dropzone">
+      <button id="uploadPics" style="cursor:pointer;background:#ddd;display:none"
+      type="submit" class="btn-std" {{action 'processQueue'}}>&nbsp;Ladda upp&nbsp;</button>
+
+      <button id="removeAll" style="cursor:pointer;background:#ddd;display:none"
+      type="submit" class="btn-std" {{action 'removeAllFiles'}} title="...från den här panelen">&nbsp;Ta bort alla&nbsp;</button>
+
+      <button id="removeDup" style="cursor:pointer;background:#ddd;display:none"
+      type="submit" class="btn-std" {{action 'removeDupFiles'}} title="...från den här panelen">&nbsp;Ta bort med VARNING&nbsp;</button>
+    </form>
+
+  </div>
+
+  <p id="dzinfo">upload textinfo</p><button id="helpUpload" style="cursor:pointer;color:blue;background:#ddd"
+  type="submit" class="btn-std" {{action ''}} title="Hur ladda upp bilder?
+  Planerad hur-gör-man-beskrivning">&nbsp;HJÄLP&nbsp;</button>
+  <p id="uploadFinished"></p>
+  <p class="dzclose" {{action 'closeThis'}}> &times; </p>
+
+  <!-- an empty <div> breaks the inline block sequence -->
+  <div></div>
+</div>
+
+
+<div id="oldDropZone" style="display:none">
   {{#drop-zone url='/upload' autoProcessQueue=false  acceptedFiles='image/jpeg,image/tiff,image/png,image/gif'}}
   {{/drop-zone}}
 </div>
+
+
 
 <!-- ///// JQUERY DIALOGS ///// -->
 <div id="dialog" style="display:none">DIALOG</div>
