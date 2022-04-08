@@ -7,6 +7,8 @@
 import Component from '@ember/component'
 import EmberObject from '@ember/object';
 import $ from 'jquery';
+import { dialog } from 'jquery-ui';
+import { tooltip } from 'jquery-ui';
 import { inject as service } from '@ember/service';
 import { later } from '@ember/runloop';
 import { Promise } from 'rsvp';
@@ -14,12 +16,14 @@ import { htmlSafe } from '@ember/string';
 import { task } from 'ember-concurrency';
 import contextMenuMixin from 'ember-context-menu';
 
-
 import Dropzone from "dropzone";
-let myDropzone = new Dropzone ("#my-form");
-myDropzone.on ("addedfile", file => {
-  console.log (`File added: ${file.name}`);
-});
+Dropzone.autoDiscover = false;
+
+// MOVED TO INIT
+// let myDropzone = new Dropzone ("#my-form");
+// myDropzone.on ("addedfile", file => {
+//   console.log (`File added: ${file.name}`);
+// });
 
 
 export default Component.extend (contextMenuMixin, {
@@ -786,7 +790,14 @@ export default Component.extend (contextMenuMixin, {
     $ (document).ready ( () => {
 
       // Here is the base IMDB_LINK setting, to use also in ld_imdb.js:
+      // THIS IS OUTDATED
       $ ("#imdbLink").text ("."); // <<< == IMDB_LINK in routes.js
+
+      //import Dropzone from "dropzone";
+      let myDropzone = new Dropzone ("#my-form");
+      myDropzone.on ("addedfile", file => {
+        console.log (`File added: ${file.name}`);
+      });
 
       $ ("#menuButton").attr ("title", htmlSafe ("Meny")); // i18n
       // Remember update *.hbs
@@ -864,6 +875,8 @@ export default Component.extend (contextMenuMixin, {
       }), 200);
     });
     // Trigger the jQuery tooltip on 'totip="..."' (custom attribute)
+    //$ (document).tooltip ("enable");
+later ( ( () => {
     $ (function () {
       $ (document).tooltip ({
         items: "[totip]",
@@ -892,6 +905,7 @@ export default Component.extend (contextMenuMixin, {
       });
       $ (document).tooltip ("disable");
     });
+}), 1000);
   },
   //----------------------------------------------------------------------------------------------
   didInsertElement () { // ##### Runs at page ready state
