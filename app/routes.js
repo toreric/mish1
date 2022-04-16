@@ -981,7 +981,7 @@ console.log("p2",p);
       try {
         fd = await fs.openAsync ('rln' + IMDB + album + '/.imdb', 'r')
         await fs.closeAsync (fd)
-        albums.push (album)
+        if (album.slice (0, 2) !== "/.") albums.push (album) // Ignore 'dotted' directory paths
       } catch (err) {
         // Ignore
       }

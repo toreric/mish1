@@ -914,8 +914,11 @@ a.imDir img {
 /*.subAlbum.BUT_1:hover {
   border: 2px solid #aef;
 }*/
-a.imDir img:hover {
+a.imDir:hover img {
   border: 1px solid #aef;
+}
+a.imDir:hover span {
+  color: #ccc;
 }
 /* CSS tooltip title-1 for long one-liners.
 The jquery ui-tooltip is used elsewere (totip in *.js) */
@@ -1545,6 +1548,8 @@ img.dotted {
   top: auto;
   left: auto;
   text-align: center;
+  width: fit-content;
+  margin: 0 0 0.2em 0;
 }
 .dzclose {
   position: absolute;

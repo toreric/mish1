@@ -17,7 +17,6 @@ import { task } from 'ember-concurrency';
 import contextMenuMixin from 'ember-context-menu';
 
 import Dropzone from "dropzone";
-Dropzone.autoDiscover = false;
 
 // MOVED TO INIT
 // let myDropzone = new Dropzone ("#my-form");
@@ -148,10 +147,9 @@ export default Component.extend (contextMenuMixin, {
     },
     // to be completed ...
     action () {
-      var title = "Information";
       var text = "<br>”Redigera bild...” är en planerad framtida länk<br>till något bildredigeringsprogram"; // i18n
       var yes = "Ok" // i18n
-      infoDia (null, null, title, text, yes, true);
+      infoDia (null, null, "", text, yes, true);
       return;
     }
   },
@@ -794,7 +792,12 @@ export default Component.extend (contextMenuMixin, {
       $ ("#imdbLink").text ("."); // <<< == IMDB_LINK in routes.js
 
       //import Dropzone from "dropzone";
+      Dropzone.autoDiscover = false;
       let myDropzone = new Dropzone ("#my-form");
+      Dropzone.options.myForm = {
+        autoProcessQueue: false
+      }
+
       myDropzone.on ("addedfile", file => {
         console.log (`File added: ${file.name}`);
       });
@@ -1702,7 +1705,7 @@ later ( ( () => {
     },
     //============================================================================================
     infStatus () { // ##### Display permissions with the picture allow.jpg
-      var title = "Information om användarrättigheter"; // i18n
+      var title = "Användarrättigheter"; // i18n
       var text = '<img src="allow.jpg" title="Användarrätigheter">'; // i18n
       var yes = "Ok" // i18n
       infoDia (null, null, title, text, yes, false);
@@ -2507,6 +2510,11 @@ console.log("selectRoot=",value);
       $ ("iframe.intro").hide ();
       mainMenuHide ();
 
+      let text = "<br>UPPLADDNING TILLFÄLLIGT AVSTÄNGD<br><br>på grund av underhållsarbete som förhoppningsvis är färdigt efter påsk";
+      let yes ="Ok";
+      let modal = true;
+      if (infoDia (null, null, "", text, yes, modal)) return;
+
       $ ("#link_show a").css ('opacity', 0);
       if (document.getElementById ("divDropZone").style.display === "none") {
         document.getElementById ("divDropZone").style.display = "block";
@@ -3095,10 +3103,9 @@ console.log("selectRoot=",value);
           });
         } else {
           //console.log ("NO AWSTATS");
-          var title = "Information";
           var text = "<br>Här saknas<br>besöksstatistik"; // i18n
           var yes = "Ok" // i18n
-          infoDia (null, null, title, text, yes, true);
+          infoDia (null, null, "", text, yes, true);
         }
       });
 
@@ -4077,7 +4084,7 @@ function deleteFile (picPath) { // ===== Delete an image
   });
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// Update the sqlite text database (any symlink will be auto-omitted)
+// Update the sqlite text database (symlinked pictures auto-omitted)
 function sqlUpdate (picPaths) { // Must be complete server paths
   if (!picPaths) return;
   let data = new FormData ();
@@ -4119,8 +4126,9 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) {
     resetBorders (); // Reset all borders
     markBorders (picName); // Mark this one
   }
+  if (!title) title = "Information";
   $ (id).dialog ( { // Initiate dialog
-    title: "", // html set below //#
+    title: "", // html, is set below //#
     closeText: "×",
     autoOpen: false,
     draggable: true,
@@ -4200,9 +4208,10 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) {
     $ ("div[aria-describedby='" + dialogId + "'] span.ui-dialog-title").html (title); //#
     niceDialogOpen (dialogId);
     $ ("#yesBut").html (yes);
+    $ ("#yesBut").trigger ("focus");
+    $ ("div[aria-describedby='" + dialogId + "']").show ();
   }), 33);
-  $ ("#yesBut").trigger ("focus");
-  $ ("div[aria-describedby='" + dialogId + "']").show ();
+  return true; // Dummy return, perhaps used in 'if (infoDia (...)) return'
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // ===== Show favorites dialog, arguments = the favorite text list and all the rest button texts
@@ -4287,7 +4296,7 @@ function favDia (text, addfile, addmarked, savecook, closeit, savefile, findshow
         fileAdvice += " — Sedan kan du med [Hämta fil]-knappen hämta din favoritlista därifrån — du kan spara olika favoritlistor att välja bland i samma katalog.<br>";
         fileAdvice += "OBSERVERA: Det måste vara textfiler med namnslut ´.txt´ eller ´.text´!<br>";
         fileAdvice += "TIPS: En extra första rad blir visningsrubrik om den börjar med ett #-tecken.";
-        infoDia ("extradia", null, "Information", fileAdvice, "Ok");
+        infoDia ("extradia", null, "", fileAdvice, "Ok");
         $ ("#extradia").css ({"text-align": "left", "margin": "1em"});
         later ( ( () => {
           let tmp = parseInt ($ ("#extradia").parent ().css ("left"));

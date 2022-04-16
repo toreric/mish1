@@ -97,15 +97,17 @@ function copyToClipboard (str) {    // Copies a filename (below mini-pic) to the
   <br><span class="usrlg"></span><!-- User information log -->
 </div>
 
-
-
 <!-- ///// DROPBOX  CONTAINER ///// -->
-<div id="divDropZone" style="display:none">
-  <div class="" style="display:inline-block;background:white;position:relative;z-index:26">
+<div id="divDropZone" style="display:none;width:96%">
+  <!--div class="" style="display:inline-block;background:white;position:relative;z-index:26;width:100%"-->
 
-    <div style="margin: 0 0 0.2em 0"><p id="uploadWarning"></p></div>
+    <form id="my-form" class="dropzone" method="post" enctype="multipart/form-data" action="/upload">
+      <p id="dzinfo">upload textinfo</p>
+      <p id="uploadFinished"></p>
+      <p class="dzclose" {{action 'closeThis'}}> &times; </p>
 
-    <form id="my-form" method="post" enctype="multipart/form-data" action="." class="dropzone">
+      <p id="uploadWarning" style="display:inline-block"></p>
+
       <button id="uploadPics" style="cursor:pointer;background:#ddd;display:none"
       type="submit" class="btn-std" {{action 'processQueue'}}>&nbsp;Ladda upp&nbsp;</button>
 
@@ -114,18 +116,16 @@ function copyToClipboard (str) {    // Copies a filename (below mini-pic) to the
 
       <button id="removeDup" style="cursor:pointer;background:#ddd;display:none"
       type="submit" class="btn-std" {{action 'removeDupFiles'}} title="...från den här panelen">&nbsp;Ta bort med VARNING&nbsp;</button>
+
+      <button id="helpUpload" style="cursor:pointer;color:blue;background:#ddd"
+      type="submit" class="btn-std" {{action ''}} title="Hur ladda upp bilder?
+      Planerad hur-gör-man-beskrivning">HJÄLP</button>
+      <br>
     </form>
 
-  </div>
-
-  <p id="dzinfo">upload textinfo</p><button id="helpUpload" style="cursor:pointer;color:blue;background:#ddd"
-  type="submit" class="btn-std" {{action ''}} title="Hur ladda upp bilder?
-  Planerad hur-gör-man-beskrivning">&nbsp;HJÄLP&nbsp;</button>
-  <p id="uploadFinished"></p>
-  <p class="dzclose" {{action 'closeThis'}}> &times; </p>
-
+  <!--/div-->
   <!-- an empty <div> breaks the inline block sequence -->
-  <div></div>
+  <!--div></div-->
 </div>
 
 
