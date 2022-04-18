@@ -785,23 +785,12 @@ export default Component.extend (contextMenuMixin, {
   //----------------------------------------------------------------------------------------------
   init () { // ##### Component initiation
     this._super (...arguments);
+    Dropzone.autoDiscover = false; // Avoids "Dropzone already attached" error
     $ (document).ready ( () => {
 
       // Here is the base IMDB_LINK setting, to use also in ld_imdb.js:
       // THIS IS OUTDATED
       $ ("#imdbLink").text ("."); // <<< == IMDB_LINK in routes.js
-
-      //import Dropzone from "dropzone";
-      Dropzone.autoDiscover = false;
-      let myDropzone = new Dropzone ("#my-form");
-      Dropzone.options.myForm = {
-        autoProcessQueue: false
-      }
-
-      myDropzone.on ("addedfile", file => {
-        console.log (`File added: ${file.name}`);
-      });
-
       $ ("#menuButton").attr ("title", htmlSafe ("Meny")); // i18n
       // Remember update *.hbs
       $ ("#bkgrColor").text ("rgb(59, 59, 59)");
@@ -842,6 +831,8 @@ export default Component.extend (contextMenuMixin, {
           prepTextEditDialog ();
           prepSearchDialog ();
 
+          prepDropzone ();
+
           let rootList = await reqRoot (); //  Get possible rootdirs
           if (rootList) {
             rootList = rootList.split ("\n");
@@ -879,36 +870,36 @@ export default Component.extend (contextMenuMixin, {
     });
     // Trigger the jQuery tooltip on 'totip="..."' (custom attribute)
     //$ (document).tooltip ("enable");
-later ( ( () => {
-    $ (function () {
-      $ (document).tooltip ({
-        items: "[totip]",
-        content: function () {
-          var elem = $ (this);
-          if (elem.is ("[totip]")) {
-            return elem.attr ("totip");
-          }
-        },
-        show: {
-          //effect: "slideDown",
-          effect: "blind",
-          //duration: 0, do not use
-          delay: 0
-          //effect: "fade"
-        },
-        position: {
-          my: "left+2 top+2",
-          at: "left bottom"
-        },
-        close: function () {
-          // Clean upp tooltip garbage and hide new tooltip text down below:
-          $ ("div.ui-helper-hidden-accessible").html ("");
-          $ ("div.ui-helper-hidden-accessible").attr ("style", "position:fixed;top:8192px");
-        }
-      });
-      $ (document).tooltip ("disable");
-    });
-}), 1000);
+    later ( ( () => {
+        $ (function () {
+          $ (document).tooltip ({
+            items: "[totip]",
+            content: function () {
+              var elem = $ (this);
+              if (elem.is ("[totip]")) {
+                return elem.attr ("totip");
+              }
+            },
+            show: {
+              //effect: "slideDown",
+              effect: "blind",
+              //duration: 0, do not use
+              delay: 0
+              //effect: "fade"
+            },
+            position: {
+              my: "left+2 top+2",
+              at: "left bottom"
+            },
+            close: function () {
+              // Clean upp tooltip garbage and hide new tooltip text down below:
+              $ ("div.ui-helper-hidden-accessible").html ("");
+              $ ("div.ui-helper-hidden-accessible").attr ("style", "position:fixed;top:8192px");
+            }
+          });
+          $ (document).tooltip ("disable");
+        });
+    }), 1000);
   },
   //----------------------------------------------------------------------------------------------
   didInsertElement () { // ##### Runs at page ready state
@@ -1570,6 +1561,52 @@ later ( ( () => {
       };
       this.get("printThis").print(selector, options);
     },
+    //== dropzone actions ========================================================================
+    closeThis () {
+      document.getElementById ("divDropZone").style.display = "none";
+    },
+
+    removeAllFiles () {
+      myDropzone.removeAllFiles();
+      document.getElementById("removeAll").style.display = "none";
+      document.getElementById("removeDup").style.display = "none";
+      document.getElementById("uploadWarning").style.display = "none";
+    },
+
+    removeDupFiles () {
+      //myDropzone.removeAllFiles();
+      var dupEl = $ ("div.dz-preview.picPresent");
+      for (var i=0; i<dupEl.length; i++) {
+          dupEl [i].remove ();
+      }
+      //this.userLog ("REMOVED", dupEl.length); unreachable!
+      document.getElementById("removeDup").style.display = "none";
+      document.getElementById("uploadWarning").style.display = "none";
+      //console.log("dz-preview",$ ("div.dz-preview"));
+      if ($ ("div.dz-preview").length < 1) {
+        document.getElementById("uploadPics").style.display = "none";
+        document.getElementById("removeAll").style.display = "none";
+      }
+    },
+
+    processQueue () {
+      return new Promise ( () => {
+        $ ("#prepServer").trigger ("click");
+        myDropzone.options.autoProcessQueue = false;
+        queueLength = myDropzone.getQueuedFiles().length;
+        if (queueLength > 0) {
+          $ (".spinner").show ();
+          document.getElementById("reLd").disabled = true;
+          document.getElementById("saveOrder").disabled = true;
+          document.getElementById("showDropZone").disabled = true;
+          myDropzone.options.autoProcessQueue = true;
+          console.log (secNow (), "drop-zone processQueue:", queueLength); // Upload begin
+          myDropzone.processQueue ();
+        }
+      }).then ( () => {
+        // ?
+      });
+    },
     //============================================================================================
     doMail () { // Send a message 'from a picture'
       if ($ ("input.i_address").is (":visible")) {
@@ -2056,7 +2093,7 @@ later ( ( () => {
       }
     },
     //============================================================================================
-    prepServer () { // ##### Dummy call to keep the server instance during uploads
+    prepServer () { // ##### Dummy call attempting to keep the server instance during uploads
       return new Promise ( (resolve) => {
         var xhr = new XMLHttpRequest ();
         xhr.open ('GET', 'imdbroot/@', true, null, null);
@@ -2139,7 +2176,6 @@ console.log("selectRoot=",value);
             $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
             $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_1")); // calls selectAlbum
             userLog ("START " + imdbroot);
-//            $ ("a.proid:first-of-type").attr ("style", "display:"); // Revoke display:none
           }
         }).then ( () => {
           startInfoPage ()
@@ -2510,10 +2546,10 @@ console.log("selectRoot=",value);
       $ ("iframe.intro").hide ();
       mainMenuHide ();
 
-      let text = "<br>UPPLADDNING TILLFÄLLIGT AVSTÄNGD<br><br>på grund av underhållsarbete som förhoppningsvis är färdigt efter påsk";
-      let yes ="Ok";
-      let modal = true;
-      if (infoDia (null, null, "", text, yes, modal)) return;
+      // let text = "<br>UPPLADDNING TILLFÄLLIGT AVSTÄNGD<br><br>på grund av underhållsarbete som förhoppningsvis är färdigt efter påsk";
+      // let yes ="Ok";
+      // let modal = true;
+      // if (infoDia (null, null, "", text, yes, modal)) return;
 
       $ ("#link_show a").css ('opacity', 0);
       if (document.getElementById ("divDropZone").style.display === "none") {
@@ -2645,7 +2681,7 @@ console.log("selectRoot=",value);
           namepic = null;
           if (!document.getElementById ("i" + namehere) || !document.getElementById ("i" + namehere).parentElement.nextElementSibling) { // last
             namepic = tmp [0].getAttribute ("id").slice (1);
-            userLog ("FIRST", false, 2000);
+            userLog ("FIRST", true, 2000);
           } else {
             namepic = document.getElementById ("i" + namehere).parentElement.nextElementSibling.firstElementChild.id.slice (1);
           }
@@ -2660,7 +2696,7 @@ console.log("selectRoot=",value);
           if (!document.getElementById ("i" + namehere) || !document.getElementById ("i" + namehere).parentElement.previousElementSibling) { // first
             //var tmp = document.getElementsByClassName ("img_mini");
             namepic = tmp [tmp.length - 1].getAttribute ("id").slice (1);
-            userLog ("LAST", false, 2000);
+            userLog ("LAST", true, 2000);
           } else {
             namepic = document.getElementById ("i" + namehere).parentElement.previousElementSibling.firstElementChild.id.slice (1);
           }
@@ -3679,7 +3715,158 @@ let returnTitles = []; // Are set in `didInsertElement`
 let navButtons = ["", "none", "none"]; // Additional extra navigation buttons ["⌂hem", "↖", "⇆"]
 //  The "⇆" button is triggered/pressed by the browser's navigation arrows, visibility-independent
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// Cookie functions
+// The used dropzone:
+var myDropzone;
+let queueLength = 0; // Queue length
+// The prepare dropzone function:
+const prepDropzone = () => {
+  // Dropzone.autoDiscover = false: Place before "$ (document).ready ..."!
+  myDropzone = new Dropzone ("#my-form");
+  myDropzone.options.autoProcessQueue = false;
+  myDropzone.options.parallelUploads = 1;
+  myDropzone.options.dictDefaultMessage = "[X]";
+  $ ("div.dz-default.dz-message button.dz-button").text ("");
+  // myDropzone.options = {
+  //   autoProcessQueue: false
+  // } // howto remove/reset all
+  // console.log("autoDiscover",Dropzone.autoDiscover);
+  // console.log("autoProcessQueue",myDropzone.options.autoProcessQueue);
+  // console.log("parallelUploads",myDropzone.options.parallelUploads);
+  // console.log("dictDefaultMessage",myDropzone.options.dictDefaultMessage);
+
+  myDropzone.on ("addedfile", file => {
+    console.log (`File added: ${file.name}`);
+    //console.log ("File added:",file.name); //<= Equivalently written
+    //console.log ("previewElement",file.previewElement);
+  });
+
+  onDragEnterLeaveHandler(myDropzone);
+  document.getElementById("uploadWarning").style.display = "none";
+
+  myDropzone.on("addedfile", function(file) {
+    $ ("#uploadFinished").text ("");
+    document.getElementById("uploadPics").style.display = "inline";
+    document.getElementById("removeAll").style.display = "inline";
+
+    if (acceptedFileName (file.name)) {
+      var namepic = file.name.replace (/.[^.]*$/, "");
+      // escapeDots <=> .replace (/\./g, "\\.") NEEDED since jQuery uses CSS:
+      if ($ ("#i" + namepic.replace (/\./g, "\\.")).length > 0) { // If already present in the DOM, upload would replace that file, named equally
+        $ ("#uploadWarning").html ("&nbsp;VARNING FÖR ÖVERSKRIVNING: Lika filnamn finns redan!&nbsp;");
+        document.getElementById("uploadWarning").style.display = "block";
+        console.log (namepic, file.type, file.size, "ALREADY PRESENT");
+        //console.log(file.previewElement.classList);
+        file.previewElement.classList.add ("picPresent");
+        //console.log(JSON.stringify (file.previewElement.classList));
+        document.getElementById("removeDup").style.display = "inline";
+      } else { // New file to upload
+        console.log (namepic, file.type, file.size, "NEW");
+      }
+    } else {
+      console.log ("Illegal file name: " + file.name);
+      // userLog() unreachable
+      $ ("#uploadFinished").html ('<span style="color:deeppink">OTILLÅTET FILNAMN<br>' + file.name + "</span>");
+      alert ("För bildfiler gäller särskilda namnregler");
+      file.previewElement.remove ();
+    }
+  });
+
+  myDropzone.on("removedfile", function() {
+    if ($ ("div.dz-preview.picPresent").length < 1) {
+      document.getElementById("uploadWarning").style.display = "none";
+      document.getElementById("removeDup").style.display = "none";
+    }
+  });
+
+  myDropzone.on("reset", function() {
+    document.getElementById("uploadPics").style.display = "none";
+    document.getElementById("removeAll").style.display = "none";
+    document.getElementById("uploadWarning").style.display = "none";
+    document.getElementById("removeDup").style.display = "none";
+    $ ("#uploadFinished").text ("");
+  });
+
+  myDropzone.on("queuecomplete", function() {
+    document.getElementById("uploadPics").style.display = "none";
+    document.getElementById("uploadWarning").style.display = "none";
+    $ ("#uploadFinished").text ("INGEN UPPLADDNING PÅGÅR");
+    myDropzone.options.autoProcessQueue = false;
+    let n = myDropzone.files.length;
+    console.log (secNow (), "drop-zone queuecomplete"); // Upload end
+    // Refresh after file upload
+    var ms = n * 1000; // May be a setting?
+    (function (t) {
+      setTimeout (function () {
+        $ ("img.spinner").trigger ("click");
+        later ( () => {
+          $ ("#reFr").trigger ("click");
+        }, 222);
+      }, (t)); // Waiting time
+    })(ms); //Pass milliseconds into closure of self-exec anon-func
+    later ( () => {
+//console.log(n,"1[alt='MARKER']",$ ("[alt='MARKER']"));
+      later ( () => {
+        // Unmark all DOM img files
+        $ ("[alt='MARKER']").removeClass ().addClass ("markFalse");
+        //$ ("[alt='MARKER']").addClass ("markFalse");
+        // Mark the uploaded files
+        for (let i=0; i<n; i++) {
+          // This local 'name' will be 1) without extension 2) with escaped dots if any
+          let name = myDropzone.files [i].name.replace (/\.[^.]*$/, "").replace (/\./g, "\\.");
+//console.log("Name uploaded",name);
+          $ ("#i" + name + " div[alt='MARKER']").removeClass ().addClass ("markTrue");
+          //$ ("#i" + name + " div[alt='MARKER']").addClass ("markTrue");
+        }
+        $ ("div.miniImgs").trigger ("click");
+//console.log(n,"2[alt='MARKER']",$ ("[alt='MARKER']"));
+      }, 555);
+      // later ( () => { // Reveal obscured uploads
+      // }, 222);
+    }, 2*ms);
+  });
+
+}
+// Dropzone help funtions:
+
+function secNow () { // Local time stamp in milliseconds
+  let tmp = new Date ();
+  return tmp.toLocaleTimeString () + "." + ("00" + tmp.getMilliseconds ()).slice (-3);
+}
+
+function acceptedFileName (name) {
+  // This function must equal the acceptedFileName function in routes.js
+  var acceptedName = 0 === name.replace (/[-_.a-zA-Z0-9]+/g, "").length
+  // Allowed file types are also set at drop-zone in the template menu-buttons.hbs
+  var ftype = name.match (/\.(jpe?g|tif{1,2}|png|gif)$/i)
+  var imtype = name.slice (0, 6) // System file prefix
+  // Here more files may be filtered out depending on o/s needs etc.:
+  return acceptedName && ftype && imtype !== '_mini_' && imtype !== '_show_' && imtype !== '_imdb_' && name.slice (0,1) !== "."
+}
+
+const onDragEnterLeaveHandler = function (dropzoneInstance) {
+  const onDrag = ( element => {
+    let dragCounter = 0;
+
+    return {
+      enter(event) {
+        event.preventDefault();
+        dragCounter++;
+        element.classList.add('dz-drag-hover');
+      },
+      leave() {
+        dragCounter--;
+
+        if (dragCounter === 0) {
+          element.classList.remove('dz-drag-hover');
+        }
+      }
+    };
+  }).call (this, dropzoneInstance.element);
+
+  dropzoneInstance.on ('dragenter', onDrag.enter);
+  dropzoneInstance.on ('dragleave', onDrag.leave);
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function setCookie(cname, cvalue, exminutes) {
   if (exminutes) {
     var d = new Date();
@@ -5697,10 +5884,12 @@ var prepTextEditDialog = () => {
       if (fileName.indexOf ($ ("#picFound").text ()) < 0) {
         tempStore = "TEXT written";
       } else {
-        // An uploaded picture in the #picFound album is not saved permanently, if not
-        // moved to a ´real´ album. This warning is a hint of that the saved text is
-        // not written to the database but only temporarily saved as image metadata.
-        tempStore = "TEXT written TEMPORARY only!";
+        // As regards an uploaded picture in the #picFound album (may be used for some
+        // experiments etc.): such a picture is not saved permanently, if not moved to
+        // a ´real´ album. This warning is a hint of that the saved text is not written
+        // to the database, but now only temporarily saved as image metadata. Move it
+        // to a ´real´ album in order to really save both the picture and its metatdata.
+        tempStore = "TEXT written TEMPORARILY";
       }
     }
     // ===== XMLHttpRequest saving the text

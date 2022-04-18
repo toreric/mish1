@@ -1047,6 +1047,10 @@ The jquery ui-tooltip is used elsewere (totip in *.js) */
   border-radius: 2px;
   padding: 0.1em 0.1em 0.1em 0.2em;
 }
+.ui-tooltip-content * {
+  color: #000;
+  background-color: #beebff;
+}
 .img_show .img_name {
   display: none;
   color: #fe0;
@@ -1511,11 +1515,6 @@ select {
 .jstree-closed:hover > .jstree-ocl, .jstree-open:hover > .jstree-ocl {
   background-color: #00bbff;
 }
-#dzinfo {
-  position: absolute;
-  top: 1em;
-  left: 0;
-}
 
 @-webkit-keyframes borderBlink {
   from, to {border-color: 2px dashed transparent}
@@ -1533,6 +1532,11 @@ img.dotted {
   border: 2px dotted deeppink;
   border-radius: 4px;
 }
+#dzinfo {
+  position: absolute;
+  top: 1em;
+  left: 0;
+}
 #uploadFinished {
   position: absolute;
   color: #89BC21;
@@ -1545,11 +1549,8 @@ img.dotted {
   color: deeppink;
   border: 2px dotted deeppink;
   border-radius: 4px;
-  top: auto;
-  left: auto;
-  text-align: center;
   width: fit-content;
-  margin: 0 0 0.2em 0;
+  margin: -0.5em 0 0.2em -0.5em;
 }
 .dzclose {
   position: absolute;
