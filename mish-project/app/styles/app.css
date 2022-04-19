@@ -1005,9 +1005,14 @@ The jquery ui-tooltip is used elsewere (totip in *.js) */
 .img_mini .img_name {
   display: none;
   font-size: 84%;
-  color: #fe0;
+  white-space: nowrap;
+  color: #fd0;
   text-align: left;
   cursor: default;
+}
+.js-draggableObject.show-inline.ember-view:hover {
+  position: relative;
+  z-index: 10;
 }
 .img_txt1, .img_txt2 {
   cursor: text;
@@ -1794,11 +1799,12 @@ img.dotted {
     .dropzone .dz-preview.dz-image-preview {
       background: white; }
       .dropzone .dz-preview.dz-image-preview .dz-details {
-        -webkit-transition: opacity 0.2s linear;
+        opacity: 1;
+        /*-webkit-transition: opacity 0.2s linear;
         -moz-transition: opacity 0.2s linear;
         -ms-transition: opacity 0.2s linear;
         -o-transition: opacity 0.2s linear;
-        transition: opacity 0.2s linear; }
+      transition: opacity 0.2s linear;*/ }
     a {
       cursor: pointer;
       text-decoration: none; }
@@ -1871,11 +1877,11 @@ img.dotted {
         display: block; }
     .dropzone .dz-preview.dz-success .dz-success-mark {
   z-index: 500;
-      -webkit-animation: passing-through 3s cubic-bezier(0.77, 0, 0.175, 1);
+      /*-webkit-animation: passing-through 3s cubic-bezier(0.77, 0, 0.175, 1);
       -moz-animation: passing-through 3s cubic-bezier(0.77, 0, 0.175, 1);
       -ms-animation: passing-through 3s cubic-bezier(0.77, 0, 0.175, 1);
       -o-animation: passing-through 3s cubic-bezier(0.77, 0, 0.175, 1);
-      animation: passing-through 3s cubic-bezier(0.77, 0, 0.175, 1); }
+    animation: passing-through 3s cubic-bezier(0.77, 0, 0.175, 1);*/ }
     .dropzone .dz-preview.dz-error .dz-error-mark {
   z-index: 500;
       opacity: 1;

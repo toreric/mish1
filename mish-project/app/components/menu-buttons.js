@@ -1098,7 +1098,7 @@ export default Component.extend (contextMenuMixin, {
             later ( ( () => {
               if (document.querySelector("strong.albumName") && document.querySelector ("strong.albumName") [0] && document.querySelector ("strong.albumName") [0].innerHTML.replace (/&nbsp;/g, " ").trim () === $ ("#picFound").text ().replace (/\.[^.]{4}$/, "").replace (/_/g, " ")) {
                 // The search result album. Seems to fail, may be removed since also superfluous?
-                $ ("div.BUT_2").html ($.parseHTML ('<span style="color:#0b0";font-weight:bold>Gå till bildens eget album med högerklick i grön ring!</span>'));
+                //$ ("div.BUT_2").html ($.parseHTML ('<span style="color:#0b0";font-weight:bold>Gå till bildens eget album med högerklick i grön ring!</span>'));
               } else {
                 let ntot = $ (".img_mini").length;
                 let nlink = $ (".img_mini.symlink" ).length;
@@ -1589,7 +1589,11 @@ export default Component.extend (contextMenuMixin, {
       }
     },
 
-    processQueue () {
+    processQueue (a) {
+      if (!a) {
+        $ ("#uploadFinished").text ("");
+        document.getElementById("uploadWarning").style.display = "none";
+      }
       return new Promise ( () => {
         $ ("#prepServer").trigger ("click");
         myDropzone.options.autoProcessQueue = false;
@@ -1601,7 +1605,7 @@ export default Component.extend (contextMenuMixin, {
           document.getElementById("showDropZone").disabled = true;
           myDropzone.options.autoProcessQueue = true;
           console.log (secNow (), "drop-zone processQueue:", queueLength); // Upload begin
-          myDropzone.processQueue ();
+          myDropzone.processQueue (true);
         }
       }).then ( () => {
         // ?
@@ -3744,14 +3748,19 @@ const prepDropzone = () => {
   document.getElementById("uploadWarning").style.display = "none";
 
   myDropzone.on("addedfile", function(file) {
-    $ ("#uploadFinished").text ("");
-    document.getElementById("uploadPics").style.display = "inline";
-    document.getElementById("removeAll").style.display = "inline";
-
+    //$ ("#uploadFinished").text ("");
+    var errNames = [];
     if (acceptedFileName (file.name)) {
-      var namepic = file.name.replace (/.[^.]*$/, "");
+      document.getElementById("uploadPics").style.display = "inline";
+      document.getElementById("removeAll").style.display = "inline";
+
+      var namepic = file.name.replace (/.[^.]*$/, ""); // Remove file type
+
+      //document.getElementById("uploadWarning").style.display = "none";
+
       // escapeDots <=> .replace (/\./g, "\\.") NEEDED since jQuery uses CSS:
-      if ($ ("#i" + namepic.replace (/\./g, "\\.")).length > 0) { // If already present in the DOM, upload would replace that file, named equally
+      if ($ ("#i" + namepic.replace (/\./g, "\\.")).length > 0) {
+        // If already present in the DOM, upload will replace that file, named equally
         $ ("#uploadWarning").html ("&nbsp;VARNING FÖR ÖVERSKRIVNING: Lika filnamn finns redan!&nbsp;");
         document.getElementById("uploadWarning").style.display = "block";
         console.log (namepic, file.type, file.size, "ALREADY PRESENT");
@@ -3764,11 +3773,26 @@ const prepDropzone = () => {
       }
     } else {
       console.log ("Illegal file name: " + file.name);
+      errNames.push (file.name);
       // userLog() unreachable
-      $ ("#uploadFinished").html ('<span style="color:deeppink">OTILLÅTET FILNAMN<br>' + file.name + "</span>");
-      alert ("För bildfiler gäller särskilda namnregler");
+      //$ ("#uploadFinished").html ('<span style="color:deeppink">OTILLÅTET FILNAMN<br>' + file.name + "</span>");
       file.previewElement.remove ();
+
+      alert ("Filnamn som inte godkändes: " + file.name + "\n\nFör bildfiler gäller särskilda namnregler. Bildfilnamn får bland annat inte innehålla å ä ö Å Ä Ö eller blanktecken (_ - . är tillåtna). Ändra filnamnet och försök igen!\n\nBildfilnamn slutar med .jpg .jpeg .tif .tiff .png .gif (eller .JPG .JPEG ... etc.)");
     }
+
+    /*later ( () => {
+    if (errNames.length > 0) {
+      errNames = errNames.join ("<br>");
+      let title = "Bildfilnamn som inte kan användas i Mish";
+      let text = "<br>Filnamn som inte godkändes:<br><span style='color:red'>" + errNames + "</span><br><br>";
+      text =+ "För bildfiler gäller särskilda namnregler. Bildfilnamn får bland annat inte innehålla å ä ö Å Ä Ö eller blanktecken (_ - . är tillåtna). Ändra filnamnet och försök igen!<br><br>";
+      text =+ "<i>Bildfilnamn slutar med</i> .jpg .jpeg .tif .tiff .png .gif (<i>eller</i> .JPG .JPEG ... <i>etc.</i>)";
+      //n infoDia (dialogId, picName, title, text, yes, modal)
+      infoDia ("", "", title, text, "Uppfattat", true);
+      errNames = [];
+    }
+  }, 222);*/
   });
 
   myDropzone.on("removedfile", function() {
@@ -3783,13 +3807,13 @@ const prepDropzone = () => {
     document.getElementById("removeAll").style.display = "none";
     document.getElementById("uploadWarning").style.display = "none";
     document.getElementById("removeDup").style.display = "none";
-    $ ("#uploadFinished").text ("");
+    //$ ("#uploadFinished").text ("");
   });
 
   myDropzone.on("queuecomplete", function() {
     document.getElementById("uploadPics").style.display = "none";
     document.getElementById("uploadWarning").style.display = "none";
-    $ ("#uploadFinished").text ("INGEN UPPLADDNING PÅGÅR");
+    //$ ("#uploadFinished").text ("INGEN UPPLADDNING PÅGÅR");
     myDropzone.options.autoProcessQueue = false;
     let n = myDropzone.files.length;
     console.log (secNow (), "drop-zone queuecomplete"); // Upload end
