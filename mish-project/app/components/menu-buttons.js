@@ -18,13 +18,6 @@ import contextMenuMixin from 'ember-context-menu';
 
 import Dropzone from "dropzone";
 
-// MOVED TO INIT
-// let myDropzone = new Dropzone ("#my-form");
-// myDropzone.on ("addedfile", file => {
-//   console.log (`File added: ${file.name}`);
-// });
-
-
 export default Component.extend (contextMenuMixin, {
 
   // TEMPLATE PERFORM tasks, reachable from the HTML template page
@@ -3730,18 +3723,15 @@ const prepDropzone = () => {
   myDropzone.options.parallelUploads = 1;
   myDropzone.options.dictDefaultMessage = "[X]";
   $ ("div.dz-default.dz-message button.dz-button").text ("");
-  // myDropzone.options = {
-  //   autoProcessQueue: false
-  // } // howto remove/reset all
+
   // console.log("autoDiscover",Dropzone.autoDiscover);
   // console.log("autoProcessQueue",myDropzone.options.autoProcessQueue);
   // console.log("parallelUploads",myDropzone.options.parallelUploads);
   // console.log("dictDefaultMessage",myDropzone.options.dictDefaultMessage);
 
   myDropzone.on ("addedfile", file => {
-    console.log (`File added: ${file.name}`);
-    //console.log ("File added:",file.name); //<= Equivalently written
-    //console.log ("previewElement",file.previewElement);
+    console.log (`File to be added: ${file.name}`);
+    //console.log ("File to be added:",file.name); //<= Equivalently written
   });
 
   onDragEnterLeaveHandler(myDropzone);
@@ -3771,28 +3761,24 @@ const prepDropzone = () => {
       } else { // New file to upload
         console.log (namepic, file.type, file.size, "NEW");
       }
+      var tmp0 = file.previewElement.querySelector ("div.dz-size").innerHTML + "<br><span style='color:green;font-size:120%;font-weight:bold'>KLAR</span>"
+      file.previewElement.querySelector ("div.dz-size").innerHTML = tmp0;
     } else {
       console.log ("Illegal file name: " + file.name);
-      errNames.push (file.name);
+errNames.push (file.name); // NOT USED
       // userLog() unreachable
       //$ ("#uploadFinished").html ('<span style="color:deeppink">OTILLÅTET FILNAMN<br>' + file.name + "</span>");
       file.previewElement.remove ();
 
-      alert ("Filnamn som inte godkändes: " + file.name + "\n\nFör bildfiler gäller särskilda namnregler. Bildfilnamn får bland annat inte innehålla å ä ö Å Ä Ö eller blanktecken (_ - . är tillåtna). Ändra filnamnet och försök igen!\n\nBildfilnamn slutar med .jpg .jpeg .tif .tiff .png .gif (eller .JPG .JPEG ... etc.)");
+      var prefix = ["_mini_", "_show_", "_imdb_"];
+      var tmp1 = file.name.slice (0, 6);
+      var tmp2 = file.name.slice (0, 1);
+      if (prefix.includes (tmp1) || tmp2 === ".") {
+        alert ("Filnamn som inte är godkänt: " + file.name + "\n\nBildfilnamn kan inte börja med . (punkt) eller något av " + prefix.join (", "));
+      } else {
+        alert ("Filnamn som inte är godkänt: " + file.name + "\n\nFör bildfiler gäller särskilda namnregler. Bildfilnamn får bland annat inte innehålla å ä ö Å Ä Ö eller blanktecken (_ - . är tillåtna). Ändra filnamnet och försök igen!\n\nBildfilnamn slutar med .jpg .jpeg .tif .tiff .png .gif (eller .JPG .JPEG ... etc.)");
+      }
     }
-
-    /*later ( () => {
-    if (errNames.length > 0) {
-      errNames = errNames.join ("<br>");
-      let title = "Bildfilnamn som inte kan användas i Mish";
-      let text = "<br>Filnamn som inte godkändes:<br><span style='color:red'>" + errNames + "</span><br><br>";
-      text =+ "För bildfiler gäller särskilda namnregler. Bildfilnamn får bland annat inte innehålla å ä ö Å Ä Ö eller blanktecken (_ - . är tillåtna). Ändra filnamnet och försök igen!<br><br>";
-      text =+ "<i>Bildfilnamn slutar med</i> .jpg .jpeg .tif .tiff .png .gif (<i>eller</i> .JPG .JPEG ... <i>etc.</i>)";
-      //n infoDia (dialogId, picName, title, text, yes, modal)
-      infoDia ("", "", title, text, "Uppfattat", true);
-      errNames = [];
-    }
-  }, 222);*/
   });
 
   myDropzone.on("removedfile", function() {
@@ -3846,7 +3832,7 @@ const prepDropzone = () => {
       }, 555);
       // later ( () => { // Reveal obscured uploads
       // }, 222);
-    }, 2*ms);
+    }, 12 * ms/10);
   });
 
 }

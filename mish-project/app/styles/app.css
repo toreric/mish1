@@ -1010,6 +1010,9 @@ The jquery ui-tooltip is used elsewere (totip in *.js) */
   text-align: left;
   cursor: default;
 }
+.img_mini .img_name:hover {
+  color: #d80;
+}
 .js-draggableObject.show-inline.ember-view:hover {
   position: relative;
   z-index: 10;
@@ -1533,7 +1536,7 @@ img.dotted {
   -webkit-animation: borderBlink 800ms step-end infinite;
   animation: borderBlink 800ms step-end infinite;
 }
-.picPresent {
+#removeDup, .picPresent {
   border: 2px dotted deeppink;
   border-radius: 4px;
 }
@@ -1877,11 +1880,11 @@ img.dotted {
         display: block; }
     .dropzone .dz-preview.dz-success .dz-success-mark {
   z-index: 500;
-      /*-webkit-animation: passing-through 3s cubic-bezier(0.77, 0, 0.175, 1);
+      -webkit-animation: passing-through 3s cubic-bezier(0.77, 0, 0.175, 1);
       -moz-animation: passing-through 3s cubic-bezier(0.77, 0, 0.175, 1);
       -ms-animation: passing-through 3s cubic-bezier(0.77, 0, 0.175, 1);
       -o-animation: passing-through 3s cubic-bezier(0.77, 0, 0.175, 1);
-    animation: passing-through 3s cubic-bezier(0.77, 0, 0.175, 1);*/ }
+      animation: passing-through 3s cubic-bezier(0.77, 0, 0.175, 1); }
     .dropzone .dz-preview.dz-error .dz-error-mark {
   z-index: 500;
       opacity: 1;
@@ -1930,10 +1933,10 @@ img.dotted {
       z-index: 1000;
       pointer-events: none;
       position: absolute;
-      height: 8px;
+      height: 0.85em;
       left: 50%;
-      top: 46%;
-      margin-top: -8px;
+      top: 48%;
+      margin-top: 0px;
       width: 80px;
       margin-left: -40px;
       background: rgba(255, 255, 255, 0.9);
