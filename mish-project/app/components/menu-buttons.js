@@ -278,46 +278,81 @@ export default Component.extend (contextMenuMixin, {
     disabled: () => {
       return !( (allow.imgReorder && allow.saveChanges) || allow.adminAll);
     },
-    action () {
-      var picName;
-      picName = $ ("#picName").text ();
-      var sortOrder = $ ("#sortOrder").text ();
-      var rex = new RegExp (picName + ",[\\d,]+\\n?", "");
-      var k = sortOrder.search (rex);
-      if (k < 1) return;
-      var line = sortOrder.match (rex) [0];
-      sortOrder = sortOrder.replace (line, "");
-      sortOrder = sortOrder.replace (/\\n\\n/g, "\n");
-      sortOrder = line.trim () + "\n" + sortOrder.trim ();
-      $ ("#sortOrder").text (sortOrder);
-      saveOrderFunc (sortOrder) // Save on server disk
-      .then ($ ("#reFr").trigger ("click")); // Call via DOM... REFRESH
+    async action () {
+      var picName = $ ("#picName").text ();
+      var tgtPic = document.getElementsByClassName("img_mini") [0].parentNode;
+      var movePic = document.getElementById ("i" + picName).parentNode;
+      await simulateDrag (movePic, tgtPic);
+      await new Promise (z => setTimeout (z, 1000));
+      //$(document).ready(function() {
+      // var tgtPic = $ (".img_mini") [0];
+//console.log(document.getElementsByClassName("img_mini"));
+      // var allPics = $ (".img_mini").parent ();
+       //var movePic = $ ("#i" + escapeDots (picName));
+      //});
+      // //$ ("#i" + escapeDots (picName)).parent ().empty ();
+      // later ( ( () => {
+      //   $ ("#i" + escapeDots (picName)).parent ().insertBefore (allPics [0]);
+      //   hideShow_g ();
+      //   resetBorders ();
+      //   markBorders (picName);
+      // }), 100);
+//       var sortOrder = $ ("#sortOrder").text ();
+//       var rex = new RegExp (picName + ",[\\d,]+\\n?", "");
+//       var k = sortOrder.search (rex);
+//       if (k < 1) return;
+//       var line = sortOrder.match (rex) [0];
+// //console.log("picName =",picName,"\nsortOrder =\n",sortOrder,"\nrex =",rex,"\nk =",k);
+//       sortOrder = sortOrder.replace (line, "");
+//       sortOrder = sortOrder.replace (/\\n\\n/g, "\n");
+//       sortOrder = line.trim () + "\n" + sortOrder.trim ();
+// //console.log("sortOrder =\n",sortOrder);
+//       $ ("#sortOrder").text (sortOrder);
+//       saveOrderFunc (sortOrder) // Save on server disk
+//       .then (await new Promise (z => setTimeout (z, 400)))
+//       .then ($ ("#reFr").trigger ("click")); // Call via DOM... REFRESH
       later ( ( () => {
-        scrollTo (null, $ (".showCount:first").offset ().top);
-      }), 50);
+        scrollTo (null, $ ("#highUp").offset ().top);
+      }), 150);
     }
   },
   { label: 'Placera sist',
     disabled: () => {
       return !( (allow.imgReorder && allow.saveChanges) || allow.adminAll);
     },
-    action () {
-      var picName;
-      picName = $ ("#picName").text ();
-      var sortOrder = $ ("#sortOrder").text ();
-      var rex = new RegExp (picName + ",[\\d,]+\\n?", "");
-      var k = sortOrder.search (rex);
-      if (k < 0) return;
-      var line = sortOrder.match (rex) [0];
-      sortOrder = sortOrder.replace (line, "");
-      sortOrder = sortOrder.replace (/\\n\\n/g, "\n");
-      sortOrder = sortOrder.trim () + "\n" + line.trim ();
-      $ ("#sortOrder").text (sortOrder);
-      saveOrderFunc (sortOrder) // Save on server disk
-      .then ($ ("#reFr").trigger ("click")); // Call via DOM... REFRESH
+    async action () {
+      var picName = $ ("#picName").text ();
+      var tgtPic = document.getElementsByClassName("img_mini");
+      tgtPic = tgtPic [tgtPic.length - 1].parentNode;
+      var movePic = document.getElementById ("i" + picName).parentNode;
+      await simulateDrag (movePic, tgtPic);
+      await new Promise (z => setTimeout (z, 1000));
+      // var allPics = $ (".img_mini").parent ();
+      // var movePic = $ ("#i" + escapeDots (picName)).parent ();
+      // //$ ("#i" + escapeDots (picName)).parent ().empty ();
+      // later ( ( () => {
+      //   $ ("#i" + escapeDots (picName)).parent ().insertAfter (allPics [allPics.length-1]);
+      //   hideShow_g ();
+      //   resetBorders ();
+      //   markBorders (picName);
+      // }), 100);
+//       var sortOrder = $ ("#sortOrder").text ();
+//       var rex = new RegExp (picName + ",[\\d,]+\\n?", "");
+//       var k = sortOrder.search (rex);
+//       if (k < 0) return;
+//       var line = sortOrder.match (rex) [0];
+// //console.log("picName =",picName,"\nsortOrder =\n",sortOrder,"\nrex =",rex,"\nk =",k);
+//       sortOrder = sortOrder.replace (line, "");
+//       sortOrder = sortOrder.replace (/\\n\\n/g, "\n");
+//       sortOrder = sortOrder.trim () + "\n" + line.trim ();
+// //console.log("sortOrder =\n",sortOrder);
+//       $ ("#sortOrder").text (sortOrder);
+//       saveOrderFunc (sortOrder) // Save on server disk
+//       .then (await new Promise (z => setTimeout (z, 400)))
+//       .then ($ ("#reFr").trigger ("click")); // Call via DOM... REFRESH
       later ( ( () => {
-        scrollTo (null, $ ("#lowDown").offset ().top - window.screen.height*0.85);
-      }), 50);
+        scrollTo (null, $ ("#lowDown").offset ().top - parseInt (window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight));
+      }), 150);
     }
   },
   { label:  "───────────────", disabled: false, action () {} }, // Spacer closes menu
@@ -1530,10 +1565,10 @@ export default Component.extend (contextMenuMixin, {
         });
       };
       xhr.send ();
-    // })
-    // .then ()
-    // .catch (error => {
-    //   console.error ("requestNames", error.message);
+    })
+    .then ()
+    .catch (error => {
+      console.error ("requestNames", error.message);
     });
   },
   //----------------------------------------------------------------------------------------------
@@ -3666,6 +3701,7 @@ console.log("selectRoot=",value);
     },
     //============================================================================================
     subalbumSelect (subal) {
+      //$ (".img_mini").parent ().remove ();
       //alert("subalbumSelect (" + subal + ")")
       subaSelect (subal);
     }
@@ -4177,13 +4213,13 @@ function gotoMinipic (namepic) {
       clearTimeout (timer);
       //await new Promise (z => setTimeout (z, 654));
       let y, p = $ ("#i" + escapeDots (namepic));
+      let t = $ ("#highUp").offset ().top;
       //scrollTo (null, 0);
       if (p.offset ()) {
         y = p.offset ().top + p.height ()/2 - hs/2;
       } else {
-        y = 0;
+        y = t;
       }
-      let t = $ ("#highUp").offset ().top;
       //let t = 66;
       await new Promise (z => setTimeout (z, 654));
       if (t > y) {y = t;}
@@ -5553,19 +5589,29 @@ let doFindText = (sTxt, and, sWhr, exact) => {
           linkfrom = "../" + linkfrom.replace (/^[^/]*\//, "");
 //console.log("doFindText:=linkfrom",linkfrom);
 
+          // 'paths' may accidentally contain illegal image file names, normally
+          // ignored. If so, such names will be noticed by red color (just an
+          // extra service). They may have been collected into the database at
+          // regeneration and may appear in this list.
+          var okay = acceptedFileName (fname);
+//console.log("okay",okay, fname);
+
           // In order to show duplicates make the link names unique
           // by adding four random characters (r4) to the basename (n1)
-          let n1 = fname.replace (/\.[^.]*$/, "");
+          let n1 = fname.replace (/\.[^./]*$/, "");
           let n2 = fname.replace (/(.+)(\.[^.]*$)/, "$2");
           let r4 = Math.random().toString(36).substr(2,4);
           fname = n1 + "." + r4 + n2;
           if (filesFound < nLimit) {
             filesFound++;
-            nameOrder.push (n1 + "." + r4 + ",0,0");
+            if (okay) nameOrder.push (n1 + "." + r4 + ",0,0");
             let linkto = lpath + "/" + fname;
-            cmd.push ("ln -sf " + linkfrom + " " + linkto);
+            if (okay) cmd.push ("ln -sf " + linkfrom + " " + linkto);
           }
-          albs.push (paths [i])
+          if (okay) albs.push (paths [i])
+          else {
+            albs.push (paths [i].replace (/^(.*\/)[^/]+$/, "$1") +"<span style='color:red'>"+ n1 +"</span>"+ n2 + " — kan ej visas");
+          }
         }
       }
 //console.log("doFindText:result",result);
@@ -6217,3 +6263,165 @@ function longClickHandler(e){
 }
 
 $("body").longclick(400, longClickHandler);*/
+
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+function getPositionAtCenter(element) {
+  const {top, left, width, height} = element.getBoundingClientRect();
+  return {
+    x: left + width / 2,
+    y: top + height / 2
+  };
+}
+
+function getDistanceBetweenElements(a, b) {
+  const aPosition = getPositionAtCenter(a);
+  const bPosition = getPositionAtCenter(b);
+
+  return Math.hypot(aPosition.x - bPosition.x, aPosition.y - bPosition.y);
+}
+
+function createEvent (eventName, options) {
+  let event = {};
+  event.cancelable = true;
+  event.bubbles = true;
+
+  /* if the clientX and clientY options are specified,
+  also calculated the desired screenX and screenY values */
+  if (options.x && options.y) {
+      event.screenX = window.screenX + options.x;
+      event.screenY = window.screenY + options.y;
+      event.clientX = options.x;
+      event.clientY = options.y;
+      delete options.x;
+      delete options.y;
+  }
+
+  event = Object.assign(event, options)
+
+  switch (true) {
+    case eventName.includes('pointer'):
+      return new PointerEvent(eventName, event);
+    case eventName.includes('mouse'):
+      return new MouseEvent(eventName, event)
+    case eventName.includes('drag'):
+    case eventName.includes('drop'):
+      return new DragEvent(eventName, event);
+    default:
+      return new CustomEvent(eventName, event);
+  }
+}
+
+/**
+ * @public
+ * @param {HTMLElement} sourceElement - Element to be dragged
+ * @param {HTMLElement} targetElement - Element where source element is being dropped
+ * @returns {Promise}
+ */
+async function simulateDrag (sourceElement, targetElement) {
+
+  /* get the coordinates of both elements, note that
+  left refers to X, and top to Y */
+  const sourceCoordinates = sourceElement.getBoundingClientRect();
+  const targetCoordinates = targetElement.getBoundingClientRect();
+
+  const distance = getDistanceBetweenElements(sourceElement, targetElement) + 5;
+
+  /* simulate a mouse down event on the coordinates
+  of the source element */
+  const mouseDownEvent = createEvent(
+      "pointerdown",
+      {
+          x: sourceCoordinates.left,
+          y: sourceCoordinates.top
+      }
+  );
+
+  sourceElement.dispatchEvent(mouseDownEvent);
+
+  /* simulate a drag start event on the source element */
+  const dragStartEvent = createEvent(
+      "dragstart",
+      {
+          x: sourceCoordinates.left,
+          y: sourceCoordinates.top,
+          dataTransfer: new DataTransfer()
+      }
+  );
+
+  sourceElement.dispatchEvent(dragStartEvent);
+
+  await new Promise((resolve) => setTimeout(() => resolve(), 2000)); //was 1000
+
+  /* simulate a drag event on the source element */
+  const dragEvent = createEvent(
+      "drag",
+      {
+          x: sourceCoordinates.left,
+          y: sourceCoordinates.top
+      }
+  );
+
+  sourceElement.dispatchEvent(dragEvent);
+
+  /* simulate a drag enter event on the target element */
+  const dragEnterEvent = createEvent(
+      "dragenter",
+      {
+          x: targetCoordinates.left,
+          y: sourceCoordinates.top + distance,
+          dataTransfer: dragStartEvent.dataTransfer
+      }
+  );
+
+  targetElement.dispatchEvent(dragEnterEvent);
+
+  /* simulate a drag over event on the target element */
+  const dragOverEvent = createEvent(
+      "dragover",
+      {
+          x: targetCoordinates.left,
+          y: sourceCoordinates.top + distance,
+          dataTransfer: dragStartEvent.dataTransfer
+      }
+  );
+
+  targetElement.dispatchEvent(dragOverEvent);
+
+  /* simulate a drop event on the target element */
+  const dropEvent = createEvent(
+      "drop",
+      {
+          x: targetCoordinates.left,
+          y: sourceCoordinates.top + distance,
+          dataTransfer: dragStartEvent.dataTransfer
+      }
+  );
+
+  targetElement.dispatchEvent(dropEvent);
+
+  /* simulate a drag end event on the source element */
+  const dragEndEvent = createEvent(
+      "dragend",
+      {
+          x: targetCoordinates.left,
+          y: sourceCoordinates.top + distance,
+          dataTransfer: dragStartEvent.dataTransfer
+      }
+  );
+
+  sourceElement.dispatchEvent(dragEndEvent);
+
+  /* simulate a mouseup event on the target element */
+  const mouseUpEvent = createEvent(
+      "mouseup",
+      {
+          x: targetCoordinates.left,
+          y: sourceCoordinates.top + distance
+      }
+  );
+
+  targetElement.dispatchEvent(mouseUpEvent);
+}

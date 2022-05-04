@@ -264,7 +264,7 @@ i nytt fönster" style="font-size:200%;line-height:80%;padding:0.3em 0.33em 0.25
 
 <!-- ///// DISPLAY THE 'SLIDE SHOW' IMAGE ///// -->
 <div class="img_show" style="display:none" draggable="false">
-  <span class="imDir path BACKG">{{{albumName}}}</span>
+  <span class="imDir path BACKG">{{{this.albumName}}}</span>
 
   <div id="wrap_pad" class="BACKG" draggable="false">
     <span class="centerMark BACKG" style="width:auto;background:transparent;text-align:center;padding-right:4.5em">×</span><br>
@@ -320,8 +320,8 @@ i nytt fönster" style="font-size:200%;line-height:80%;padding:0.3em 0.33em 0.25
     <p onclick="return false" draggable="false" ondragstart="return false">
       <a class="" style="color: white;cursor: default">
         <select id="rootSel" title="Albumsamling (albumrot)" onchange={{action 'selectRoot' value='target.value'}}>
-          {{#each imdbRoots as |rootChoice|}}
-            <option value={{rootChoice}} selected={{eq imdbRoot rootChoice}}>{{rootChoice}}</option>
+          {{#each this.imdbRoots as |rootChoice|}}
+            <option value={{rootChoice}} selected={{eq this.imdbRoot rootChoice}}>{{rootChoice}}</option>
           {{/each}}
         </select>
         <a class="rootQuest totip=''">&nbsp;?&nbsp;</a>
@@ -329,11 +329,11 @@ i nytt fönster" style="font-size:200%;line-height:80%;padding:0.3em 0.33em 0.25
     </p><br>
 
     <p onclick="return false" draggable="false" ondragstart="return false">
-      <a title="Ta bort, gör nytt, bildsortera ..." {{action 'albumEdit'}}>{{{albumText}}} {{{albumName}}}</a>
+      <a title="Ta bort, gör nytt, bildsortera ..." {{action 'albumEdit'}}>{{{this.albumText}}} {{{this.albumName}}}</a>
     </p><br>
 
     <p onclick="return false" draggable="false" ondragstart="return false" title="Visa alla album = hela albumträdet">
-      <a id ="jstreeHdr" {{action 'toggleJstreeAlbumSelect'}}>{{{jstreeHdr}}}</a>
+      <a id ="jstreeHdr" {{action 'toggleJstreeAlbumSelect'}}>{{{this.jstreeHdr}}}</a>
     </p>
 
     <div class="jstreeAlbumSelect" style="display:none">
@@ -382,12 +382,12 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
     <b>Klicka med skifttangent på en miniatyrbild</b> så markeras/avmarkeras den<br>
     <b>Då du är inloggad som gäst</b> har du bara vissa rättigheter (gömma, markera och flytta miniatyrer med dra + släpp, gå till originalbild). Med personlig inloggning kan du få fler rättigheter (till exempel <b>klicka på bildtext</b> för att redigera den och spara ändringar).<br>
     <b style="color:#0b0">En bild med grön underkant är länkad</b> från annat album<br>
-    <b style="color:#0b0">Gå till originalbilden</b> med klick på den gröna Till albumet...-länken</span></p>
+    <b style="color:#0b0">Gå till originalbilden</b> med klick på den gröna <span style="color:white;background:#0b0">&nbsp;Gå till...</span>-länken</span></p>
   <p style="text-align:left;margin-left:1.5em;line-height:1.7em" draggable="false" ondragstart="return false">
     <b>Se först knapparna till vänster</b> (vilka som syns varierar):<br>
     <a id="albSel">☰</a> Huvudmeny: Välj album, sökning, favoriter, albumöversikt ...<br>
     <a id="questionMark0">?</a> Visa/dölj den här användarhandledningen<br>
-    <a id="reFr0" class="helpIcon"><img draggable="false" ondragstart="return false" src="/images/reload.png"></a> Ladda om albumet, återställ eventuella osparade ändringar¹³ (’ångerknapp’, men avser ej textändringar)<br>
+    <a id="reFr0" class="helpIcon"><img draggable="false" ondragstart="return false" src="/images/reload.png"></a> Ladda om albumet, återställ eventuella osparade ändringar¹² (’ångerknapp’, men avser ej textändringar)<br>
     <a id="toggleName0">N</a> Visa/dölj namn på bilden (filnamn utan .filtyp)<br>
     <a id="toggleHide0"></a> Visa/dölj ’gömda bilder’ (gömda med bildens högerklick-meny)<br>
     <a id="saveOrder0" class="helpIcon">S</a> Spara bildändringar¹ som annars är tillfälliga och kan återställas²<br>
@@ -395,8 +395,7 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
     <a class="helpIcon">↑</a> Gå upp till överst på sidan</p>
   <p style="text-align:left;margin:-0.4em 0 0 3em;line-height:1.5em" draggable="false" ondragstart="return false">
     ¹ Ändringar: Dra-och-släpp-flyttning av miniatyrbilder, göm eller visa med högerklick<br>
-    ² Undantag: Efter ’Placera först/sist’ görs ’Spara ändringar’ automatiskt<br>
-    ³ Återställning kan också ibland förbättra ofullständig bildvisning</p>
+    ² Återställning kan också ibland förbättra ofullständig bildvisning</p>
   <p style="text-align:left;margin-left:1.5em;line-height:1.5em" draggable="false" ondragstart="return false">
     <b>Övriga knappar</b>: Utforska på egen hand! Och använd <b>Esc-tangenten</b> (se nedan)!</p>
   <p style="text-align:left;margin-left:1.5em;line-height:1.5em" draggable="false" ondragstart="return false">
@@ -424,7 +423,7 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
 <!-- ///// LINKS TO SUBALBUMS ///// -->
 <p class='albumsHdr' draggable="false" ondragstart="return false">
   <div class="miniImgs">
-    {{#each subaList as |suba|}}
+    {{#each this.subaList as |suba|}}
       <div class="subAlbum" {{action 'subalbumSelect' suba.album}} totip="Underalbum ”{{suba.name}}”">
         <a class="imDir BLUET" style="background:transparent">
           {{#if suba.image}}
@@ -442,7 +441,7 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
 <!-- ///// SHOW MINI IMAGES (thumbnails) ///// -->
 <!-- Uses allNames from menu-buttons.js -->
 <p class="showCount" draggable="false" ondragstart="return false">
-  <span class="imDir path">{{{albumName}}}</span>
+  <span class="imDir path">{{{this.albumName}}}</span>
   <span class="imDir ifZero">
     <span class="imDir"> &mdash; </span>
     <span class="numShown" title="shown">0</span>&nbsp;visas,
@@ -452,8 +451,10 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
 </p><!-- MiniImages = links to slides -->
 <div class="miniImgs">
   {{#sortable-objects sortableObjectList=allNames sortEndAction='sortEndAction' enableSort=true useSwap=false}}
-    {{#each allNames as |file|}}
+  <!--SortableObjects sortableObjectList=allNames sortEndAction='sortEndAction' enableSort=true useSwap=false-->
+    {{#each this.allNames as |file|}}
       {{#draggable-object content=file isSortable=true overrideClass='show-inline'}}
+      <!--DraggableObject content=file isSortable=true overrideClass='show-inline'-->
       <div id="i{{file.name}}" class="img_mini {{file.symlink}}" draggable="false" ondragstart="return false">
         <a draggable="false" ondragstart="return false">
         <!-- a {#{action 'showShow' file.show ... Instead: Click listener in 'setNavKeys'-->
@@ -472,13 +473,14 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
         <div class="img_txt2" draggable="false" ondragstart="return false" title="{{file.txt2}}" totip="{{file.txt2}}" {{action 'ediText' file.name}}>
           {{file.txt2}}
         </div>
-        {{#if (eq file allNames.lastObject)}}
+        {{#if (eq file this.allNames.lastObject)}}
           <script>
             $.spinnerWait (false, 2514);
           </script>
         {{/if}}
       </div>
       {{/draggable-object}}
+    <!--/DraggableObject-->
     {{else}}
       <div id="empty">
         <!-- nothing -->
@@ -486,20 +488,21 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
     {{/each}}
     <!--div style="display:none"></div-->
   {{/sortable-objects}}
+  <!--/SortableObjects-->
 </div>
 
 <p class="showCount" draggable="false" ondragstart="return false">
-  <span class="imDir path">{{{albumName}}}</span>
+  <span class="imDir path">{{{this.albumName}}}</span>
   <span class="imDir"> &mdash; </span>
   <span class="numShown" title="shown">0</span>&nbsp;visas,
   <span class="numHidden" title="invisible">0</span>&nbsp;dolda
   (<span class="numMarked" title="marked">0</span>&nbsp;markerade)
   <br>
  <!-- Extra minimal subalbum list at bottom -->
-  {{#each subaList as |suba|}}
+  {{#each this.subaList as |suba|}}
   <a class="imDir BLUET" {{action 'subalbumSelect' suba.album}}>
     <span> {{{suba.name}}} &nbsp;</span>
-    {{#if (eq suba subaList.lastObject)}}
+    {{#if (eq suba this.subaList.lastObject)}}
     {{/if}}
   </a>
   {{else}}
