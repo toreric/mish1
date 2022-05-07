@@ -276,82 +276,40 @@ export default Component.extend (contextMenuMixin, {
   },
   { label: 'Placera först',
     disabled: () => {
-      return !( (allow.imgReorder && allow.saveChanges) || allow.adminAll);
+      return !(allow.imgReorder || allow.adminAll);
     },
     async action () {
       var picName = $ ("#picName").text ();
+      resetBorders ();
+      markBorders (picName);
       var tgtPic = document.getElementsByClassName("img_mini") [0].parentNode;
       var movePic = document.getElementById ("i" + picName).parentNode;
       await simulateDrag (movePic, tgtPic);
       await new Promise (z => setTimeout (z, 1000));
-      //$(document).ready(function() {
-      // var tgtPic = $ (".img_mini") [0];
-//console.log(document.getElementsByClassName("img_mini"));
-      // var allPics = $ (".img_mini").parent ();
-       //var movePic = $ ("#i" + escapeDots (picName));
-      //});
-      // //$ ("#i" + escapeDots (picName)).parent ().empty ();
-      // later ( ( () => {
-      //   $ ("#i" + escapeDots (picName)).parent ().insertBefore (allPics [0]);
-      //   hideShow_g ();
-      //   resetBorders ();
-      //   markBorders (picName);
-      // }), 100);
-//       var sortOrder = $ ("#sortOrder").text ();
-//       var rex = new RegExp (picName + ",[\\d,]+\\n?", "");
-//       var k = sortOrder.search (rex);
-//       if (k < 1) return;
-//       var line = sortOrder.match (rex) [0];
-// //console.log("picName =",picName,"\nsortOrder =\n",sortOrder,"\nrex =",rex,"\nk =",k);
-//       sortOrder = sortOrder.replace (line, "");
-//       sortOrder = sortOrder.replace (/\\n\\n/g, "\n");
-//       sortOrder = line.trim () + "\n" + sortOrder.trim ();
-// //console.log("sortOrder =\n",sortOrder);
-//       $ ("#sortOrder").text (sortOrder);
-//       saveOrderFunc (sortOrder) // Save on server disk
-//       .then (await new Promise (z => setTimeout (z, 400)))
-//       .then ($ ("#reFr").trigger ("click")); // Call via DOM... REFRESH
       later ( ( () => {
         scrollTo (null, $ ("#highUp").offset ().top);
+        hideShow_g ();
       }), 150);
     }
   },
   { label: 'Placera sist',
     disabled: () => {
-      return !( (allow.imgReorder && allow.saveChanges) || allow.adminAll);
+      return !(allow.imgReorder || allow.adminAll);
     },
     async action () {
       var picName = $ ("#picName").text ();
+      resetBorders ();
+      markBorders (picName);
       var tgtPic = document.getElementsByClassName("img_mini");
       tgtPic = tgtPic [tgtPic.length - 1].parentNode;
       var movePic = document.getElementById ("i" + picName).parentNode;
       await simulateDrag (movePic, tgtPic);
       await new Promise (z => setTimeout (z, 1000));
-      // var allPics = $ (".img_mini").parent ();
-      // var movePic = $ ("#i" + escapeDots (picName)).parent ();
-      // //$ ("#i" + escapeDots (picName)).parent ().empty ();
-      // later ( ( () => {
-      //   $ ("#i" + escapeDots (picName)).parent ().insertAfter (allPics [allPics.length-1]);
-      //   hideShow_g ();
-      //   resetBorders ();
-      //   markBorders (picName);
-      // }), 100);
-//       var sortOrder = $ ("#sortOrder").text ();
-//       var rex = new RegExp (picName + ",[\\d,]+\\n?", "");
-//       var k = sortOrder.search (rex);
-//       if (k < 0) return;
-//       var line = sortOrder.match (rex) [0];
-// //console.log("picName =",picName,"\nsortOrder =\n",sortOrder,"\nrex =",rex,"\nk =",k);
-//       sortOrder = sortOrder.replace (line, "");
-//       sortOrder = sortOrder.replace (/\\n\\n/g, "\n");
-//       sortOrder = sortOrder.trim () + "\n" + line.trim ();
-// //console.log("sortOrder =\n",sortOrder);
-//       $ ("#sortOrder").text (sortOrder);
-//       saveOrderFunc (sortOrder) // Save on server disk
-//       .then (await new Promise (z => setTimeout (z, 400)))
-//       .then ($ ("#reFr").trigger ("click")); // Call via DOM... REFRESH
       later ( ( () => {
-        scrollTo (null, $ ("#lowDown").offset ().top - parseInt (window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight));
+        let tmp = $ ("#lowDown").offset ().top - parseInt (window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight);
+        if (tmp < $ ("#highUp").offset ().top) tmp = $ ("#highUp").offset ().top;
+        scrollTo (null, tmp);
+        hideShow_g ();
       }), 150);
     }
   },
@@ -2445,7 +2403,6 @@ console.log("selectRoot=",value);
             if (thisAlbumIndex > 0) gotoAtop ();
             else scrollTo (null, 0);
             $.spinnerWait (true, 105);
-            //$.spinnerWait (false, 4937);
           });
         });
       }); // End return new Promise
@@ -4208,26 +4165,21 @@ function gotoMinipic (namepic) {
   let timer;
   (async function repeater () {
     let hs = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+    let h2 = hs/2;
     timer = setTimeout (repeater, 500);
     if (spinner.style.display === "none") {
       clearTimeout (timer);
-      //await new Promise (z => setTimeout (z, 654));
-      let y, p = $ ("#i" + escapeDots (namepic));
+      let p = $ ("#i" + escapeDots (namepic));
+      let y = p.offset ().top + p.height ()/2;
       let t = $ ("#highUp").offset ().top;
-      //scrollTo (null, 0);
-      if (p.offset ()) {
-        y = p.offset ().top + p.height ()/2 - hs/2;
-      } else {
-        y = t;
-      }
-      //let t = 66;
-      await new Promise (z => setTimeout (z, 654));
-      if (t > y) {y = t;}
+      let b = $ ("#lowDown").offset ().top;
+      y -= h2;
+      if (y < t) y = t;
+      if (y > b - hs) y = b - hs;
+      await new Promise (z => setTimeout (z, 321));
       scrollTo (null, y);
       resetBorders (); // Reset all borders
-      //$.spinnerWait (false, 3009)
       markBorders (namepic); // Mark this one
-      //console.log("scrollTo",y,hs);
     }
   } ());
 }
@@ -4237,8 +4189,8 @@ function gotoAtop () {
   later ( ( () => {
     let t = $ ("#highUp").offset ().top;
     scrollTo (null, t);
-  }), 124);
-  //scrollTo (null, 66); // Alternative to #highUp
+    //scrollTo (null, 66);
+  }), 3999);
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 async function deleteFiles (picNames, nels, picPaths) { // ===== Delete image(s)
@@ -6264,10 +6216,11 @@ function longClickHandler(e){
 
 $("body").longclick(400, longClickHandler);*/
 
-
-
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
+/**From Luis Vegerano (lvegerano), working on the ember addon and came up with this on 23 Dec 2019:
+ *  "https://github.com/SortableJS/ember-sortablejs/blob/master/addon-test-support/dndsimulator.js"
+ *  Only slightly modified, see (*) and top -> bottom change / Tore Ericsson May 2022
+ */
 function getPositionAtCenter(element) {
   const {top, left, width, height} = element.getBoundingClientRect();
   return {
@@ -6320,14 +6273,16 @@ function createEvent (eventName, options) {
  * @param {HTMLElement} targetElement - Element where source element is being dropped
  * @returns {Promise}
  */
-async function simulateDrag (sourceElement, targetElement) {
+ // (*) export async function simulateDrag (sourceElement, targetElement) {
+ async function simulateDrag (sourceElement, targetElement) {
 
   /* get the coordinates of both elements, note that
   left refers to X, and top to Y */
   const sourceCoordinates = sourceElement.getBoundingClientRect();
   const targetCoordinates = targetElement.getBoundingClientRect();
 
-  const distance = getDistanceBetweenElements(sourceElement, targetElement) + 5;
+  // (*) const distance = getDistanceBetweenElements(sourceElement, targetElement) + 5;
+  const distance = getDistanceBetweenElements(sourceElement, targetElement) + 500;
 
   /* simulate a mouse down event on the coordinates
   of the source element */
@@ -6335,7 +6290,8 @@ async function simulateDrag (sourceElement, targetElement) {
       "pointerdown",
       {
           x: sourceCoordinates.left,
-          y: sourceCoordinates.top
+          //y: sourceCoordinates.top
+          y: sourceCoordinates.bottom
       }
   );
 
@@ -6346,21 +6302,24 @@ async function simulateDrag (sourceElement, targetElement) {
       "dragstart",
       {
           x: sourceCoordinates.left,
-          y: sourceCoordinates.top,
+          //y: sourceCoordinates.top,
+          y: sourceCoordinates.bottom,
           dataTransfer: new DataTransfer()
       }
   );
 
   sourceElement.dispatchEvent(dragStartEvent);
 
-  await new Promise((resolve) => setTimeout(() => resolve(), 2000)); //was 1000
+  // (*) await new Promise((resolve) => setTimeout(() => resolve(), 1000));
+  await new Promise((resolve) => setTimeout(() => resolve(), 20*document.getElementsByClassName("img_mini").length));
 
   /* simulate a drag event on the source element */
   const dragEvent = createEvent(
       "drag",
       {
           x: sourceCoordinates.left,
-          y: sourceCoordinates.top
+          //y: sourceCoordinates.top
+          y: sourceCoordinates.bottom
       }
   );
 
@@ -6371,7 +6330,8 @@ async function simulateDrag (sourceElement, targetElement) {
       "dragenter",
       {
           x: targetCoordinates.left,
-          y: sourceCoordinates.top + distance,
+          //y: sourceCoordinates.top + distance,
+          y: sourceCoordinates.bottom + distance,
           dataTransfer: dragStartEvent.dataTransfer
       }
   );
@@ -6383,7 +6343,8 @@ async function simulateDrag (sourceElement, targetElement) {
       "dragover",
       {
           x: targetCoordinates.left,
-          y: sourceCoordinates.top + distance,
+          //y: sourceCoordinates.top + distance,
+          y: sourceCoordinates.bottom + distance,
           dataTransfer: dragStartEvent.dataTransfer
       }
   );
@@ -6395,7 +6356,8 @@ async function simulateDrag (sourceElement, targetElement) {
       "drop",
       {
           x: targetCoordinates.left,
-          y: sourceCoordinates.top + distance,
+          //y: sourceCoordinates.top + distance,
+          y: sourceCoordinates.bottom + distance,
           dataTransfer: dragStartEvent.dataTransfer
       }
   );
@@ -6407,7 +6369,8 @@ async function simulateDrag (sourceElement, targetElement) {
       "dragend",
       {
           x: targetCoordinates.left,
-          y: sourceCoordinates.top + distance,
+          //y: sourceCoordinates.top + distance,
+          y: sourceCoordinates.bottom + distance,
           dataTransfer: dragStartEvent.dataTransfer
       }
   );
@@ -6419,7 +6382,8 @@ async function simulateDrag (sourceElement, targetElement) {
       "mouseup",
       {
           x: targetCoordinates.left,
-          y: sourceCoordinates.top + distance
+          //y: sourceCoordinates.top + distance
+          y: sourceCoordinates.bottom + distance
       }
   );
 

@@ -454,7 +454,6 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
   <!--SortableObjects sortableObjectList=allNames sortEndAction='sortEndAction' enableSort=true useSwap=false-->
     {{#each this.allNames as |file|}}
       {{#draggable-object content=file isSortable=true overrideClass='show-inline'}}
-      <!--DraggableObject content=file isSortable=true overrideClass='show-inline'-->
       <div id="i{{file.name}}" class="img_mini {{file.symlink}}" draggable="false" ondragstart="return false">
         <a draggable="false" ondragstart="return false">
         <!-- a {#{action 'showShow' file.show ... Instead: Click listener in 'setNavKeys'-->
@@ -480,7 +479,6 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
         {{/if}}
       </div>
       {{/draggable-object}}
-    <!--/DraggableObject-->
     {{else}}
       <div id="empty">
         <!-- nothing -->
