@@ -776,7 +776,11 @@ export default Component.extend (contextMenuMixin, {
 
       // Here is the base IMDB_LINK setting, to use also in ld_imdb.js:
       // THIS IS OUTDATED
-      $ ("#imdbLink").text ("."); // <<< == IMDB_LINK in routes.js
+      $ ("#imdbLink").text ("."); // <<< == IMDB_LINK in routes.js OBSOLETE
+
+      execute ("if [ -f /etc/postfix/main.cf ]; then echo postfix; fi").then (res => {
+        if (res) $ ("#do_mail").show (); // Guess if the server can send mail
+      });
       $ ("#menuButton").attr ("title", htmlSafe ("Meny")); // i18n
       // Remember update *.hbs
       $ ("#bkgrColor").text ("rgb(59, 59, 59)");
@@ -789,7 +793,7 @@ export default Component.extend (contextMenuMixin, {
       $ ("#viSt").hide ();
       later ( ( () => {
         if (!getCookie("bgtheme")) {
-          setCookie("bgtheme", "light", 0);
+          setCookie("bgtheme", "dark", 0);
         } else {
           this.actions.toggleBackg (); this.actions.toggleBackg ();
         }
@@ -1082,7 +1086,7 @@ export default Component.extend (contextMenuMixin, {
             }
 
             later ( ( () => {
-              if (document.querySelector("strong.albumName") && document.querySelector ("strong.albumName") [0] && document.querySelector ("strong.albumName") [0].innerHTML.replace (/&nbsp;/g, " ").trim () === $ ("#picFound").text ().replace (/\.[^.]{4}$/, "").replace (/_/g, " ")) {
+              if (document.querySelector("strong.albumName") && document.querySelector ("strong.albumName") [0] && document.querySelector ("strong.albumName") [0].innerHTML.replace (/&nbsp;/g, " ").trim () === picFound.replace (/_/g, " ")) {
                 // The search result album. Seems to fail, may be removed since also superfluous?
                 //$ ("div.BUT_2").html ($.parseHTML ('<span style="color:#0b0";font-weight:bold>Gå till bildens eget album med högerklick i grön ring!</span>'));
               } else {
@@ -1185,7 +1189,7 @@ export default Component.extend (contextMenuMixin, {
           that.actions.toggleMark (namepic);
           return;
         }), 20);
-      } else {
+      } else { // Display the show picture if the test passes:
         // A mini-picture is classless
         if (tgt.parentElement.className || tgt.parentElement.id === "link_show") return;
         var origpic = tgt.title;
@@ -1603,6 +1607,10 @@ export default Component.extend (contextMenuMixin, {
         $ ("#dialog").dialog ("close"); // Close if open
         return;
       }
+
+      //alert ("Mail till Hembygdsföreningen fungerar inte just nu! Beräknas vara åtgärdat inom närmaste vecka.");
+      //return;  // OUT OF ORDER
+
       let user = $ ("#title span.cred.name").text ();
       let picName = $ ("#picName").text ();
       let tmp = extractContent (this.get ("albumName")).replace (/\s/g, "_");
@@ -1610,8 +1618,8 @@ export default Component.extend (contextMenuMixin, {
       let title = "Mejl från Mish, <b style='background:inherit'>" + user + "/" + picName + "</b>"; // i18n
       let text = 'Skriv ditt meddelande till Sävar Hembygdsförening:';
       text += '<br><input type="text" class="i_address" title="" placeholder=" Namn och adress (frivilligt)" value="' + '' + '" style="width:100%;background:#f0f0cf;margin: 0.5em 0 0 0">';
-      text += '<br><input type="email" class="i_email" title="" placeholder=" Din epostadress (obligatoriskt, visas ej)" value="' + '' + '" style="width:100%;background:#f0f0b0;margin: 0.5em 0 0 0">';
-      text += '<br><textarea class="t_mess" rows="6"  title="" placeholder=" Meddelandetext om minst sju tecken (obligatoriskt)" value="' + '' + '" style="width:100%;background:#f0f0b0;color:blue;margin: 0.5em 0 0.5em 0"></textarea><br>Skriv också om du saknar något eller hittar fel i en bildtext – tack! Och berätta om du vill bidra med egna bilder. Det du skriver här kan bara ses av Hembygdsföreningens mejlmottagare.';
+      text += '<br><input type="email" class="i_email" title="" placeholder=" Din epostadress (visas ej)" value="' + '' + '" style="width:100%;background:#f0f0b0;margin: 0.5em 0 0 0">';
+      text += '<br><textarea class="t_mess" rows="6"  title="" placeholder=" Meddelandetext om minst sju tecken" value="' + '' + '" style="width:100%;background:#f0f0b0;color:blue;margin: 0.5em 0 0.5em 0"></textarea><br>Skriv också om du saknar något eller hittar fel i en bildtext – tack! Och berätta om du vill bidra med egna bilder. Det du skriver här kan bara ses av Hembygdsföreningens mejlmottagare.';
 
       let yes = "Skicka";
       let no = "Avbryt";
@@ -2608,7 +2616,7 @@ console.log("selectRoot=",value);
       $ ("#wrap_show").css ('background-color', $ ('#i' + escapeDots (namepic)).css ('background-color'));
       $ (".img_show").show ();
       $ (".nav_links").show ();
-      scrollTo (null, $ (".img_show img:first").offset ().top - $ ("#topMargin").text ());
+      //scrollTo (null, $ (".img_show img:first").offset ().top - $ ("#topMargin").text ());
       $ ("#markShow").removeClass ();
       if (document.getElementById ("i" + namepic).firstElementChild.nextElementSibling.className === "markTrue") {
         $ ("#markShow").addClass ("markTrueShow");
@@ -2644,6 +2652,7 @@ console.log("selectRoot=",value);
         $ ("#wrap_show.symlink").css ("border-bottom", "1.5px solid #0b0");
         $ ("#pathOrig").show ();
       }
+      scrollTo (null, $ (".img_show img:first").offset ().top - $ ("#topMargin").text ());
 
     },
     //============================================================================================
@@ -2876,7 +2885,7 @@ console.log("selectRoot=",value);
       }
     },
     //============================================================================================
-    toggleNav () { // ##### Toggle image navigation-click zones
+    toggleNav () { // ##### Toggle autoshow help dialog or image navigation-click zones display
 
       if ($ ("#navAuto").text () === "true") {
         var title = "Stanna automatisk visning...";
@@ -3675,9 +3684,14 @@ var blink_text = function () {
   $(BLINK_TAG).fadeOut(350);
   $(BLINK_TAG).fadeIn(150);
 }
-let BACKG = "#cbcbcb";
-let TEXTC = "#000";
-let BLUET = "#146";
+let BACKG = "#cbcbcb"; // background light
+let TEXTC = "#000";    // text color
+let BLUET = "#146";    // blue text
+if (phonedevice ()) {
+  BACKG = "#000";  // background dark
+  TEXTC = "#fff"; // text color
+  BLUET = "#aef"; // blue text
+}
 let bkgTip = "Byt bakgrund";
 let centerMarkSave = "×";
 let cmsg = "Får inte laddas ned/förstoras utan särskilt medgivande: Vänligen kontakta copyrightinnehavare eller Hembygdsföreningen";
@@ -5267,13 +5281,16 @@ function extractContent(htmlString) { // Extracts text from an HTML string
   return res.replace (/”/g, "");
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function phonedevice () {/Android|webOS|iPhone|iPad|iPod/i.test (navigator.userAgent);}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function devSpec () { // Device specific features/settings
   // How do we make context menus with iPad/iOS?
-  if (/Android|webOS|iPhone|iPad|iPod/i.test (navigator.userAgent)) {
+  if (phonedevice ()) {
     /*/ Disable iOS overscroll
     document.body.addEventListener('touchmove', function(event) {
       event.preventDefault();
     }, false);*/
+    $ ("a.proid.toggbkg").hide (); // dark/light background toggle
     $ ("#full_size").hide (); // the full size image link
     $ (".nav_.pnav_").hide (); // the print link
     $ (".nav_.qnav_").hide (); // the help link, cannot use click-in-picture...

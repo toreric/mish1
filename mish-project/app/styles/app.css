@@ -918,7 +918,7 @@ a.imDir:hover img {
   border: 1px solid #aef;
 }
 a.imDir:hover span {
-  color: #ccc;
+  color: #fff;
 }
 /* CSS tooltip title-1 for long one-liners.
 The jquery ui-tooltip is used elsewere (totip in *.js) */
