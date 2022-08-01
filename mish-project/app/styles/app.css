@@ -125,6 +125,9 @@ button {
   border-radius: 4px;
   cursor: pointer;
 }
+button.dz-buttton, button.dz-buttton:focus {
+  border: 0px!important;
+}
 button:focus {
   border: 1.2px solid #666;
 }
@@ -1854,7 +1857,7 @@ img.dotted {
           .dropzone .dz-preview .dz-details .dz-filename:not(:hover) span {
             border: 1px solid transparent; }
       .dropzone .dz-preview .dz-details .dz-filename span, .dropzone .dz-preview .dz-details .dz-size span {
-        background-color: rgba(255, 255, 255, 0.4);
+        background-color: rgba(255, 255, 255, 0.75);
         padding: 0 0.4em;
         border-radius: 3px; }
     .dropzone .dz-preview:hover .dz-image img {
@@ -1935,11 +1938,11 @@ img.dotted {
       position: absolute;
       height: 0.85em;
       left: 50%;
-      top: 48%;
+      top: 41.5%;
       margin-top: 0px;
       width: 80px;
       margin-left: -40px;
-      background: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 1);
       -webkit-transform: scale(1);
       transform: scale(1);
    border-style: solid;

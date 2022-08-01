@@ -7,8 +7,8 @@
 import Component from '@ember/component'
 import EmberObject from '@ember/object';
 import $ from 'jquery';
-import { dialog } from 'jquery-ui';
-import { tooltip } from 'jquery-ui';
+// import { dialog } from 'jquery-ui';
+// import { tooltip } from 'jquery-ui';
 import { inject as service } from '@ember/service';
 import { later } from '@ember/runloop';
 import { Promise } from 'rsvp';
@@ -939,6 +939,7 @@ export default Component.extend (contextMenuMixin, {
     // This will trigger the template to restore the DOM elements. Prepare the didRender hook
     // to further restore all details!
     let n = 0;
+    // eslint-disable-next-line no-async-promise-executor
     return new Promise (async resolve => {
       var test = 'A1'; //console.log ("refreshAll, test = A1");
       $.spinnerWait (true, 101.01);
@@ -1564,7 +1565,6 @@ export default Component.extend (contextMenuMixin, {
     },
 
     removeDupFiles () {
-      //myDropzone.removeAllFiles();
       var dupEl = $ ("div.dz-preview.picPresent");
       for (var i=0; i<dupEl.length; i++) {
           dupEl [i].remove ();
@@ -2186,6 +2186,7 @@ console.log("selectRoot=",value);
     },
     selectAlbum (that) { // ##### triggered by a click within the JStree
 
+      // eslint-disable-next-line no-async-promise-executor
       return new Promise ( async () => {
 
         $.spinnerWait (true, 101);
@@ -2220,6 +2221,7 @@ console.log("selectRoot=",value);
         // eslint-disable-next-line no-async-promise-executor
 
         var thisAlbumIndex = 0;
+        // eslint-disable-next-line no-async-promise-executor
         return new Promise (async resolve => {
           $ ("a.jstree-anchor").blur (); // Important?
           thisAlbumIndex = $ ("#imdbDirs").text ().split ("\n").indexOf (value);
@@ -2244,14 +2246,11 @@ console.log("selectRoot=",value);
             tmp1 = ["", "", ""];
           }
           let i0 = selDirs.indexOf (selDir);
-//console.log("i0:",i0,"selDir:",selDir); //OK
           for (let i=i0; i<selDirs.length; i++) {
             if (selDir === selDirs [i].slice (0, selDir.length)) {
               let cand = selDirs [i].slice (selDir.length);
-//console.log("i:",i,"cand:",cand,cand.replace (/^(\/[^/]+).*$/, "$1")); //OK
               if (cand.indexOf ("/") === 0 && cand.replace (/^(\/[^/]+).*$/, "$1") === cand) {
                 if (cand.slice (1) !== $ ("#picFound").text ()) {
-//console.log("* i:",i,"cand:",cand,cand.replace (/^(\/[^/]+).*$/, "$1"),selPics [i]); //ERROR
                   //tmp.push (cand.slice (1).replace (/_/g, " "));
                   tmp.push (cand.slice (1));
                   tmp1.push (selPics [i]); //ERROR
@@ -2259,7 +2258,6 @@ console.log("selectRoot=",value);
               }
             }
           }
-//console.log(tmp,tmp1);
           if (tmp [0] === "") {
             if (savedAlbumIndex > 0) {
               tmp [0] = "⇆";
@@ -2329,6 +2327,7 @@ console.log("selectRoot=",value);
                       obj.after ("<div class=\"BUT_2\"> har: ett underalbum</div><br>"); // i18n
                     } else {
                       obj.after ("<div class=\"BUT_2\"> har: " + nsub + " underalbum</div><br>"); // i18n
+console.log("=A=");
                     }
                     obj.after (fullAlbumName);
                   }
@@ -2355,6 +2354,7 @@ console.log("selectRoot=",value);
                     obj.after ("<div class=\"BUT_2\"> har: ett underalbum</div><br>"); // i18n
                   } else {
                     obj.after ("<div class=\"BUT_2\"> har: " + nsub + " underalbum</div><br>"); // i18n
+console.log("=B=");
                   }
                   obj.after (fullAlbumName);
                 }
@@ -2371,6 +2371,7 @@ console.log("selectRoot=",value);
               obj.before ("<div class=\"BUT_2\"> har: ett underalbum</div><br>"); // i18n
             } else {
               obj.before ("<div class=\"BUT_2\"> har: " + nsub + " underalbum</div><br>"); // i18n
+console.log("=C=");
             }
           }
           // Don't show imdbRoot
@@ -3160,6 +3161,7 @@ console.log("selectRoot=",value);
       $ ("#link_show a").css ('opacity', 0);
       $.spinnerWait (true);
       var origpic;
+      // eslint-disable-next-line no-async-promise-executor
       return new Promise (async (resolve, reject) => {
         var xhr = new XMLHttpRequest ();
         var tmp = $ ("#picName").text ().trim ();
@@ -3724,12 +3726,16 @@ var myDropzone;
 let queueLength = 0; // Queue length
 // The prepare dropzone function:
 const prepDropzone = () => {
-  // Dropzone.autoDiscover = false: Place before "$ (document).ready ..."!
+  // Dropzone.autoDiscover = false; Relocated before "$ (document).ready ..."
   myDropzone = new Dropzone ("#my-form");
   myDropzone.options.autoProcessQueue = false;
   myDropzone.options.parallelUploads = 1;
-  myDropzone.options.dictDefaultMessage = "[X]";
-  $ ("div.dz-default.dz-message button.dz-button").text ("");
+  myDropzone.options.addRemoveLinks = true;
+  myDropzone.options.dictRemoveFile = "Ta bort";
+  myDropzone.options.dictCancelUpload = "Avbryt";
+  myDropzone.options.dictCancelUploadConfirmation = "Avbryt uppladdning?";
+  myDropzone.options.dictDefaultMessage = "Förbered genom att dra dem hit eller bara klicka...";
+  $ ("div.dz-default.dz-message button.dz-button").text (myDropzone.options.dictDefaultMessage);
 
   // console.log("autoDiscover",Dropzone.autoDiscover);
   // console.log("autoProcessQueue",myDropzone.options.autoProcessQueue);
@@ -3746,7 +3752,7 @@ const prepDropzone = () => {
 
   myDropzone.on("addedfile", function(file) {
     //$ ("#uploadFinished").text ("");
-    var errNames = [];
+    var errNames = []; // NOT USED yet
     if (acceptedFileName (file.name)) {
       document.getElementById("uploadPics").style.display = "inline";
       document.getElementById("removeAll").style.display = "inline";
@@ -3768,13 +3774,12 @@ const prepDropzone = () => {
       } else { // New file to upload
         console.log (namepic, file.type, file.size, "NEW");
       }
-      var tmp0 = file.previewElement.querySelector ("div.dz-size").innerHTML + "<br><span style='color:green;font-size:120%;font-weight:bold'>KLAR</span>"
+      var tmp0 = file.previewElement.querySelector ("div.dz-size").innerHTML + "<br><span style='color:green;font-size:105%;font-weight:bold'>KLAR</span>";
       file.previewElement.querySelector ("div.dz-size").innerHTML = tmp0;
+
     } else {
       console.log ("Illegal file name: " + file.name);
-errNames.push (file.name); // NOT USED
-      // userLog() unreachable
-      //$ ("#uploadFinished").html ('<span style="color:deeppink">OTILLÅTET FILNAMN<br>' + file.name + "</span>");
+      errNames.push (file.name); // NOT USED yet
       file.previewElement.remove ();
 
       var prefix = ["_mini_", "_show_", "_imdb_"];
@@ -3783,7 +3788,7 @@ errNames.push (file.name); // NOT USED
       if (prefix.includes (tmp1) || tmp2 === ".") {
         alert ("Filnamn som inte är godkänt: " + file.name + "\n\nBildfilnamn kan inte börja med . (punkt) eller något av " + prefix.join (", "));
       } else {
-        alert ("Filnamn som inte är godkänt: " + file.name + "\n\nFör bildfiler gäller särskilda namnregler. Bildfilnamn får bland annat inte innehålla å ä ö Å Ä Ö eller blanktecken (_ - . är tillåtna). Ändra filnamnet och försök igen!\n\nBildfilnamn slutar med .jpg .jpeg .tif .tiff .png .gif (eller .JPG .JPEG ... etc.)");
+        alert ("Filnamn som inte är godkänt: " + file.name + "\n\nI Mish gäller särskilda namnregler: Bildfilnamn får bland annat inte innehålla å ä ö Å Ä Ö eller blanktecken (_ - . är tillåtna). Ändra filnamnet och försök igen!\n\nBildfilnamn ska sluta med något av .jpg .jpeg .tif .tiff .png .gif (eller .JPG .JPEG ... etc.)");
       }
     }
   });
@@ -4211,6 +4216,7 @@ async function deleteFiles (picNames, nels, picPaths) { // ===== Delete image(s)
   // nels = number of elements in picNames to be deleted
   let delPaths = [];
   var keep = [], isSymlink;
+  // eslint-disable-next-line no-async-promise-executor
   return new Promise (async resolve => {
     for (var i=0; i<nels; i++) {
       isSymlink = $ ('#i' + escapeDots (picNames [i])).hasClass ('symlink');
