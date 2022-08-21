@@ -1617,8 +1617,8 @@ export default Component.extend (contextMenuMixin, {
       if (tmp.indexOf (picFound) === 0) picName = picName.replace (/\.[^.]{4}$/, "");
       let title = "Mejl från Mish, <b style='background:inherit'>" + user + "/" + picName + "</b>"; // i18n
       let text = 'Skriv ditt meddelande till Sävar Hembygdsförening:';
-      text += '<br><input type="text" class="i_address" title="" placeholder=" Namn och adress (frivilligt)" value="' + '' + '" style="width:100%;background:#f0f0cf;margin: 0.5em 0 0 0">';
-      text += '<br><input type="email" class="i_email" title="" placeholder=" Din epostadress (visas ej)" value="' + '' + '" style="width:100%;background:#f0f0b0;margin: 0.5em 0 0 0">';
+      text += '<br><input type="text" class="i_address" title="" placeholder=" Från: (namn och adress, frivilligt)" value="' + '' + '" style="width:100%;background:#f0f0cf;margin: 0.5em 0 0 0">';
+      text += '<br><input type="email" class="i_email" title="" placeholder=" Din e-postadress" value="' + '' + '" style="width:100%;background:#f0f0b0;margin: 0.5em 0 0 0">';
       text += '<br><textarea class="t_mess" rows="6"  title="" placeholder=" Meddelandetext om minst sju tecken" value="' + '' + '" style="width:100%;background:#f0f0b0;color:blue;margin: 0.5em 0 0.5em 0"></textarea><br>Skriv också om du saknar något eller hittar fel i en bildtext – tack! Och berätta om du vill bidra med egna bilder. Det du skriver här kan bara ses av Hembygdsföreningens mejlmottagare.';
 
       let yes = "Skicka";
@@ -3015,7 +3015,13 @@ console.log("=C=");
       fileWR (origpic).then (acc => {
         //console.log("> acc:",acc);
         if (acc !== "WR") {
-          infoDia (null, null,"Bildtexterna kan inte redigeras", "<br><span class='pink'>" + namepic + "</span> ändringsskyddad, försök igen<br><br>Om felet kvarstår:<br>Kontrollera filen!", "Stäng", true);
+          let txt;
+          if ($ ("#imdbDir").text () === "/" + $ ("#picFound").text ()) {
+            txt = "<br>”" + picFound + "” är ett tillfälligt album.<br>Efter en viss tids inaktivitet behöver det göras om!<br>"
+          } else {
+            txt = "<br><span class='pink'>" + namepic + "</span> ändringsskyddad, försök igen<br><br>Om felet kvarstår:<br>Kontrollera filen!";
+          }
+          infoDia (null, null,"Bildtexterna kan inte redigeras", txt, "Stäng", true);
           $ ("div[aria-describedby='textareas']").hide ();
           return;
         }
@@ -3708,7 +3714,7 @@ let nopsGif = "GIF-fil kan bara ha tillfällig text"; // i18n
 let openRoot = ""; // If "demo" then SETS THE ADMIN FLAG TO ALLOW ANYTHING!
 let picFound = "Funna_bilder"; // i18n
 let preloadShowImg = [];
-let rootAdv = "Välj här albumsamling om den inte redan är förvald. Det kan finnas fler än ett alterativ. Om det ser ut att ha hakat upp sig: Ladda om webbläsaren! Ingångsalbumet till en albumsamling kallas också ”rot-album” – det förgrenar sig sedan nedåt – ”cyberträd” kan växa med roten uppåt!";
+let rootAdv = "Om det inte fungerar: Ladda om webbläsaren! Annars: Välj här albumsamling om den inte redan är förvald. Det kan finnas fler än ett alterativ. Ingångsalbumet till en albumsamling kallas också ”rot-album” – det förgrenar sig sedan nedåt – ”cyberträd” kan växa med roten uppåt!";
 let loginStatus = "";
 let tempStore = "";
 // Paths for pictures to be soon updated in _imdb_images.sqlite (using sqlUpdate; then clear pathsUpdate!):
@@ -3737,23 +3743,19 @@ const prepDropzone = () => {
   myDropzone.options.dictDefaultMessage = "Förbered genom att dra dem hit eller bara klicka...";
   $ ("div.dz-default.dz-message button.dz-button").text (myDropzone.options.dictDefaultMessage);
 
-  // console.log("autoDiscover",Dropzone.autoDiscover);
-  // console.log("autoProcessQueue",myDropzone.options.autoProcessQueue);
-  // console.log("parallelUploads",myDropzone.options.parallelUploads);
-  // console.log("dictDefaultMessage",myDropzone.options.dictDefaultMessage);
-
-  myDropzone.on ("addedfile", file => {
-    console.log (`File to be added: ${file.name}`);
-    //console.log ("File to be added:",file.name); //<= Equivalently written
-  });
+  // myDropzone.on ("addedfile", file => {
+  //   console.log (`File to be added: ${file.name}`);
+  //   //console.log ("File to be added:",file.name); //<= Equivalently written
+  // });
 
   onDragEnterLeaveHandler(myDropzone);
   document.getElementById("uploadWarning").style.display = "none";
 
+  var errNames = [];
   myDropzone.on("addedfile", function(file) {
-    //$ ("#uploadFinished").text ("");
-    var errNames = []; // NOT USED yet
+    console.log (`File to be added: ${file.name}`);
     if (acceptedFileName (file.name)) {
+      errNames = [];
       document.getElementById("uploadPics").style.display = "inline";
       document.getElementById("removeAll").style.display = "inline";
 
@@ -3779,16 +3781,18 @@ const prepDropzone = () => {
 
     } else {
       console.log ("Illegal file name: " + file.name);
-      errNames.push (file.name); // NOT USED yet
+      errNames.push (file.name); // Used for counting
       file.previewElement.remove ();
 
       var prefix = ["_mini_", "_show_", "_imdb_"];
       var tmp1 = file.name.slice (0, 6);
       var tmp2 = file.name.slice (0, 1);
-      if (prefix.includes (tmp1) || tmp2 === ".") {
-        alert ("Filnamn som inte är godkänt: " + file.name + "\n\nBildfilnamn kan inte börja med . (punkt) eller något av " + prefix.join (", "));
-      } else {
-        alert ("Filnamn som inte är godkänt: " + file.name + "\n\nI Mish gäller särskilda namnregler: Bildfilnamn får bland annat inte innehålla å ä ö Å Ä Ö eller blanktecken (_ - . är tillåtna). Ändra filnamnet och försök igen!\n\nBildfilnamn ska sluta med något av .jpg .jpeg .tif .tiff .png .gif (eller .JPG .JPEG ... etc.)");
+      if (errNames.length < 4) {
+        if (prefix.includes (tmp1) || tmp2 === ".") {
+          alert ("Filnamn som inte är godkänt: " + file.name + "\n\nBildfilnamn kan inte börja med . (punkt) eller något av " + prefix.join (" "));
+        } else {
+          alert ("Filnamn som inte är godkänt: " + file.name + "\n\nI Mish måste bildfilnamn sluta med något av .jpg .jpeg .tif .tiff .png .gif (eller .JPG .JPEG ... etc.)\n\nDessutom gäller särskilda namnregler: Bildfilnamn får bland annat inte innehålla å ä ö Å Ä Ö eller blanktecken (men _ - . är tillåtna)");
+        }
       }
     }
   });
@@ -4619,7 +4623,13 @@ function notesDia (picName, filePath, title, text, save, saveClose, close) { // 
     fileWR (filePath).then (acc => {
       if (acc !== "WR") {
         userLog ("NOT written");
-        infoDia (null, null,"Texten kan inte sparas", "<br><span class='pink'>" + picName + "</span> ändringsskyddad, försök igen<br><br>Om felet kvarstår:<br>Kontrollera filen!", "Stäng", true);
+        let txt;
+        if ($ ("#imdbDir").text () === "/" + $ ("#picFound").text ()) {
+          txt = "<br>”" + picFound + "” är ett tillfälligt album.<br>Efter en viss tids inaktivitet behöver det göras om!<br>"
+        } else {
+          txt = "<br><span class='pink'>" + picName + "</span> ändringsskyddad, försök igen<br><br>Om felet kvarstår:<br>Kontrollera filen!";
+        }
+        infoDia (null, null,"Texten kan inte sparas", txt, "Stäng", true);
       } else {
         // Remove <br> in the text shown; use <br> as is for metadata
         $ ('textarea[name="notes"]').val (text.replace (/<br>/g, "\n"));
