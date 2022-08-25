@@ -72,7 +72,7 @@ a {
   outline: 0;
 }
 a:hover, a:active, a:focus, a.intro:hover, a.intro:active, a.intro:focus {
-  color: #6cf;
+  color: #6cf !important;
   border-color: white;
   cursor: pointer;
 }
@@ -114,6 +114,4 @@ a.border0 {
 }
 .wrap1 .rig {
   text-align: right;
-}
-.wrap1 .rig img {
 }

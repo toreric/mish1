@@ -11,6 +11,7 @@ import $ from 'jquery';
 // import { tooltip } from 'jquery-ui';
 import { inject as service } from '@ember/service';
 import { later } from '@ember/runloop';
+// import { Promise, resolve } from 'rsvp';
 import { Promise } from 'rsvp';
 import { htmlSafe } from '@ember/string';
 import { task } from 'ember-concurrency';
@@ -1962,40 +1963,40 @@ export default Component.extend (contextMenuMixin, {
               });
 
             } else if (opt === "erase") {
-              // Ignore hidden (dotted) files
-              cmd = "ls -1 " + $ ("#imdbPath").text () + $ ("#imdbDir").text ();
-              execute (cmd).then (res => {
-                res = res.split ("\n");
-                var n = 0;
-                for (let i=0; i<res.length; i++) {
-                  var a = res [i].trim ()
-                  if (!(a === "" || a.indexOf ("_imdb_") === 0 || a.indexOf ("_mini_") === 0 || a.indexOf ("_show_") === 0)) {
-                    n++;
-                  }
-                }
-                // If n==0, any hidden (dotted) files are deleted along with _imdb_ files etc.
-                if (n) {
-                  $ (this).dialog ("close");
-                  var album = $ (that.get ("albumName")).text ();
-                  later ( ( () => {
-                    infoDia (null, null, album, " <br><b>Albumet måste tömmas</b><br>för att kunna raderas", "Ok", true);
-                  }), 100);
-                } else {
-                  cmd = "rm -rf " + $ ("#imdbPath").text () + $ ("#imdbDir").text ();
-                  execute (cmd).then ( () => {
-                    userLog ("DELETED " + nameText + ", RELOADING");
-                    later ( ( () => {
-                      that.actions.selectRoot ($ ("#imdbRoot").text (), that);
-                      // $ ("#rootSel").val ($ ("#rootSel option").text());
-                      // $ ("#rootSel").val ($ ("#imdbRoot").text ());
-                      // selectElement("rootSel", $ ("#imdbRoot").text ());
-                      // $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_1")); // calls selectAlbum
-                      //location.reload ();
-                      //$ ("#reFr").trigger ("click");
-                    }), 2000);
-                  });
-                }
+              // // Ignore hidden (dotted) files
+              // cmd = "ls -1 " + $ ("#imdbPath").text () + $ ("#imdbDir").text ();
+              // execute (cmd).then (res => {
+              //   res = res.split ("\n");
+              //   var n = 0;
+              //   for (let i=0; i<res.length; i++) {
+              //     var a = res [i].trim ()
+              //     if (!(a === "" || a.indexOf ("_imdb_") === 0 || a.indexOf ("_mini_") === 0 || a.indexOf ("_show_") === 0)) {
+              //       n++;
+              //     }
+              //   }
+              //   // If n==0, any hidden (dotted) files are deleted along with _imdb_ files etc.
+              //   if (n) {
+              //     $ (this).dialog ("close");
+              //     var album = $ (that.get ("albumName")).text ();
+              //     later ( ( () => {
+              //       infoDia (null, null, album, " <br><b>Albumet måste tömmas</b><br>för att kunna raderas", "Ok", true);
+              //     }), 100);
+              //   } else {
+              cmd = "rm -rf " + $ ("#imdbPath").text () + $ ("#imdbDir").text ();
+              execute (cmd).then ( () => {
+                userLog ("DELETED " + nameText + ", RELOADING");
+                later ( ( () => {
+                  that.actions.selectRoot ($ ("#imdbRoot").text (), that);
+                  // $ ("#rootSel").val ($ ("#rootSel option").text());
+                  // $ ("#rootSel").val ($ ("#imdbRoot").text ());
+                  // selectElement("rootSel", $ ("#imdbRoot").text ());
+                  // $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_1")); // calls selectAlbum
+                  //location.reload ();
+                  //$ ("#reFr").trigger ("click");
+                }), 1000);
               });
+              //   }
+              // });
             } else if (opt === "order" || opt === "reverse") {
               let sortop = "sort -f "; // -f is ignore case
               if (opt === "reverse") sortop = "sort -rf "
@@ -2036,11 +2037,38 @@ export default Component.extend (contextMenuMixin, {
             $ (this).dialog ("close");
           }
         }]);
-        niceDialogOpen ();
-        $ ("#noBut").trigger ("focus");
-        $ ("input.nameNew").trigger ("focus"); // if exists
-        hideKeyboard ();
-        if (opt === "checked") {$ ("#yesBut").trigger ("focus");}
+
+        $ ("#dialog").dialog ("close");
+        if (opt === "erase") {
+          // Ignore hidden (dotted) files
+          var cmd = "ls -1 " + $ ("#imdbPath").text () + $ ("#imdbDir").text ();
+          var n = 0;
+          execute (cmd).then (res => {
+            res = res.split ("\n");
+            for (let i=0; i<res.length; i++) {
+              var a = res [i].trim ()
+              if (!(a === "" || a.indexOf ("_imdb_") === 0 || a.indexOf ("_mini_") === 0 || a.indexOf ("_show_") === 0)) {
+                n++;
+              }
+            }
+            // If n==0, any hidden (dotted) files are deleted along with _imdb_ files etc.
+            if (n) {
+              var album = $ (that.get ("albumName")).text ();
+              later ( ( () => {
+                infoDia (null, null, album, " <br><b>Albumet måste tömmas</b><br>för att kunna raderas", "Ok", true);
+              }), 100);
+            }
+          });
+          if (n) return;
+        }
+
+        later ( ( () => {
+          niceDialogOpen ();
+          $ ("#noBut").trigger ("focus");
+          $ ("input.nameNew").trigger ("focus"); // if exists
+          hideKeyboard ();
+          if (opt === "checked") {$ ("#yesBut").trigger ("focus");}
+        }), 400);
       }
     },
     //============================================================================================
@@ -2880,7 +2908,7 @@ console.log("=C=");
         $ ('#helpText').dialog ("close");
       } else {
         mainMenuHide ();
-        let header = "Användarhandledning<br>(främst för dator med mus eller pekplatta och tangentbord)"
+        let header = "Användarhandledning<br>(främst för dator med tangentbord och mus eller pekplatta)"
         infoDia ("helpText", null, header, $ ("div.helpText").html (), "Stäng", false);
         $ ("#helpText").parent ().css ("top", "0");
       }
@@ -4809,10 +4837,11 @@ function linkFunc (picNames) { // ===== Execute a link-these-files-to... request
     }
   }
 
-  var codeLink = "'var lpath = \"\";if (this.selectedIndex === 0)return false;lpath = $(\"#imdbPath\").text() + this.value;console.log(\"Link to .\" + this.value);var picNames = $(\"#picNames\").text().split(\"\\n\");var cmd=[];for (var i=0; i<picNames.length; i++) {var linkfrom = document.getElementById(\"i\" + picNames[i]).getElementsByTagName(\"img\")[0].getAttribute (\"title\");linkfrom = \"../\".repeat(this.value.split(\"/\").length - 1) + linkfrom.slice(1);var linkto = lpath + \"/\" + picNames[i];linkto += linkfrom.match(/\\.[^.]*$/);cmd.push(\"ln -sf \"+linkfrom+\" \"+linkto);}$(\"#temporary\").text(lpath);$(\"#temporary_1\").text (cmd.join(\"\\n\"));$(\"#checkNames\").trigger(\"click\");$(\"#yesBut\").text(\"Länka\");'";
+  var codeLink = "var lpath = \"\";if (this.selectedIndex === 0)return false;lpath = $(\"#imdbPath\").text() + this.value;console.log(\"Link to .\" + this.value);var picNames = $(\"#picNames\").text().split(\"\\n\");var cmd=[];for (var i=0; i<picNames.length; i++) {var linkfrom = document.getElementById(\"i\" + picNames[i]).getElementsByTagName(\"img\")[0].getAttribute (\"title\");linkfrom = \"../\".repeat(this.value.split(\"/\").length - 1) + linkfrom.slice(1);var linkto = lpath + \"/\" + picNames[i];linkto += linkfrom.match(/\\.[^.]*$/);cmd.push(\"ln -sf \"+linkfrom+\" \"+linkto);}$(\"#temporary\").text(lpath);$(\"#temporary_1\").text (cmd.join(\"\\n\"));$(\"#checkNames\").trigger(\"click\");$(\"#yesBut\").text(\"Länka\");";
 
-  //var r = $ ("#imdbRoot").text ();
-  var codeSelect = '<select class="selectOption" onchange=' + codeLink + '>\n<option value="">Välj ett album:</option>';
+  // Here the last statement in codeLink is also inserted in the beginning of codeLink
+  // in order to protect from the possibility that this label change else may be missed:
+  var codeSelect = '<select class="selectOption" onchange=\'$("#yesBut").text("Länka");' + codeLink + '\'>\n<option value="">Välj ett album:</option>';
   for (i=0; i<lalbum.length; i++) {
     let v = lalbum [i];
     codeSelect += '\n<option value="' + v + '">' + '.' + v + '</option>';
@@ -4857,14 +4886,15 @@ function moveFunc (picNames) { // ===== Execute a move-these-files-to... request
 
   // May be inserted for testing between th double ';;'s: ”console.log(\"\"+picNames,\" \"+picOrder)”
 
-  var codeMove = "'var malbum=this.value;var mpath=\"\";if(this.selectedIndex===0)return false;mpath = $(\"#imdbPath\").text() + malbum;var lpp=malbum.split(\"/\").length-1;if (lpp > 0)lpp=\"../\".repeat(lpp);else lpp=\"./\";console.log(\"Move to .\" + malbum);var picNames=$(\"#picNames\").text().split(\"\\n\");var picOrder=$(\"#picOrder\").text().split(\"\\n\");;cmd=[];for (let i=0;i<picNames.length;i++){var move=$(\"#imdbPath\").text()+document.getElementById(\"i\"+picNames[i]).getElementsByTagName(\"img\")[0].getAttribute(\"title\");var mini=move.replace(/([^/]+)(\\.[^/.]+)$/,\"_mini_$1.png\");var show=move.replace(/([^/]+)(\\.[^/.]+)$/,\"_show_$1.png\");var moveto=mpath+\"/\";var picfound=$(\"#picFound\").text();cmd.push(\"picfound=\"+picfound+\";move=\"+move+\";mini=\"+mini+\";show=\"+show+\";orgmove=$move;orgmini=$mini;orgshow=$show;moveto=\"+moveto+\";lpp=\"+lpp+\";lnksave=$(readlink -n $move);if [ $lnksave ];then move=$(echo $move|sed -e \\\"s/\\\\(.*$picfound.*\\\\)\\\\.[^.\\\\/]\\\\+\\\\(\\\\.[^.\\\\/]\\\\+$\\\\)/\\\\1\\\\2/\\\");mini=$(echo $mini|sed -e \\\"s/\\\\(.*$picfound.*\\\\)\\\\.[^.\\\\/]\\\\+\\\\(\\\\.[^.\\\\/]\\\\+$\\\\)/\\\\1\\\\2/\\\");show=$(echo $show|sed -e \\\"s/\\\\(.*$picfound.*\\\\)\\\\.[^.\\\\/]\\\\+\\\\(\\\\.[^.\\\\/]\\\\+$\\\\)/\\\\1\\\\2/\\\");lnkfrom=$(echo $lnksave|sed -e \\\"s/^\\\\(\\\\.\\\\{1,2\\\\}\\\\/\\\\)*//\\\" -e \\\"s,^,$lpp,\\\");lnkmini=$(echo $lnkfrom|sed -e \\\"s/\\\\([^/]\\\\+\\\\)\\\\(\\\\.[^/.]\\\\+\\\\)\\\\$/_mini_\\\\1\\\\.png/\\\");lnkshow=$(echo $lnkfrom|sed -e \\\"s/\\\\([^/]\\\\+\\\\)\\\\(\\\\.[^/.]\\\\+\\\\)\\\\$/_show_\\\\1\\\\.png/\\\");ln -sfn $lnkfrom $move;fi;mv -n $move $moveto;if [ $? -ne 0 ];then if [ $move != $orgmove ];then rm $move;fi;exit;else if [ $lnksave ];then ln -sfn $lnkmini $mini;ln -sfn $lnkshow $show;fi;mv -n $mini $show $moveto;if [ $move != $orgmove ];then rm $orgmove;fi;if [ $mini != $orgmini ];then rm $orgmini;fi;if [ $show != $orgshow ];then rm $orgshow;fi;fi;\");}$(\"#temporary\").text(mpath);$(\"#temporary_1\").text (cmd.join(\"\\n\"));$(\"#yesBut\").text(\"Flytta\");'"
+  var codeMove = "var malbum=this.value;var mpath=\"\";if(this.selectedIndex===0)return false;mpath = $(\"#imdbPath\").text() + malbum;var lpp=malbum.split(\"/\").length-1;if (lpp > 0)lpp=\"../\".repeat(lpp);else lpp=\"./\";console.log(\"Move to .\" + malbum);var picNames=$(\"#picNames\").text().split(\"\\n\");var picOrder=$(\"#picOrder\").text().split(\"\\n\");;cmd=[];for (let i=0;i<picNames.length;i++){var move=$(\"#imdbPath\").text()+document.getElementById(\"i\"+picNames[i]).getElementsByTagName(\"img\")[0].getAttribute(\"title\");var mini=move.replace(/([^/]+)(\\.[^/.]+)$/,\"_mini_$1.png\");var show=move.replace(/([^/]+)(\\.[^/.]+)$/,\"_show_$1.png\");var moveto=mpath+\"/\";var picfound=$(\"#picFound\").text();cmd.push(\"picfound=\"+picfound+\";move=\"+move+\";mini=\"+mini+\";show=\"+show+\";orgmove=$move;orgmini=$mini;orgshow=$show;moveto=\"+moveto+\";lpp=\"+lpp+\";lnksave=$(readlink -n $move);if [ $lnksave ];then move=$(echo $move|sed -e \\\"s/\\\\(.*$picfound.*\\\\)\\\\.[^.\\\\/]\\\\+\\\\(\\\\.[^.\\\\/]\\\\+$\\\\)/\\\\1\\\\2/\\\");mini=$(echo $mini|sed -e \\\"s/\\\\(.*$picfound.*\\\\)\\\\.[^.\\\\/]\\\\+\\\\(\\\\.[^.\\\\/]\\\\+$\\\\)/\\\\1\\\\2/\\\");show=$(echo $show|sed -e \\\"s/\\\\(.*$picfound.*\\\\)\\\\.[^.\\\\/]\\\\+\\\\(\\\\.[^.\\\\/]\\\\+$\\\\)/\\\\1\\\\2/\\\");lnkfrom=$(echo $lnksave|sed -e \\\"s/^\\\\(\\\\.\\\\{1,2\\\\}\\\\/\\\\)*//\\\" -e \\\"s,^,$lpp,\\\");lnkmini=$(echo $lnkfrom|sed -e \\\"s/\\\\([^/]\\\\+\\\\)\\\\(\\\\.[^/.]\\\\+\\\\)\\\\$/_mini_\\\\1\\\\.png/\\\");lnkshow=$(echo $lnkfrom|sed -e \\\"s/\\\\([^/]\\\\+\\\\)\\\\(\\\\.[^/.]\\\\+\\\\)\\\\$/_show_\\\\1\\\\.png/\\\");ln -sfn $lnkfrom $move;fi;mv -n $move $moveto;if [ $? -ne 0 ];then if [ $move != $orgmove ];then rm $move;fi;exit;else if [ $lnksave ];then ln -sfn $lnkmini $mini;ln -sfn $lnkshow $show;fi;mv -n $mini $show $moveto;if [ $move != $orgmove ];then rm $orgmove;fi;if [ $mini != $orgmini ];then rm $orgmini;fi;if [ $show != $orgshow ];then rm $orgshow;fi;fi;\");}$(\"#temporary\").text(mpath);$(\"#temporary_1\").text (cmd.join(\"\\n\"));$(\"#yesBut\").text(\"Flytta\");'"
   // A log ...\");console.log(move,mini,show,moveto);}$...
   // may be inserted (or removed), and it is printed even at failure.
   // Here checkNames cannot be called (like in linkFunc) since  #temporary_1 is not usable (already occupied)
 
   //console.log("codeMove",codeMove);
-  //let r = $ ("#imdbRoot").text ();
-  let codeSelect = '<select class="selectOption" onchange=' + codeMove + '><option value="">Välj ett album:</option>';
+  // Here the last statement in codeMove is also inserted in the beginning of codeMove
+  // in order to protect from the possibility that this label change else may be missed:
+  let codeSelect = '<select class="selectOption" onchange=\'$("#yesBut").text("Flytta");' + codeMove + '><option value="">Välj ett album:</option>';
   for (let i=0; i<malbum.length; i++) {
     //let v = r + malbum [i];
     let v = malbum [i];
