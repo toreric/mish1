@@ -674,7 +674,9 @@ console.log("p2",p);
   app.post ('/search/:imdbroot', upload.none (), function (req, res, next) {
     // Convert everything to lower case
     // The removeDiacritics funtion bypasses some characters (e.g. Sw. åäöÅÄÖ)
-    let like = removeDiacritics (req.body.like).toLowerCase ()
+    let like = removeDiacritics (req.body.like)
+    if (req.body.info != "exact") like = like.toLowerCase () // if not e.g. file name compare
+console.log("like",like); //search _
     let cols = eval ("[" + req.body.cols + "]")
     let taco = ["description", "creator", "source", "album", "name"]
     let columns = ""

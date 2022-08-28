@@ -5772,11 +5772,13 @@ function searchText (searchString, and, searchWhere, exact) {
   ediTextClosed ();
   let ao = "", AO;
   if (and) {AO = " AND "} else {AO = " OR "}
+console.log("searchString",searchString); //search _
   let arr = searchString;
   if (arr === "") {arr = undefined;}
   let str = "";
   if (arr) {
     arr = arr.split (" ");
+console.log("arr",arr); //search _
     for (let i = 0; i<arr.length; i++) {
       // Replace any `'` with `''`, will be enclosed with `'`s in SQL
       arr[i] = arr [i].replace (/'/g, "''") + "";
@@ -5785,10 +5787,13 @@ function searchText (searchString, and, searchWhere, exact) {
       // First replace % (thus, NBSP):
       arr[i] = arr [i].replace (/%/g, " ");
       // Then use % the SQL way if applicable, and add `ESCAPE '\'`:
+console.log("arr",arr); //search _
       if (exact) { // Exact match for file (base) names favorites search
         arr [i] = "'" + arr [i] + "' ESCAPE '\\'";
+console.log("arr exact",arr); //search _
       } else {
         arr [i] = "'%" + arr [i] + "%' ESCAPE '\\'";
+console.log("arr not exact",arr); //search _
       }
       if (i > 0) {ao = AO + "\n"}
       str += ao + "txtstr LIKE " + arr[i].trim ();
@@ -5798,10 +5803,12 @@ function searchText (searchString, and, searchWhere, exact) {
   if (!$ ("#imdbDir").text ()) {
     $ ("#imdbDir").text ("/" + $ ("#picFound").text ());
   }
+console.log("str",str); //search _
   let srchData = new FormData ();
   srchData.append ("like", str);
   srchData.append ("cols", searchWhere);
-  srchData.append ("info", "not used yet");
+  if (exact) srchData.append ("info", "exact");
+  else srchData.append ("info", "");
   return new Promise ( (resolve, reject) => {
     let xhr = new XMLHttpRequest();
     let imdbroot = $ ("#imdbRoot").text ();
@@ -5819,6 +5826,7 @@ function searchText (searchString, and, searchWhere, exact) {
         });
       }
     };
+console.log("srchData",srchData); //search _
     xhr.send (srchData);
   });
 }

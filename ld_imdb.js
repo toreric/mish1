@@ -140,7 +140,7 @@ function loadImageMetadata () {
   // 2. Remove all file names ('.imdb') from that path list, leaving the directories
   // 3. Use the list entries as arguments to find all non-"_*|.*" files in each directory (using depth=1)
   // 4. Accept only files having supported image file endings
-  let cmd = 'find ' + albumRoot + ' -type f -name ".imdb" | sed "s/.imdb$//" | xargs -Ipath find path -maxdepth 1 -type f -not -name "_*" -not -name ".*" | egrep -i "(JPE?G|TIF{1,2}|PNG|GIF)$"'
+  let cmd = 'find ' + albumRoot + ' -type f -name ".imdb" | sed "s/.imdb$//" | xargs -Ipath find path -maxdepth 1 -type f -not -name "_imdb_*" -not -name "_show_*" -not -name "_mini_*" -not -name ".*" | egrep -i "(JPE?G|TIF{1,2}|PNG|GIF)$"'
 
   let pathlist = execSync (cmd)
   //console.log ("  pathlist:\n" + pathlist)
