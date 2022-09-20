@@ -42,7 +42,7 @@ function copyToClipboard (str) {    // Copies a filename (below mini-pic) to the
       <input type="password" class="cred password" size="10" title="Lösenord" placeholder="Password">
       <span class="cred name"></span>
       <span class="cred status" {{action "toggleSettings"}}></span>
-      <span id ="showDropZone" class="picLinker" style="margin:0 0 0 0.5em;display:none" {{action "showDropZone"}}>UPPLADDNING</span>
+      <span id ="showDropZone" class="picLinker" style="margin:0 0 0 0.5em;display:none" title-2="Visa/dölj uppladdnings-panelen" {{action "showDropZone"}}>UPPLADDNING</span>
     </div>
     <div class="settings" draggable="false" ondragstart="return false" style="display:none">
       <div class="check">
@@ -63,35 +63,37 @@ function copyToClipboard (str) {    // Copies a filename (below mini-pic) to the
     <div style="display: none">
       <button type="submit" class="viewSettings" title="" {{action "infStatus"}}>settings</button>
     </div>
+
+    <div style="display:inline-block;margin-top:0.4em">
+
+      <!-- Hide texts during slideshow -->
+      <div style="display:inline-block;margin-left:1em" title-2="Göm texter vid bildvisning">
+        <label class="hideText">GÖM BILDTEXTER<input id="hideText" type="checkbox"><span class="checkMark"></span></label>
+      </div>
+
+      <!-- Get webblink to non-hidden pictures -->
+      <!--div style="display:inline-block;margin-left:0.4em" totip="Direktlänk till aktuell bild">
+        <span class="picLinker" {{action "webLinker"}}>WEBBLÄNK</span>
+      </div-->
+      <div style="display:inline-block;margin-left:0.4em" title-2="Lista med alla bildtexter">
+        <span class="picLinker" {{action "textList"}}>TEXTLISTA</span>
+      </div>
+      <!-- Show web statistics -->
+      <div id="viSt" style="display:inline-block;margin-left:0.4em" title-2="Besöksstatistik i ett nytt fönster">
+        <span class="picLinker" draggable="false" {{action 'visitStat'}}>AWSTATS</span>
+      </div>
+      <!-- Erase link+source choice -->
+      <div style="display:inline-block">&nbsp;
+        <span class="eraseCheck" style="display:none" title-2="Markera här (MEN BARA OM DU FÖRSTÅR VAD DU SKA GÖRA!) ifall du vill radera även ORIGINAL-bildfilen samtidigt med en LÄNKAD bild (bra för till exempel radering av funna dubletter)">
+          RADERA ÄVEN LÄNKORIGINAL
+          <input id="eraOrig" type="checkbox">
+          <label for="eraOrig"></label>
+        </span>
+      </div>
+
+    </div>
   </form>
-  <div style="display:inline-block;white-space:nowrap;margin-top:0.4em">
 
-    <!-- Hide texts during slideshow -->
-    <div style="display:inline-block;margin-left:1em" totip="Göm texter vid bildvisning">
-      <label class="hideText">GÖM BILDTEXTER<input id="hideText" type="checkbox"><span class="checkMark"></span></label>
-    </div>
-
-    <!-- Get webblink to non-hidden pictures -->
-    <!--div style="display:inline-block;margin-left:0.4em" totip="Direktlänk till aktuell bild">
-      <span class="picLinker" {{action "webLinker"}}>WEBBLÄNK</span>
-    </div-->
-    <div style="display:inline-block;margin-left:0.4em" totip="Lista med alla bildtexter">
-      <span class="picLinker" {{action "textList"}}>TEXTLISTA</span>
-    </div>
-    <!-- Show web statistics -->
-    <div id="viSt" style="display:inline-block;margin-left:0.4em" totip="Besöksstatistik i ett nytt fönster">
-      <span class="picLinker" draggable="false" {{action 'visitStat'}}>AWSTATS</span>
-    </div>
-    <!-- Erase link+source choice -->
-    <div style="display:inline-block">&nbsp;
-      <span class="eraseCheck" style="display:none" totip="Markera här (MEN BARA OM DU FÖRSTÅR VAD DU SKA GÖRA!) ifall du vill radera även ORIGINAL-bildfilen samtidigt med en LÄNKAD bild (bra för till exempel radering av funna dubletter)">
-        RADERA ÄVEN LÄNKORIGINAL
-        <input id="eraOrig" type="checkbox">
-        <label for="eraOrig"></label>
-      </span>
-    </div>
-
-  </div>
   <!-- TEST BUTTON -->
   <button class="testerButton" title="Dummy button" style="top:0;right:0;position:absolute" style="display:none" {{action "settest"}}>test</button>
   <br><span class="usrlg"></span><!-- User information log -->
@@ -109,17 +111,21 @@ function copyToClipboard (str) {    // Copies a filename (below mini-pic) to the
       <p id="uploadWarning"></p>
 
       <button id="uploadPics" style="cursor:pointer;background:#ddd;display:none"
-      type="submit" class="btn-std" {{action 'processQueue'}}>&nbsp;Ladda upp&nbsp;</button>
+      type="submit" class="btn-std" {{action 'processQueue'}} title="
+...från den här datorn">&nbsp;Ladda upp&nbsp;</button>
 
       <button id="removeAll" style="cursor:pointer;background:#ddd;display:none"
-      type="submit" class="btn-std" {{action 'removeAllFiles'}} title="...från den här panelen">&nbsp;Ta bort alla&nbsp;</button>
+      type="submit" class="btn-std" {{action 'removeAllFiles'}} title="
+...från den här panelen">&nbsp;Ta bort alla&nbsp;</button>
 
       <button id="removeDup" style="cursor:pointer;background:#ddd;display:none"
-      type="submit" class="btn-std" {{action 'removeDupFiles'}} title="...från den här panelen">&nbsp;Ta bort ’varnade’&nbsp;</button>
+      type="submit" class="btn-std" {{action 'removeDupFiles'}} title="
+...från den här panelen">&nbsp;Ta bort ’varnade’&nbsp;</button>
 
       <button id="helpUpload" style="cursor:pointer;color:blue;background:#ddd"
-      type="submit" class="btn-std" {{action ''}} title="Hur ladda upp bilder?
-      Planerad hur-gör-man-beskrivning">&nbsp;HJÄLP&nbsp;</button>
+      type="submit" class="btn-std" {{action ''}} title="
+Hur ladda upp bilder?
+Planerad hur-gör-man-beskrivning">&nbsp;HJÄLP&nbsp;</button>
       <br>
     </form>
 
@@ -237,29 +243,37 @@ function copyToClipboard (str) {    // Copies a filename (below mini-pic) to the
 <!-- ///// RIGHT BUTTONS (NOTE: without href attributes) /////  -->
 <div class="nav_links" draggable="false" ondragstart="return false">
   <!-- NEXT-ARROW-BUTTONS -->
-  <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' true }} title="Nästa
+  <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' true }} title="
+Nästa
 bild [>]">&gt;</a> &nbsp;<br>
-  <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' false}} title="Föregående
+  <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' false}} title="
+Föregående
 bild [<]">&lt;</a> &nbsp;<br>
   <!-- CLOSE AND GO BACK TO MINIPICS -->
-  <a class="nav_" id="go_back" title="Återgå
+  <a class="nav_" id="go_back" title="
+Återgå
 [Esc]"{{action 'hideShow'}} src="/images/grid.svg"> </a> &nbsp;<br>
   <!-- AUTO-SLIDE-SHOW SELECT -->
-  <a class="nav_ toggleAuto" draggable="false" ondragstart="return false" {{action 'toggleAuto'}} style="font-size:1.2em;font-family:monospace" title="Automatiskt
+  <a class="nav_ toggleAuto" draggable="false" ondragstart="return false" {{action 'toggleAuto'}} style="font-size:1.2em;font-family:monospace" title="
+Automatiskt
 bildbyte [A]">AUTO</a><br>
   <!-- AUTO-SLIDE-SHOW SPEED SELECT -->
   <span class="nav_" id="showSpeed" draggable="false" ondragstart="return false">
-    <input class="showTime" type="number" min="1" max="99" value="2" title="Välj tid > 0 s">s&nbsp;&nbsp;<br>
+    <input class="showTime" type="number" min="1" max="99" value="2" title="
+Välj tid > 0 s">s&nbsp;&nbsp;<br>
     <!-- CHOOSE AUTO-SHOW s/texline OR s/slide -->
-    <a class="speedBase nav_" {{action 'speedBase'}} title="Välj per bild
+    <a class="speedBase nav_" {{action 'speedBase'}} title="
+Välj per bild
 eller bildtextrad">&nbsp;per<br>&nbsp;text-&nbsp;<br>&nbsp;rad</a>
   </span><br>
   <!-- HELP -->
   <a class="nav_ qnav_" draggable="false" {{action 'toggleNav'}}>?</a> &nbsp;<br>
   <!-- FULL SIZE -->
-  <a class="nav_" id="full_size" draggable="false" {{action 'fullSize'}} title="Full storlek
+  <a class="nav_" id="full_size" draggable="false" {{action 'fullSize'}} title="
+Full storlek
 i nytt fönster" style="font-size:200%;line-height:80%;padding:0.3em 0.33em 0.25em 0.3em">&#9974;</a> &nbsp; <br>
-<a class="nav_ pnav_" id="do_print" title="Skriv ut" {{action 'doPrint'}} src="/images/printer.svg"></a> &nbsp;
+<a class="nav_ pnav_" id="do_print" title="
+Skriv ut" {{action 'doPrint'}} src="/images/printer.svg"></a> &nbsp;
 </div>
 
 <!-- ///// DISPLAY THE 'SLIDE SHOW' IMAGE ///// -->
@@ -284,12 +298,12 @@ i nytt fönster" style="font-size:200%;line-height:80%;padding:0.3em 0.33em 0.25
 
               <!--a style="bottom:-2.1em; right:40%; width:20%; border:0;" draggable="false" ondragstart="return false" {{action 'hideShow'}}><p>stäng <span style="font:normal 1em Arial!important">[esc]</span></p></a-->
 
-              <div id="markShow" class="markFalseShow" alt="MARKSHOW" title="Markera" {{action 'toggleMark'}} draggable="false" ondragstart="return false"><img src="/images/markericon.svg" draggable="false" ondragstart="return false" class="mark"></div>
+              <div id="markShow" class="markFalseShow" alt="MARKSHOW" {{action 'toggleMark'}} draggable="false" ondragstart="return false"><img src="/images/markericon.svg" draggable="false" ondragstart="return false" class="mark" title="Markera"></div>
 
             </div>
             <div class="markDummy" style="background:transparent"></div>
             <!-- div.markDummy substitutes markShow which is moved up ^ -->
-            <div class="img_name" title="Click = Copy!" totip="Click = Copy!" onclick="copyToClipboard(this.innerHTML)"></div>
+            <div class="img_name" title-1="Click = Copy" onclick="copyToClipboard(this.innerHTML)"></div>
             <div class="img_txt1" draggable="false" ondragstart="return false" {{action 'ediText'}}></div>
             <div class="img_txt2" draggable="false" ondragstart="return false" {{action 'ediText'}}></div>
           </td>
@@ -304,35 +318,40 @@ i nytt fönster" style="font-size:200%;line-height:80%;padding:0.3em 0.33em 0.25
 
 <!-- ///// LEFT BUTTONS (NOTE: without href attributes) /////  -->
 <div id="smallButtons" draggable="false" ondragstart="return false">
-  <a id="menuButton" class="smBu" title="MENU" draggable="false" ondragstart="return false" {{action 'toggleMainMenu' imdbRoot}} style="font-family: Comic Sans MS;width:1.25em;line-height:80%">☰</a>
+  <a id="menuButton" class="smBu" title="" draggable="false" ondragstart="return false" {{action 'toggleMainMenu' imdbRoot}} style="z-index:16;font-family: Comic Sans MS;width:1.25em;line-height:80%">☰</a>
 
   <!-- ///// MAIN MENU, SELECT IMAGE ROOT DIRECTORIY, jstree ///// -->
   <div class="mainMenu BACKG" onclick="return false" draggable="false" ondragstart="return false" style="display:none">
 
     <p onclick="return false" draggable="false" ondragstart="return false">
-      <a title="Sökning" class="search" {{action 'findText'}}>Finn bilder <span style="font:normal 1em monospace!important">[F]</span></a>
+      <a title="
+Sökning" class="search" {{action 'findText'}}>Finn bilder <span style="font:normal 1em monospace!important">[F]</span></a>
     </p><br>
 
-    <p onclick="return false" draggable="false" ondragstart="return false" title="Favoritskötsel  ">
+    <p onclick="return false" draggable="false" ondragstart="return false" title="
+Favoritskötsel">
       <a id ="favorites" {{action 'seeFavorites'}}>Favoritbilder</a>
     </p><br>
 
     <p onclick="return false" draggable="false" ondragstart="return false">
       <a class="" style="color: white;cursor: default">
-        <select id="rootSel" title="Albumsamling (albumrot)" onchange={{action 'selectRoot' value='target.value'}}>
+        <select id="rootSel" title="
+Albumsamling
+(eller albumrot)" onchange={{action 'selectRoot' value='target.value'}}>
           {{#each this.imdbRoots as |rootChoice|}}
             <option value={{rootChoice}} selected={{eq this.imdbRoot rootChoice}}>{{rootChoice}}</option>
           {{/each}}
         </select>
-        <a class="rootQuest totip=''">&nbsp;?&nbsp;</a>
+        <a class="rootQuest">&nbsp;?&nbsp;</a>
       </a>
     </p><br>
 
-    <p onclick="return false" draggable="false" ondragstart="return false">
-      <a title="Ta bort, gör nytt, bildsortera ..." {{action 'albumEdit'}}>{{{this.albumText}}} {{{this.albumName}}}</a>
+    <p onclick="return false" draggable="false" ondragstart="return false" style="z-index:-1">
+      <a title="
+Ta bort, gör nytt, bildsortera ..." {{action 'albumEdit'}}>{{{this.albumText}}} {{{this.albumName}}}</a>
     </p><br>
 
-    <p onclick="return false" draggable="false" ondragstart="return false" title="Visa alla album = hela albumträdet">
+    <p onclick="return false" draggable="false" ondragstart="return false" title="Visa alla album = hela albumträdet" style="z-index:-1">
       <a id ="jstreeHdr" {{action 'toggleJstreeAlbumSelect'}}>{{{this.jstreeHdr}}}</a>
     </p>
 
@@ -348,31 +367,26 @@ i nytt fönster" style="font-size:200%;line-height:80%;padding:0.3em 0.33em 0.25
   <iframe class="intro" src="start.html" style="display:none"></iframe>
 
   <!-- SMALLBUTTONS -->
-  <a id="questionMark" class="smBu" title="Användarhandledning [F1]" draggable="false" ondragstart="return false" {{action 'toggleHelp'}}>?</a>
+  <a id="questionMark" class="smBu" title-2="Användarhand-ledning [F1]" draggable="false" ondragstart="return false" {{action 'toggleHelp'}}>?</a>
   <a id="reFr" {{action 'refresh'}} title="NOTE: refresh was original reLd" style="display:none"></a>
-  <a id="reLd" class="smBu" title="Ladda om albumet
+  <a id="reLd" class="smBu" title-2="Ladda om albumet
 (återställ osparade ändringar)" draggable="false" ondragstart="return false" {{action 'reload'}} src="/images/reload.png"></a>
 
-  <a id="toggleName" class="smBu" title="Visa/dölj
+  <a id="toggleName" class="smBu" title-2="Visa/dölj
 bildnamnen" draggable="false" ondragstart="return false" style="display:none" {{action 'toggleNameView'}}>N</a>
-  <a id="toggleHide" class="smBu" title="Visa/dölj
+  <a id="toggleHide" class="smBu" title-2="Visa/dölj
 gömda bilder" draggable="false" ondragstart="return false" style="display:none" {{action 'toggleHideFlagged'}}></a>
-  <a id="saveOrder" class="smBu" title="Spara ändringar" draggable="false" ondragstart="return false" {{action 'saveOrder' true}}>S</a>
-  <a id="do_mail" class="smBu" title="Fråga oss om något eller skicka
+  <a id="saveOrder" class="smBu" title-1="Spara ändringar" draggable="false" ondragstart="return false" {{action 'saveOrder' true}}>S</a>
+  <a id="do_mail" class="smBu" title-2="Fråga oss om något eller skicka
 ett meddelande med kommentarer,
 rättelser eller andra upplysningar" {{action 'doMail'}} src="/images/mail.svg" style="display:none"></a>
-<a class="smBu" draggable="false" ondragstart="return false" title="Gå upp (visa
+<a class="smBu" draggable="false" ondragstart="return false" title-2="Gå upp (visa
 översta raden)
  [pgUp]" style="font:bold 190% sans-serif;line-height:90%" onclick="window.scrollTo(0,0)">↑</a>
-  <a id="netMeeting" class="smBu" title="Mötesknapp:
-Här träffas vi
-på Internet (i ny
-flik/nytt fönster).
-Vänta ej inbjudan,
-klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dalenochHolm%C3%B6n" target="jitsi_window" draggable="false" ondragstart="return false" style="display:none;padding:0 0.25em 0.2em 0.125em;line-height:1.25em" onclick="$(this).hide()">▣</a>
+  <a id="netMeeting" class="smBu" title-2="Möte: Här ses vi på Internet (i nytt fönster). Vänta inte på inbjudan, klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dalenochHolm%C3%B6n" target="jitsi_window" draggable="false" ondragstart="return false" style="display:none;padding:0 0.25em 0.2em 0.125em;line-height:1.25em" onclick="$(this).hide()">▣</a>
 </div>
 
-<img src="/images/snurra.svg" class="spinner" draggable="false" ondragstart="return false" {{action 'hideSpinner'}} style="" totip="V Ä N T A ! — eller stoppa med klick om det snurrar för länge">
+<img src="/images/snurra.svg" class="spinner" draggable="false" ondragstart="return false" {{action 'hideSpinner'}} style="" title-2="V Ä N T A ! — eller stoppa med klick om det snurrar för länge">
 
 <!-- ///// HELP TEXT JQUERY DIALOG ///// -->
 <div id="helpText" style="display:none">
@@ -382,7 +396,7 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
     <b>Skifttangent + klick på en miniatyrbild</b> markerar/avmarkerar den<br>
     <b>Då du är inloggad som gäst</b> har du bara vissa rättigheter (gömma, markera och flytta miniatyrer med dra + släpp, gå till originalbild). Med personlig inloggning kan du få fler rättigheter (till exempel <b>klicka på bildtext</b> för att redigera den och spara ändringar).<br>
     <b style="color:#0b0">En bild med grön underkant är länkad</b> från annat album<br>
-    <b style="color:#0b0">Gå till originalbilden</b> med klick på den gröna <span style="color:white;background:#0b0">&nbsp;Gå till...</span>-länken</span></p>
+    <b style="color:#0b0">Gå till originalbilden</b> med klick på den gröna <span style="color:white;background:#0b0">&nbsp;Gå till </span>-länken</span></p>
   <p style="text-align:left;margin-left:1.5em;line-height:1.7em" draggable="false" ondragstart="return false">
     <b>Se först knapparna till vänster</b> (vilka som syns varierar):<br>
     <a id="albSel">☰</a> Huvudmeny: Välj album, sökning, favoriter, albumöversikt ...<br>
@@ -424,8 +438,8 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
 <p class='albumsHdr' draggable="false" ondragstart="return false">
   <div class="miniImgs">
     {{#each this.subaList as |suba|}}
-      <div class="subAlbum" {{action 'subalbumSelect' suba.album}} totip="Underalbum ”{{suba.name}}”">
-        <a class="imDir BLUET" style="background:transparent">
+      <div class="subAlbum" {{action 'subalbumSelect' suba.album}}>
+        <a class="imDir BLUET" style="background:transparent" title-2="Underalbum ”{{suba.name}}”">
           {{#if suba.image}}
             <img src="rln{{suba.image}}"><br>
           {{/if}}
@@ -459,17 +473,17 @@ klicka bara här!" href="https://meet.jit.si/Minnenfr%C3%A5nS%C3%A4var%C3%A5dale
         <!-- a {#{action 'showShow' file.show ... Instead: Click listener in 'setNavKeys'-->
           <img src="rln{{file.mini}}" class="left-click" title="{{file.linkto}}" draggable="false" ondragstart="return false">
         </a>
-        <div id="" class="markFalse" alt="MARKER" title="Markera" {{action 'toggleMark' file.name}}  draggable="false" ondragstart="return false"><img src="/images/markericon.svg" draggable="false" ondragstart="return false" class="mark">
+        <div id="" class="markFalse" alt="MARKER" {{action 'toggleMark' file.name}}  draggable="false" ondragstart="return false"><img src="/images/markericon.svg" draggable="false" ondragstart="return false" class="mark" title="Markera">
           <!-- The action of this button triggers the parent album of a link -->
-          <button class="goAlbum" totip="originalet i ”{{file.albname}}”" onclick="this.parentElement.click ()" {{action 'parAlb' file.name}}>Gå till...</button>
+          <button class="goAlbum" title-2="originalet i ”{{file.albname}}”" onclick="this.parentElement.click ()" {{action 'parAlb' file.name}}>Gå till </button>
         </div>
-        <div class="img_name" title="Click = Copy!" totip="Click = Copy!" onclick="copyToClipboard(this.innerHTML)">
+        <div class="img_name" title-1="Click = Copy" onclick="copyToClipboard(this.innerHTML)">
           {{file.name}}
         </div>
-        <div class="img_txt1" draggable="false" ondragstart="return false" title="{{file.txt1}}" totip="{{file.txt1}}" {{action 'ediText' file.name}}>
+        <div class="img_txt1" draggable="false" ondragstart="return false" title-2="{{file.txt1}}" {{action 'ediText' file.name}}>
           {{file.txt1}}
         </div>
-        <div class="img_txt2" draggable="false" ondragstart="return false" title="{{file.txt2}}" totip="{{file.txt2}}" {{action 'ediText' file.name}}>
+        <div class="img_txt2" draggable="false" ondragstart="return false" title-2="{{file.txt2}}" {{action 'ediText' file.name}}>
           {{file.txt2}}
         </div>
         {{#if (eq file this.allNames.lastObject)}}

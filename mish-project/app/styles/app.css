@@ -663,7 +663,7 @@ div.settings a:hover {
 }
 .spinner {
   display: none;
-  position: fixed;
+  position: fixed!important;
   left: 0.35em;
   top: 0.55em;
   height: 3em;
@@ -928,24 +928,82 @@ The jquery ui-tooltip is used elsewere (totip in *.js) */
 *[title-1] {
   position: relative;
 }
-*[title-1]:hover::after {
+*[title-1]:hover::after, *[title-1]:active::after {
   content: attr(title-1);
   position: absolute;
   left: 0;
-  top: 1.35em;
+  top: 100%;
   text-align: left;
-  white-space: nowrap;
   border: 0.5px #888 solid;
-  border-radius: 2px;
+  border-radius: 3px;
   background-color: #beebff;
-  padding: 0.2em 0.2em 0.25em 0.4em;
+  padding: 1.5px 6px 3px 5px;
   color: #000;
-  font-size: 0.9em;
-  z-index: 1000;
+  font-family: Georgia, 'Times New Roman', Times, serif !important;
+  font-weight: normal !important;
+  font-size: 14px !important;
+  line-height: 16.5px !important;
+  font-variant: normal;
+  white-space: nowrap;
+  z-index: 2;
+}
+*[title-2] {
+  position: relative;
+}
+*[title-2]:hover::after, *[title-2]:active::after {
+  content: attr(title-2);
+  position: absolute;
+  left: 0;
+  top: 100%;
+  text-align: left;
+  border: 0.5px #888 solid;
+  border-radius: 3px;
+  background-color: #beebff;
+  padding: 1.5px 2px 3px 5px;
+  color: #000;
+  font-family: Georgia, 'Times New Roman', Times, serif !important;
+  font-weight: normal !important;
+  font-size: 14px !important;
+  line-height: 16.5px !important;
+  font-variant: normal;
+  min-width: 100px ;
+  max-width: 150px;
+  word-break: break-word;
+  white-space: normal;
+  float: left;
+  height: auto;
+  z-index: 2;
+}
+.rootQuest[title-2]:hover::after {
+  width: 150px;
+}
+[title-example-not-used] {
+  position: relative;
+}
+[title-example-not-used]:hover:after {
+  opacity: 1;
+  transition: all 0.1s ease 0.5s;
+  visibility: visible;
+}
+[title-example-not-used]:after {
+  content: attr(title-example-not-used);
+  background-color: #beebff;
+  color: #111;
+  font-size: 1em;
+  position: absolute;
+  padding: 1px 5px 2px 5px;
+  bottom: -1.6em;
+  left: 100%;
+  white-space: nowrap;
+  box-shadow: 1px 1px 3px #222222;
+  opacity: 0;
+  border: 1px solid #111111;
+  z-index: 99999;
+  visibility: hidden;
 }
 .miniImgs span {
   display: inline-block;
-  margin-bottom: 0.8em;
+  margin-bottom: 0.1em;
 }
 #imageList {
   width: 95%;
@@ -964,6 +1022,7 @@ The jquery ui-tooltip is used elsewere (totip in *.js) */
   display: inline-block;
   position: relative;
   justify-content: center;
+  text-align: left;
   padding: 0.5em;
   margin: 1.25px;
   border: 0px solid #bbb;
@@ -1012,6 +1071,7 @@ The jquery ui-tooltip is used elsewere (totip in *.js) */
   color: #fd0;
   text-align: left;
   cursor: default;
+  z-index: 2;
 }
 .img_mini .img_name:hover {
   color: #d80;
@@ -1451,6 +1511,7 @@ select {
 }
 .mainMenu p {
   margin:0.3em 0.2em 0 -0.2em;
+  position: relative;
 }
 .mainMenu p, .mainMenu p a {
   display:inline-block;

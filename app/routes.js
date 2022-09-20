@@ -1,3 +1,5 @@
+const { replace } = require('tar')
+
 // app/routes.js
 module.exports = function (app) {
   var path = require ('path')
@@ -144,22 +146,23 @@ console.log("p2",p);
     var missing = "uppgift saknas"
     var file = req.params.path.replace (/@/g, "/").trim ()
     var stat = fs.statSync (file)
-    //var lstat = fs.lstatSync (file)
-    var linkto = ""
+    var linkto = "", linktop
     var syml = await isSymlink (file)
     if (syml) {
       linkto = execSync ("readlink " + file).toString ().trim ()
-      if (linkto [0] !== '.') linkto = './' + linkto // Perhaps superfluous
+      if (linkto [0] !== '.') linkto = './' + linkto //if symlink in the root album
+      linktop = IMDB + linkto.replace (/^(\.\.?\/)+/, "/")
     }
     // Exclude IMDB from `file`, feb 2022, in order to difficultize direct
     // access to the original pictures on the server.
-    // remember though, the database 'filepath' column contains the imdbLink name!!! OBSOLETE
     var filex = '.' + file.slice (IMDB.length)
-    var fileStat = "<i>Filnamn</i>: " + filex + "<br><br>"
+    var fileStat
     if (linkto) {
       let lntx ="<small span style='color:#0a4'>VISAS HÄR SOM LÄNKAD BILD</small>:";
-      fileStat = "<i>Filnamn</i>: " + linkto + "<br><span style='color:#0a4'>" + lntx + "</span><br>"
+      fileStat = "<i>Filnamn</i>: " + linkto + " &nbsp; &nbsp; <a title-2=\"" + imgErr (linktop) + "\" style='font-family:Arial,Helvetica,sans-serif;font-size:50%;font-weight:bold'>STATUS</a><br><span style='color:#0a4'>" + lntx + "</span><br>"
       fileStat += "<i>Länknamn</i>: <span style='color:#0a4'>" + filex + "</span><br><br>"
+    } else {
+      fileStat = "<i>Filnamn</i>: " + filex + " &nbsp; &nbsp; <a title-2=\"" + imgErr (file) + "\" style='font-family:Arial,Helvetica,sans-serif;font-size:50%;font-weight:bold'>STATUS</a><br><br>"
     }
     fileStat += "<i>Storlek</i>: " + stat.size/1000000 + " Mb<br>"
     var tmp = execSync ("exif_dimension " + file).toString ().trim ()
@@ -719,6 +722,29 @@ console.log("like",like); //search _
   let recId
 
   // ===== COMMON FUNCTIONS
+  async function imgErr (file) {
+  // console.log(file)
+  // console.log(IMDB)
+  //   file = replace (/^\.\.?\rep/a, IMDB + "/")
+  console.log(file)
+    var extn = file.replace (/.*(\.[^. ]+)$/, "$1")
+  console.log(extn)
+    if ( /\.jpe?g$/i.test (extn) ) {
+      let res = await cmdasync ("finderrimg 1 " + file)
+      await new Promise (z => setTimeout (z, 200))
+  console.log("Jpeg " + res)
+      return "Jpeg " + res
+    }
+    if ( /\.tiff?$/i.test (extn) ) {
+      let res = await cmdasync ("finderrimg 2  " + file)
+      await new Promise (z => setTimeout (z, 200))
+  console.log("Tiff " + res)
+      return "Tiff " + res
+    }
+    return extn + "     (NA)"
+    // /\.(jpe?g|tif{1,2}|png|gif)$/i
+    // IMDB_HOME
+  }
 
   // ===== Remove the files of a picture, filename with full web path
   //       (or deletes at least the primarily named file)

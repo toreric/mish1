@@ -782,7 +782,7 @@ export default Component.extend (contextMenuMixin, {
       execute ("if [ -f /etc/postfix/main.cf ]; then echo postfix; fi").then (res => {
         if (res) $ ("#do_mail").show (); // Guess if the server can send mail
       });
-      $ ("#menuButton").attr ("title", htmlSafe ("Meny")); // i18n
+      // $ ("#menuButton").attr ("title", htmlSafe ("Meny")); // i18n OBSOLETE
       // Remember update *.hbs
       $ ("#bkgrColor").text ("rgb(59, 59, 59)");
       // Set the hidden-picture text background color:
@@ -801,11 +801,11 @@ export default Component.extend (contextMenuMixin, {
         console.log ("jQuery v" + $ ().jquery);
         // The time stamp is produced with the Bash 'ember-b-script'
         // Introduktion advice:
-        $ ("#title a.proid").attr ("title", homeTip);
+        $ ("#title a.proid").attr ("title-1", homeTip);
         //$ ("#title a.proid").attr ("totip", homeTip);
-        $ ("#title a.toggbkg").attr ("title", bkgTip);
-        $ ("#title button.cred").attr ("title", logAdv);
-        $ ("#title button.cred").attr ("totip", logAdv);
+        $ ("#title a.toggbkg").attr ("title-1", bkgTip);
+        $ ("#title button.cred").attr ("title-2", logAdv);
+        // $ ("#title button.cred").attr ("totip", logAdv);
 
         // Initialize settings:
         // Search result album names will have unique random extensions.
@@ -853,7 +853,7 @@ export default Component.extend (contextMenuMixin, {
               //$ ("#title a.proid") [0].focus () cannot be replaced by $ ("#title a.proid") [0].trigger ("focus"):
               $ ("#title a.proid") [0].focus ();
               //this.actions.selectRoot ("");
-              $ (".mainMenu p a.rootQuest").attr ("totip", rootAdv);
+              $ (".mainMenu p a.rootQuest").attr ("title-2", rootAdv);
             }), 2000);
           }), 1000);
         }), 200);
@@ -861,36 +861,36 @@ export default Component.extend (contextMenuMixin, {
     });
     // Trigger the jQuery tooltip on 'totip="..."' (custom attribute)
     //$ (document).tooltip ("enable");
-    later ( ( () => {
-        $ (function () {
-          $ (document).tooltip ({
-            items: "[totip]",
-            content: function () {
-              var elem = $ (this);
-              if (elem.is ("[totip]")) {
-                return elem.attr ("totip");
-              }
-            },
-            show: {
-              //effect: "slideDown",
-              effect: "blind",
-              //duration: 0, do not use
-              delay: 0
-              //effect: "fade"
-            },
-            position: {
-              my: "left+2 top+2",
-              at: "left bottom"
-            },
-            close: function () {
-              // Clean upp tooltip garbage and hide new tooltip text down below:
-              $ ("div.ui-helper-hidden-accessible").html ("");
-              $ ("div.ui-helper-hidden-accessible").attr ("style", "position:fixed;top:8192px");
-            }
-          });
-          $ (document).tooltip ("disable");
-        });
-    }), 1000);
+    // later ( ( () => {
+    //     $ (function () {
+    //       $ (document).tooltip ({
+    //         items: "[totip]",
+    //         content: function () {
+    //           var elem = $ (this);
+    //           if (elem.is ("[totip]")) {
+    //             return elem.attr ("totip");
+    //           }
+    //         },
+    //         show: {
+    //           //effect: "slideDown",
+    //           effect: "blind",
+    //           //duration: 0, do not use
+    //           delay: 0
+    //           //effect: "fade"
+    //         },
+    //         position: {
+    //           my: "left+2 top+2",
+    //           at: "left bottom"
+    //         },
+    //         close: function () {
+    //           // Clean upp tooltip garbage and hide new tooltip text down below:
+    //           $ ("div.ui-helper-hidden-accessible").html ("");
+    //           $ ("div.ui-helper-hidden-accessible").attr ("style", "position:fixed;top:8192px");
+    //         }
+    //       });
+    //       $ (document).tooltip ("disable");
+    //     });
+    // }), 1000);
   },
   //----------------------------------------------------------------------------------------------
   didInsertElement () { // ##### Runs at page ready state
@@ -1220,7 +1220,7 @@ export default Component.extend (contextMenuMixin, {
         $ ("#navAuto").text ("false");
         mainMenuHide ();
         $ ("iframe.intro").hide ();
-        $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
+        // $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
         if ($ ("div.settings").is (":visible")) { // Hide settings
           $ ("div.settings, div.settings div.check").hide ();
           return;
@@ -1251,7 +1251,7 @@ export default Component.extend (contextMenuMixin, {
         if ($ (".toggleAuto").text () === "STOP") { // Auto slide show is running
           later ( ( () => {
             $ (".nav_links .toggleAuto").text ("AUTO");
-            $ (".nav_links .toggleAuto").attr ("title", "Automatiskt bildbyte [A]"); //i18n
+            $ (".nav_links .toggleAuto").attr ("title", "\nAutomatiskt bildbyte [A]"); //i18n
             that.runAuto (false);
           }), 100);
           if (Z) {console.log ('*d');}
@@ -1299,7 +1299,7 @@ export default Component.extend (contextMenuMixin, {
             if (Number ($ (".numShown:first").text ()) > 1) {
               $ ("#navAuto").text ("true");
               $ (".nav_links .toggleAuto").text ("STOP");
-              $ (".nav_links .toggleAuto").attr ("title", "Avsluta bildbyte [Esc]"); //i18n
+              $ (".nav_links .toggleAuto").attr ("title", "\nAvsluta bildbyte [Esc]"); //i18n
               that.runAuto (true);
             }
           }), 250);
@@ -2339,7 +2339,7 @@ console.log("selectRoot=",value);
               if (index < n) {z = 0;} else {z = n;}
               iz = index - z;
               if (iz < 3) { // the first 3 are nav link symbols
-                $ (element).attr ("totip", returnTitles [iz]);
+                $ (element).attr ("title-2", returnTitles [iz]);
                 //$ (element).closest ("div.subAlbum").attr ("title-1", returnTitles [iz]);
                 $ (element).closest ("div.subAlbum").css ("display", navButtons [iz]);
                 if (!z) {
@@ -2367,7 +2367,7 @@ console.log("=A=");
               if (index < n) {z = 0;} else {z = n;}
               iz = index - z;
               if (iz === 0) {
-                $ (element).attr ("totip", returnTitles [index + 2]);
+                $ (element).attr ("title-2", returnTitles [index + 2]);
                 //$ (element).closest ("div.subAlbum").attr ("title-1", returnTitles [index + 2]);
                 $ (element).closest ("div.subAlbum").css ("display", navButtons [index + 2]);
                 if (!z) {
@@ -2433,7 +2433,7 @@ console.log("=C=");
             }
             // Show "erase original too" button only if qualified:
             if (allow.deleteImg || allow.adminAll) {
-              $ ("#title span.eraseCheck").css ("display", "inline");
+              $ ("#title span.eraseCheck").css ("display", "inline-block");
             } else {
               $ ("#title span.eraseCheck").css ("display", "none");
             }
@@ -2447,7 +2447,7 @@ console.log("=C=");
     //============================================================================================
     toggleMainMenu () {
 
-      $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
+      // $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
       $ ("iframe.intro").hide ();
       document.getElementById ("divDropZone").style.display = "none";
       //var that = this;
@@ -2461,7 +2461,7 @@ console.log("=C=");
     //============================================================================================
     toggleJstreeAlbumSelect () {
 
-      $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
+      // $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
       if (!$ (".jstreeAlbumSelect").is (":visible")) {
         $ (".jstreeAlbumSelect").show ();
       } else {
@@ -2495,7 +2495,7 @@ console.log("=C=");
     //============================================================================================
     hideFlagged (yes) { // #####
 
-      $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
+      // $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
      return new Promise ( (resolve) => {
 
       $ ("#link_show a").css ('opacity', 0);
@@ -2566,7 +2566,7 @@ console.log("=C=");
     //============================================================================================
     showDropZone () { // ##### Display (toggle) the DropZone file upload area
 
-      $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
+      // $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
       if ($ ("#imdbRoot").text () === "") return;
       if ($ (".toggleAuto").text () === "STOP") return; // Auto slide show is running
       $ ("iframe.intro").hide ();
@@ -2602,7 +2602,7 @@ console.log("=C=");
 
       document.getElementById ("imageList").className = "hide-all";
 
-      $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
+      // $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
       mainMenuHide ();
       $ ("div.settings, div.settings div.check").hide ();
       $ ("ul.context-menu").hide ();
@@ -2767,7 +2767,7 @@ console.log("=C=");
         $ ("#navAuto").text ("true");
         later ( ( () => {
           $ (".nav_links .toggleAuto").text ("STOP");
-          $ (".nav_links .toggleAuto").attr ("title", "Avsluta bildbyte [Esc]"); //i18n
+          $ (".nav_links .toggleAuto").attr ("title", "\nAvsluta bildbyte [Esc]"); //i18n
           this.runAuto (true);
           document.getElementById("reLd").disabled = true;
           document.getElementById("saveOrder").disabled = true;
@@ -2776,7 +2776,7 @@ console.log("=C=");
         $ ("#navAuto").text ("false");
         later ( ( () => {
           $ (".nav_links .toggleAuto").text ("AUTO");
-          $ (".nav_links .toggleAuto").attr ("title", "Automatiskt bildbyte [A]"); //i18n
+          $ (".nav_links .toggleAuto").attr ("title", "\nAutomatiskt bildbyte [A]"); //i18n
           this.runAuto (false);
           document.getElementById("reLd").disabled = false;
           document.getElementById("saveOrder").disabled = false;
@@ -2891,7 +2891,7 @@ console.log("=C=");
     //============================================================================================
     toggleNameView () { // ##### Toggle-view file names
 
-      $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
+      // $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
       $ ("#link_show a").css ('opacity', 0);
       $ (".img_name").toggle ();
       if (document.getElementsByClassName ("img_name") [0].style.display === "none") {
@@ -2903,7 +2903,7 @@ console.log("=C=");
     //============================================================================================
     toggleHelp () { // ##### Toggle-view user manual
 
-      $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
+      // $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
       if ($ ("#helpText").is (":visible") || $ ("#navAuto").text () === "true") {
         $ ('#helpText').dialog ("close");
       } else {
@@ -2996,7 +2996,7 @@ console.log("=C=");
     //============================================================================================
     ediText (namepic) { // ##### Edit picture texts
 
-      $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
+      // $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
       var displ = $ ("div[aria-describedby='textareas']").css ("display");
       var name0 = $ ("div[aria-describedby='textareas'] span.ui-dialog-title span").html ();
       if (allow.textEdit || allow.adminAll) {
@@ -3248,7 +3248,7 @@ console.log("=C=");
     //============================================================================================
     toggleMark (name) { // ##### Mark an image
 
-      $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
+      // $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
       if (!name) {
         name = document.getElementById ("link_show").nextElementSibling.nextElementSibling.textContent.trim ();
       }
@@ -3286,7 +3286,7 @@ console.log("=C=");
       if (btnTxt === "Logga in") { // Log in (should be buttonText[0] ... i18n)
         $ ("#title input.cred").show ();
         $ ("#title button.cred").text ("Bekräfta");
-        $ ("#title button.cred").attr ("title", "Bekräfta inloggning");
+        $ ("#title button.cred").attr ("title-2", "Bekräfta inloggning");
         later ( ( () => {
           $ ("#title input.cred").blur ();
           //$ ("#title a.proid") [0].focus () cannot be replaced by $ ("#title a.proid") [0].trigger ("focus"):
@@ -3301,8 +3301,8 @@ console.log("=C=");
         $ ("#hideFlag").text ("1");// Two lines from 'toggleHideFlagged'
         this.actions.hideFlagged (true).then (null); // Hide flagged pics if shown
         $ ("#title button.cred").text ("Logga in");
-        $ ("#title button.cred").attr ("title", logAdv);
-        $ ("#title button.cred").attr ("totip", logAdv);
+        $ ("#title button.cred").attr ("title-2", logAdv);
+        // $ ("#title button.cred").attr ("totip", logAdv);
         $ ("#title span.cred.name").text ("");
         $ ("#title span.cred.status").text ("");
         $ ("#title span.cred.status").hide ();
@@ -3386,8 +3386,8 @@ console.log("=C=");
           if (isLoginError) {
             // Update aug 2017: will never happen!
             $ ("#title button.cred").text ("Logga in");
-            $ ("#title button.cred").attr ("title", logAdv);
-            $ ("#title button.cred").attr ("totip", logAdv);
+            $ ("#title button.cred").attr ("title-2", logAdv);
+            // $ ("#title button.cred").attr ("totip", logAdv);
             loggedIn = false;
             $ ("div.settings, div.settings div.check").hide ();
             userLog ("LOGIN error");
@@ -3445,7 +3445,7 @@ console.log("=C=");
           $ ("#title a.proid") [0].focus ();
           }
         });
-        $ (document).tooltip ("enable");
+        // $ (document).tooltip ("enable");
 
         later ( () => {
           //console.log (usr, "status is", status);
@@ -3539,12 +3539,12 @@ console.log("=C=");
             $ ("#title span.cred.status").html ("["+ status +"]");
             let tmp = "Du är inloggad som ’" + usr + "’ med [" + status + "]-rättigheter"; // i18n
             let tmp1 = " (logga ut före annan inloggning)";
-            $ ("#title button.cred").attr ("title", tmp + tmp1);
-            $ (".cred.name").attr ("title", tmp);
-            $ (".cred.status").attr ("title", "Se dina rättigheter");
-            $ ("#title button.cred").attr ("totip", tmp + tmp1);
-            $ (".cred.name").attr ("totip", tmp);
-            $ (".cred.status").attr ("totip", "Se dina rättigheter");
+            $ ("#title button.cred").attr ("title-2", tmp + tmp1);
+            $ (".cred.name").attr ("title-2", tmp);
+            $ (".cred.status").attr ("title-1", "Se dina rättigheter");
+            // $ ("#title button.cred").attr ("totip", tmp + tmp1);
+            // $ (".cred.name").attr ("totip", tmp);
+            // $ (".cred.status").attr ("totip", "Se dina rättigheter");
             // Assure that the album tree is properly shown
             that.set ("albumData", []); // Triggers jstree rebuild in requestDirs
             that.actions.setAllow ();
@@ -3559,7 +3559,7 @@ console.log("=C=");
                   // Show the unchecked erase-link&&source checkbox if relevant
                   eraseOriginals = false; // Global switch
                   if ( (allow.deleteImg || allow.adminAll) && ["admin", "editall"].indexOf (loginStatus) > -1) {
-                    $ ("#title span.eraseCheck").css ("display", "inline");
+                    $ ("#title span.eraseCheck").css ("display", "inline-block");
                     $ ("#eraOrig") [0].checked = false;
                   } else {
                     $ ("#title span.eraseCheck").css ("display", "none");
@@ -3600,7 +3600,7 @@ console.log("=C=");
     //============================================================================================
     toggleSettings () { // ##### Show/change settings
 
-      $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
+      // $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
       if (!loggedIn || $ ("div.settings").is (":visible")) {
         $ ("div.settings, div.settings div.check").hide ();
         return;
@@ -3728,11 +3728,11 @@ if (phonedevice ()) {
   TEXTC = "#fff"; // text color
   BLUET = "#aef"; // blue text
 }
-let bkgTip = "Byt bakgrund";
+let bkgTip = "\nByt bakgrund";
 let centerMarkSave = "×";
 let cmsg = "Får inte laddas ned/förstoras utan särskilt medgivande: Vänligen kontakta copyrightinnehavare eller Hembygdsföreningen";
 let eraseOriginals = false;
-let homeTip = "I N T R O D U K T I O N";
+let homeTip = "\nI N T R O D U K T I O N";
 let logAdv = "Logga in för att kunna se inställningar: Anonymt utan namn och lösenord, eller med namnet ’gäst’ utan lösenord som ger vissa redigeringsrättigheter"; // i18n
 let loggedIn = false;
 let mailAdmin = "tore.ericsson@tores.se";
@@ -3742,7 +3742,7 @@ let nopsGif = "GIF-fil kan bara ha tillfällig text"; // i18n
 let openRoot = ""; // If "demo" then SETS THE ADMIN FLAG TO ALLOW ANYTHING!
 let picFound = "Funna_bilder"; // i18n
 let preloadShowImg = [];
-let rootAdv = "Om det inte fungerar: Ladda om webbläsaren! Annars: Välj här albumsamling om den inte redan är förvald. Det kan finnas fler än ett alterativ. Ingångsalbumet till en albumsamling kallas också ”rot-album” – det förgrenar sig sedan nedåt – ”cyberträd” kan växa med roten uppåt!";
+let rootAdv = "Om ingenting fungerar: Ladda om webbläsaren! Annars: Välj här en albumsamling om den inte redan är förvald. Det kan finnas fler än ett alterativ. Ingångsalbumet till en albumsamling kallas också ”albumroten”. ”Albumträdet” förgrenar sig sedan nedåt – ”cyberträd” kan växa med roten uppåt!";
 let loginStatus = "";
 let tempStore = "";
 // Paths for pictures to be soon updated in _imdb_images.sqlite (using sqlUpdate; then clear pathsUpdate!):
@@ -4039,7 +4039,7 @@ function hideShow_g () {
 // This JQUERY construct makes the function available also in HTML/HBS:
 $.spinnerWait = async function (runWait, delay) { // Delay is used only to end waiting (runWait false)
   if (!delay) delay = 0;
-  $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
+  // $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
   var s = 0; // s is used as debug switch to get ON printout
   var t = 0; // t is used as debug switch to get OFF printout
   if (runWait) {
@@ -4490,7 +4490,8 @@ function favDia (text, addfile, addmarked, savecook, closeit, savefile, findshow
         let nodes = document.getElementsByClassName ("markTrue");
         for (let i=0; i<nodes.length; i++) {
           let str = nodes [i].nextElementSibling.innerHTML.trim ();
-          if ($ ("#imdbDir").text ().replace (/^[^/]+\//, "") === $ ("#picFound").text ()) {
+
+          if (imdbDir_is_picFound) {
             str = str.replace (/\.[^.]{4}$/, "");
           }
           newfav += str + "\n";
@@ -5561,7 +5562,7 @@ let prepSearchDialog = () => {
       .html ('Finn bilder <span style="color:green">(ej länkar)</span>: Sök i bildtexter');
   });
 } // end prepSearchDialog
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - Fortsätt här!
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Find texts in the database (file _imdb_images.sqlite) and populate
  * the #picFound album with the corresponding images (cf. prepSearchDialog)
  * @param {string} sTxt whitespace separated search text words/items
@@ -5772,38 +5773,34 @@ function searchText (searchString, and, searchWhere, exact) {
   ediTextClosed ();
   let ao = "", AO;
   if (and) {AO = " AND "} else {AO = " OR "}
-console.log("searchString",searchString); //search _
   let arr = searchString;
   if (arr === "") {arr = undefined;}
   let str = "";
   if (arr) {
     arr = arr.split (" ");
-console.log("arr",arr); //search _
+    if (arr [0].slice (0, 1) === "#") arr.shift ();
     for (let i = 0; i<arr.length; i++) {
       // Replace any `'` with `''`, will be enclosed with `'`s in SQL
       arr[i] = arr [i].replace (/'/g, "''") + "";
       // Replace underscore to be taken literally, needs `ESCAPE '\'`
       arr[i] = arr [i].replace (/_/g, "\\_") + "";
       // First replace % (thus, NBSP):
-      arr[i] = arr [i].replace (/%/g, " ");
-      // Then use % the SQL way if applicable, and add `ESCAPE '\'`:
-console.log("arr",arr); //search _
+      arr[i] = arr [i].replace (/%/g, " "); // % in Mish means 'sticking space'
+      // Then use % the SQL way if applicable and add `ESCAPE '\'` to each:
       if (exact) { // Exact match for file (base) names favorites search
         arr [i] = "'" + arr [i] + "' ESCAPE '\\'";
-console.log("arr exact",arr); //search _
       } else {
         arr [i] = "'%" + arr [i] + "%' ESCAPE '\\'";
-console.log("arr not exact",arr); //search _
       }
-      if (i > 0) {ao = AO + "\n"}
+      // if (i > 0) {ao = AO + "\n"}
+      if (i > 0) {ao = AO}
       str += ao + "txtstr LIKE " + arr[i].trim ();
     }
-    str = str.replace (/\n/g, "");
+    // str = str.replace (/\n/g, "");
   }
   if (!$ ("#imdbDir").text ()) {
     $ ("#imdbDir").text ("/" + $ ("#picFound").text ());
   }
-console.log("str",str); //search _
   let srchData = new FormData ();
   srchData.append ("like", str);
   srchData.append ("cols", searchWhere);
@@ -5826,7 +5823,6 @@ console.log("str",str); //search _
         });
       }
     };
-console.log("srchData",srchData); //search _
     xhr.send (srchData);
   });
 }
@@ -5866,8 +5862,11 @@ var prepTextEditDialog = () => {
         }
 
         if ($ ("#i" + ednp).hasClass ("symlink")) {
+          // The file path will be constructed from the first getFilestat() name field
+          // (NOTE: The file name IS the first name; the image name is amended later to the
+          // information dialog; this was only one way of several to get the link's source ...)
           getFilestat (linkPath).then (result => {
-            //console.log (result); // The file info HTML, strip it:
+            //console.log (result); // The file info HTML, strip it and insert full path:
             result = result.replace (/^.+: ((\.){1,2}\/)+/, $ ("#imdbPath").text () + "/"); // Remove until ':'
             result = result.replace (/^([^<]+)<.+/, "$1"); // Remove from '<'
             filePath = result;
@@ -5933,11 +5932,11 @@ var prepTextEditDialog = () => {
     var fileName = $ ("#i" + ednp + " img").attr ("title");
     fileName = $ ("#imdbPath").text () + fileName;
     $ ("#i" + ednp + " .img_txt1" ).html (text1);
-    $ ("#i" + ednp + " .img_txt1" ).attr ("title", text1.replace(/<[^>]+>/gm, " "));
-    $ ("#i" + ednp + " .img_txt1" ).attr ("totip", text1.replace(/<[^>]+>/gm, " "));
+    $ ("#i" + ednp + " .img_txt1" ).attr ("title-2", text1.replace(/<[^>]+>/gm, " "));
+    //$ ("#i" + ednp + " .img_txt1" ).attr ("totip", text1.replace(/<[^>]+>/gm, " "));
     $ ("#i" + ednp + " .img_txt2" ).html (text2);
-    $ ("#i" + ednp + " .img_txt2" ).attr ("title", text2.replace(/<[^>]+>/gm, " "));
-    $ ("#i" + ednp + " .img_txt2" ).attr ("totip", text2.replace(/<[^>]+>/gm, " "));
+    $ ("#i" + ednp + " .img_txt2" ).attr ("title-2", text2.replace(/<[^>]+>/gm, " "));
+    //$ ("#i" + ednp + " .img_txt2" ).attr ("totip", text2.replace(/<[^>]+>/gm, " "));
     if ($ (".img_show .img_name").text () === namepic) {
       $ ("#wrap_show .img_txt1").html (text1);
       //document.querySelector ("#wrap_show .img_txt1").innerHTML = text1;
@@ -5948,7 +5947,7 @@ var prepTextEditDialog = () => {
     // Get real file name if symlink:
     let linkPath = fileName;
     if ($ ("#i" + ednp).hasClass ("symlink")) {
-      getFilestat (linkPath).then (result => { // linkPath??
+      getFilestat (linkPath).then (result => {
         //console.log (result); // The file info HTML, strip it:
         result = result.replace (/^.+: ((\.){1,2}\/)+/, $ ("#imdbPath").text () + "/");
         result = result.replace (/^([^<]+)<.+/, "$1");
@@ -6022,7 +6021,7 @@ function refreshEditor (namepic, origpic) {
     $ (".ui-dialog-buttonset button.notes").css ("display", "none");
     $ (".ui-dialog-buttonset button.keys").css ("display", "none");
   }
-  warnText = "<span style='float:left' title='Click = Copy ' totip='Click = Copy '>" +
+  warnText = "<span style='float:left' title-1='Click = Copy'>" +
   "&nbsp;<b class='insertChar' style='cursor:pointer' onmousedown='copyToClipboard(this.innerHTML)'>’</b>" +
   "&nbsp;<b class='insertChar' style='cursor:pointer' onmousedown='copyToClipboard(this.innerHTML)'>–</b>" +
   "&nbsp;<b class='insertChar' style='cursor:pointer' onmousedown='copyToClipboard(this.innerHTML)'>×</b>" +
@@ -6242,17 +6241,17 @@ function hideKeyboard () {
 /** Show/hide mainMenu: mainMenuShow, mainMenuHide
  */
 function mainMenuShow () {
-  $ ("#menuButton").attr ("title", htmlSafe ("Stäng\nmenyn")); // i18n
+  $ ("#menuButton").attr ("title-1", htmlSafe ("Stäng menyn")); // i18n
   $ ("#menuButton").html ("×");
   $ (".mainMenu").show ();
 }
 function mainMenuHide () {
-  $ ("#menuButton").attr ("title", htmlSafe ("Öppna\nmenyn")); // i18n
+  $ ("#menuButton").attr ("title-1", htmlSafe ("Öppna menyn")); // i18n
   $ ("#menuButton").html ("☰");
   $ (".mainMenu").hide ();
 }
 $.maMeHi = function () {
-  $ ("#menuButton").attr ("title", htmlSafe ("Öppna\nmenyn")); // i18n
+  $ ("#menuButton").attr ("title-1", htmlSafe ("Öppna menyn")); // i18n
   $ ("#menuButton").html ("☰");
   $ (".mainMenu").hide ();
 }
