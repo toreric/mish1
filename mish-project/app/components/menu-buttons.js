@@ -861,36 +861,36 @@ export default Component.extend (contextMenuMixin, {
     });
     // Trigger the jQuery tooltip on 'totip="..."' (custom attribute)
     //$ (document).tooltip ("enable");
-    // later ( ( () => {
-    //     $ (function () {
-    //       $ (document).tooltip ({
-    //         items: "[totip]",
-    //         content: function () {
-    //           var elem = $ (this);
-    //           if (elem.is ("[totip]")) {
-    //             return elem.attr ("totip");
-    //           }
-    //         },
-    //         show: {
-    //           //effect: "slideDown",
-    //           effect: "blind",
-    //           //duration: 0, do not use
-    //           delay: 0
-    //           //effect: "fade"
-    //         },
-    //         position: {
-    //           my: "left+2 top+2",
-    //           at: "left bottom"
-    //         },
-    //         close: function () {
-    //           // Clean upp tooltip garbage and hide new tooltip text down below:
-    //           $ ("div.ui-helper-hidden-accessible").html ("");
-    //           $ ("div.ui-helper-hidden-accessible").attr ("style", "position:fixed;top:8192px");
-    //         }
-    //       });
-    //       $ (document).tooltip ("disable");
-    //     });
-    // }), 1000);
+    later ( ( () => {
+        $ (function () {
+          $ (document).tooltip ({
+            items: "[totip]",
+            content: function () {
+              var elem = $ (this);
+              if (elem.is ("[totip]")) {
+                return elem.attr ("totip");
+              }
+            },
+            show: {
+              //effect: "slideDown",
+              effect: "blind",
+              //duration: 0, do not use
+              delay: 0
+              //effect: "fade"
+            },
+            position: {
+              my: "left+2 top+2",
+              at: "left bottom"
+            },
+            close: function () {
+              // Clean upp tooltip garbage and hide new tooltip text down below:
+              $ ("div.ui-helper-hidden-accessible").html ("");
+              $ ("div.ui-helper-hidden-accessible").attr ("style", "position:fixed;top:8192px");
+            }
+          });
+          $ (document).tooltip ("disable");
+        });
+    }), 1000);
   },
   //----------------------------------------------------------------------------------------------
   didInsertElement () { // ##### Runs at page ready state
@@ -1220,7 +1220,7 @@ export default Component.extend (contextMenuMixin, {
         $ ("#navAuto").text ("false");
         mainMenuHide ();
         $ ("iframe.intro").hide ();
-        // $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
+        $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
         if ($ ("div.settings").is (":visible")) { // Hide settings
           $ ("div.settings, div.settings div.check").hide ();
           return;
@@ -2447,7 +2447,7 @@ console.log("=C=");
     //============================================================================================
     toggleMainMenu () {
 
-      // $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
+      $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
       $ ("iframe.intro").hide ();
       document.getElementById ("divDropZone").style.display = "none";
       //var that = this;
@@ -2461,7 +2461,7 @@ console.log("=C=");
     //============================================================================================
     toggleJstreeAlbumSelect () {
 
-      // $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
+      $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
       if (!$ (".jstreeAlbumSelect").is (":visible")) {
         $ (".jstreeAlbumSelect").show ();
       } else {
@@ -2495,8 +2495,8 @@ console.log("=C=");
     //============================================================================================
     hideFlagged (yes) { // #####
 
-      // $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
-     return new Promise ( (resolve) => {
+      $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
+      return new Promise ( (resolve) => {
 
       $ ("#link_show a").css ('opacity', 0);
       var tmp = $ ("#sortOrder").text ().trim ();
@@ -2566,7 +2566,7 @@ console.log("=C=");
     //============================================================================================
     showDropZone () { // ##### Display (toggle) the DropZone file upload area
 
-      // $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
+      $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
       if ($ ("#imdbRoot").text () === "") return;
       if ($ (".toggleAuto").text () === "STOP") return; // Auto slide show is running
       $ ("iframe.intro").hide ();
@@ -2602,7 +2602,7 @@ console.log("=C=");
 
       document.getElementById ("imageList").className = "hide-all";
 
-      // $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
+      $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
       mainMenuHide ();
       $ ("div.settings, div.settings div.check").hide ();
       $ ("ul.context-menu").hide ();
@@ -2891,7 +2891,7 @@ console.log("=C=");
     //============================================================================================
     toggleNameView () { // ##### Toggle-view file names
 
-      // $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
+      $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
       $ ("#link_show a").css ('opacity', 0);
       $ (".img_name").toggle ();
       if (document.getElementsByClassName ("img_name") [0].style.display === "none") {
@@ -2903,7 +2903,7 @@ console.log("=C=");
     //============================================================================================
     toggleHelp () { // ##### Toggle-view user manual
 
-      // $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
+      $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
       if ($ ("#helpText").is (":visible") || $ ("#navAuto").text () === "true") {
         $ ('#helpText').dialog ("close");
       } else {
@@ -2996,7 +2996,7 @@ console.log("=C=");
     //============================================================================================
     ediText (namepic) { // ##### Edit picture texts
 
-      // $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
+      $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
       var displ = $ ("div[aria-describedby='textareas']").css ("display");
       var name0 = $ ("div[aria-describedby='textareas'] span.ui-dialog-title span").html ();
       if (allow.textEdit || allow.adminAll) {
@@ -3248,7 +3248,7 @@ console.log("=C=");
     //============================================================================================
     toggleMark (name) { // ##### Mark an image
 
-      // $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
+      $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
       if (!name) {
         name = document.getElementById ("link_show").nextElementSibling.nextElementSibling.textContent.trim ();
       }
@@ -3445,7 +3445,7 @@ console.log("=C=");
           $ ("#title a.proid") [0].focus ();
           }
         });
-        // $ (document).tooltip ("enable");
+        $ (document).tooltip ("enable");
 
         later ( () => {
           //console.log (usr, "status is", status);
@@ -3600,7 +3600,7 @@ console.log("=C=");
     //============================================================================================
     toggleSettings () { // ##### Show/change settings
 
-      // $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
+      $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
       if (!loggedIn || $ ("div.settings").is (":visible")) {
         $ ("div.settings, div.settings div.check").hide ();
         return;
@@ -4039,7 +4039,7 @@ function hideShow_g () {
 // This JQUERY construct makes the function available also in HTML/HBS:
 $.spinnerWait = async function (runWait, delay) { // Delay is used only to end waiting (runWait false)
   if (!delay) delay = 0;
-  // $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
+  $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
   var s = 0; // s is used as debug switch to get ON printout
   var t = 0; // t is used as debug switch to get OFF printout
   if (runWait) {
@@ -5932,11 +5932,11 @@ var prepTextEditDialog = () => {
     var fileName = $ ("#i" + ednp + " img").attr ("title");
     fileName = $ ("#imdbPath").text () + fileName;
     $ ("#i" + ednp + " .img_txt1" ).html (text1);
-    $ ("#i" + ednp + " .img_txt1" ).attr ("title-2", text1.replace(/<[^>]+>/gm, " "));
-    //$ ("#i" + ednp + " .img_txt1" ).attr ("totip", text1.replace(/<[^>]+>/gm, " "));
+    //$ ("#i" + ednp + " .img_txt1" ).attr ("title-2", text1.replace(/<[^>]+>/gm, " "));
+    $ ("#i" + ednp + " .img_txt1" ).attr ("totip", text1.replace(/<[^>]+>/gm, " "));
     $ ("#i" + ednp + " .img_txt2" ).html (text2);
-    $ ("#i" + ednp + " .img_txt2" ).attr ("title-2", text2.replace(/<[^>]+>/gm, " "));
-    //$ ("#i" + ednp + " .img_txt2" ).attr ("totip", text2.replace(/<[^>]+>/gm, " "));
+    //$ ("#i" + ednp + " .img_txt2" ).attr ("title-2", text2.replace(/<[^>]+>/gm, " "));
+    $ ("#i" + ednp + " .img_txt2" ).attr ("totip", text2.replace(/<[^>]+>/gm, " "));
     if ($ (".img_show .img_name").text () === namepic) {
       $ ("#wrap_show .img_txt1").html (text1);
       //document.querySelector ("#wrap_show .img_txt1").innerHTML = text1;
@@ -5948,16 +5948,15 @@ var prepTextEditDialog = () => {
     let linkPath = fileName;
     if ($ ("#i" + ednp).hasClass ("symlink")) {
       getFilestat (linkPath).then (result => {
-        //console.log (result); // The file info HTML, strip it:
         result = result.replace (/^.+: ((\.){1,2}\/)+/, $ ("#imdbPath").text () + "/");
-        result = result.replace (/^([^<]+)<.+/, "$1");
-        fileName = result;
+        fileName = result.substring (0, result.indexOf ("<")) // NOTE: don't use regexp!!
+        // fileName = result.replace (/(^[^<]+)<.*$/, "$1")   // WARNING: irregular string!
       }).then ( () => {
         tempStore = "TEXT written";
         saveText (fileName +'\n'+ text1 +'\n'+ text2);
         return;
       });
-    } else {
+    } else { // if NOT a symlink:
       saveText (fileName +'\n'+ text1 +'\n'+ text2);
       if (fileName.indexOf ($ ("#picFound").text ()) < 0) {
         tempStore = "TEXT written";

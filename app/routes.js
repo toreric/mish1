@@ -158,11 +158,13 @@ console.log("p2",p);
     var filex = '.' + file.slice (IMDB.length)
     var fileStat
     if (linkto) {
+      var errmsg = "not available"
+      errmsg = await imgErr (linktop)
       let lntx ="<small span style='color:#0a4'>VISAS HÄR SOM LÄNKAD BILD</small>:";
-      fileStat = "<i>Filnamn</i>: " + linkto + " &nbsp; &nbsp; <a title-2=\"" + imgErr (linktop) + "\" style='font-family:Arial,Helvetica,sans-serif;font-size:50%;font-weight:bold'>STATUS</a><br><span style='color:#0a4'>" + lntx + "</span><br>"
+      fileStat = "<i>Filnamn</i>: " + linkto + "<a title-2=\"" + await imgErr (linktop) + "\" style='font-family:Arial,Helvetica,sans-serif;font-size:50%;font-weight:bold'> &nbsp; &nbsp; &nbsp; &nbsp; STATUS &nbsp; &nbsp; </a><br><span style='color:#0a4'>" + lntx + "</span><br>"
       fileStat += "<i>Länknamn</i>: <span style='color:#0a4'>" + filex + "</span><br><br>"
     } else {
-      fileStat = "<i>Filnamn</i>: " + filex + " &nbsp; &nbsp; <a title-2=\"" + imgErr (file) + "\" style='font-family:Arial,Helvetica,sans-serif;font-size:50%;font-weight:bold'>STATUS</a><br><br>"
+      fileStat = "<i>Filnamn</i>: " + filex + "<a title-2=\"" + await imgErr (file) + "\" style='font-family:Arial,Helvetica,sans-serif;font-size:50%;font-weight:bold'> &nbsp; &nbsp; &nbsp; &nbsp; STATUS &nbsp; &nbsp; </a><br><br>"
     }
     fileStat += "<i>Storlek</i>: " + stat.size/1000000 + " Mb<br>"
     var tmp = execSync ("exif_dimension " + file).toString ().trim ()
@@ -679,7 +681,7 @@ console.log("p2",p);
     // The removeDiacritics funtion bypasses some characters (e.g. Sw. åäöÅÄÖ)
     let like = removeDiacritics (req.body.like)
     if (req.body.info != "exact") like = like.toLowerCase () // if not e.g. file name compare
-console.log("like",like); //search _
+//console.log("like",like); //search _
     let cols = eval ("[" + req.body.cols + "]")
     let taco = ["description", "creator", "source", "album", "name"]
     let columns = ""
@@ -722,28 +724,33 @@ console.log("like",like); //search _
   let recId
 
   // ===== COMMON FUNCTIONS
+  // ===== Check if a file is a symbolic link
+  function isSymlink (file) {
+    return new Promise (function (resolve, reject) {
+      fs.lstat (file, function (err, stats) {
+        if (err) {
+          //console.error ('filestat isSymlink', err.message)
+          resolve (false)
+        } else {
+          resolve (stats.isSymbolicLink ())
+        }
+      })
+    })
+  }
+
+  // ===== Check and return image file condition, summarizing warning and error counts
+  //       calling 'finderrimg', which uses 'jpeginfo' and 'tiffinfo' (so far)
   async function imgErr (file) {
-  // console.log(file)
-  // console.log(IMDB)
-  //   file = replace (/^\.\.?\rep/a, IMDB + "/")
-  console.log(file)
     var extn = file.replace (/.*(\.[^. ]+)$/, "$1")
-  console.log(extn)
     if ( /\.jpe?g$/i.test (extn) ) {
-      let res = await cmdasync ("finderrimg 1 " + file)
-      await new Promise (z => setTimeout (z, 200))
-  console.log("Jpeg " + res)
-      return "Jpeg " + res
-    }
+      return await cmdasync ("finderrimg 1 " + file)
+    } else
     if ( /\.tiff?$/i.test (extn) ) {
-      let res = await cmdasync ("finderrimg 2  " + file)
-      await new Promise (z => setTimeout (z, 200))
-  console.log("Tiff " + res)
-      return "Tiff " + res
+      return await cmdasync ("finderrimg 2  " + file)
+    } else {
+      return "NA"
     }
-    return extn + "     (NA)"
-    // /\.(jpe?g|tif{1,2}|png|gif)$/i
-    // IMDB_HOME
+    // NOTE: An async function returns a promise!
   }
 
   // ===== Remove the files of a picture, filename with full web path
@@ -772,20 +779,6 @@ console.log("like",like); //search _
       }
     })
     return 'DELETED'
-  }
-
-  // ===== Check if a file is a symbolic link
-  function isSymlink (file) {
-    return new Promise (function (resolve, reject) {
-      fs.lstat (file, function (err, stats) {
-        if (err) {
-          //console.error ('filestat isSymlink', err.message)
-          resolve (false)
-        } else {
-          resolve (stats.isSymbolicLink ())
-        }
-      })
-    })
   }
 
   // ===== Check and add|remove|update an image file record in the database

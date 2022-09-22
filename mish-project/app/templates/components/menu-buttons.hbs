@@ -480,10 +480,10 @@ rättelser eller andra upplysningar" {{action 'doMail'}} src="/images/mail.svg" 
         <div class="img_name" title-1="Click = Copy" onclick="copyToClipboard(this.innerHTML)">
           {{file.name}}
         </div>
-        <div class="img_txt1" draggable="false" ondragstart="return false" title-2="{{file.txt1}}" {{action 'ediText' file.name}}>
+        <div class="img_txt1" draggable="false" ondragstart="return false" totip="{{file.txt1}}" {{action 'ediText' file.name}}>
           {{file.txt1}}
         </div>
-        <div class="img_txt2" draggable="false" ondragstart="return false" title-2="{{file.txt2}}" {{action 'ediText' file.name}}>
+        <div class="img_txt2" draggable="false" ondragstart="return false" totip="{{file.txt2}}" {{action 'ediText' file.name}}>
           {{file.txt2}}
         </div>
         {{#if (eq file this.allNames.lastObject)}}
