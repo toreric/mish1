@@ -161,10 +161,10 @@ console.log("p2",p);
       var errmsg = "not available"
       errmsg = await imgErr (linktop)
       let lntx ="<small span style='color:#0a4'>VISAS HÄR SOM LÄNKAD BILD</small>:";
-      fileStat = "<i>Filnamn</i>: " + linkto + "<a title-2=\"" + await imgErr (linktop) + "\" style='font-family:Arial,Helvetica,sans-serif;font-size:50%;font-weight:bold'> &nbsp; &nbsp; &nbsp; &nbsp; STATUS &nbsp; &nbsp; </a><br><span style='color:#0a4'>" + lntx + "</span><br>"
+      fileStat = "<i>Filnamn</i>: " + linkto + "<br><a title-2=\"" + await imgErr (linktop) + "\" style='font-family:Arial,Helvetica,sans-serif;font-size:80%'>STATUS</a><br><span style='color:#0a4'>" + lntx + "</span><br>"
       fileStat += "<i>Länknamn</i>: <span style='color:#0a4'>" + filex + "</span><br><br>"
     } else {
-      fileStat = "<i>Filnamn</i>: " + filex + "<a title-2=\"" + await imgErr (file) + "\" style='font-family:Arial,Helvetica,sans-serif;font-size:50%;font-weight:bold'> &nbsp; &nbsp; &nbsp; &nbsp; STATUS &nbsp; &nbsp; </a><br><br>"
+      fileStat = "<i>Filnamn</i>: " + filex + "<br><a title-2=\"" + await imgErr (file) + "\" style='font-family:Arial,Helvetica,sans-serif;font-size:80%'>STATUS</a><br><br>"
     }
     fileStat += "<i>Storlek</i>: " + stat.size/1000000 + " Mb<br>"
     var tmp = execSync ("exif_dimension " + file).toString ().trim ()
