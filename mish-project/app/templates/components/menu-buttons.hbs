@@ -156,6 +156,11 @@ Planerad hur-gör-man-beskrivning">&nbsp;HJÄLP&nbsp;</button>
   <textarea name="searchtext" placeholder="Skriv här sökbegrepp, åtskilda av blanktecken, små/stora bokstäver oviktigt (välj nedan texter du vill söka i)" rows="4" style="min-width:" />
   <div class="diaMess">
     <div class="edWarn" style="font-weight:normal;text-align:right" ></div>
+    <select id="selFin" class="selectOption" onchange="return true" style="line-height:1em;background:#e4e4ef" tabindex="-1">
+      <option value="find">Sök i texter (skriv sökbegrepp ovan)</option>
+      <option value="namdup">Sök dublettnamn (direkt)</option>
+      <option value="imgdup">Sök dublettbilder (planerat)</option>
+    </select>
     <div class="srchIn"> Sök i:&nbsp;
       <span class="glue">
         <input id="t1" type="checkbox" name="search1" value="description" checked />
@@ -180,7 +185,7 @@ Planerad hur-gör-man-beskrivning">&nbsp;HJÄLP&nbsp;</button>
     </div>
     <div class="orAnd">Om blank ska sökas: skriv % (åtskiljer ej) &nbsp; &nbsp;
       <b style="font-size:75%">
-        <a href="findhelp.html" target="find_help" style="font-family: Arial, Helvetica, sans-serif">SÖKHJÄLP</a>
+        <a href="findhelp.html" target="find_help" style="font-family: Arial, Helvetica, sans-serif" tabindex="-1">SÖKHJÄLP</a>
       </b><br>Välj regel för åtskilda ord/textbitar/sökbegrepp:<br>
       <span class="glue">
         <input id="r1" type="radio" name="searchmode" value="AND" checked />

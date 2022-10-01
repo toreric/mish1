@@ -440,10 +440,10 @@ button.mainMenuClose.ui-dialog-titlebar-close:hover {
   border: 0px solid gray;
   border-radius: 4px;
   cursor: pointer;
-  /*for firefox*/
+  /*for firefox
   -moz-appearance: none;
-  /*for chrome*/
-  -webkit-appearance:none;
+  for chrome
+  -webkit-appearance:none;*/
 }
 .selectOption:hover {
   color: #000;
@@ -1257,11 +1257,11 @@ button.goAlbum:hover {
   background-color: transparent;
   cursor: pointer;
 }
-*:not(input):not(textarea) {   /* Safari iPad iPhone */
+/* *:not(input):not(textarea) {   Safari iPad iPhone */
   /*user-select: none!important;*/
-  /*-webkit-user-select: none!important;*/ /*  disable selection/Copy of UIWebView */
-  -webkit-touch-callout: none!important; /* disable the IOS popup when long-press on a link */
-}
+  /* -webkit-user-select: none!important;  disable selection/Copy of UIWebView */
+  /* -webkit-touch-callout: none!important; disable the IOS popup when long-press on a link */
+/* } */
 .nav_links {
   display: none;
   position: fixed;

@@ -4731,6 +4731,7 @@ function niceDialogOpen (dialogId) {
   $ (id).parent ().css ("max-height", "");
   $ (id).css ("max-height","");
   $ (id).dialog ("open");
+  //if (dialogId === "searcharea") $ ("#selFin").selectmenu ();
   // For jquery-ui-touch-punch, here maybe useful, may make some dialogs opened here
   // draggable on smartphones. Less useful in other cases (search for them),
   // and it does prohibit data entry in textareas
@@ -5559,7 +5560,7 @@ let prepSearchDialog = () => {
     }
     $ ("button.ui-dialog-titlebar-close").attr ("title", "Stäng"); // i18n
     $ ("div[aria-describedby='searcharea'] span.ui-dialog-title")
-      .html ('Finn bilder <span style="color:green">(ej länkar)</span>: Sök i bildtexter');
+      .html ('Finn bilder <span style="color:green">(ej länkar)</span>'); // + selectFind);
   });
 } // end prepSearchDialog
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -6237,20 +6238,23 @@ function hideKeyboard () {
   }
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Show/hide mainMenu: mainMenuShow, mainMenuHide
+/** Show/hide mainMenu: mainMenuShow, mainMenuHide, and $.maMeHi for <iframe ...>
  */
 function mainMenuShow () {
-  $ ("#menuButton").attr ("title-1", htmlSafe ("Stäng menyn")); // i18n
+  $ ("#menuButton").removeAttr ("title-1");
+  $ ("#menuButton").attr ("title", htmlSafe ("Stäng menyn")); // i18n
   $ ("#menuButton").html ("×");
   $ (".mainMenu").show ();
 }
 function mainMenuHide () {
   $ ("#menuButton").attr ("title-1", htmlSafe ("Öppna menyn")); // i18n
+  $ ("#menuButton").removeAttr ("title");
   $ ("#menuButton").html ("☰");
   $ (".mainMenu").hide ();
 }
 $.maMeHi = function () {
   $ ("#menuButton").attr ("title-1", htmlSafe ("Öppna menyn")); // i18n
+  $ ("#menuButton").removeAttr ("title");
   $ ("#menuButton").html ("☰");
   $ (".mainMenu").hide ();
 }
