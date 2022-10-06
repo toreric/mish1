@@ -2141,7 +2141,7 @@ export default Component.extend (contextMenuMixin, {
     //============================================================================================
     selectRoot (value, what) { // ##### Select album root dir from selectbox
       // Check if there is a rootcookie(?)
-console.log("selectRoot-",value);
+      console.log ("selectRoot-",value);
       if (what) var that = what; else that = this;
       $ (".mainMenu p:gt(2)").hide (); // The selectbox is in the third <p> item
       // Close all dialogs/windows
@@ -2156,7 +2156,7 @@ console.log("selectRoot-",value);
       if (value === "") {
         //if (value === "" || value === $ ("#imdbRoot").text ()) {
         $ (".mainMenu p:gt(2)").show (); // The selectbox is in the third <p> item
-console.log("selectRoot=",value);
+        console.log ("selectRoot=",value);
         return;
       }
 
@@ -2204,9 +2204,52 @@ console.log("selectRoot=",value);
             userLog ("START " + imdbroot);
           }
         }).then ( () => {
-          startInfoPage ()
+          startInfoPage ().then ();
         });
       }), 4000); // Time needed!
+    },
+    //============================================================================================
+    altFind (value) { // cf. sortlist/
+      console.log ("altFind", value);
+      if (value === "dupName") {
+        //dupName ();
+        return new Promise ( (resolve, reject) => {
+          var xhr = new XMLHttpRequest ();
+          xhr.open ('GET', 'dupnames/', true, null, null);
+          xhr.onload = function () {
+            let dupNames = xhr.response;
+            resolve (dupNames);
+          }
+          xhr.onerror = function () {
+            reject ({
+              status: this.status,
+              statusText: xhr.statusText
+            });
+          };
+          xhr.send ();
+        }).then (dpNms => {
+          console.log (dpNms);
+
+          //$ (this).dialog ("close"); close dialog searcharea!
+          // initiate search for dupNames
+          // Save this album as previous:
+          savedAlbumIndex = $ ("#imdbDirs").text ().split ("\n").indexOf ($ ("#imdbDir").text ());
+          // Place the names in the picFound album still if not yet chosen
+          // Preset imdbDir 'in order to cheat' saveOrderFunc
+          $ ("#imdbDir").text ("/"+ $ ("#picFound").text ());
+          // Populate the picFound album with favorites in namelist order:
+          doFindText (dpNms, false, [false, false, false, false, true], true);
+          $.spinnerWait (true, 110);
+  
+        }).catch (error => {
+          console.error (error.message);
+        });
+      }
+      if (value === "dupImage") {
+        //dupImage ();
+      }
+      //console.log("altFind", value, "result", res);//???????????????
+      //return res;
     },
     //============================================================================================
     async selAlb () { // ##### triggered by a click within the JStree
@@ -2893,11 +2936,13 @@ console.log("=C=");
 
       $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
       $ ("#link_show a").css ('opacity', 0);
-      $ (".img_name").toggle ();
-      if (document.getElementsByClassName ("img_name") [0].style.display === "none") {
-        $ ("#hideNames").text ("1");
-      } else {
+      //$ (".img_name").toggle ();
+      if (document.getElementsByClassName ("img_name") [0].style.display !== "none") {
+        $ (".img_name").css ("display", "none");
         $ ("#hideNames").text ("0");
+      } else {
+        $ (".img_name").css ("display", "inherit");
+        $ ("#hideNames").text ("1");
       }
     },
     //============================================================================================
@@ -3858,7 +3903,6 @@ const prepDropzone = () => {
       }, (t)); // Waiting time
     })(ms); //Pass milliseconds into closure of self-exec anon-func
     later ( () => {
-//console.log(n,"1[alt='MARKER']",$ ("[alt='MARKER']"));
       later ( () => {
         // Unmark all DOM img files
         $ ("[alt='MARKER']").removeClass ().addClass ("markFalse");
@@ -3867,19 +3911,17 @@ const prepDropzone = () => {
         for (let i=0; i<n; i++) {
           // This local 'name' will be 1) without extension 2) with escaped dots if any
           let name = myDropzone.files [i].name.replace (/\.[^.]*$/, "").replace (/\./g, "\\.");
-//console.log("Name uploaded",name);
           $ ("#i" + name + " div[alt='MARKER']").removeClass ().addClass ("markTrue");
           //$ ("#i" + name + " div[alt='MARKER']").addClass ("markTrue");
         }
         $ ("div.miniImgs").trigger ("click");
-//console.log(n,"2[alt='MARKER']",$ ("[alt='MARKER']"));
       }, 555);
       // later ( () => { // Reveal obscured uploads
       // }, 222);
     }, 12 * ms/10);
   });
 
-}
+} // End prepDropzone
 // Dropzone help funtions:
 
 function secNow () { // Local time stamp in milliseconds
@@ -5098,7 +5140,7 @@ function reqDirs (imdbroot) { // Read the dirs in the album root
         // Remove another dim last lines, move into dirCoco (directory content counter, texts)
         var dirCoco = dirList.splice (2 + dim, dim);
         $ ("#imdbPath").text (dirList [0].replace (/@/g, "/"))
-        startInfoPage ();
+        startInfoPage ().then ();
         $ ("#userDir").text (dirList [0].slice (0, dirList [0].indexOf ("@")));
         $ ("#imdbRoot").text (dirList [0].slice (dirList [0].indexOf ("@") + 1));
         dirList = dirList.slice (1);

@@ -134,14 +134,6 @@ Planerad hur-gör-man-beskrivning">&nbsp;HJÄLP&nbsp;</button>
   <!--div></div-->
 </div>
 
-
-<!-- div id="oldDropZone" style="display:none">
-  {{#drop-zone url='/upload' autoProcessQueue=false  acceptedFiles='image/jpeg,image/tiff,image/png,image/gif'}}
-  {{/drop-zone}}
-</div> -->
-
-
-
 <!-- ///// JQUERY DIALOGS ///// -->
 <div id="dialog" style="display:none">DIALOG</div>
 <div id="extradia" style="display:none">EXTRA</div>
@@ -156,10 +148,10 @@ Planerad hur-gör-man-beskrivning">&nbsp;HJÄLP&nbsp;</button>
   <textarea name="searchtext" placeholder="Skriv här sökbegrepp, åtskilda av blanktecken, små/stora bokstäver oviktigt (välj nedan texter du vill söka i)" rows="4" style="min-width:" />
   <div class="diaMess">
     <div class="edWarn" style="font-weight:normal;text-align:right" ></div>
-    <select id="selFin" class="selectOption" onchange="return true" style="line-height:1em;background:#e4e4ef" tabindex="-1">
+    <select id="altFind" class="selectOption" style="line-height:1em;background:#e4e4ef" onchange={{action 'altFind' value='target.value'}} tabindex="-1">
       <option value="find">Sök i texter (skriv sökbegrepp ovan)</option>
-      <option value="namdup">Sök dublettnamn (direkt)</option>
-      <option value="imgdup">Sök dublettbilder (planerat)</option>
+      <option value="dupName">Sök dublettnamn (direkt)</option>
+      <option value="dupImage">Sök dublettbilder (planerat)</option>
     </select>
     <div class="srchIn"> Sök i:&nbsp;
       <span class="glue">
@@ -482,7 +474,7 @@ rättelser eller andra upplysningar" {{action 'doMail'}} src="/images/mail.svg" 
           <!-- The action of this button triggers the parent album of a link -->
           <button class="goAlbum" title-2="originalet i ”{{file.albname}}”" onclick="this.parentElement.click ()" {{action 'parAlb' file.name}}>Gå till </button>
         </div>
-        <div class="img_name" title-1="Click = Copy" onclick="copyToClipboard(this.innerHTML)">
+        <div class="img_name" totip="Click = Copy" onclick="copyToClipboard(this.innerHTML)">
           {{file.name}}
         </div>
         <div class="img_txt1" draggable="false" ondragstart="return false" totip="{{file.txt1}}" {{action 'ediText' file.name}}>

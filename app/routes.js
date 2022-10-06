@@ -275,7 +275,7 @@ console.log("p2",p);
     }, 2000) // Was 1000
   })
 
-  // ##### #0.3 readSubdir (album subdirs) to selected rootdir  ...
+  // ##### #0.3 readSubdir (album subdirs) of selected rootdir  ...
   app.get ('/rootdir', function (req, res) {
     readSubdir (IMDB_HOME).then (dirlist => {
       dirlist = dirlist.join ('\n')
@@ -316,7 +316,7 @@ console.log("p2",p);
     })
   })
   // ##### #0.5 Execute a shell command
-    app.get ('/execute/:command', (req, res) => {
+  app.get ('/execute/:command', (req, res) => {
     //console.log("pwd =",execSync ("pwd").toString ().trim ())
     //console.log(req.params.command)
     //console.log(decodeURIComponent (req.params.command))
@@ -467,7 +467,7 @@ console.log("p2",p);
     console.log ('Started fullsize image generation')
   })
 
-  // ##### #4. Download full-size original image file: Get the host name in responseURL   CHECK path
+  // ##### #4. Download full-size original image file: Get the host name in responseURL
   app.get ('/download/*?', function (req, res) {
     var fileName = req.params[0] // with path
     console.log ('Download of .' + fileName.slice (IMDB.length + 3) + ' requested')
@@ -475,7 +475,7 @@ console.log("p2",p);
     res.send (fileName)
   })
 
-  // ##### #5. Delete an original file, or a symlink, and its mini and show files   CHECK path
+  // ##### #5. Delete an original file, or a symlink, and its mini and show files
   app.get ('/delete/*?', function (req, res) {
     res.location ('/')
     var fileName = req.params[0].replace (/@/g, "/") // with path
@@ -491,6 +491,20 @@ console.log("p2",p);
   app.get ('/', function (req, res) {
     res.sendFile ('index.html', {root: WWW_ROOT + '/public/'}) // load our index.html file
     // path must be "absolute or specify root to res.sendFile"
+  })
+
+  // ##### #6.1 Find duplicate file names in this album collection
+  app.get ('/dupnames', function (req, res) {
+    sqlDupName ().then (dupnames => {
+      res.location ('/')
+      res.send (dupnames)
+      //res.end ()
+    })
+    .catch ( (err) => {
+      console.error ("dupnames", err.message)
+      res.location ('/')
+      res.send (err.message)
+    })
   })
 
   // ##### #6.5 Update one or more database entries
@@ -779,6 +793,28 @@ console.log("p2",p);
       }
     })
     return 'DELETED'
+  }
+
+  // ===== Find duplicate file names in the image data base _imdb_images.sqlite
+
+  function sqlDupName () {
+    return new Promise (async function (resolve, reject) {
+      try { // Start try ----------
+        // better-sqlite3:
+        const db = new SQLite (IMDB + "/_imdb_images.sqlite")
+        const dupnames = db.prepare ("SELECT name FROM imginfo WHERE filepath NOT LIKE '%/.%' GROUP BY name HAVING COUNT(*) > 1 ORDER BY name").all ()
+        //console.log ("dupnames", dupnames);
+        var result = []
+        for (let i=0; i<dupnames.length; i++) {
+          result.push (dupnames [i].name)
+        }
+        //console.log ("result", result)
+        resolve (result.join (" "))
+        db.close ()
+      } catch (err) {
+        console.error ("sqlDupName", err.message)
+      } // End try ----------
+    }) //--Promise
   }
 
   // ===== Check and add|remove|update an image file record in the database
