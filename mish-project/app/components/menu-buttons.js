@@ -4214,7 +4214,7 @@ async function parentAlbum (tgt) {
       result = result.replace (/(<br>)+/g, "\n");
       result = result.replace(/<(?:.|\n)*?>/gm, ""); // Remove <tags>
       file = result.split ("\n") [0].replace (/^[^/]*\/(\.\.\/)*/, "/");
-      albumDir = file.slice ($ ("#imdPath").text ().length).replace (/\/[^/]*$/, "")
+      albumDir = file.slice ($ ("#imdPath").text ().length).replace (/\/[^/]*$/, "");
       //albumDir = file.replace (/^[^/]+(.*)\/[^/]+$/, "$1").trim ();
       let idx = $ ("#imdbDirs").text ().split ("\n").indexOf (albumDir);
       if (idx < 0) {
@@ -4706,7 +4706,7 @@ function notesDia (picName, filePath, title, text, save, saveClose, close) { // 
         $ ('textarea[name="notes"]').val (text.replace (/<br>/g, "\n"));
         // Link: filePath correct?
         execute ("xmpset source " + filePath + ' "' + text.replace (/"/g, '\\"')+ '"').then ( () => {
-          userLog ("TEXT written", false, 2000);
+          userLog ("NOTES written", false, 2000);
         });
       }
     });
@@ -5898,6 +5898,7 @@ var prepTextEditDialog = () => {
         var filePath = linkPath; // OK if not a link
 
         function xmpGetSource () {
+//console.log("xmpGetSource filePath",filePath);
           execute ("xmpget source " + filePath).then (result => {
             notesDia (namepic, filePath, "Anteckningar till ", result, "Spara", "Spara och stäng", "Stäng");
             hideKeyboard ();
@@ -5908,11 +5909,16 @@ var prepTextEditDialog = () => {
           // The file path will be constructed from the first getFilestat() name field
           // (NOTE: The file name IS the first name; the image name is amended later to the
           // information dialog; this was only one way of several to get the link's source ...)
+//console.log("prepTextEditDialog linkPath",linkPath);
           getFilestat (linkPath).then (result => {
-            //console.log (result); // The file info HTML, strip it and insert full path:
-            result = result.replace (/^.+: ((\.){1,2}\/)+/, $ ("#imdbPath").text () + "/"); // Remove until ':'
-            result = result.replace (/^([^<]+)<.+/, "$1"); // Remove from '<'
-            filePath = result;
+//console.log (result); // The file info HTML, strip it and insert full path:
+            // result = result.replace (/^.+: ((\.){1,2}\/)+/, $ ("#imdbPath").text () + "/"); // Remove until ':' HÄR NÅNSTANS ÄR FELET
+            // result = result.replace (/^([^<]+)<.+/, "$1"); // Remove from '<'
+            // filePath = result;
+            result = result.replace (/^.+: ((\.){1,2}\/)+/, $ ("#imdbPath").text () + "/");
+            filePath = result.substring (0, result.indexOf ("<")) // NOTE: don't use regexp!!
+            // fileName = result.replace (/(^[^<]+)<.*$/, "$1")   // WARNING: irregular string!
+//console.log("prepTextEditDialog filePath",filePath);
           }).then ( () => {
             xmpGetSource ();
             return;
@@ -5995,21 +6001,21 @@ var prepTextEditDialog = () => {
         fileName = result.substring (0, result.indexOf ("<")) // NOTE: don't use regexp!!
         // fileName = result.replace (/(^[^<]+)<.*$/, "$1")   // WARNING: irregular string!
       }).then ( () => {
-        tempStore = "TEXT written";
+        tempStore = "TEXTS written";
         saveText (fileName +'\n'+ text1 +'\n'+ text2);
         return;
       });
     } else { // if NOT a symlink:
       saveText (fileName +'\n'+ text1 +'\n'+ text2);
       if (fileName.indexOf ($ ("#picFound").text ()) < 0) {
-        tempStore = "TEXT written";
+        tempStore = "TEXTS written";
       } else {
         // As regards an uploaded picture in the #picFound album (may be used for some
         // experiments etc.): such a picture is not saved permanently, if not moved to
         // a ´real´ album. This warning is a hint of that the saved text is not written
         // to the database, but now only temporarily saved as image metadata. Move it
         // to a ´real´ album in order to really save both the picture and its metatdata.
-        tempStore = "TEXT written TEMPORARILY";
+        tempStore = "TEXTS written TEMPORARILY";
       }
     }
     // ===== XMLHttpRequest saving the text
@@ -6045,12 +6051,12 @@ function refreshEditor (namepic, origpic) {
   if (!(allow.notesView || allow.adminAll)) {
 
     document.querySelector ("div[aria-describedby='textareas'] .ui-dialog-buttonset button.notes").disabled = true;
-    //$ ("div[aria-describedby='textareas'] .ui-dialog-buttonset button.notes").css ("display", "none");
+    $ ("div[aria-describedby='textareas'] .ui-dialog-buttonset button.notes").css ("display", "none");
     $ ("div[aria-describedby='textareas'] .ui-dialog-buttonset button.keys").css ("display", "none");
   } else {
     document.querySelector ("div[aria-describedby='textareas'] .ui-dialog-buttonset button.notes").disabled = false;
-    //$ ("div[aria-describedby='textareas'] .ui-dialog-buttonset button.notes").css ("display", "inline");
-    $ ("div[aria-describedby='textareas'] .ui-dialog-buttonset button.keys").css ("display", "inline");
+    $ ("div[aria-describedby='textareas'] .ui-dialog-buttonset button.notes").css ("display", "block");
+    $ ("div[aria-describedby='textareas'] .ui-dialog-buttonset button.keys").css ("display", "block");
   }
   $ ("#textareas .edWarn").html ("");
   let warnText = "";
