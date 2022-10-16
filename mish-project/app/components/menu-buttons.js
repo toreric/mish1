@@ -1804,7 +1804,9 @@ export default Component.extend (contextMenuMixin, {
       // Extract the album name and replace &nbsp; with space:
       var album = $ (this.get ("albumName")).text ().replace (/\s/g, " ");
       var album1 = $ ("#picFound").text ().replace (/_/g, " ");
-      if ( (!(allow.albumEdit || allow.adminAll)) || album === album1) {
+    console.log("|"+album+"|");
+    console.log("|"+album1+"|");
+      if ( (!(allow.albumEdit || allow.adminAll)) && imdbDir.indexOf (picFound) < 0) {
         userLog ("OTILLÅTET", true, 800);
         return;
       }
@@ -2210,15 +2212,17 @@ export default Component.extend (contextMenuMixin, {
     },
     //============================================================================================
     altFind (value) { // cf. sortlist/
-      console.log ("altFind", value);
-      if (value === "dupName") {
-        //dupName ();
+      if (value !== "find") {
+        console.log ("Find duplicates:", value);
+        // Now value is "dupName" or "dupImage"
+        $ ("div[aria-describedby='searcharea']").hide ();
+        //$ ("#searcharea").dialog ("close");
         return new Promise ( (resolve, reject) => {
           var xhr = new XMLHttpRequest ();
-          xhr.open ('GET', 'dupnames/', true, null, null);
+          xhr.open ('GET', 'dupnames/' + value, true, null, null);
           xhr.onload = function () {
-            let dupNames = xhr.response;
-            resolve (dupNames);
+            let duplicates = xhr.response;
+            resolve (duplicates); // duplicates is the names of found images
           }
           xhr.onerror = function () {
             reject ({
@@ -2226,30 +2230,26 @@ export default Component.extend (contextMenuMixin, {
               statusText: xhr.statusText
             });
           };
+          // initiate search
+          $.spinnerWait (true);
           xhr.send ();
-        }).then (dpNms => {
-          console.log (dpNms);
-
-          //$ (this).dialog ("close"); close dialog searcharea!
-          // initiate search for dupNames
-          // Save this album as previous:
+        }).then (duplicates => {
+          console.log (duplicates);
+          // Save "this" album as previous:
           savedAlbumIndex = $ ("#imdbDirs").text ().split ("\n").indexOf ($ ("#imdbDir").text ());
           // Place the names in the picFound album still if not yet chosen
-          // Preset imdbDir 'in order to cheat' saveOrderFunc
+          // Preset imdbDir 'in order to cheat' saveOrderFunc:
           $ ("#imdbDir").text ("/"+ $ ("#picFound").text ());
-          // Populate the picFound album with favorites in namelist order:
-          doFindText (dpNms, false, [false, false, false, false, true], true);
+          // Populate the picFound album with "sort of favorites" with exact match
+          // in names' sequence (-1 means return to #searcharea if go back is chosen):
+          doFindText (duplicates, false, [false, false, false, false, true], -1);
           $.spinnerWait (true, 110);
-  
+          document.getElementById ("altFind").value = "find"; // Reset to initial first option
         }).catch (error => {
           console.error (error.message);
         });
       }
-      if (value === "dupImage") {
-        //dupImage ();
-      }
-      //console.log("altFind", value, "result", res);//???????????????
-      //return res;
+      document.getElementById ("altFind").value = "find"; // Reset to initial default option
     },
     //============================================================================================
     async selAlb () { // ##### triggered by a click within the JStree
@@ -4607,7 +4607,7 @@ function favDia (text, addfile, addmarked, savecook, closeit, savefile, findshow
         // Preset imdbDir 'in order to cheat' saveOrderFunc
         $ ("#imdbDir").text ("/"+ $ ("#picFound").text ());
         // Populate the picFound album with favorites in namelist order:
-        doFindText (text, false, [false, false, false, false, true], true);
+        doFindText (text, false, [false, false, false, false, true], 1);
         $.spinnerWait (true, 110);
       }
     },
@@ -5571,7 +5571,7 @@ let prepSearchDialog = () => {
               boxes [0].checked = true;
             }
             $.spinnerWait (true, 112);
-            doFindText (sTxt, and, sWhr);
+            doFindText (sTxt, and, sWhr, 0);
 
           }
         }
@@ -5611,10 +5611,11 @@ let prepSearchDialog = () => {
  * @param {string} sTxt whitespace separated search text words/items
  * @param {boolean} and  true=>AND | false=>OR
  * @param {boolean} sWhr (searchWhere) array = checkboxes for selected texts
- * @param {boolean} exact when true, the LIKE searched items will not be '%' surrounded
- * NOTE: ´exact´ means "Only search for file base names!":
+ * @param {integer} exact when <>0, the LIKE searched items will not be '%' surrounded
+ * NOTE: Non-zero ´exact´ also means "Only search for file base names!"
+ * NOTE: Negative ´exact´ also means called from the searcharea dialog (else favorites dialog)
  * Find pictures by exact matching of image names (file basenames), e.g.
- *   doFindText ("img_0012 img_0123", false, [false, false, false, false, true], true)
+ *   doFindText ("img_0012 img_0123", false, [false, false, false, false, true], -1)
  */
 let doFindText = (sTxt, and, sWhr, exact) => {
   let nameOrder = [];
@@ -5690,7 +5691,7 @@ let doFindText = (sTxt, and, sWhr, exact) => {
     paths = albs;
     n = paths.length;
 
-    if (exact) {
+    if (exact === 1) {
       // Sort the entries according to search items if they correspond to
       // exact file base names (else keep the previous sort order) (see there above)
       let obj = [];
@@ -5755,7 +5756,7 @@ let doFindText = (sTxt, and, sWhr, exact) => {
         // and clicked, indirectly. The key global varaible is ´returnTitles´ (search it!).
         if (n === 0) {
           document.getElementById("yesBut").disabled = true;
-          if (exact) {
+          if (exact && exact > 0) {
             let btFind ="<br><button style=\"border:solid 2px white;background:#b0c4deaa;\" onclick='$(\"#dialog\").dialog(\"close\");$(\"#favorites\").click();'>TILLBAKA</button>";
             document.getElementById("dialog").innerHTML = btFind;
             $ ("#dialog button") [0].focus ();
@@ -5808,7 +5809,7 @@ function displayPicFound () {
  * @param {string} searchString space separated search items
  * @param {boolean} and true=>AND | false=>OR
  * @param {boolean} searchWhere array, checkboxes for selected texts
- * @param {boolean} exact true will remove SQL ´%´s
+ * @param {boolean} exact <>0 will remove SQL ´%´s  (>0 means notesDia, <0 searchDia)
  * @returns {string} \n-separated file paths
  */
 function searchText (searchString, and, searchWhere, exact) {

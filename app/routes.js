@@ -71,11 +71,11 @@ module.exports = function (app) {
     // console.log ("")
     // 30 svart, 31 röd, 32 grön, 33 gul, 34 blå, 35 magenta, 36 cyan, 37 vit, 0 default
     console.log('\033[36m' + decodeURIComponent (req.originalUrl) + '\033[0m');
-    console.log ("  WWW_ROOT:", WWW_ROOT)
+    // console.log ("  WWW_ROOT:", WWW_ROOT)
     console.log ("      IMDB:", IMDB)
-    console.log (" IMDB_ROOT:", IMDB_ROOT)
-    console.log ("  IMDB_DIR:", IMDB_DIR)
-    console.log ("  picFound:", picFound)
+    // console.log (" IMDB_ROOT:", IMDB_ROOT)
+    // console.log ("  IMDB_DIR:", IMDB_DIR)
+    // console.log ("  picFound:", picFound)
     if (show_imagedir) {
       console.log (req.params)
       console.log (req.hostname)
@@ -493,18 +493,30 @@ console.log("p2",p);
     // path must be "absolute or specify root to res.sendFile"
   })
 
-  // ##### #6.1 Find duplicate file names in this album collection
-  app.get ('/dupnames', function (req, res) {
-    sqlDupName ().then (dupnames => {
-      res.location ('/')
-      res.send (dupnames)
-      //res.end ()
-    })
-    .catch ( (err) => {
-      console.error ("dupnames", err.message)
-      res.location ('/')
-      res.send (err.message)
-    })
+  // ##### #6.1 Find duplicate image names or duplicate/similar images in the album collection
+  app.get ('/dupnames/:value', function (req, res) {
+    let dupType = req.params.value
+    if (dupType === "dupName") {
+      sqlDupName ().then (dupnames => {
+        res.location ('/')
+        res.send (dupnames) //res.end () is autocreated
+      })
+      .catch ( (err) => {
+        console.error ("dupName", err.message)
+        res.location ('/')
+        res.send (err.message)
+      })
+    } else if (dupType === "dupImage") {
+      getDupImage ().then (dupnames => {
+        res.location ('/')
+        res.send (dupnames)
+      })
+      .catch ( (err) => {
+        console.error ("dupImage", err.message)
+        res.location ('/')
+        res.send (err.message)
+      })
+    } else res.end ()
   })
 
   // ##### #6.5 Update one or more database entries
@@ -695,7 +707,7 @@ console.log("p2",p);
     // The removeDiacritics funtion bypasses some characters (e.g. Sw. åäöÅÄÖ)
     let like = removeDiacritics (req.body.like)
     if (req.body.info != "exact") like = like.toLowerCase () // if not e.g. file name compare
-//console.log("like",like); //search _
+    //console.log("like",like); //search _
     let cols = eval ("[" + req.body.cols + "]")
     let taco = ["description", "creator", "source", "album", "name"]
     let columns = ""
@@ -705,18 +717,22 @@ console.log("p2",p);
     columns = columns.slice (2)
 
     try { // Start try ----------
-      // better-sqlite3:
-      const db = new SQLite (IMDB + "/_imdb_images.sqlite")
-      db.pragma ("journal_mode = WAL") // Turn on write-ahead logging
-      const rows = db.prepare ('SELECT id, filepath, ' + columns + ' AS txtstr FROM imginfo WHERE ' + like).all ()
-      setTimeout ( () => {
-        var foundpaths = ""
-        rows.forEach( (row) => {
-          foundpaths += row.filepath.trim () + "\n"
-        })
-        res.send (foundpaths.trim ())
-      }, 1000)
-      db.close ()
+      if (like === '') {
+        res.send ('')
+      } else {
+        // better-sqlite3:
+        const db = new SQLite (IMDB + "/_imdb_images.sqlite")
+        db.pragma ("journal_mode = WAL") // Turn on write-ahead logging
+        const rows = db.prepare ('SELECT id, filepath, ' + columns + ' AS txtstr FROM imginfo WHERE ' + like).all ()
+        setTimeout ( () => {
+          var foundpaths = ""
+          rows.forEach( (row) => {
+            foundpaths += row.filepath.trim () + "\n"
+          })
+          res.send (foundpaths.trim ())
+        }, 1000)
+        db.close ()
+      }
     } catch (err) {
       console.error ("€RR", err.message)
     } // End try ----------
@@ -803,16 +819,37 @@ console.log("p2",p);
         // better-sqlite3:
         const db = new SQLite (IMDB + "/_imdb_images.sqlite")
         const dupnames = db.prepare ("SELECT name FROM imginfo WHERE filepath NOT LIKE '%/.%' GROUP BY name HAVING COUNT(*) > 1 ORDER BY name").all ()
-        //console.log ("dupnames", dupnames);
+      console.log ("dupnames", dupnames);
         var result = []
         for (let i=0; i<dupnames.length; i++) {
           result.push (dupnames [i].name)
         }
-        //console.log ("result", result)
+      console.log ("result", result)
         resolve (result.join (" "))
         db.close ()
       } catch (err) {
         console.error ("sqlDupName", err.message)
+      } // End try ----------
+    }) //--Promise
+  }
+
+  // ===== Find duplicate (similar) images in the image collection
+
+  function getDupImage () {
+    return new Promise (async function (resolve, reject) {
+      try { // Start try ----------
+        var pathlist = await cmdasync ('finddupimages 0 ' + IMDB)
+        pathlist = pathlist.toString ().split (" ")
+      console.log (pathlist)
+        var result = []
+        for (let i=0; i<pathlist.length; i++) {
+          // Reveal the image name without path and file extension:
+          result.push (pathlist [i].replace (/^\/([^/]*\/)*/, "").replace (/\.[^.]+$/, ""))
+        }
+      console.log (result);
+        resolve (result.join (" "))
+      } catch (err) {
+        console.error ("sqlDupImage", err.message)
       } // End try ----------
     }) //--Promise
   }
