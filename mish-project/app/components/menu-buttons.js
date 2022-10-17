@@ -3411,6 +3411,8 @@ console.log("=C=");
           // }), 2000);
         }, 2000);                 // *NOTE: Preserved here just as an example
         $.spinnerWait (false, 4006);
+        // REMOVE duplicate search option (alternative find):
+        $ ("#altFind").hide ();
         return;
       }
       //¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
@@ -3555,9 +3557,12 @@ console.log("=C=");
             if (allow.deleteImg || allow.adminAll) $ ("#viSt").show ()
             else $ ("#viSt").hide ();
             // Hide or show the net meeting button
-            if (loggedIn) $ ("#netMeeting").show ()
+            if (loggedIn) $ ("#netMeeting").show ();
             else $ ("#netMeeting").hide ();
-
+            // DECIDE on allow duplicate search option (alternative find):
+            $ ("#altFind").show ();
+            //if (allow.saveChanges || allow.adminAll) $ ("#altFind").css ("display", "inline");
+            //else $ ("#altFind").hide ();
           }, 2000);
 //          $.spinnerWait (false, 2007);
         }, 2000);
@@ -4566,11 +4571,11 @@ function favDia (text, addfile, addmarked, savecook, closeit, savefile, findshow
       text: savefile,
       class: "saveFavs",
       click: function () {
-        let fileAdvice = "TYVÄRR: Ännu finns ingen standard för att spara lokala filer med webbläsare (förutom via nedladdningslänkar etc.).  Därför:<br>"
+        let fileAdvice = "TYVÄRR: Ännu finns ingen standard för att spara lokala filer med webbläsare (undantag nedladdningslänkar etc.).  Därför:<br>"
         fileAdvice += "Om du inte nöjer dig med att spara bara en enda favoritlista (med ";
         fileAdvice += "den mindre av [Spara]-knapparna) så måste du spara dem manuellt — i ";
         fileAdvice += "textfiler på din dator.<br> — Gör så här:<br>";
-        fileAdvice += "1.  Markera (till exempel med Ctrl + A) och kopiera (Ctrl + C) listan i favoritfönstret.<br>";
+        fileAdvice += "1.  Markera (till exempel med Ctrl + A) och kopiera (Ctrl + C) favoritfönsterlistan.<br>";
         fileAdvice += "2.  Klistra in (Ctrl + V) och spara den med en textredigerare (Anteckningar/Notepad eller liknande) som textfil med det namn och i den ";
         fileAdvice += "katalog (folder) som du själv väljer.<br>";
         fileAdvice += " — Sedan kan du med [Hämta fil]-knappen hämta din favoritlista därifrån — du kan spara olika favoritlistor att välja bland i samma katalog.<br>";

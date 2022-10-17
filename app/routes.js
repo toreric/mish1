@@ -819,12 +819,12 @@ console.log("p2",p);
         // better-sqlite3:
         const db = new SQLite (IMDB + "/_imdb_images.sqlite")
         const dupnames = db.prepare ("SELECT name FROM imginfo WHERE filepath NOT LIKE '%/.%' GROUP BY name HAVING COUNT(*) > 1 ORDER BY name").all ()
-      console.log ("dupnames", dupnames);
+        //console.log ("dupnames", dupnames);
         var result = []
         for (let i=0; i<dupnames.length; i++) {
           result.push (dupnames [i].name)
         }
-      console.log ("result", result)
+        //console.log ("result", result)
         resolve (result.join (" "))
         db.close ()
       } catch (err) {
@@ -840,13 +840,13 @@ console.log("p2",p);
       try { // Start try ----------
         var pathlist = await cmdasync ('finddupimages 0 ' + IMDB)
         pathlist = pathlist.toString ().split (" ")
-      console.log (pathlist)
+        //console.log ("pathlist", pathlist)
         var result = []
         for (let i=0; i<pathlist.length; i++) {
           // Reveal the image name without path and file extension:
           result.push (pathlist [i].replace (/^\/([^/]*\/)*/, "").replace (/\.[^.]+$/, ""))
         }
-      console.log (result);
+        //console.log ("result", result);
         resolve (result.join (" "))
       } catch (err) {
         console.error ("sqlDupImage", err.message)
