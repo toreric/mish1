@@ -818,7 +818,7 @@ console.log("p2",p);
       try { // Start try ----------
         // better-sqlite3:
         const db = new SQLite (IMDB + "/_imdb_images.sqlite")
-        const dupnames = db.prepare ("SELECT name FROM imginfo WHERE filepath NOT LIKE '%/.%' GROUP BY name HAVING COUNT(*) > 1 ORDER BY name").all ()
+        const dupnames = db.prepare ("SELECT name FROM imginfo WHERE filepath NOT LIKE '%¤/.%' GROUP BY name HAVING COUNT(*) > 1 ORDER BY name").all ()
         //console.log ("dupnames", dupnames);
         var result = []
         for (let i=0; i<dupnames.length; i++) {
@@ -828,6 +828,7 @@ console.log("p2",p);
         resolve (result.join (" "))
         db.close ()
       } catch (err) {
+        console.log ('Error at IMDB =', IMDB)
         console.error ("sqlDupName", err.message)
       } // End try ----------
     }) //--Promise
@@ -838,7 +839,7 @@ console.log("p2",p);
   function getDupImage () {
     return new Promise (async function (resolve, reject) {
       try { // Start try ----------
-        var pathlist = await cmdasync ('finddupimages 0 ' + IMDB)
+        var pathlist = await cmdasync ('finddupimages 1 ' + IMDB)
         pathlist = pathlist.toString ().split (" ")
         //console.log ("pathlist", pathlist)
         var result = []

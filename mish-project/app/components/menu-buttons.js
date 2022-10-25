@@ -1797,15 +1797,13 @@ export default Component.extend (contextMenuMixin, {
       $ ("div.settings button.confirm").blur (); // Important in some situations
     },
     //============================================================================================
-    albumEdit () { // ##### Erase or create (sub)albums (image folders)
+    albumEdit () { // ##### Erase or create (sub)albums (image folders) and more ...
 
       var imdbDir = $ ("#imdbDir").text ();
       if (imdbDir === "—") return; // remainder from 2018?
       // Extract the album name and replace &nbsp; with space:
       var album = $ (this.get ("albumName")).text ().replace (/\s/g, " ");
-      var album1 = $ ("#picFound").text ().replace (/_/g, " ");
-    console.log("|"+album+"|");
-    console.log("|"+album1+"|");
+      //console.log("|"+album+"|");
       if ( (!(allow.albumEdit || allow.adminAll)) && imdbDir.indexOf (picFound) < 0) {
         userLog ("OTILLÅTET", true, 800);
         return;
@@ -2363,6 +2361,8 @@ export default Component.extend (contextMenuMixin, {
           }
           if (value) {
             $ (".imDir.path").attr ("title-1", $ ("#imdbRoot").text () + $ ("#imdbDir").text ());
+          } else {
+            $ (".imDir.path").attr ("title-1", $ ("#imdbRoot").text ());
           }
           $.spinnerWait (true, 102);
           that.set ("subaList", a); // triggers load of subalbum links into menu-buttons.hbs
@@ -2503,12 +2503,16 @@ console.log("=C=");
     },
     //============================================================================================
     toggleJstreeAlbumSelect () {
-
+console.log("toggleJstreeAlbumSelect",1);
       $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
-      if (!$ (".jstreeAlbumSelect").is (":visible")) {
+console.log("toggleJstreeAlbumSelect",2);
+
+      if ($ (".jstreeAlbumSelect").css ("display") === "none") {
+console.log("toggleJstreeAlbumSelect",3);
         $ (".jstreeAlbumSelect").show ();
       } else {
-        $ (".jstreeAlbumSelect").hide ();
+console.log("toggleJstreeAlbumSelect",4);
+       $ (".jstreeAlbumSelect").hide ();
       }
     },
     //============================================================================================
@@ -3683,7 +3687,7 @@ console.log("=C=");
       }
     },
     //============================================================================================
-    webLinker () {
+    webLinker () { // Should probably be ABANDONED?
       if ($ ("div[aria-describedby='dialog']").is (":visible")) {
         $ ("#dialog").dialog ("close");
         return;
@@ -3753,8 +3757,6 @@ console.log("=C=");
     },
     //============================================================================================
     subalbumSelect (subal) {
-      //$ (".img_mini").parent ().remove ();
-      //alert("subalbumSelect (" + subal + ")")
       subaSelect (subal);
     }
   }
@@ -5750,7 +5752,7 @@ let doFindText = (sTxt, and, sWhr, exact) => {
       yes ="Visa i <b>" + txt + "</b>";
     }), 40);
     let modal = false;
-    let p3 =  "<p style='margin:-0.3em 1.6em 0.2em 0;background:transparent'>" + sTxt + "</p>Funna i <span style='font-weight:bold'>" + $ ("#imdbRoot").text () + "</span>:&nbsp; " + n + (n>nLimit?" (fler än " + nLimit + " kan ses i sina respektive album)":"");
+    let p3 =  "<p style='margin:-0.3em 1.6em 0.2em 0;background:transparent'>" + sTxt + "</p>Funna i <span style='font-weight:bold'>" + $ ("#imdbRoot").text () + "</span>:&nbsp; " + n + (n>nLimit?" (fler än " + nLimit + ", visas i sina respektive album)":"");
     later ( ( () => {
 
       // Run `serverShell ("temporary_1")` -> symlink creation, via `infoDia (null, "", ...

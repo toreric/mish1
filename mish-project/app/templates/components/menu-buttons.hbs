@@ -320,9 +320,9 @@ Skriv ut" {{action 'doPrint'}} src="/images/printer.svg"></a> &nbsp;
   <!-- ///// MAIN MENU, SELECT IMAGE ROOT DIRECTORIY, jstree ///// -->
   <div class="mainMenu BACKG" onclick="return false" draggable="false" ondragstart="return false" style="display:none">
 
-    <p onclick="return false" draggable="false" ondragstart="return false">
-      <a title="
-Sökning" class="search" {{action 'findText'}}>Finn bilder <span style="font:normal 1em monospace!important">[F]</span></a>
+    <p onclick="return false" draggable="false" ondragstart="return false" title="
+Sökning">
+      <a class="search" {{action 'findText'}}>Finn bilder <span style="font:normal 1em monospace!important">[F]</span></a>
     </p><br>
 
     <p onclick="return false" draggable="false" ondragstart="return false" title="
@@ -343,13 +343,13 @@ Albumsamling
       </a>
     </p><br>
 
-    <p onclick="return false" draggable="false" ondragstart="return false" style="z-index:-1">
-      <a title="
-Ta bort, gör nytt, bildsortera ..." {{action 'albumEdit'}}>{{{this.albumText}}} {{{this.albumName}}}</a>
+    <p onclick="return false" draggable="false" ondragstart="return false" style="z-index:-1" title="
+Ta bort, gör nytt, bildsortera ...">
+      <a {{action 'albumEdit'}} > {{{this.albumText}}} {{{this.albumName}}} </a>
     </p><br>
 
     <p onclick="return false" draggable="false" ondragstart="return false" title="Visa alla album = hela albumträdet" style="z-index:-1">
-      <a id ="jstreeHdr" {{action 'toggleJstreeAlbumSelect'}}>{{{this.jstreeHdr}}}</a>
+      <a id ="jstreeHdr" {{action 'toggleJstreeAlbumSelect'}} > {{{this.jstreeHdr}}} </a>
     </p>
 
     <div class="jstreeAlbumSelect" style="display:none">
@@ -436,7 +436,7 @@ rättelser eller andra upplysningar" {{action 'doMail'}} src="/images/mail.svg" 
   <div class="miniImgs">
     {{#each this.subaList as |suba|}}
       <div class="subAlbum" {{action 'subalbumSelect' suba.album}}>
-        <a class="imDir BLUET" style="background:transparent" title-2="Underalbum ”{{suba.name}}”">
+        <a class="imDir BLUET" style="background:transparent" title-2="Album ”{{suba.name}}”">
           {{#if suba.image}}
             <img src="rln{{suba.image}}"><br>
           {{/if}}
