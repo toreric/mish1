@@ -366,7 +366,7 @@ console.log("p2",p);
     allfiles = undefined
     //OLD: IMDB_DIR = req.params.imagedir.replace (/@/g, "/")
 
-    findFiles (IMDB_DIR).then (function (files) {
+    findFiles (IMDB_DIR).then (async function (files) {
       if (!files) {files = []}
       var origlist = ''
       //files.forEach (function (file) { not recommended
@@ -394,20 +394,17 @@ console.log("p2",p);
       // 7 Last is '&' or the path to the origin if this is a symlink
       ////////////////////////////////////////////////////////
       // pkgfilenames prints initial console.log message
-      //var pkgfilenamesWrap
-      async function pkgfilenamesWrap () {
-        await pkgfilenames (origlist).then ( () => {
-          if (!allfiles) {allfiles = ''}
-          res.location ('/')
-          res.send (allfiles)
-          //res.end ()
-          console.log ('...file information sent from server') // Remaining message
-        }).catch (function (error) {
-          res.location ('/')
-          res.send (error.message)
-        })
-      }
-      pkgfilenamesWrap ()
+      await pkgfilenames (origlist).then ( () => {
+console.log("origlist\n" + origlist);
+        if (!allfiles) {allfiles = ''}
+        res.location ('/')
+        res.send (allfiles)
+        //res.end ()
+        console.log ('...file information sent from server') // Remaining message
+      }).catch (function (error) {
+        res.location ('/')
+        res.send (error.message)
+      })
     })
   })
 
@@ -818,11 +815,11 @@ console.log("p2",p);
       try { // Start try ----------
         // better-sqlite3:
         const db = new SQLite (IMDB + "/_imdb_images.sqlite")
-        const dupnames = db.prepare ("SELECT name FROM imginfo WHERE filepath NOT LIKE '%¤/.%' GROUP BY name HAVING COUNT(*) > 1 ORDER BY name").all ()
-        //console.log ("dupnames", dupnames);
+        const duplist = db.prepare ("SELECT name FROM imginfo WHERE filepath NOT LIKE '%¤/.%' GROUP BY name HAVING COUNT(*) > 1 ORDER BY name").all ()
+        //console.log ("duplist", duplist);
         var result = []
-        for (let i=0; i<dupnames.length; i++) {
-          result.push (dupnames [i].name)
+        for (let i=0; i<duplist.length; i++) {
+          result.push (duplist [i].name)
         }
         //console.log ("result", result)
         resolve (result.join (" "))
@@ -1188,6 +1185,7 @@ console.log("p2",p);
       for (let file of files) {
         execSync ('pentaxdebug ' + file) // Pentax metadata bug fix is done here
         let pkg = await pkgonefile (file)
+console.log("pkg\n" + pkg);
         allfiles += '\n' + pkg
       }
       console.log ('Showfiles•minifiles•metadata...')

@@ -148,11 +148,6 @@ Planerad hur-gör-man-beskrivning">&nbsp;HJÄLP&nbsp;</button>
   <textarea name="searchtext" placeholder="Skriv här sökbegrepp, åtskilda av blanktecken, små/stora bokstäver oviktigt (välj nedan texter du vill söka i)" rows="4" style="min-width:" />
   <div class="diaMess">
     <div class="edWarn" style="font-weight:normal;text-align:right" ></div>
-    <select id="altFind" class="selectOption" style="line-height:1em;background:#e4e4ef" onchange={{action 'altFind' value='target.value'}} tabindex="-1">
-      <option value="find">Sök i texter: Skriv sökbegrepp ovan och klicka sedan på Sök&nbsp;i&nbsp;...-knappen nedan</option>
-      <option value="dupName">Sök dublettnamn (direkt, tar en stund)</option>
-      <option value="dupImage">Sök dublettbilder (direkt, tar ännu längre tid!)</option>
-    </select>
     <div class="srchIn"> Sök i:&nbsp;
       <span class="glue">
         <input id="t1" type="checkbox" name="search1" value="description" checked />
@@ -188,6 +183,11 @@ Planerad hur-gör-man-beskrivning">&nbsp;HJÄLP&nbsp;</button>
         <label for="r2">&nbsp;minst&nbsp;ett&nbsp;av&nbsp;dem&nbsp;ska&nbsp;hittas&nbsp;i&nbsp;en&nbsp;bild</label>
       </span>
     </div>
+    <select id="altFind" class="selectOption" style="line-height:1em;background:#e4e4ef" onchange={{action 'altFind' value='target.value'}} tabindex="-1">
+      <option value="find">Sök i texter: Skriv sökbegrepp överst och klicka sedan på Sök&nbsp;i&nbsp;...-knappen nedan</option>
+      <option value="dupName">Sök dublettnamn (direkt, tar en stund)</option>
+      <option value="dupImage">Sök dublettbilder (direkt, tar ännu längre tid!)</option>
+    </select>
     <span class="srchMsg"></span>
   </div>
 </div>

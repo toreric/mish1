@@ -434,7 +434,7 @@ button.mainMenuClose.ui-dialog-titlebar-close:hover {
   font-family: Georgia, 'Times New Roman', Times, serif !important;
   color: blue;
   padding: 0px;
-  margin: 0px;
+  margin: 0 0 1.1em 0;
   line-height: 2em;
   background-color: #fff;
   border: 0px solid gray;

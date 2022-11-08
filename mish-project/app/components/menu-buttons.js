@@ -961,19 +961,23 @@ export default Component.extend (contextMenuMixin, {
         } else {
           $ ('.showCount:last').hide ();
           $ ("#sortOrder").text (sortnames); // Save in the DOM
+console.log("*** sortnames", sortnames);
         }
         test = 'A2'; //console.log ("refreshAll, test = A2");
         n = 0;
         await new Promise (z => setTimeout (z, 1111));
-        // Use sortOrder (as far as possible) to reorder namedata ERROR
+        // Use sortOrder (as far as possible) to reorder namedata ERROR?
         // First pick out namedata (allNames) against sortnames (SN), then any remaining
         this.requestNames ().then (async namedata => {
+console.log("*** namedata", namedata);
+console.log("*** namedata[0]", namedata[0]);
           var i = 0, k = 0;
           // --- Start prepare sortnames checking CSV columns
           var SN = [];
           if ($ ("#sortOrder").text ().trim ().length > 0) {
             SN = $ ("#sortOrder").text ().trim ().split ('\n');
           }
+console.log("*** SN", SN);
           //console.log("NOTE: SN is the latest saved list of images, not nesseceraly reflecting the actual directory content (must have been saved to do that):",SN);
           sortnames = '';
           for (i=0; i<SN.length; i++) {
@@ -994,6 +998,7 @@ export default Component.extend (contextMenuMixin, {
           }
           test = 'A3'; //console.log ("refreshAll, test = A3");
           sortnames = sortnames.trim (); // Important!
+console.log("*** sortnames\n" + sortnames);
           if (sortnames === "") {
             var snamsvec = [];
           } else {
@@ -1017,7 +1022,8 @@ export default Component.extend (contextMenuMixin, {
           // --- Make the object vector 'newdata' for new 'namedata=allNames' content
           // --- Use 'snams' order to pick from 'namedata' into 'newdata' and 'newsort'
           // --- 'namedata' and 'name': Ordered as from disk (like unknown)
-          var newsort = "", newdata = [];
+          var newdata = [];
+          var newsort = ""; // MODIFY HERE sortnames; ******* ******* ******* ******* 
           while (snams.length > 0 && name.length > 0) {
             k = name.indexOf (snams [0]);
             if (k > -1) {
@@ -1039,12 +1045,12 @@ export default Component.extend (contextMenuMixin, {
             newdata.insertAt (0, namedata [0]);
             namedata.removeAt (0, 1);
           }
-
+console.log("*** newsort\n" + newsort);
           n = newdata.length;
           // Transform the elements for HBS template use:
           for (i=0; i<n; i++) {
             newdata [i].linkto = newdata [i].orig;
-            // Added, see requestNames, '´row´ number eight to nine'
+            // Added, see requestNames, '´row´ number seven to nine'
             // 7 symlink:   SPACE, else the value for linkto
             // 8 linkto:    which is set in refreshAll
             // 9 albname:   short name for symlink's original album
@@ -1441,8 +1447,8 @@ export default Component.extend (contextMenuMixin, {
   //----------------------------------------------------------------------------------------------
   requestNames () { // ===== Request the file information list
     // NEPF = number of entries (lines) per file in the plain text-line-result list ('namedata')
-    // from the server. The main information is retreived from each image file, e.g.
-    // metadata. It is reordered into 'newdata' in 'sortnames' order, as far as possible;
+    // from the server. The main information (e.g. metadata) is retreived from each image file.
+    // It is reordered into 'newdata' in 'sortnames' order, as far as possible;
     // 'sortnames' is cleaned from non-existent (removed) files and extended with new (added)
     // files, in order as is. So far, the sort order is 'sortnames' with hideFlag (and albumIndex?)
     var that = this;
@@ -2238,7 +2244,7 @@ export default Component.extend (contextMenuMixin, {
           // Place the names in the picFound album still if not yet chosen
           // Preset imdbDir 'in order to cheat' saveOrderFunc:
           $ ("#imdbDir").text ("/"+ $ ("#picFound").text ());
-          // Populate the picFound album with "sort of favorites" with exact match
+          // Populate the picFound album with "kind of favorites" with exact match
           // in names' sequence (-1 means return to #searcharea if go back is chosen):
           doFindText (duplicates, false, [false, false, false, false, true], -1);
           $.spinnerWait (true, 110);
@@ -3794,7 +3800,7 @@ let nopsGif = "GIF-fil kan bara ha tillfällig text"; // i18n
 let openRoot = ""; // If "demo" then SETS THE ADMIN FLAG TO ALLOW ANYTHING!
 let picFound = "Funna_bilder"; // i18n
 let preloadShowImg = [];
-let rootAdv = "Om ingenting fungerar: Ladda om webbläsaren! Annars: Välj här en albumsamling om den inte redan är förvald. Det kan finnas fler än ett alterativ. Ingångsalbumet till en albumsamling kallas också ”albumroten”. ”Albumträdet” förgrenar sig sedan nedåt – ”cyberträd” kan växa med roten uppåt!";
+let rootAdv = "Om ingenting fungerar: Ladda om webbläsaren! Annars: Välj här en albumsamling om den inte redan är förvald. Det kan finnas fler än ett alternativ. Ingångsalbumet till en albumsamling kallas också ”albumroten”. ”Albumträdet” förgrenar sig sedan nedåt – ”cyberträd” växer ofta så med roten överst!";
 let loginStatus = "";
 let tempStore = "";
 // Paths for pictures to be soon updated in _imdb_images.sqlite (using sqlUpdate; then clear pathsUpdate!):
@@ -5618,7 +5624,7 @@ let prepSearchDialog = () => {
  * @param {string} sTxt whitespace separated search text words/items
  * @param {boolean} and  true=>AND | false=>OR
  * @param {boolean} sWhr (searchWhere) array = checkboxes for selected texts
- * @param {integer} exact when <>0, the LIKE searched items will not be '%' surrounded
+ * @param {integer} exact when <>0, the LIKE searched items will NOT be '%' surrounded
  * NOTE: Non-zero ´exact´ also means "Only search for file base names!"
  * NOTE: Negative ´exact´ also means called from the searcharea dialog (else favorites dialog)
  * Find pictures by exact matching of image names (file basenames), e.g.
@@ -5627,7 +5633,7 @@ let prepSearchDialog = () => {
 let doFindText = (sTxt, and, sWhr, exact) => {
   let nameOrder = [];
   searchText (sTxt, and, sWhr, exact).then (async result => {
-    if (!exact) centerMarkSave = "×"; // reset ´favorites' header´
+    if (exact === 0) centerMarkSave = "×"; // reset ´favorites' header´
     // replace '<' and '>' for presentation in the header below
     sTxt = sTxt.replace (/</g, "&lt;").replace (/>/g, "&gt;");
     $ ("#temporary_1").text ("");
@@ -5698,8 +5704,8 @@ let doFindText = (sTxt, and, sWhr, exact) => {
     paths = albs;
     n = paths.length;
 
-    if (exact === 1) {
-      // Sort the entries according to search items if they correspond to
+    if (exact !== 0) {
+      // Re-sort the entries according to search items if they correspond to
       // exact file base names (else keep the previous sort order) (see there above)
       let obj = [];
       filesFound = 0;
@@ -5721,6 +5727,7 @@ let doFindText = (sTxt, and, sWhr, exact) => {
       } else {
         sobj = obj.sort ( (a, b) => {return a.sortIndex - b.sortIndex})
       }
+      sobj.reverse ();
       obj = null;
 
       paths = [];
@@ -5763,7 +5770,7 @@ let doFindText = (sTxt, and, sWhr, exact) => {
         // and clicked, indirectly. The key global varaible is ´returnTitles´ (search it!).
         if (n === 0) {
           document.getElementById("yesBut").disabled = true;
-          if (exact && exact > 0) {
+          if (exact === 1) {
             let btFind ="<br><button style=\"border:solid 2px white;background:#b0c4deaa;\" onclick='$(\"#dialog\").dialog(\"close\");$(\"#favorites\").click();'>TILLBAKA</button>";
             document.getElementById("dialog").innerHTML = btFind;
             $ ("#dialog button") [0].focus ();
@@ -5816,7 +5823,7 @@ function displayPicFound () {
  * @param {string} searchString space separated search items
  * @param {boolean} and true=>AND | false=>OR
  * @param {boolean} searchWhere array, checkboxes for selected texts
- * @param {boolean} exact <>0 will remove SQL ´%´s  (>0 means notesDia, <0 searchDia)
+ * @param {integer} exact <>0 will remove SQL ´%´s  (>0 means origin notesDia, <0 searchDia)
  * @returns {string} \n-separated file paths
  */
 function searchText (searchString, and, searchWhere, exact) {
@@ -5838,12 +5845,11 @@ function searchText (searchString, and, searchWhere, exact) {
       // First replace % (thus, NBSP):
       arr[i] = arr [i].replace (/%/g, " "); // % in Mish means 'sticking space'
       // Then use % the SQL way if applicable and add `ESCAPE '\'` to each:
-      if (exact) { // Exact match for file (base) names favorites search
+      if (exact !== 0) { // Exact match for file (base) names favorites search
         arr [i] = "'" + arr [i] + "' ESCAPE '\\'";
       } else {
         arr [i] = "'%" + arr [i] + "%' ESCAPE '\\'";
       }
-      // if (i > 0) {ao = AO + "\n"}
       if (i > 0) {ao = AO}
       str += ao + "txtstr LIKE " + arr[i].trim ();
     }
@@ -5855,7 +5861,7 @@ function searchText (searchString, and, searchWhere, exact) {
   let srchData = new FormData ();
   srchData.append ("like", str);
   srchData.append ("cols", searchWhere);
-  if (exact) srchData.append ("info", "exact");
+  if (exact !== 0) srchData.append ("info", "exact");
   else srchData.append ("info", "");
   return new Promise ( (resolve, reject) => {
     let xhr = new XMLHttpRequest();
