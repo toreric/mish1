@@ -2247,6 +2247,9 @@ console.log("*** newsort\n" + newsort);
           $ ("#imdbDir").text ("/"+ $ ("#picFound").text ());
           // Populate the picFound album with "kind of favorites" with exact match
           // in names' sequence (-1 means return to #searcharea if go back is chosen):
+
+          // HERE IF duplicates IS A PATH LIST (SEE routes.js) DO CHANGE CODING!!
+
           doFindText (duplicates, false, [false, false, false, false, true], -1);
           $.spinnerWait (true, 110);
           document.getElementById ("altFind").value = "find"; // Reset to initial first option
