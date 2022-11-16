@@ -1075,6 +1075,7 @@ The jquery ui-tooltip is used elsewere (totip in *.js) */
 }
 .img_mini .img_name:hover {
   color: #d80;
+  background-color: #434;
 }
 .js-draggableObject.show-inline.ember-view:hover {
   position: relative;
@@ -1540,6 +1541,7 @@ select {
 }
 .mainMenu p a:hover {
   color: #7df;
+  opacity: 1;
 }
 .jstreeAlbumSelect {
   border: 1px solid gray;

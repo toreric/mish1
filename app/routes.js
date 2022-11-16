@@ -842,6 +842,7 @@ console.log("origlist\n" + origlist);
         var result = []
         for (let i=0; i<pathlist.length; i++) {
           // Reveal the image name without path and file extension:
+          // ***** THIS MUST BE CHANGED IN ORDER TO KEEP COPIES TOGETHER *****
           result.push (pathlist [i].replace (/^\/([^/]*\/)*/, "").replace (/\.[^.]+$/, ""))
         }
         //console.log ("result", result);
@@ -985,7 +986,7 @@ console.log("origlist\n" + origlist);
     return acceptedName && ftype && imtype !== '_mini_' && imtype !== '_show_' && imtype !== '_imdb_' && name.slice (0,1) !== "."
   }
 
-  // ===== Read a directory's file content; in passing remove broken links
+  // ===== Read a directory's file content; when passing remove broken links
   function findFiles (dirName) {
     return fs.readdirAsync ('rln' + IMDB + dirName).map (function (fileName) { // Cannot use mapSeries here (why?)
       var filepath = path.join (IMDB + dirName, fileName)
@@ -1185,7 +1186,7 @@ console.log("origlist\n" + origlist);
       for (let file of files) {
         execSync ('pentaxdebug ' + file) // Pentax metadata bug fix is done here
         let pkg = await pkgonefile (file)
-console.log("pkg\n" + pkg);
+        //console.log("pkg\n" + pkg);
         allfiles += '\n' + pkg
       }
       console.log ('Showfiles•minifiles•metadata...')

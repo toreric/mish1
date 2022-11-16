@@ -961,7 +961,7 @@ export default Component.extend (contextMenuMixin, {
         } else {
           $ ('.showCount:last').hide ();
           $ ("#sortOrder").text (sortnames); // Save in the DOM
-console.log("*** sortnames", sortnames);
+console.log("*** sortnames\n" + sortnames);
         }
         test = 'A2'; //console.log ("refreshAll, test = A2");
         n = 0;
@@ -969,8 +969,9 @@ console.log("*** sortnames", sortnames);
         // Use sortOrder (as far as possible) to reorder namedata ERROR?
         // First pick out namedata (allNames) against sortnames (SN), then any remaining
         this.requestNames ().then (async namedata => {
-console.log("*** namedata", namedata);
-console.log("*** namedata[0]", namedata[0]);
+tmp = "*** namedata.name";
+for (let i=0; i<namedata.length; i++) tmp += "\n" + namedata[i].name;
+console.log(tmp);
           var i = 0, k = 0;
           // --- Start prepare sortnames checking CSV columns
           var SN = [];
@@ -1041,8 +1042,8 @@ console.log("*** sortnames\n" + sortnames);
           // --- The names, of such (added) 'namedata' objects, are kept remaining in 'name'??
           while (namedata.length > 0) {
             newsort = namedata [0].name + ",0,0\n" + newsort;
-            //newdata.pushObject (namedata [0]); instead:
-            newdata.insertAt (0, namedata [0]);
+            newdata.pushObject (namedata [0]); //alternative:
+            //newdata.insertAt (0, namedata [0]);
             namedata.removeAt (0, 1);
           }
 console.log("*** newsort\n" + newsort);
@@ -1120,7 +1121,7 @@ console.log("*** newsort\n" + newsort);
                 $ ("div.BUT_2").text (ntext);
               }
             }), 777);
-            userLog ("RELOAD");
+            //userLog ("RELOAD");
           } else {
             later ( ( () => {
               let ntext = $ ("div.BUT_2").text ().replace (/(^[^,]*),.*$/, "$1");
@@ -1419,7 +1420,7 @@ console.log("*** newsort\n" + newsort);
             that.set ("albumText", " Albumåtgärder för "); // i18n
             that.set ("albumName", '<b class="albumName">”' + tmpName + '”</b>');
             that.set ("jstreeHdr", "<pre style='margin:0'>Albumsamlingen ”" + that.get ("imdbRoot") + "”" + "\t\t﹀</pre>");
-            $ ("#jstreeHdr").attr ("title", htmlSafe ("Alla album (hela albumträdet)")); //i18n
+            //$ ("#jstreeHdr").attr ("title", htmlSafe ("Alla album (hela albumträdet)")); //i18n
           }
           $.spinnerWait (true, 321);
           resolve (data); // Return file-name text lines
@@ -2837,7 +2838,8 @@ console.log("toggleJstreeAlbumSelect",4);
       }
     },
     //============================================================================================
-    async reload () { // Alternative refresh method Jan 2022, #reLd button
+    async reload () { // New refresh button Jan 2022: #reLd
+                      // NOTE that the button #reFr was hidden Jan 2022
       let idx = $ ("#imdbDirs").text ().split ("\n").indexOf ($ ("#imdbDir").text ().replace (/^[^/]*/, ""));
       if (idx > -1) selectJstreeNode (idx);
       if (!imdbDir_is_picFound ()) {
@@ -2850,8 +2852,8 @@ console.log("toggleJstreeAlbumSelect",4);
       }
     },
     //============================================================================================
-    async refresh () { // ##### Reload the imageList and update the sort order, #reFr hidden Jan 2022
-
+    async refresh () { // ##### Reload the imageList and update the sort order
+                       // NOTE that the button #reFr was hidden Jan 2022, see #reLd
       if ($ (".toggleAuto").text () === "STOP") return; // Auto slide show is running
       document.getElementById ("imageList").className = "hide-all";
 
@@ -3800,7 +3802,7 @@ let nopsGif = "GIF-fil kan bara ha tillfällig text"; // i18n
 let openRoot = ""; // If "demo" then SETS THE ADMIN FLAG TO ALLOW ANYTHING!
 let picFound = "Funna_bilder"; // i18n
 let preloadShowImg = [];
-let rootAdv = "Om ingenting fungerar: Ladda om webbläsaren! Annars: Välj här en albumsamling om den inte redan är förvald. Det kan finnas fler än ett alternativ. Ingångsalbumet till en albumsamling kallas också ”albumroten”. ”Albumträdet” förgrenar sig sedan nedåt – ”cyberträd” växer ofta så med roten överst!";
+let rootAdv = "Om ingenting fungerar: Ladda om webbläsaren! Annars: Välj här en albumsamling om den inte redan är förvald. Det kan finnas fler än ett alternativ. Ingångsalbumet till en albumsamling kallas också ”albumroten”. ”Albumträdet” förgrenar sig sedan nedåt – ”cyberträd” växer ofta så – med roten överst!";
 let loginStatus = "";
 let tempStore = "";
 // Paths for pictures to be soon updated in _imdb_images.sqlite (using sqlUpdate; then clear pathsUpdate!):
@@ -3808,7 +3810,7 @@ let pathsUpdate = [];
 let savedAlbumIndex = 0;
 
 // NOTE: returnTitles [2] is used as a ´word´ in some places (must be one item), search for it!
-let returnTitles = []; // Are set in `didInsertElement`
+let returnTitles = []; // Are set in `didRender`
 // Corresponding navigation buttons display=""|"none" in the high position, the extra are low down
 let navButtons = ["", "none", "none"]; // Additional extra navigation buttons ["⌂hem", "↖", "⇆"]
 //  The "⇆" button is triggered/pressed by the browser's navigation arrows, visibility-independent
@@ -4555,7 +4557,7 @@ function favDia (text, addfile, addmarked, savecook, closeit, savefile, findshow
         var texar = $ ('textarea[name="favorites"]') [0];
         $ ('textarea[name="favorites"]').val ( (text + "\n" + newfav).trim ());
         texar.scrollTop = texar.scrollHeight;
-        texar.trigger ("focus");
+        texar.focus ();
       }
     },
     {
@@ -5626,7 +5628,7 @@ let prepSearchDialog = () => {
  * @param {boolean} sWhr (searchWhere) array = checkboxes for selected texts
  * @param {integer} exact when <>0, the LIKE searched items will NOT be '%' surrounded
  * NOTE: Non-zero ´exact´ also means "Only search for file base names!"
- * NOTE: Negative ´exact´ also means called from the searcharea dialog (else favorites dialog)
+ * NOTE: Negative ´exact´ also means called from the find dialog (else favorites dialog)
  * Find pictures by exact matching of image names (file basenames), e.g.
  *   doFindText ("img_0012 img_0123", false, [false, false, false, false, true], -1)
  */
@@ -5704,44 +5706,44 @@ let doFindText = (sTxt, and, sWhr, exact) => {
     paths = albs;
     n = paths.length;
 
-    if (exact !== 0) {
-      // Re-sort the entries according to search items if they correspond to
-      // exact file base names (else keep the previous sort order) (see there above)
-      let obj = [];
-      filesFound = 0;
-      let srchTxt = sTxt.split (" ");
-      for (let i=0; i<n; i++) {
-        obj [i] = ({"path": paths [i], "name": "_NA_", "cmd": cmd [i], "sortIndex": 9999});
-        let pathsi = paths [i].replace (/^.*\/([^/]+)$/, "$1").replace (/\.[^./]+$/, "")
-        for (let j=0; j<srchTxt.length; j++) {
-          if (pathsi === srchTxt [j]) {
-            obj [i] = ({"path": paths [i], "name": nameOrder [i], "cmd": cmd [i], "sortIndex": j + 1});
-            filesFound++;
-            break;
-          }
-        }
-      }
-      let sobj;
-      if (filesFound < 3) { // Since ...?
-        sobj = obj;
-      } else {
-        sobj = obj.sort ( (a, b) => {return a.sortIndex - b.sortIndex})
-      }
-      sobj.reverse ();
-      obj = null;
+    // if (exact > 0) { // Only if 'favorites', not for duplicate search from the find dialog
+    //   // Re-sort the entries according to search items if they correspond to
+    //   // exact file base names (else keep the previous sort order) (see there above)
+    //   let obj = [];
+    //   filesFound = 0;
+    //   let srchTxt = sTxt.split (" ");
+    //   for (let i=0; i<n; i++) {
+    //     obj [i] = ({"path": paths [i], "name": "_NA_", "cmd": cmd [i], "sortIndex": 9999});
+    //     let pathsi = paths [i].replace (/^.*\/([^/]+)$/, "$1").replace (/\.[^./]+$/, "")
+    //     for (let j=0; j<srchTxt.length; j++) {
+    //       if (pathsi === srchTxt [j]) {
+    //         obj [i] = ({"path": paths [i], "name": nameOrder [i], "cmd": cmd [i], "sortIndex": j + 1});
+    //         filesFound++;
+    //         break;
+    //       }
+    //     }
+    //   }
+    //   let sobj;
+    //   if (filesFound < 3) { // Since ...?
+    //     sobj = obj;
+    //   } else {
+    //     sobj = obj.sort ( (a, b) => {return a.sortIndex - b.sortIndex})
+    //   }
+    //   sobj.reverse ();
+    //   obj = null;
 
-      paths = [];
-      nameOrder = [];
-      cmd = [];
-      for (let i=0; i<n; i++) {
-        if (i < nLimit) {
-          nameOrder.push (sobj [i].name);
-          cmd.push (sobj [i].cmd);
-        }
-        paths.push (sobj [i].path);
-      }
-      sobj = null;
-    }
+    //   paths = [];
+    //   nameOrder = [];
+    //   cmd = [];
+    //   for (let i=0; i<n; i++) {
+    //     if (i < nLimit) {
+    //       nameOrder.push (sobj [i].name);
+    //       cmd.push (sobj [i].cmd);
+    //     }
+    //     paths.push (sobj [i].path);
+    //   }
+    //   sobj = null;
+    // }
 
     nameOrder = nameOrder.join ("\n");
     $ ("#temporary_1").text (cmd.join ("\n"));
@@ -6215,7 +6217,7 @@ function subaSelect (subName) { // ##### Sub-album link selected
   }
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// Disable browser back button
+// Disable browser back button, go to most recent album with browser navigation buttons
 window.history.pushState (null, "");
 window.onpopstate = function () {
   subaSelect ("⇆");
@@ -6289,7 +6291,8 @@ function hideKeyboard () {
           field.setAttribute ('style', 'display:none;');
           setTimeout (function () {
             document.body.removeChild (field);
-            document.body.trigger ("focus");
+            //document.body.trigger ("focus");
+            document.body.focus ();
           }, 20);
         }, 200);
       };
