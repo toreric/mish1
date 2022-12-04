@@ -196,7 +196,7 @@ console.log("p2",p);
     setTimeout (function () {
       allDirs ().then (dirlist => { // dirlist entries start with the root album
         areAlbums (dirlist).then (async dirlist => {
-          dirlist = dirlist.sort ()
+//          dirlist = dirlist.sort ()
           let dirtext = dirlist.join ("€")
           let dircoco = [] // directory content counter
           let dirlabel = [] // Album label thumbnail paths

@@ -945,7 +945,8 @@ export default Component.extend (contextMenuMixin, {
       var test = 'A1'; //console.log ("refreshAll, test = A1");
       $.spinnerWait (true, 101.01);
       await this.requestOrder ().then (async sortnames => {
-        if (sortnames === undefined) sortnames = "";
+        // if (sortnames === undefined) sortnames = "";
+        if (sortnames === undefined) sortnames = $ ("#sortOrder").text (); // Possibly preloaded...
         if (sortnames === "Error!") {
           mainMenuShow ();
 
@@ -961,7 +962,7 @@ export default Component.extend (contextMenuMixin, {
         } else {
           $ ('.showCount:last').hide ();
           $ ("#sortOrder").text (sortnames); // Save in the DOM
-console.log("*** sortnames\n" + sortnames);
+// console.log("*A* sortnames\n" + sortnames);
         }
         test = 'A2'; //console.log ("refreshAll, test = A2");
         n = 0;
@@ -969,20 +970,20 @@ console.log("*** sortnames\n" + sortnames);
         // Use sortOrder (as far as possible) to reorder namedata ERROR?
         // First pick out namedata (allNames) against sortnames (SN), then any remaining
         this.requestNames ().then (async namedata => {
-tmp = "*** namedata.name";
-for (let i=0; i<namedata.length; i++) tmp += "\n" + namedata[i].name;
-console.log(tmp);
+// let tmp = "*** namedata.name";
+// for (let i=0; i<namedata.length; i++) tmp += "\n" + namedata[i].name;
+// console.log(tmp);
           var i = 0, k = 0;
           // --- Start prepare sortnames checking CSV columns
           var SN = [];
           if ($ ("#sortOrder").text ().trim ().length > 0) {
             SN = $ ("#sortOrder").text ().trim ().split ('\n');
           }
-console.log("*** SN", SN);
+// console.log("*** SN", SN);
           //console.log("NOTE: SN is the latest saved list of images, not nesseceraly reflecting the actual directory content (must have been saved to do that):",SN);
           sortnames = '';
           for (i=0; i<SN.length; i++) {
-            var tmp = SN [i].split (",");
+            let tmp = SN [i].split (",");
             if (tmp [0].slice (0, 1) !== ".") {
               if (tmp.length < 2) {
                 tmp.push (" ");
@@ -999,7 +1000,7 @@ console.log("*** SN", SN);
           }
           test = 'A3'; //console.log ("refreshAll, test = A3");
           sortnames = sortnames.trim (); // Important!
-console.log("*** sortnames\n" + sortnames);
+// console.log("*B* sortnames\n" + sortnames);
           if (sortnames === "") {
             var snamsvec = [];
           } else {
@@ -1024,7 +1025,7 @@ console.log("*** sortnames\n" + sortnames);
           // --- Use 'snams' order to pick from 'namedata' into 'newdata' and 'newsort'
           // --- 'namedata' and 'name': Ordered as from disk (like unknown)
           var newdata = [];
-          var newsort = ""; // MODIFY HERE sortnames; ******* ******* ******* ******* 
+          var newsort = "";
           while (snams.length > 0 && name.length > 0) {
             k = name.indexOf (snams [0]);
             if (k > -1) {
@@ -1040,13 +1041,16 @@ console.log("*** sortnames\n" + sortnames);
           // --- Move remaining 'namedata' objects (e.g. uploads) into 'newdata' until empty.
           // --- Place them first to get better noticed. Update newsort for sortnames.
           // --- The names, of such (added) 'namedata' objects, are kept remaining in 'name'??
+// console.log("*** namedata",namedata);
           while (namedata.length > 0) {
-            newsort = namedata [0].name + ",0,0\n" + newsort;
+            if (namedata [0].name) newsort = namedata [0].name + ",0,0\n" + newsort;
             newdata.pushObject (namedata [0]); //alternative:
             //newdata.insertAt (0, namedata [0]);
             namedata.removeAt (0, 1);
           }
-console.log("*** newsort\n" + newsort);
+          newsort = newsort.trim (); // Important
+          if (newsort.length < 1) {newsort = sortnames}
+// console.log("*** newsort\n" + newsort);
           n = newdata.length;
           // Transform the elements for HBS template use:
           for (i=0; i<n; i++) {
@@ -1066,7 +1070,6 @@ console.log("*** newsort\n" + newsort);
             }
           }
 
-          newsort = newsort.trim (); // Important
           test = 'E0'; //console.log ("refreshAll, test = E0");
           this.set ("allNames", newdata); // triggers the minipics reload (RELOAD)
           $ ("#sortOrder").text (newsort); // Save in the DOM
@@ -1152,7 +1155,7 @@ console.log("*** newsort\n" + newsort);
       $ ('#navKeys').text ('true');
       resolve (n);
     });
-  },
+  }, // End refreshAll
   //----------------------------------------------------------------------------------------------
   setNavKeys () { // ===== Trigger actions.showNext when key < or > is pressed etc...
 
@@ -2077,7 +2080,7 @@ console.log("*** newsort\n" + newsort);
           if (opt === "checked") {$ ("#yesBut").trigger ("focus");}
         }), 400);
       }
-    },
+    }, // End albumEditOption
     //============================================================================================
     // ##### Check file base names against a server directory & replace the corresponding command
     // with ´#exists...´, no file transfer if it already exists.  NOTE: checkNames uses
@@ -2239,18 +2242,21 @@ console.log("*** newsort\n" + newsort);
           $.spinnerWait (true);
           xhr.send ();
         }).then (duplicates => {
-          console.log (duplicates);
-          // Save "this" album as previous:
+          // NOTE: Here duplicates[0] will be "dupName/" or "dupImage/":
+          duplicates = value + "/ " + duplicates; // Space delimited
+          //(removed in searchText but the added slash makes this an illegal filename, if forgotten)
+          // console.log ("value+duplicates\n" + duplicates);
+          // Save the present album as the previous album:
           savedAlbumIndex = $ ("#imdbDirs").text ().split ("\n").indexOf ($ ("#imdbDir").text ());
           // Place the names in the picFound album still if not yet chosen
           // Preset imdbDir 'in order to cheat' saveOrderFunc:
           $ ("#imdbDir").text ("/"+ $ ("#picFound").text ());
+
           // Populate the picFound album with "kind of favorites" with exact match
-          // in names' sequence (-1 means return to #searcharea if go back is chosen):
-
-          // HERE IF duplicates IS A PATH LIST (SEE routes.js) DO CHANGE CODING!!
-
+          // in names' sequence (-1 means return to #searcharea if go back is chosen).
+          // NOTE: Here duplicates[0] is "dupName/" or "dupImage/":
           doFindText (duplicates, false, [false, false, false, false, true], -1);
+
           $.spinnerWait (true, 110);
           document.getElementById ("altFind").value = "find"; // Reset to initial first option
         }).catch (error => {
@@ -2845,11 +2851,12 @@ console.log("toggleJstreeAlbumSelect",4);
                       // NOTE that the button #reFr was hidden Jan 2022
       let idx = $ ("#imdbDirs").text ().split ("\n").indexOf ($ ("#imdbDir").text ().replace (/^[^/]*/, ""));
       if (idx > -1) selectJstreeNode (idx);
+      // NOTE: jstree here ^^^ uses (calls) selectAlbum (see also the HBS file)
       if (!imdbDir_is_picFound ()) {
         // Perform pending DB updates
         if (pathsUpdate.length > 0) {
           await sqlUpdate (pathsUpdate.join ("\n"));
-          pathsUpdate = randIndex (0); // Dummy use of randIndex (=> [])
+          pathsUpdate = randIndex (0); // Dummy use of randIndex (=> []), just testing :)
           pathsUpdate = [];
         }
       }
@@ -2918,8 +2925,12 @@ console.log("toggleJstreeAlbumSelect",4);
         var newOrder = '';
         // Get the true ordered name list from the DOM mini-pictures (thumbnails).
         names = $ (".img_mini .img_name").text ();
+// console.log("saveOrder: names",names);
         names = names.toString ().trim ().replace (/\s+/g, " ");
+// console.log("saveOrder: names",names);
         names = names.split (" ");
+        if (names.length === 1 && names [0].length === 0) names = [];
+// console.log("saveOrder: names",names, names.length);
         for (i=0; i<names.length; i++) {
           k = SName.indexOf (names [i]);
           if (k > -1) {
@@ -2931,10 +2942,12 @@ console.log("toggleJstreeAlbumSelect",4);
             newOrder = newOrder + '\n' + names [i] + ',0,0';
           }
         }
+        // If this is a search result and saved in #sortOrder (maybe not yet any 'names' in DOM):
+        if (names.length === 0) newOrder = $ ("#sortOrder").text (); //or = SN.join ("\n");
         newOrder = newOrder.trim ();
         later ( ( () => {
           if (saveOrderFunc) {
-            saveOrderFunc (newOrder).then ( () => { // Save on server disk
+            saveOrderFunc (newOrder, "called from saveOrder").then ( () => { // Save on server disk
               document.getElementById ("saveOrder").blur ();
               //resetBorders (); // TOO LATE for gotoMinipic: removes the new marker
             });
@@ -4443,10 +4456,10 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) {
       click: function () {
         return new Promise (resolve => {
 
-          // Special case: Evaluate #temporary_1 for link || move.
+          // Special case: Evaluate #temporary_1 for link||move (see contextmenu).
           if (picName === "") {
             $.spinnerWait (true, 108);
-//console.log("infoDia:temporary_1\n" + $("#temporary_1").text ());
+            //console.log("infoDia:temporary_1\n" + $("#temporary_1").text ());
             serverShell ("temporary_1"); // Contains complete server file paths
             // Extract/construct sqlUpdate file list if there are any
             // move=... moveto=... lines in #temporary_1
@@ -4469,9 +4482,9 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) {
               //console.log("infoDia:files for sqlUpdate (autodetecting and skipping symlinks)" + "\n" + files);
             if (files.length > 0) {
               document.getElementById("reLd").disabled = false;
-              later ( ( () => {
-                $ ("#reFr").trigger ("click");
-              }), 800);
+              // later ( ( () => {
+              //   $ ("#reFr").trigger ("click");
+              // }), 800);
               later ( (async () => {
                 await sqlUpdate (files);
               }), 5000);
@@ -4491,7 +4504,7 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) {
             $.spinnerWait (true, 109);
             document.getElementById("reLd").disabled = false;
             later ( ( () => {
-              $ ("#reFr").trigger ("click");
+              $ ("#reLd").trigger ("click");
             }), 1999);
           }
 
@@ -5049,7 +5062,7 @@ const saveOrderFunc = (namelist) => { // ===== XMLHttpRequest saving the thumbna
         });
       }
     };
-//alert ("saveOrderFunc" + "\n  namelist ´" + namelist + "´" + statusValues ());
+//alert (info + "\nsaveOrderFunc namelist:´\n" + namelist + "´\n" + statusValues ());
     xhr.send (namelist);
   }).catch (error => {
     console.error (error.message);
@@ -5057,7 +5070,7 @@ const saveOrderFunc = (namelist) => { // ===== XMLHttpRequest saving the thumbna
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function statusValues () {
-  let txt = "";
+  let txt = "\nstatusValues:";
   txt += "\n  #imdbDir ´" + $ ("#imdbDir").text () + "´";
   txt += "\n  #imdbDirs ´" + $ ("#imdbDirs").text () + "´";
   //txt += "\n  #imdbLabels ´" + $ ("#imdbLabels").text () + "´";
@@ -5650,7 +5663,7 @@ let doFindText = (sTxt, and, sWhr, exact) => {
     let filesFound = 0;
     let countAlbs = [];
     if (result) {
-      paths = result.split ("\n").sort (); // Sort entries (see there below)
+      paths = result.split ("\n");//.sort (); // Sort entries (see there below)
       let chalbs = $ ("#imdbDirs").text ().split ("\n");
       // -- Prepare counters for all albums
       let counts = "0".repeat (chalbs.length).split ("").map (Number);
@@ -5674,7 +5687,7 @@ let doFindText = (sTxt, and, sWhr, exact) => {
           var okay = acceptedFileName (fname);
 //console.log("okay",okay, fname);
 
-          // In order to show duplicates make the link names unique
+          // In order to make possible show duplicates: Make the link names unique
           // by adding four random characters (r4) to the basename (n1)
           let n1 = fname.replace (/\.[^./]*$/, "");
           let n2 = fname.replace (/(.+)(\.[^.]*$)/, "$2");
@@ -5748,7 +5761,7 @@ let doFindText = (sTxt, and, sWhr, exact) => {
     //   sobj = null;
     // }
 
-    nameOrder = nameOrder.join ("\n");
+    nameOrder = nameOrder.join ("\n").trim ();
     $ ("#temporary_1").text (cmd.join ("\n"));
 
     if (n > 0 && n < nLimit) {
@@ -5756,6 +5769,10 @@ let doFindText = (sTxt, and, sWhr, exact) => {
       // Only if the picFound album is supposed to be immediately reused, regenerate
       // the picFound album: the shell commands must execute in sequence (don't split)
       await execute ("rm -rf " +lpath+ "&&mkdir -m0775 " +lpath+ "&&touch " +lpath+ "/.imdb&&chmod 664 " +lpath+ "/.imdb");
+      $ ("#imdbDir").text ("/" + $ ("#picFound").text ());
+      $ ("#sortOrder").text (nameOrder);
+      // await new Promise (z => setTimeout (z, 30));
+      await saveOrderFunc (nameOrder, "first save from doFindText");
     }
     userLog (n + " FOUND");
     let txt = removeUnderscore ($ ("#picFound").text ().replace (/\.[^.]{4}$/, ""), true);
@@ -5765,55 +5782,62 @@ let doFindText = (sTxt, and, sWhr, exact) => {
     }), 40);
     let modal = false;
     let p3 =  "<p style='margin:-0.3em 1.6em 0.2em 0;background:transparent'>" + sTxt + "</p>Funna i <span style='font-weight:bold'>" + $ ("#imdbRoot").text () + "</span>:&nbsp; " + n + (n>nLimit?" (fler än " + nLimit + ", visas i sina respektive album)":"");
-    later ( ( () => {
+    later ( (async () => {
+
+     saveOrderFunc (nameOrder, "second save from doFindText").then ( () => {
 
       // Run `serverShell ("temporary_1")` -> symlink creation, via `infoDia (null, "", ...
       infoDia (null, "", p3, "<div style='text-align:left;margin:0.3em 0 0 2em'>" + paths.join ("<br>") + "</div>", yes, modal);
 
+     });
+
       later ( ( () => {
         // In this section the hidden ´go back to previous album´ button is located
-        // and clicked, indirectly. The key global varaible is ´returnTitles´ (search it!).
+        // and clicked, indirectly. The key global varaible is 'returnTitles' (search it!).
         if (n === 0) {
-          document.getElementById("yesBut").disabled = true;
+          document.getElementById ("yesBut").disabled = true;
           if (exact === 1) {
             let btFind ="<br><button style=\"border:solid 2px white;background:#b0c4deaa;\" onclick='$(\"#dialog\").dialog(\"close\");$(\"#favorites\").click();'>TILLBAKA</button>";
-            document.getElementById("dialog").innerHTML = btFind;
+            document.getElementById ("dialog").innerHTML = btFind;
             $ ("#dialog button") [0].focus ();
           } else {
             let btFind ="<br><button style=\"border:solid 2px white;background:#b0c4deaa;\" onclick='$(\"#dialog\").dialog(\"close\");$(\"a.search\").click();'>TILLBAKA</button>";
-            document.getElementById("dialog").innerHTML = btFind;
+            document.getElementById ("dialog").innerHTML = btFind;
             $ ("#dialog button") [0].focus ();
           }
         } else if (n > nLimit) {
-          document.getElementById("yesBut").disabled = true;
+          document.getElementById ("yesBut").disabled = true;
           let btFind = "<div style=\"text-align:left\"> Fann:<br>" + countAlbs.join ("<br>") + "</div><br><button style=\"border:solid 2px white;background:#b0c4deaa;\" onclick='$(\"#dialog\").dialog(\"close\");$(\"a.search\").click();'>TILLBAKA</button>";
-          document.getElementById("dialog").innerHTML = btFind;
+          document.getElementById ("dialog").innerHTML = btFind;
           $ ("#dialog button") [0].focus ();
         }
-      }), 40);
 
-      $ ("button.findText").show ();
-      $ ("button.updText").css ("float", "right");
+        $ ("button.findText").show ();
+        $ ("button.updText").css ("float", "right");
 
-      $ ("div[aria-describedby='searcharea']").hide ();
-      if (n > 0 && n < nLimit) displayPicFound ();
-      else $.spinnerWait (false, 111);
+        $ ("div[aria-describedby='searcharea']").hide ();
+        if (n > 0 && n < (1 + nLimit)) {
+          displayPicFound ();
+// console.log("DISPLAYPICFOUND");
+//           later ( ( () => {
+//             $ ("#toggleName").trigger ("click"); // auto-show names
+//           }), 3333);
+        } else $.spinnerWait (false, 111);
 
-      let noDisplay = n && n <= nLimit && loginStatus === "guest";
-      if (noDisplay) $ ("div[aria-describedby='dialog']").hide ();
-      // Save 'nameOrder' as the picFound album's namelist:
-      later ( ( () => {
-        saveOrderFunc (nameOrder.trim ()).then ( () => {
-          if (noDisplay) { // then show the search result at once
-            $ ("div[aria-describedby='dialog']").hide ();
-            later ( ( () => {
-              $ ("div[aria-describedby='dialog'] button#yesBut").trigger ("click");
-            }), 200);
-          } // ...else inspect and decide whether to click the show button
-        });
-      }), 600);
+        let noDisplay = n && n <= nLimit && loginStatus === "guest";
+        if (noDisplay) $ ("div[aria-describedby='dialog']").hide ();
+        // Save 'nameOrder' as the picFound album's namelist:
+        later ( ( () => {
+            if (noDisplay) { // then show the search result at once
+              $ ("div[aria-describedby='dialog']").hide ();
+              later ( ( () => {
+                $ ("div[aria-describedby='dialog'] button#yesBut").trigger ("click");
+              }), 200);
+            } // ...else inspect and decide whether to click the show button
+        }), 600);
+      }), 999);
 
-    }), 2000);
+    }), 999);
 
   });
 } // End doFindText
@@ -5858,7 +5882,6 @@ function searchText (searchString, and, searchWhere, exact) {
       if (i > 0) {ao = AO}
       str += ao + "txtstr LIKE " + arr[i].trim ();
     }
-    // str = str.replace (/\n/g, "");
   }
   if (!$ ("#imdbDir").text ()) {
     $ ("#imdbDir").text ("/" + $ ("#picFound").text ());
@@ -5875,7 +5898,49 @@ function searchText (searchString, and, searchWhere, exact) {
     setReqHdr (xhr, 21);
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {
-        let data = xhr.response.trim ();
+        var data = xhr.response.trim ();
+// console.log("@@@ searchString \n" + searchString);
+// console.log("@@@ searchString \n" + searchString.split (" ").join ("\n"));
+// console.log("@@@ data\n" + data);
+        if (exact !== 0) { // reorder like searchString
+          var datArr = data.split ("\n");
+          var namArr = [];
+          var seaArr = [];
+          var tmpArr = [];
+          for (let i=0; i<datArr.length; i++) {
+            namArr [i] = datArr [i].replace (/^(.*\/)*(.*)(\.[^.]*)$/,"$2");
+            tmpArr [i] = datArr [i].replace (/^(.*\/)*(.*)(\.[^.]*)$/,"$2"); // Just in case
+          }
+          if (arr) seaArr = searchString.split (" ");
+// console.log("@@@ seaArr\n" + seaArr.join ("\n"));
+// console.log("@@@ namArr\n" + namArr.join ("\n"));
+
+          // The 'reordering template' (seaArr) depends on this special switch set in altFind:
+          if (seaArr [0] === "dupName/") {
+            seaArr = tmpArr.sort ();
+          }
+          if (seaArr [0] === "dupImage/") seaArr.splice (0, 1);
+
+// console.log("lengths",seaArr.length,datArr.length);
+// console.log("lengths",namArr.length,datArr.length);
+// console.log("@@@ seaArr\n" + seaArr.join ("\n"));
+// console.log("@@@ namArr\n" + namArr.join ("\n"));
+          data = [];
+          for (let i=0; i<seaArr.length; i++) {
+            for (let j=0; j<namArr.length; j++) {
+              if (seaArr [i] === namArr [j]) {
+                data [i] = datArr [j];
+                //datArr.splice (j,1);
+                namArr [j] = "###";
+                break;
+              }
+            }
+          }
+// console.log("@@@ namArr\n" + namArr.join ("\n"));
+          data = data.join ("\n");
+// console.log("@@* data\n" + data);
+        }
+// console.log("@** data\n" + data);
         //data.sort
         resolve (data);
       } else {
@@ -6452,7 +6517,7 @@ function createEvent (eventName, options) {
   sourceElement.dispatchEvent(dragStartEvent);
 
   // (*) await new Promise((resolve) => setTimeout(() => resolve(), 1000));
-  await new Promise((resolve) => setTimeout(() => resolve(), 20*document.getElementsByClassName("img_mini").length));
+  await new Promise((resolve) => setTimeout(() => resolve(), 40*document.getElementsByClassName("img_mini").length));
 
   /* simulate a drag event on the source element */
   const dragEvent = createEvent(
