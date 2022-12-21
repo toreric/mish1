@@ -184,9 +184,9 @@ Planerad hur-gör-man-beskrivning">&nbsp;HJÄLP&nbsp;</button>
       </span>
     </div>
     <select id="altFind" class="selectOption" style="line-height:1em;background:#e4e4ef" onchange={{action 'altFind' value='target.value'}} tabindex="-1">
-      <option value="find">Sök i texter: Skriv sökbegrepp överst och klicka sedan på Sök&nbsp;i&nbsp;...-knappen nedan</option>
-      <option value="dupName">Sök dublettnamn (direkt, tar en stund)</option>
-      <option value="dupImage">Sök dublettbilder (direkt, tar ännu längre tid!)</option>
+      <option value="find">Sök i texter: Skriv sökbegrepp överst och använd sedan Sök-i-knappen nedan</option>
+      <option value="dupName">Finn dublettnamn i hela albumsamlingen</option>
+      <option value="dupImage">Finn dublettbilder i hela albumsamlingen</option>
     </select>
     <span class="srchMsg"></span>
   </div>
@@ -476,6 +476,7 @@ Ingen annan inbjudan
     <span class="numShown" title="shown">0</span>&nbsp;visas,
     <span class="numHidden" title="invisible">0</span>&nbsp;dolda
     (<span class="numMarked" title="marked">0</span>&nbsp;markerade)
+    <span class="dupInf"></span>
   </span>
 </p><!-- MiniImages = links to slides -->
 <div class="miniImgs">
@@ -524,6 +525,7 @@ Ingen annan inbjudan
   <span class="numShown" title="shown">0</span>&nbsp;visas,
   <span class="numHidden" title="invisible">0</span>&nbsp;dolda
   (<span class="numMarked" title="marked">0</span>&nbsp;markerade)
+  <span class="dupInf"></span>
   <br>
  <!-- Extra minimal subalbum list at bottom -->
   {{#each this.subaList as |suba|}}

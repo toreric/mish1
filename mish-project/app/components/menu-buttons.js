@@ -2223,6 +2223,9 @@ export default Component.extend (contextMenuMixin, {
       if (value !== "find") {
         console.log ("Find duplicates:", value);
         // Now value is "dupName" or "dupImage"
+        infoDups = "";
+        if (value === "dupName") infoDups = "<br><br>Med dublettnamn (använd <b>N</b>-knappen)";
+        if (value === "dupImage") infoDups = "<br><br>Kanske dublettbilder";
         $ ("div[aria-describedby='searcharea']").hide ();
         //$ ("#searcharea").dialog ("close");
         return new Promise ( (resolve, reject) => {
@@ -2383,6 +2386,7 @@ export default Component.extend (contextMenuMixin, {
           $.spinnerWait (true, 102);
           that.set ("subaList", a); // triggers load of subalbum links into menu-buttons.hbs
 //console.log(a);
+          if (imdbDir_is_picFound ()) $ (".dupInf").html (infoDups); else $ (".dupInf").html ("");
           // REFRESH the displayed album
           $ ("#reFr").trigger ("click"); // Initiate refresh
           await new Promise (z => setTimeout (z, 1000)); // Wait a second
@@ -2519,15 +2523,11 @@ console.log("=C=");
     },
     //============================================================================================
     toggleJstreeAlbumSelect () {
-console.log("toggleJstreeAlbumSelect",1);
       $ ("div.ui-tooltip-content").remove (); // May remain unintentionally ...
-console.log("toggleJstreeAlbumSelect",2);
 
       if ($ (".jstreeAlbumSelect").css ("display") === "none") {
-console.log("toggleJstreeAlbumSelect",3);
         $ (".jstreeAlbumSelect").show ();
       } else {
-console.log("toggleJstreeAlbumSelect",4);
        $ (".jstreeAlbumSelect").hide ();
       }
     },
@@ -3809,21 +3809,22 @@ let centerMarkSave = "×";
 let cmsg = "Får inte laddas ned/förstoras utan särskilt medgivande: Vänligen kontakta copyrightinnehavare eller Hembygdsföreningen";
 let eraseOriginals = false;
 let homeTip = "\nI N T R O D U K T I O N";
+let infoDups = "";
 let logAdv = "Logga in för att kunna se inställningar: Anonymt utan namn och lösenord, eller med namnet ’gäst’ utan lösenord som ger vissa redigeringsrättigheter"; // i18n
 let loggedIn = false;
+let loginStatus = "";
 let mailAdmin = "tore.ericsson@tores.se";
 let nosObs = "Du får skriva men kan ej spara text utan annan inloggning"; // i18n
 let notLoggedOutEver = true;
 let nopsGif = "GIF-fil kan bara ha tillfällig text"; // i18n
 let openRoot = ""; // If "demo" then SETS THE ADMIN FLAG TO ALLOW ANYTHING!
+// Paths for pictures to be soon updated in _imdb_images.sqlite (using sqlUpdate; then clear pathsUpdate!):
+let pathsUpdate = [];
 let picFound = "Funna_bilder"; // i18n
 let preloadShowImg = [];
 let rootAdv = "Om ingenting fungerar: Ladda om webbläsaren! Annars: Välj här en albumsamling om den inte redan är förvald. Det kan finnas fler än ett alternativ. Ingångsalbumet till en albumsamling kallas också ”albumroten”. ”Albumträdet” förgrenar sig sedan nedåt – ”cyberträd” växer ofta så – med roten överst!";
-let loginStatus = "";
-let tempStore = "";
-// Paths for pictures to be soon updated in _imdb_images.sqlite (using sqlUpdate; then clear pathsUpdate!):
-let pathsUpdate = [];
 let savedAlbumIndex = 0;
+let tempStore = "";
 
 // NOTE: returnTitles [2] is used as a ´word´ in some places (must be one item), search for it!
 let returnTitles = []; // Are set in `didRender`
@@ -4564,7 +4565,7 @@ function favDia (text, addfile, addmarked, savecook, closeit, savefile, findshow
         for (let i=0; i<nodes.length; i++) {
           let str = nodes [i].nextElementSibling.innerHTML.trim ();
 
-          if (imdbDir_is_picFound) {
+          if (imdbDir_is_picFound ()) {
             str = str.replace (/\.[^.]{4}$/, "");
           }
           newfav += str + "\n";
@@ -5602,6 +5603,7 @@ let prepSearchDialog = () => {
               boxes [0].checked = true;
             }
             $.spinnerWait (true, 112);
+            infoDups = "";
             doFindText (sTxt, and, sWhr, 0);
 
           }
@@ -5778,7 +5780,7 @@ let doFindText = (sTxt, and, sWhr, exact) => {
     let txt = removeUnderscore ($ ("#picFound").text ().replace (/\.[^.]{4}$/, ""), true);
     let yes;
     later ( ( () => {
-      yes ="Visa i <b>" + txt + "</b>";
+      yes ="Visa i <strong>" + txt + "</strong>";
     }), 40);
     let modal = false;
     let p3 =  "<p style='margin:-0.3em 1.6em 0.2em 0;background:transparent'>" + sTxt + "</p>Funna i <span style='font-weight:bold'>" + $ ("#imdbRoot").text () + "</span>:&nbsp; " + n + (n>nLimit?" (fler än " + nLimit + ", visas i sina respektive album)":"");

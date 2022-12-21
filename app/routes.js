@@ -813,17 +813,19 @@ console.log("origlist\n" + origlist);
   function sqlDupName () {
     return new Promise (async function (resolve, reject) {
       try { // Start try ----------
-        // better-sqlite3:
-        const db = new SQLite (IMDB + "/_imdb_images.sqlite")
-        const duplist = db.prepare ("SELECT name FROM imginfo WHERE filepath NOT LIKE '%¤/.%' GROUP BY name HAVING COUNT(*) > 1 ORDER BY name").all ()
-        //console.log ("duplist", duplist);
-        var result = []
-        for (let i=0; i<duplist.length; i++) {
-          result.push (duplist [i].name)
-        }
+        // // better-sqlite3:
+        // const db = new SQLite (IMDB + "/_imdb_images.sqlite")
+        // const duplist = db.prepare ("SELECT name FROM imginfo WHERE filepath NOT LIKE '%/.%' GROUP BY name HAVING COUNT(*) > 1 ORDER BY name").all ()
+        var duplist = await cmdasync ('finddupnames 1 ' + IMDB)
+        var result = duplist.toString ().trim ().split ("\n")
+console.log ("duplist", result);
+        // var result = []
+        // for (let i=0; i<duplist.length; i++) {
+        //   result.push (duplist [i].name)
+        // }
         //console.log ("result", result)
         resolve (result.join (" "))
-        db.close ()
+        // db.close ()
       } catch (err) {
         console.log ('Error at IMDB =', IMDB)
         console.error ("sqlDupName", err.message)
@@ -842,7 +844,7 @@ console.log("origlist\n" + origlist);
         var result = []
         for (let i=0; i<pathlist.length; i++) {
           // Reveal the image name without path and file extension:
-          // ***** THIS MUST BE CHANGED IN ORDER TO KEEP COPIES TOGETHER *****
+          // ***** THIS MUST not necesseraly! BE CHANGED IN ORDER TO KEEP COPIES TOGETHER *****
           result.push (pathlist [i].replace (/^\/([^/]*\/)*/, "").replace (/\.[^.]+$/, ""))
         }
         //console.log ("result", result);
