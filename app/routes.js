@@ -174,6 +174,10 @@ console.log("p2",p);
     if (tmp.indexOf ("Invalid") > -1) {tmp = missing}
     fileStat += "<i>Fototid</i>: " + tmp + "<br>"
     fileStat += "<i>Ändrad</i>: " + stat.mtime.toLocaleString (LT, {year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'}) + "<br>"
+
+    //fileStat += "<br><a onclick='window.parent.parent.window.actualDups ()'>Sök dublettbilder</a><br>"
+    fileStat += "<br><a onclick='$.actualDups ()'>Sök dublettbilder</a><br>"
+
     res.send (fileStat)
   })
 
@@ -494,7 +498,7 @@ console.log("origlist\n" + origlist);
   app.get ('/dupnames/:value', function (req, res) {
     let dupType = req.params.value
     if (dupType === "dupName") {
-      sqlDupName ().then (dupnames => {
+      getDupName ().then (dupnames => {
         res.location ('/')
         res.send (dupnames) //res.end () is autocreated
       })
@@ -510,6 +514,16 @@ console.log("origlist\n" + origlist);
       })
       .catch ( (err) => {
         console.error ("dupImage", err.message)
+        res.location ('/')
+        res.send (err.message)
+      })
+    } else if (dupType.slice (0, 10) === "actualDups") {
+      getActualDups (dupType.substr (10)).then (dupnames => {
+        res.location ('/')
+        res.send (dupnames)
+      })
+      .catch ( (err) => {
+        console.error ("actualDups", err.message)
         res.location ('/')
         res.send (err.message)
       })
@@ -808,9 +822,9 @@ console.log("origlist\n" + origlist);
     return 'DELETED'
   }
 
-  // ===== Find duplicate file names in the image data base _imdb_images.sqlite
+  // ===== Find duplicate image names among images in the image collection
 
-  function sqlDupName () {
+  function getDupName () {
     return new Promise (async function (resolve, reject) {
       try { // Start try ----------
         // // better-sqlite3:
@@ -818,7 +832,7 @@ console.log("origlist\n" + origlist);
         // const duplist = db.prepare ("SELECT name FROM imginfo WHERE filepath NOT LIKE '%/.%' GROUP BY name HAVING COUNT(*) > 1 ORDER BY name").all ()
         var duplist = await cmdasync ('finddupnames 1 ' + IMDB)
         var result = duplist.toString ().trim ().split ("\n")
-console.log ("duplist", result);
+        //console.log ("duplist =", result);
         // var result = []
         // for (let i=0; i<duplist.length; i++) {
         //   result.push (duplist [i].name)
@@ -828,29 +842,49 @@ console.log ("duplist", result);
         // db.close ()
       } catch (err) {
         console.log ('Error at IMDB =', IMDB)
-        console.error ("sqlDupName", err.message)
+        console.error ("getDupName", err.message)
       } // End try ----------
     }) //--Promise
   }
 
-  // ===== Find duplicate (similar) images in the image collection
+  // ===== Find any duplicates (similar) among images in the image collection
 
   function getDupImage () {
     return new Promise (async function (resolve, reject) {
       try { // Start try ----------
         var pathlist = await cmdasync ('finddupimages 1 ' + IMDB)
         pathlist = pathlist.toString ().split (" ")
-        //console.log ("pathlist", pathlist)
+        //console.log ("pathlist =", pathlist)
         var result = []
         for (let i=0; i<pathlist.length; i++) {
-          // Reveal the image name without path and file extension:
-          // ***** THIS MUST not necesseraly! BE CHANGED IN ORDER TO KEEP COPIES TOGETHER *****
           result.push (pathlist [i].replace (/^\/([^/]*\/)*/, "").replace (/\.[^.]+$/, ""))
         }
         //console.log ("result", result);
         resolve (result.join (" "))
       } catch (err) {
-        console.error ("sqlDupImage", err.message)
+        console.error ("getDupImage", err.message)
+      } // End try ----------
+    }) //--Promise
+  }
+
+  // ===== Find duplicate (similar) images to one image in the image collection
+
+  function getActualDups (picName) {
+    return new Promise (async function (resolve, reject) {
+      try { // Start try ----------
+        let cmd = 'finddupimages 3 ' + IMDB + ' ' + picName
+console.log ("cmd =", cmd);
+        var pathlist = await cmdasync (cmd)
+        pathlist = pathlist.toString ().split (' ')
+console.log ("pathlist = ", pathlist)
+        var result = []
+        for (let i=0; i<pathlist.length; i++) {
+          result.push (pathlist [i].replace (/^\/([^/]*\/)*/, "").replace (/\.[^.]+$/, ""))
+        }
+console.log ("result", result);
+        resolve (result.join (" "))
+      } catch (err) {
+        console.error ("getDupImage", err.message)
       } // End try ----------
     }) //--Promise
   }
