@@ -2215,7 +2215,7 @@ export default Component.extend (contextMenuMixin, {
         // Now value is "dupName" or "dupImage"
         infoDups = "";
         if (value === "dupName") infoDups = "<br><br>Med dublettnamn (använd <b>N</b>-knappen)";
-        if (value === "dupImage") infoDups = "<br><br>Kanske dublettbilder";
+        if (value === "dupImage") infoDups = "<br><br>Kan vara dublettbilder";
         $ ("div[aria-describedby='searcharea']").hide ();
         //$ ("#searcharea").dialog ("close");
         return new Promise ( (resolve, reject) => {
@@ -5664,42 +5664,45 @@ console.log("doFindText: paths",paths);
       var inames = " ".repeat (chalbs.length).split ("");
       n = paths.length;
       let lpath = $ ("#imdbPath").text () + "/" + $ ("#picFound").text (); // NOTE: #picFound has no slash!
-      for (let i=0; i<n; i++) {
+      for (let i=0; i<n; i++) {150
         let chalb = paths [i].replace (/^[^/]+(.*)\/[^/]+$/, "$1"); // in #imdbDirs format
         // -- Allow only files/pictures in the albums of #imdbDirs (chalbs):
+        let okay0 = false;
         let idx = chalbs.indexOf (chalb);
-        if (idx > -1) {
+        if (idx > -1) {okay0 = true;}
 console.log("doFindText: chalb",chalb);
-          counts [idx]++; // -- A hit in this album
-          let fname = paths [i].replace (/^.*\/([^/]+$)/, "$1");
-          inames [idx] = (inames [idx] + " " + fname).trim ();
-          let linkfrom = paths [i];
-          linkfrom = "../" + linkfrom.replace (/^[^/]*\//, "");
+        counts [idx]++; // -- A hit in this album
+        let fname = paths [i].replace (/^.*\/([^/]+$)/, "$1");
+        inames [idx] = (inames [idx] + " " + fname).trim ();
+        let linkfrom = paths [i];
+        linkfrom = "../" + linkfrom.replace (/^[^/]*\//, "");
 //console.log("doFindText: linkfrom",linkfrom);
 
-          // -- 'paths' may accidentally contain illegal image file names, normally
-          // ignored. If so, such names will be noticed by red color (just an
-          // extra service). They may have been collected into the database at
-          // regeneration and may appear in this list.
-          var okay = acceptedFileName (fname);
-//console.log("okay",okay, fname);
+        // -- 'paths' may accidentally contain illegal image file names, normally
+        // ignored. If so, such names will be noticed by red color (just an
+        // extra service). They may have been collected into the database at
+        // regeneration and may appear in this list.
+        let okay1 = acceptedFileName (fname);
+        //var okay = acceptedFileName (fname);
 
-          // -- In order to make possible show duplicates: Make the link names unique
-          // by adding four random characters (r4) to the basename (n1)
-          let n1 = fname.replace (/\.[^./]*$/, "");
-          let n2 = fname.replace (/(.+)(\.[^.]*$)/, "$2");
-          let r4 = Math.random().toString(36).substr(2,4);
-          fname = n1 + "." + r4 + n2;
-          if (filesFound < nLimit) {
-            filesFound++;
-            if (okay) nameOrder.push (n1 + "." + r4 + ",0,0");
+        // -- In order to make possible show duplicates: Make the link names unique
+        // by adding four random characters (r4) to the basename (n1)
+        let n0 = paths [i].replace (/^(.*\/)[^/]+$/, "$1");
+        if (!okay0) {n0 = "<span style='color:red'>" + n0 + "</span>";}
+        let n1 = fname.replace (/\.[^./]*$/, "");
+        if (!okay1) {n1 = "<span style='color:red'>" + n1 + "</span>";}
+        let n2 = fname.replace (/(.+)(\.[^.]*$)/, "$2");
+        paths [i] = n0 + n1 + n2;
+        let r4 = Math.random().toString(36).substr(2,4);
+        fname = n1 + "." + r4 + n2;
+        if (filesFound < nLimit) {
+          filesFound++;
+          if (okay0 && okay1) {
+            nameOrder.push (n1 + "." + r4 + ",0,0");
             let linkto = lpath + "/" + fname;
-            if (okay) cmd.push ("ln -sf " + linkfrom + " " + linkto);
-          }
-          if (okay) albs.push (paths [i])
-          else {
-            albs.push (paths [i].replace (/^(.*\/)[^/]+$/, "$1") +"<span style='color:red'>"+ n1 +"</span>"+ n2 + " — kan ej visas");
-          }
+            cmd.push ("ln -sf " + linkfrom + " " + linkto);
+          } else {paths [i] += " — kan ej visas"}
+          albs.push (paths [i]);
         }
       }
 //console.log("doFindText:result",result);
@@ -5823,12 +5826,15 @@ for (let i=0; i<countAlbs.length; i++) {
         if (n > 0 && n < (1 + nLimit)) {
           displayPicFound (); // prepare its use by showing it
         } else $.spinnerWait (false, 111);
-        // noDisplay means don't display the result dialog (but display the result directly!)
-        let noDisplay = n && n <= nLimit && loginStatus === "guest";
-        if (noDisplay) $ ("div[aria-describedby='dialog']").hide ();
+        // noDialog means don't display the result dialog (but display the result directly!)
+        let noDialog = n && n <= nLimit && loginStatus === "guest";
+
+noDialog = false;
+
+        if (noDialog) $ ("div[aria-describedby='dialog']").hide ();
 
         later ( ( () => {
-            if (noDisplay) { // then show the search result at once
+            if (noDialog) { // then show the search result at once
               $ ("div[aria-describedby='dialog']").hide ();
               later ( ( () => {
                 $ ("div[aria-describedby='dialog'] button#yesBut").trigger ("click");
@@ -5899,9 +5905,9 @@ function searchText (searchString, and, searchWhere, exact) {
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {
         var data = xhr.response.trim ();
-// console.log("@@@ searchString \n" + searchString);
-// console.log("@@@ searchString \n" + searchString.split (" ").join ("\n"));
-// console.log("@@@ data\n" + data);
+console.log("@@@ searchString \n" + searchString);
+console.log("@@@ searchString \n" + searchString.split (" ").join ("\n"));
+console.log("@@@ data\n" + data);
         if (exact !== 0) { // reorder like searchString
           var datArr = data.split ("\n");
           var namArr = [];
@@ -5912,8 +5918,8 @@ function searchText (searchString, and, searchWhere, exact) {
             tmpArr [i] = datArr [i].replace (/^(.*\/)*(.*)(\.[^.]*)$/,"$2"); // Just in case
           }
           if (arr) seaArr = searchString.split (" ");
-// console.log("@@@ seaArr\n" + seaArr.join ("\n"));
-// console.log("@@@ namArr\n" + namArr.join ("\n"));
+console.log("@@@ seaArr\n" + seaArr.join ("\n"));
+console.log("@@@ namArr\n" + namArr.join ("\n"));
 
           // The 'reordering template' (seaArr) depends on this special switch set in altFind:
           if (seaArr [0] === "dupName/") {
@@ -5922,10 +5928,10 @@ function searchText (searchString, and, searchWhere, exact) {
           if (seaArr [0] === "dupImage/") seaArr.splice (0, 1);
           if (seaArr [0] === "actualDups/") seaArr.splice (0, 1);
 
-// console.log("lengths",seaArr.length,datArr.length);
-// console.log("lengths",namArr.length,datArr.length);
-// console.log("@@@ seaArr\n" + seaArr.join ("\n"));
-// console.log("@@@ namArr\n" + namArr.join ("\n"));
+console.log("lengths",seaArr.length,datArr.length);
+console.log("lengths",namArr.length,datArr.length);
+console.log("@@@ seaArr\n" + seaArr.join ("\n"));
+console.log("@@@ namArr\n" + namArr.join ("\n"));
           data = [];
           for (let i=0; i<seaArr.length; i++) {
             for (let j=0; j<namArr.length; j++) {
@@ -5937,11 +5943,11 @@ function searchText (searchString, and, searchWhere, exact) {
               }
             }
           }
-// console.log("@@@ namArr\n" + namArr.join ("\n"));
+console.log("@@@ namArr\n" + namArr.join ("\n"));
           data = data.join ("\n");
-// console.log("@@* data\n" + data);
+console.log("@@* data\n" + data);
         }
-// console.log("@** data\n" + data);
+console.log("@** data\n" + data);
         //data.sort
         resolve (data);
       } else {
@@ -6182,7 +6188,7 @@ $.actualDups = function () { // Find potential duplicates of this actual image f
     console.log ("Find duplicates of:", picName);
     infoDups = "";
     var value = "actualDups";
-    infoDups = "<br><br>Kanske dublettbilder";
+    infoDups = "<br><br>Kan vara dublettbilder";
     $ ("div[aria-describedby='searcharea']").hide ();
     $ ("div[aria-describedby='dialog']").hide ();
     return new Promise ( (resolve, reject) => {

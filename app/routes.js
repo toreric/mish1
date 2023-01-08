@@ -884,7 +884,7 @@ console.log ("pathlist = ", pathlist)
 console.log ("result", result);
         resolve (result.join (" "))
       } catch (err) {
-        console.error ("getDupImage", err.message)
+        console.error ("getActualDups", err.message)
       } // End try ----------
     }) //--Promise
   }
