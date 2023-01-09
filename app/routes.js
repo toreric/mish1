@@ -175,8 +175,7 @@ console.log("p2",p);
     fileStat += "<i>Fototid</i>: " + tmp + "<br>"
     fileStat += "<i>Ändrad</i>: " + stat.mtime.toLocaleString (LT, {year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'}) + "<br>"
 
-    //fileStat += "<br><a onclick='window.parent.parent.window.actualDups ()'>Sök dublettbilder</a><br>"
-    fileStat += "<br><a onclick='$.actualDups ()'>Sök dublettbilder</a><br>"
+    fileStat += "<br><b style='font-size:75%'><a onclick='$.actualDups ()' style='font-family: Arial, Helvetica, sans-serif'>SÖK DUBLETTBILDER</a></b><br>"
 
     res.send (fileStat)
   })

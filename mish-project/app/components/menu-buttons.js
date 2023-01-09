@@ -2214,8 +2214,8 @@ export default Component.extend (contextMenuMixin, {
         console.log ("Find duplicates:", value);
         // Now value is "dupName" or "dupImage"
         infoDups = "";
-        if (value === "dupName") infoDups = "<br><br>Med dublettnamn (använd <b>N</b>-knappen)";
-        if (value === "dupImage") infoDups = "<br><br>Kan vara dublettbilder";
+        if (value === "dupName") infoDups = "<br><br><b>Med dublettnamn</b> (använd <b>N</b>-knappen)";
+        if (value === "dupImage") infoDups = "<br><br><b>Kan vara dublettbilder</b>";
         $ ("div[aria-describedby='searcharea']").hide ();
         //$ ("#searcharea").dialog ("close");
         return new Promise ( (resolve, reject) => {
@@ -5664,7 +5664,7 @@ console.log("doFindText: paths",paths);
       var inames = " ".repeat (chalbs.length).split ("");
       n = paths.length;
       let lpath = $ ("#imdbPath").text () + "/" + $ ("#picFound").text (); // NOTE: #picFound has no slash!
-      for (let i=0; i<n; i++) {150
+      for (let i=0; i<n; i++) {
         let chalb = paths [i].replace (/^[^/]+(.*)\/[^/]+$/, "$1"); // in #imdbDirs format
         // -- Allow only files/pictures in the albums of #imdbDirs (chalbs):
         let okay0 = false;
@@ -5681,9 +5681,8 @@ console.log("doFindText: chalb",chalb);
         // -- 'paths' may accidentally contain illegal image file names, normally
         // ignored. If so, such names will be noticed by red color (just an
         // extra service). They may have been collected into the database at
-        // regeneration and may appear in this list.
+        // regeneration and may perhaps appear in this list.
         let okay1 = acceptedFileName (fname);
-        //var okay = acceptedFileName (fname);
 
         // -- In order to make possible show duplicates: Make the link names unique
         // by adding four random characters (r4) to the basename (n1)
@@ -5696,13 +5695,13 @@ console.log("doFindText: chalb",chalb);
         let r4 = Math.random().toString(36).substr(2,4);
         fname = n1 + "." + r4 + n2;
         if (filesFound < nLimit) {
-          filesFound++;
-          if (okay0 && okay1) {
+          if (okay0 && okay1) { // Only approved files are counted...
+            filesFound++;
             nameOrder.push (n1 + "." + r4 + ",0,0");
             let linkto = lpath + "/" + fname;
             cmd.push ("ln -sf " + linkfrom + " " + linkto);
-          } else {paths [i] += " — kan ej visas"}
-          albs.push (paths [i]);
+          } else {paths [i] += "<span style='color:#000'> — visningsrättighet saknas</span>"}
+          albs.push (paths [i]); // ..while all are shown
         }
       }
 //console.log("doFindText:result",result);
@@ -5769,7 +5768,7 @@ console.log("doFindText: chalb",chalb);
     nameOrder = nameOrder.join ("\n").trim ();
     $ ("#temporary_1").text (cmd.join ("\n"));
 
-    if (n > 0 && n < nLimit) {
+    if (n > 0 && filesFound <= nLimit) {
       let lpath = $ ("#imdbPath").text () + "/" + $ ("#picFound").text ();
       // Only if the picFound album is supposed to be immediately reused, regenerate
       // the picFound album: the shell commands must execute in sequence (don't split)
@@ -5786,15 +5785,17 @@ console.log("doFindText: chalb",chalb);
       yes ="Visa i <strong>" + txt + "</strong>";
     }), 40);
     let modal = false;
-    let p3 =  "<p style='margin:-0.3em 1.6em 0.2em 0;background:transparent'>" + sTxt + "</p>Funna i <span style='font-weight:bold'>" + $ ("#imdbRoot").text () + "</span>:&nbsp; " + n + (n>nLimit?" (fler än " + nLimit + ", visas i sina respektive album)":"");
+    let tmp = n;
+    if (n > filesFound) tmp = filesFound + " (" + n + ")";
+    let p3 =  "<p style='margin:-0.3em 1.6em 0.2em 0;background:transparent'>" + sTxt + "</p>Funna i <span style='font-weight:bold'>" + $ ("#imdbRoot").text () + "</span>:&nbsp; " + tmp + (filesFound > nLimit?" (fler än " + nLimit + ", visas i sina respektive album)":"");
     later ( (async () => {
 
-     saveOrderFunc (nameOrder, "second save from doFindText").then ( () => {
+      saveOrderFunc (nameOrder, "second save from doFindText").then ( () => {
 
-      // Run `serverShell ("temporary_1")` -> symlink creation, via `infoDia (null, "", ...
-      infoDia (null, "", p3, "<div style='text-align:left;margin:0.3em 0 0 2em'>" + paths.join ("<br>") + "</div>", yes, modal);
+        // Run `serverShell ("temporary_1")` -> symlink creation, via `infoDia (null, "", ...
+        infoDia (null, "", p3, "<div style='text-align:left;margin:0.3em 0 0 2em'>" + paths.join ("<br>") + "</div>", yes, modal);
 
-     });
+      });
 
       later ( ( () => {
         // In this section the hidden ´go back to previous album´ button is located
@@ -5810,7 +5811,7 @@ console.log("doFindText: chalb",chalb);
             document.getElementById ("dialog").innerHTML = btFind;
             $ ("#dialog button") [0].focus ();
           }
-        } else if (n > nLimit) {
+        } else if (filesFound > nLimit) {
           document.getElementById ("yesBut").disabled = true;
           let btFind = "<div style=\"text-align:left\"> Fann:<br>" + countAlbs.join ("<br>") + "</div><br><button style=\"border:solid 2px white;background:#b0c4deaa;\" onclick='$(\"#dialog\").dialog(\"close\");$(\"a.search\").click();'>TILLBAKA</button>";
           document.getElementById ("dialog").innerHTML = btFind;
@@ -5823,11 +5824,11 @@ for (let i=0; i<countAlbs.length; i++) {
         $ ("button.updText").css ("float", "right");
 
         $ ("div[aria-describedby='searcharea']").hide ();
-        if (n > 0 && n < (1 + nLimit)) {
+        if (n > 0 && filesFound <= nLimit) {
           displayPicFound (); // prepare its use by showing it
         } else $.spinnerWait (false, 111);
         // noDialog means don't display the result dialog (but display the result directly!)
-        let noDialog = n && n <= nLimit && loginStatus === "guest";
+        let noDialog = n && filesFound <= nLimit && loginStatus === "guest";
 
 noDialog = false;
 
@@ -6188,7 +6189,7 @@ $.actualDups = function () { // Find potential duplicates of this actual image f
     console.log ("Find duplicates of:", picName);
     infoDups = "";
     var value = "actualDups";
-    infoDups = "<br><br>Kan vara dublettbilder";
+    infoDups = "<br><br><b>Kan vara dublettbilder</b>";
     $ ("div[aria-describedby='searcharea']").hide ();
     $ ("div[aria-describedby='dialog']").hide ();
     return new Promise ( (resolve, reject) => {
