@@ -569,10 +569,10 @@ export default Component.extend (contextMenuMixin, {
                 picPath = res; // Need this if only one marked is finally chosen
               }
             });
-            // Make RED delNames here
+            // Make RED #d00 delNames here
             delNames [i] = '<span style="color:#d00;font-weight:bold">' + picNames [i] + "</span>";
           } else {
-            // Make GREEN delNames here
+            // Make GREEN #090 delNames here
             delNames [i] = '<span style="color:#090">' + picNames [i] + "</span>";
             picPaths.push ($ ("#imdbPath").text () + $ ("#i" + escapeDots (picNames [i]) + " a img").attr ("title"));
           }
@@ -678,7 +678,7 @@ export default Component.extend (contextMenuMixin, {
             $ (this).dialog ('close');
             later ( ( () => {
               document.getElementById("reLd").disabled = false;
-              $ ("#reFr").trigger ("click"); // REFRESH
+              $ ("#reFr").trigger ("click"); // refresh
               gotoAtop ();
             }), 750);
           }
@@ -1415,7 +1415,7 @@ export default Component.extend (contextMenuMixin, {
               let lpath = $ ("#imdbPath").text () + "/" + $ ("#picFound").text ();
               await execute ("rm -rf " +lpath+ "&&mkdir -m0775 " +lpath+ "&&touch " +lpath+ "/.imdb&&chmod 664 " +lpath+ "/.imdb");
             } else {
-              tmpName += " &mdash; <em style=\"color:red;background:transparent\">just nu oåtkomligt</em>" // i18n
+              tmpName += " &mdash; <em style=\"color:#d00;background:transparent\">just nu oåtkomligt</em>" // i18n
               that.set ("albumName", tmpName);
               $ ("#imdbDir").text ("");
             }
@@ -1999,7 +1999,7 @@ export default Component.extend (contextMenuMixin, {
                 cmd = sortop + $ ("#imdbPath").text () + $ ("#imdbDir").text () + "/_imdb_order.txt > /tmp/tmp && cp /tmp/tmp " + $ ("#imdbPath").text () + $ ("#imdbDir").text () + "/_imdb_order.txt";
                 execute (cmd).then ( () => {
                   later ( ( () => {
-                    $ ("#reFr").trigger ("click");
+                    $ ("#reFr").trigger ("click"); // refresh
                   }), 500);
                 });
               }), 2000);
@@ -2075,6 +2075,7 @@ export default Component.extend (contextMenuMixin, {
     // ##### Check file base names against a server directory & replace the corresponding command
     // with ´#exists...´, no file transfer if it already exists.  NOTE: checkNames uses
     //  1) the server directory in #temporary and  2) the commands in #temporary_1
+    // NOTE: This function is not for common use; so far only indirectly by linkFunc !!
     checkNames () {
       later ( ( () => {
         var ldpath =  $ ('#temporary').text (); // <- the complete absolute server dir
@@ -2082,7 +2083,7 @@ export default Component.extend (contextMenuMixin, {
           //console.log("checkNames:", names);
           var cNames = $ ("#picNames").text ().split ("\n"); // <- the names to be checked
           var cmds = $ ('#temporary_1').text ().split ("\n"); // <- corresp. shell commands
-          pathsUpdate = [];
+          pathsUpdate = []; // global
           for (var i=0; i<cNames.length; i++) {
             if (names.indexOf (cNames [i]) > -1) { // comment out if the file already exists:
               cmds [i] = cmds [i].replace (/^[^ ]+ [^ ]+ /, "#exists already: ");
@@ -2240,11 +2241,11 @@ export default Component.extend (contextMenuMixin, {
           //(removed in searchText but the added slash makes this an illegal filename, if forgotten)
           // console.log ("value+duplicates\n" + duplicates);
           // Save the present album as the previous album:
-          savedAlbumIndex = $ ("#imdbDirs").text ().split ("\n").indexOf ($ ("#imdbDir").text ());
-          // Place the names in the picFound album still if not yet chosen
-          // Preset imdbDir 'in order to cheat' saveOrderFunc:
-          $ ("#imdbDir").text ("/"+ $ ("#picFound").text ());
-
+          if (!imdbDir_is_picFound) {
+            savedAlbumIndex = $ ("#imdbDirs").text ().split ("\n").indexOf ($ ("#imdbDir").text ());
+            // Preset imdbDir 'in order to cheat' saveOrderFunc:
+            $ ("#imdbDir").text ("/"+ $ ("#picFound").text ());
+          }
           // Populate the picFound album with "kind of favorites" with exact match
           // in names' sequence (-1 means return to #searcharea if go back is chosen).
           // NOTE: Here duplicates[0] is "dupName/" or "dupImage/" (not removed):
@@ -2280,7 +2281,7 @@ export default Component.extend (contextMenuMixin, {
         }
         // Different from image titles, paths in JStree titles include `imdbRoot`:
         value = value.slice ($ ("#imdbRoot").text ().length);
-        // Do not hide the introduction page at very first view = the first root show
+        // Do not hide the introduction page at very first view = the first '' = root
         if (value) {
           $ ("iframe.intro").hide ();
         }
@@ -2296,13 +2297,12 @@ export default Component.extend (contextMenuMixin, {
 
         $ ("div.ember-view.jstree").attr ("onclick", "return false");
         $ ("ul.jstree-container-ul.jstree-children").attr ("onclick", "return false");
-        // eslint-disable-next-line no-async-promise-executor
 
-        var thisAlbumIndex = 0;
+        var newAlbumIndex = 0;
         // eslint-disable-next-line no-async-promise-executor
         return new Promise (async resolve => {
           $ ("a.jstree-anchor").blur (); // Important?
-          thisAlbumIndex = $ ("#imdbDirs").text ().split ("\n").indexOf (value);
+          newAlbumIndex = $ ("#imdbDirs").text ().split ("\n").indexOf (value);
           if (value !== $ ("#imdbDir").text ()) {
             // save the index of the preceeding album
             savedAlbumIndex = $ ("#imdbDirs").text ().split ("\n").indexOf ($ ("#imdbDir").text ());
@@ -2311,9 +2311,9 @@ export default Component.extend (contextMenuMixin, {
             $ ("#picOrig").text ("");
             //$ ("#sortOrder").text ("");
             $ (".showCount").hide ();
+            $ ("#imdbDir").text (value);
           }
           let imdbDir = value;
-          $ ("#imdbDir").text (value);
           let selDir = value;
           let selDirs = $ ("#imdbDirs").text ().split ("\n");
           let selPics = $ ("#imdbLabels").text ().split ("\n");
@@ -2369,7 +2369,7 @@ export default Component.extend (contextMenuMixin, {
             }
           }
           if (value) {
-            $ (".imDir.path").attr ("title-1", $ ("#imdbRoot").text () + $ ("#imdbDir").text ());
+            $ (".imDir.path").attr ("title-1", $ ("#imdbRoot").text () + imdbDir);
           } else {
             $ (".imDir.path").attr ("title-1", $ ("#imdbRoot").text ());
           }
@@ -2378,15 +2378,15 @@ export default Component.extend (contextMenuMixin, {
 //console.log(a);
           if (imdbDir_is_picFound ()) $ (".dupInf").html (infoDups); else $ (".dupInf").html ("");
           // REFRESH the displayed album
-          $ ("#reFr").trigger ("click"); // Initiate refresh
+          $ ("#reFr").trigger ("click"); // refresh
           await new Promise (z => setTimeout (z, 1000)); // Wait a second
           $ ("div.subAlbum").show ();
           //$ ("a.imDir").attr ("title", "Album");
           let n = $ ("a.imDir").length/2; // there is also a page bottom link line...
           let nsub = n;
           let z, iz, obj;
-          //let fullAlbumName = $ ("#imdbRoot").text () + $ ("#imdbDir").text ().replace (/^[^/]*/, "");
-          let fullAlbumName = '<span title-1="' + $ ("#imdbRoot").text () + $ ("#imdbDir").text ().replace (/^[^/]*/, "") + '">' + that.get ("albumName") + " </span>"
+          //let fullAlbumName = $ ("#imdbRoot").text () + imdbDir.replace (/^[^/]*/, "");
+          let fullAlbumName = '<span title-1="' + $ ("#imdbRoot").text () + imdbDir.replace (/^[^/]*/, "") + '">' + that.get ("albumName") + " </span>"
           if (tmp [0] === "⌂hem") {
             $ ("a.imDir").each (function (index, element) {
               if (index < n) {z = 0;} else {z = n;}
@@ -2490,7 +2490,7 @@ console.log("=C=");
             } else {
               $ ("#title span.eraseCheck").css ("display", "none");
             }
-            if (thisAlbumIndex > 0) gotoAtop ();
+            if (newAlbumIndex > 0) gotoAtop ();
             else scrollTo (null, 0);
             $.spinnerWait (true, 105);
           });
@@ -2900,7 +2900,7 @@ console.log("=C=");
 
       if ($ (".toggleAuto").text () === "STOP") return; // Auto slide show is running
       if (!(allow.saveChanges || allow.adminAll)) return;
-      resetBorders (); // Reset all borders
+// nyändrad      //resetBorders (); // Reset all borders, WHY??
 
       $ ("#link_show a").css ('opacity', 0);
       new Promise (resolve => {
@@ -2915,12 +2915,12 @@ console.log("=C=");
         var newOrder = '';
         // Get the true ordered name list from the DOM mini-pictures (thumbnails).
         names = $ (".img_mini .img_name").text ();
-// console.log("saveOrder: names",names);
+//console.log("saveOrder: names",names);
         names = names.toString ().trim ().replace (/\s+/g, " ");
-// console.log("saveOrder: names",names);
+//console.log("saveOrder: names",names);
         names = names.split (" ");
         if (names.length === 1 && names [0].length === 0) names = [];
-// console.log("saveOrder: names",names, names.length);
+//console.log("saveOrder: names",names, names.length);
         for (i=0; i<names.length; i++) {
           k = SName.indexOf (names [i]);
           if (k > -1) {
@@ -3920,7 +3920,7 @@ const prepDropzone = () => {
       setTimeout (function () {
         $ ("img.spinner").trigger ("click");
         later ( () => {
-          $ ("#reFr").trigger ("click");
+          $ ("#reFr").trigger ("click"); // refresh
         }, 222);
       }, (t)); // Waiting time
     })(ms); //Pass milliseconds into closure of self-exec anon-func
@@ -4285,7 +4285,8 @@ function gotoMinipic (namepic) {
     if (spinner.style.display === "none") {
       clearTimeout (timer);
       let p = $ ("#i" + escapeDots (namepic));
-      let y = p.offset ().top + p.height ()/2;
+      let y;
+      if (p.offset ()) y = p.offset ().top + p.height ()/2;
       let t = $ ("#highUp").offset ().top;
       let b = $ ("#lowDown").offset ().top;
       y -= h2;
@@ -4345,7 +4346,7 @@ async function deleteFiles (picNames, nels, picPaths) { // ===== Delete image(s)
       }
       later ( ( () => {
         document.getElementById("reLd").disabled = false;
-        $ ("#reFr").trigger ("click");
+        $ ("#reFr").trigger ("click"); // refresh
         document.getElementById("saveOrder").disabled = false;
         $ ("#saveOrder").trigger ("click");
       }), 200);
@@ -4423,10 +4424,10 @@ function sqlUpdate (picPaths) { // Must be complete server paths
 function infoDia (dialogId, picName, title, text, yes, modal, flag) {
   if (!dialogId) {dialogId = "dialog";}
   var id = "#" + dialogId;
-  if (picName) { //
-    resetBorders (); // Reset all borders
-    markBorders (picName); // Mark this one
-  }
+  // if (picName) { //
+  //   resetBorders (); // Reset all borders
+  //   markBorders (picName); // Mark this one
+  // }
   if (!title) title = "Information";
   $ (id).dialog ( { // Initiate dialog
     title: "", // html, is set below //#
@@ -4452,6 +4453,7 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) {
             $.spinnerWait (true, 108);
             //console.log("infoDia:temporary_1\n" + $("#temporary_1").text ());
             serverShell ("temporary_1"); // Contains complete server file paths
+
             // Extract/construct sqlUpdate file list if there are any
             // move=... moveto=... lines in #temporary_1
             // NOTE: Files to be moved from #picFound and have got a random
@@ -4474,7 +4476,7 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) {
             if (files.length > 0) {
               document.getElementById("reLd").disabled = false;
               // later ( ( () => {
-              //   $ ("#reFr").trigger ("click");
+              //   $ ("#reFr").trigger ("click"); // refresh
               // }), 800);
               later ( (async () => {
                 await sqlUpdate (files);
@@ -4501,7 +4503,7 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) {
 
           $ (this).dialog ("close");
           $ ('#navKeys').text ('true'); // Reset in case L/R arrows have been protected
-          resetBorders ();
+          //resetBorders ();
           resolve (true);
         });
       }
@@ -4624,10 +4626,11 @@ function favDia (text, addfile, addmarked, savecook, closeit, savefile, findshow
         $ (this).dialog ("close");
         text = text.replace (/[ \n]+/g, " ").trim ();
         // Save this album as previous:
-        savedAlbumIndex = $ ("#imdbDirs").text ().split ("\n").indexOf ($ ("#imdbDir").text ());
-        // Place the namelist in the picFound album still if not yet chosen
-        // Preset imdbDir 'in order to cheat' saveOrderFunc
-        $ ("#imdbDir").text ("/"+ $ ("#picFound").text ());
+        if (!imdbDir_is_picFound) {
+          savedAlbumIndex = $ ("#imdbDirs").text ().split ("\n").indexOf ($ ("#imdbDir").text ());
+          // Preset imdbDir 'in order to cheat' saveOrderFunc
+          $ ("#imdbDir").text ("/"+ $ ("#picFound").text ());
+        }
         // Populate the picFound album with favorites in namelist order:
         doFindText (text, false, [false, false, false, false, true], 1);
         $.spinnerWait (true, 110);
@@ -5030,7 +5033,9 @@ function moveFunc (picNames) { // ===== Execute a move-these-files-to... request
   }
 }*/
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const saveOrderFunc = (namelist) => { // ===== XMLHttpRequest saving the thumbnail order list
+//const saveOrderFunc = (namelist) => { // ===== XMLHttpRequest saving the thumbnail order list
+const saveOrderFunc = (namelist, debugtext) => {
+console.log("saveOrderFunc", debugtext);
   if (!(allow.saveChanges || allow.adminAll || imdbDir_is_picFound ())) Promise.resolve (true);
   document.getElementById ("divDropZone").style.display = "none"; // If shown...
   return new Promise ( (resolve, reject) => {
@@ -5076,7 +5081,7 @@ function statusValues () {
 }
 !statusValues (); // Make it always used!
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function setReqHdr (xhr, id) { !id
+function setReqHdr (xhr, id) { !id;
   xhr.setRequestHeader ("imdbroot", encodeURIComponent ($ ("#imdbRoot").text ()));
   xhr.setRequestHeader ("imdbdir", encodeURIComponent ($ ("#imdbDir").text ()));
   xhr.setRequestHeader ("picfound", picFound); // All 'wihtin 255' characters
@@ -5648,7 +5653,8 @@ let doFindText = (sTxt, and, sWhr, exact) => {
     // replace '<' and '>' for presentation in the header below
     sTxt = sTxt.replace (/</g, "&lt;").replace (/>/g, "&gt;");
     $ ("#temporary_1").text ("");
-    let cmd = [];
+    let lpath = $ ("#imdbPath").text () + "/" + $ ("#picFound").text ();
+    let cmd = []
     // Insert links of found pictures into the #picFound album:
     let n = 0, paths = [], albs = [];
     // Maximum number of pictures from the search results to show:
@@ -5657,7 +5663,7 @@ let doFindText = (sTxt, and, sWhr, exact) => {
     let countAlbs = [];
     if (result) {
       paths = result.split ("\n");//.sort (); // Sort entries (see there below)
-console.log("doFindText: paths",paths);
+//console.log("doFindText: paths",paths);
       let chalbs = $ ("#imdbDirs").text ().split ("\n");
       // -- Prepare counters and imgnames for all albums
       let counts = "0".repeat (chalbs.length).split ("").map (Number);
@@ -5670,7 +5676,7 @@ console.log("doFindText: paths",paths);
         let okay0 = false;
         let idx = chalbs.indexOf (chalb);
         if (idx > -1) {okay0 = true;}
-console.log("doFindText: chalb",chalb);
+//console.log("doFindText: chalb",chalb);
         counts [idx]++; // -- A hit in this album
         let fname = paths [i].replace (/^.*\/([^/]+$)/, "$1");
         inames [idx] = (inames [idx] + " " + fname).trim ();
@@ -5687,11 +5693,12 @@ console.log("doFindText: chalb",chalb);
         // -- In order to make possible show duplicates: Make the link names unique
         // by adding four random characters (r4) to the basename (n1)
         let n0 = paths [i].replace (/^(.*\/)[^/]+$/, "$1");
-        if (!okay0) {n0 = "<span style='color:red'>" + n0 + "</span>";}
+        if (!okay0) {n0 = "<span style='color:#d00'>" + n0 + "</span>";}
         let n1 = fname.replace (/\.[^./]*$/, "");
-        if (!okay1) {n1 = "<span style='color:red'>" + n1 + "</span>";}
+        if (!okay1) {n1 = "<span style='color:#d00'>" + n1 + "</span>";}
         let n2 = fname.replace (/(.+)(\.[^.]*$)/, "$2");
-        paths [i] = n0 + n1 + n2;
+        //paths [i] = "&#10148; " + n0 + n1 + n2;
+        paths [i] = "&#129170; " + n0 + n1 + n2;
         let r4 = Math.random().toString(36).substr(2,4);
         fname = n1 + "." + r4 + n2;
         if (filesFound < nLimit) {
@@ -5704,6 +5711,11 @@ console.log("doFindText: chalb",chalb);
           albs.push (paths [i]); // ..while all are shown
         }
       }
+      nameOrder = nameOrder.join ("\n").trim ();
+      $ ("#imdbDir").text ("/" + $ ("#picFound").text ());
+      $ ("#sortOrder").text (nameOrder);
+      await new Promise (z => setTimeout (z, 30));
+     // await saveOrderFunc (nameOrder, "0th save from doFindText");
 //console.log("doFindText:result",result);
 //console.log("doFindText:paths",paths);
 //console.log("doFindText:albs",albs);
@@ -5765,68 +5777,79 @@ console.log("doFindText: chalb",chalb);
     //   sobj = null;
     // }
 
-    nameOrder = nameOrder.join ("\n").trim ();
     $ ("#temporary_1").text (cmd.join ("\n"));
 
     if (n > 0 && filesFound <= nLimit) {
-      let lpath = $ ("#imdbPath").text () + "/" + $ ("#picFound").text ();
+      //let lpath = $ ("#imdbPath").text () + "/" + $ ("#picFound").text ();
       // Only if the picFound album is supposed to be immediately reused, regenerate
       // the picFound album: the shell commands must execute in sequence (don't split)
-      await execute ("rm -rf " +lpath+ "&&mkdir -m0775 " +lpath+ "&&touch " +lpath+ "/.imdb&&chmod 664 " +lpath+ "/.imdb");
       $ ("#imdbDir").text ("/" + $ ("#picFound").text ());
       $ ("#sortOrder").text (nameOrder);
-      // await new Promise (z => setTimeout (z, 30));
-      await saveOrderFunc (nameOrder, "first save from doFindText");
+//await new Promise (z => setTimeout (z, 30));
+// await execute ("rm -rf " +lpath+ "&&mkdir -m0775 " +lpath+ "&&touch " +lpath+ "/.imdb&&chmod 664 " +lpath+ "/.imdb");
+// await saveOrderFunc (nameOrder, "first save from doFindText");
     }
     userLog (n + " FOUND");
     let txt = removeUnderscore ($ ("#picFound").text ().replace (/\.[^.]{4}$/, ""), true);
     let yes;
     later ( ( () => {
       yes ="Visa i <strong>" + txt + "</strong>";
-    }), 40);
+    }), 80);
     let modal = false;
     let tmp = n;
-    if (n > filesFound) tmp = filesFound + " (" + n + ")";
+    if (n > filesFound) tmp = filesFound + " (<span style='color:#d00'>" + n + "</span>)";
     let p3 =  "<p style='margin:-0.3em 1.6em 0.2em 0;background:transparent'>" + sTxt + "</p>Funna i <span style='font-weight:bold'>" + $ ("#imdbRoot").text () + "</span>:&nbsp; " + tmp + (filesFound > nLimit?" (fler än " + nLimit + ", visas i sina respektive album)":"");
     later ( (async () => {
 
+      "rm -rf " +lpath+ "&&mkdir -m0775 " +lpath+ "&&touch " +lpath+ "/.imdb&&chmod 664 " +lpath+ "/.imdb";
+      await execute ("rm -rf " +lpath+ "&&mkdir -m0775 " +lpath+ "&&touch " +lpath+ "/.imdb&&chmod 664 " +lpath+ "/.imdb");
       saveOrderFunc (nameOrder, "second save from doFindText").then ( () => {
 
-        // Run `serverShell ("temporary_1")` -> symlink creation, via `infoDia (null, "", ...
+      // Run `serverShell ("temporary_1")` -> symlink creation, via `infoDia (null, "", ...
         infoDia (null, "", p3, "<div style='text-align:left;margin:0.3em 0 0 2em'>" + paths.join ("<br>") + "</div>", yes, modal);
 
       });
 
       later ( ( () => {
-        // In this section the hidden ´go back to previous album´ button is located
-        // and clicked, indirectly. The key global varaible is 'returnTitles' (search it!).
+        // In this section the hidden ´go back to previous album´ button is located and
+        // optionally clicked, indirectly. The key global varaible is 'returnTitles' (search it!).
         if (n === 0) {
           document.getElementById ("yesBut").disabled = true;
           if (exact === 1) {
             let btFind ="<br><button style=\"border:solid 2px white;background:#b0c4deaa;\" onclick='$(\"#dialog\").dialog(\"close\");$(\"#favorites\").click();'>TILLBAKA</button>";
             document.getElementById ("dialog").innerHTML = btFind;
-            $ ("#dialog button") [0].focus ();
+            //$ ("#dialog button") [0].focus ();
           } else if (exact === -1) {
             let btFind ="<br><button style=\"border:solid 2px white;background:#b0c4deaa;\" onclick='$(\"#dialog\").dialog(\"close\");$(\"a.search\").click();'>TILLBAKA</button>";
             document.getElementById ("dialog").innerHTML = btFind;
-            $ ("#dialog button") [0].focus ();
+            //$ ("#dialog button") [0].focus ();
+          } else {
+            let btFind ="<br><button style=\"border:solid 2px white;background:#b0c4deaa;\" onclick='$(\"#dialog\").dialog(\"close\")'>OK</button>";
+            document.getElementById ("dialog").innerHTML = btFind;
+            //$ ("#dialog button") [0].focus ();
           }
+          $ ("#dialog button") [0].focus ();
         } else if (filesFound > nLimit) {
           document.getElementById ("yesBut").disabled = true;
           let btFind = "<div style=\"text-align:left\"> Fann:<br>" + countAlbs.join ("<br>") + "</div><br><button style=\"border:solid 2px white;background:#b0c4deaa;\" onclick='$(\"#dialog\").dialog(\"close\");$(\"a.search\").click();'>TILLBAKA</button>";
           document.getElementById ("dialog").innerHTML = btFind;
           $ ("#dialog button") [0].focus ();
         }
-for (let i=0; i<countAlbs.length; i++) {
-  console.log(inames [countIdx [i]]);
-}
+        if (!document.getElementById ("yesBut").disabled) {
+          document.getElementById ("yesBut").focus ();
+        }
+
+        // for (let i=0; i<countAlbs.length; i++) {
+//   console.log(inames [countIdx [i]]);
+// }
         $ ("button.findText").show ();
         $ ("button.updText").css ("float", "right");
 
         $ ("div[aria-describedby='searcharea']").hide ();
-        if (n > 0 && filesFound <= nLimit) {
-          displayPicFound (); // prepare its use by showing it
-        } else $.spinnerWait (false, 111);
+        // if (n > 0 && filesFound <= nLimit) {
+        //   displayPicFound (); // prepare its use by showing it
+        // } else $.spinnerWait (false, 111);
+        $.spinnerWait (false, 111);
         // noDialog means don't display the result dialog (but display the result directly!)
         let noDialog = n && filesFound <= nLimit && loginStatus === "guest";
 
@@ -5850,10 +5873,10 @@ noDialog = false;
 } // End doFindText
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Locate the found-pictures album link in jstree, and display the album
-function displayPicFound () {
-  let idx = $ ("#imdbDirs").text ().split ("\n").indexOf ("/" + $ ("#picFound").text ());
-  selectJstreeNode (idx);
-}
+// function displayPicFound () {
+//   let idx = $ ("#imdbDirs").text ().split ("\n").indexOf ("/" + $ ("#picFound").text ());
+//   selectJstreeNode (idx);
+// }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Search the image texts in the current imdbRoot (cf. prepSearchDialog)
  * @param {string} searchString space separated search items
@@ -5906,9 +5929,9 @@ function searchText (searchString, and, searchWhere, exact) {
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {
         var data = xhr.response.trim ();
-console.log("@@@ searchString \n" + searchString);
-console.log("@@@ searchString \n" + searchString.split (" ").join ("\n"));
-console.log("@@@ data\n" + data);
+// console.log("@@@ searchString \n" + searchString);
+// console.log("@@@ searchString \n" + searchString.split (" ").join ("\n"));
+// console.log("@@@ data\n" + data);
         if (exact !== 0) { // reorder like searchString
           var datArr = data.split ("\n");
           var namArr = [];
@@ -5919,8 +5942,8 @@ console.log("@@@ data\n" + data);
             tmpArr [i] = datArr [i].replace (/^(.*\/)*(.*)(\.[^.]*)$/,"$2"); // Just in case
           }
           if (arr) seaArr = searchString.split (" ");
-console.log("@@@ seaArr\n" + seaArr.join ("\n"));
-console.log("@@@ namArr\n" + namArr.join ("\n"));
+// console.log("@@@ seaArr\n" + seaArr.join ("\n"));
+// console.log("@@@ namArr\n" + namArr.join ("\n"));
 
           // The 'reordering template' (seaArr) depends on this special switch set in altFind:
           if (seaArr [0] === "dupName/") {
@@ -5929,10 +5952,10 @@ console.log("@@@ namArr\n" + namArr.join ("\n"));
           if (seaArr [0] === "dupImage/") seaArr.splice (0, 1);
           if (seaArr [0] === "actualDups/") seaArr.splice (0, 1);
 
-console.log("lengths",seaArr.length,datArr.length);
-console.log("lengths",namArr.length,datArr.length);
-console.log("@@@ seaArr\n" + seaArr.join ("\n"));
-console.log("@@@ namArr\n" + namArr.join ("\n"));
+// console.log("lengths",seaArr.length,datArr.length);
+// console.log("lengths",namArr.length,datArr.length);
+// console.log("@@@ seaArr\n" + seaArr.join ("\n"));
+// console.log("@@@ namArr\n" + namArr.join ("\n"));
           data = [];
           for (let i=0; i<seaArr.length; i++) {
             for (let j=0; j<namArr.length; j++) {
@@ -5944,11 +5967,11 @@ console.log("@@@ namArr\n" + namArr.join ("\n"));
               }
             }
           }
-console.log("@@@ namArr\n" + namArr.join ("\n"));
+//console.log("@@@ namArr\n" + namArr.join ("\n"));
           data = data.join ("\n");
-console.log("@@* data\n" + data);
+//console.log("@@* data\n" + data);
         }
-console.log("@** data\n" + data);
+//console.log("@** data\n" + data);
         //data.sort
         resolve (data);
       } else {
@@ -6214,10 +6237,11 @@ $.actualDups = function () { // Find potential duplicates of this actual image f
       //(removed in searchText but the added slash makes this an illegal filename, if forgotten)
       // console.log ("value+duplicates\n" + duplicates);
       // Save the present album as the previous album:
-      savedAlbumIndex = $ ("#imdbDirs").text ().split ("\n").indexOf ($ ("#imdbDir").text ());
-      // Place the names in the picFound album still if not yet chosen
-      // Preset imdbDir 'in order to cheat' saveOrderFunc:
-      $ ("#imdbDir").text ("/"+ $ ("#picFound").text ());
+      if (!imdbDir_is_picFound) {
+        savedAlbumIndex = $ ("#imdbDirs").text ().split ("\n").indexOf ($ ("#imdbDir").text ());
+        // Preset imdbDir 'in order to cheat' saveOrderFunc:
+        $ ("#imdbDir").text ("/"+ $ ("#picFound").text ());
+      }
 
       // Populate the picFound album with "kind of favorites" with exact match
       // in names' sequence (-1 means return to #searcharea if go back is chosen).
@@ -6320,7 +6344,8 @@ function subaSelect (subName) { // ##### Sub-album link selected
   } else if (subName === "↖") { // go up in tree
     name = name.replace (/\/[^/]*$/, "");
     idx = names.indexOf (name);
-  } else if (subName === "⇆") { // go to most recent (by browser navigation)
+  } else if (subName === "⇆") {
+    // Go to most recent, even by browser navigation, see snippet window.history.pushState ...
     idx = savedAlbumIndex;
   } else {
     here = names.indexOf (name);
@@ -6352,6 +6377,8 @@ window.onpopstate = function () {
 // Show the (picture) file information dialog
 function showFileInfo () {
   var picName = $ ("#picName").text ();
+  resetBorders (); // Reset all borders
+  markBorders (picName); // Mark this one
   var picture = $ ("#imdbPath").text () + $ ("#picOrig").text ();
   var title = "Information om originalbildfilen";
   var yes = "Ok";
