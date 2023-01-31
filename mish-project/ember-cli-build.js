@@ -19,6 +19,9 @@ module.exports = function(defaults) {
     },
     sourcemaps: {
       enabled: false
+    },
+    'ember-auto-import': {
+      forbidEval: true
     }
     /*/ Disable jQuery bundled with Ember.js
     vendorFiles: { 'jquery.js': null },

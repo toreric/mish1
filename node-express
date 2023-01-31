@@ -15,6 +15,7 @@ fi
 cd /home/tore/Arbeten/mish
 
 #IMDB_HOME=/mnt/sda2
+IMDB_HOME=/mnt/koofrwebdav
 IMDB_HOME=/home/tore
 #IMDB_ROOT=MISH
 IMDB_ROOT=Framkallning_2019

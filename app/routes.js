@@ -141,14 +141,18 @@ console.log("p2",p);
 
   // ##### #0.1 Get file information
   app.get ('/filestat/:path', async function (req, res) {
-
+console.log("filestat",0);
     var LT = "se-SV" // Language tag for dateTime, environment locales are different!
     var missing = "uppgift saknas"
     var file = req.params.path.replace (/@/g, "/").trim ()
+console.log("filestat",1,file);
     var stat = fs.statSync (file)
-    var linkto = "", linktop
+console.log("filestat",1,stat);
+    var linkto = "", linktop;
     var syml = await isSymlink (file)
+console.log("filestat",2);
     if (syml) {
+console.log("filestat",3);
       linkto = execSync ("readlink " + file).toString ().trim ()
       if (linkto [0] !== '.') linkto = './' + linkto //if symlink in the root album
       linktop = IMDB + linkto.replace (/^(\.\.?\/)+/, "/")
@@ -157,13 +161,16 @@ console.log("p2",p);
     // access to the original pictures on the server.
     var filex = '.' + file.slice (IMDB.length)
     var fileStat
+console.log("filestat",4);
     if (linkto) {
       var errmsg = "not available"
       errmsg = await imgErr (linktop)
       let lntx ="<small span style='color:#0a4'>VISAS HÄR SOM LÄNKAD BILD</small>:";
       fileStat = "<i>Filnamn</i>: " + linkto + "<br><a title-2=\"" + await imgErr (linktop) + "\" style='font-family:Arial,Helvetica,sans-serif;font-size:80%'>STATUS</a><br><span style='color:#0a4'>" + lntx + "</span><br>"
       fileStat += "<i>Länknamn</i>: <span style='color:#0a4'>" + filex + "</span><br><br>"
+console.log("filestat",5);
     } else {
+console.log("filestat",6);
       fileStat = "<i>Filnamn</i>: " + filex + "<br><a title-2=\"" + await imgErr (file) + "\" style='font-family:Arial,Helvetica,sans-serif;font-size:80%'>STATUS</a><br><br>"
     }
     fileStat += "<i>Storlek</i>: " + stat.size/1000000 + " Mb<br>"
@@ -171,12 +178,14 @@ console.log("p2",p);
     if (tmp === "missing") {tmp = missing}
     fileStat += "<i>Dimension</i>: " + tmp + "<br><br>"
     tmp = (new Date (execSync ("exif_dateorig " + file))).toLocaleString (LT, {year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'})
+console.log("filestat",7);
     if (tmp.indexOf ("Invalid") > -1) {tmp = missing}
     fileStat += "<i>Fototid</i>: " + tmp + "<br>"
     fileStat += "<i>Ändrad</i>: " + stat.mtime.toLocaleString (LT, {year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'}) + "<br>"
 
     fileStat += "<br><b style='font-size:75%'><a onclick='$.actualDups ()' style='font-family: Arial, Helvetica, sans-serif'>SÖK DUBLETTBILDER</a></b><br>"
 
+console.log("filestat",8);
     res.send (fileStat)
   })
 
@@ -201,6 +210,7 @@ console.log("p2",p);
         areAlbums (dirlist).then (async dirlist => {
 //          dirlist = dirlist.sort ()
           let dirtext = dirlist.join ("€")
+console.log("dirtext",dirtext);
           let dircoco = [] // directory content counter
           let dirlabel = [] // Album label thumbnail paths
 
@@ -281,6 +291,7 @@ console.log("p2",p);
   // ##### #0.3 readSubdir (album subdirs) of selected rootdir  ...
   app.get ('/rootdir', function (req, res) {
     readSubdir (IMDB_HOME).then (dirlist => {
+console.log("dirlist", dirlist);
       dirlist = dirlist.join ('\n')
       var tmp = execSync ("echo $IMDB_ROOT").toString ().trim ()
       if (dirlist.indexOf (tmp) < 0) {tmp = ""}
@@ -1097,6 +1108,7 @@ console.log ("result", result);
     for (let i=0; i<dirlist.length; i++) {
       dirlist [i] = dirlist [i].slice (IMDB.length)
     }
+console.log("dirlist",dirlist);
     return dirlist
   }
 
@@ -1125,17 +1137,23 @@ console.log ("result", result);
   // ===== Read the dir's content of album sub-dirs (not recursively)
   readSubdir = async (dir, files = []) => {
     let items = await fs.readdirAsync ('rln' + dir) // items are file || dir names
+console.log("items", items);
     return Promise.map (items, async (name) => { // Cannot use mapSeries here (why?)
       //let apitem = path.resolve (dir, name) // Absolute path
       let item = path.join (dir, name) // Relative path
+console.log("item", item);
       if (acceptedDirName (name) && !brokenLink (item)) {
         let stat = await fs.statAsync ('rln' + item)
+console.log("rln...", "rln" + item);
+console.log("stat.isDirectory", stat.isDirectory ());
         if (stat.isDirectory ()) {
           let flagFile = path.join (item, '.imdb')
           let fd = await fs.openAsync ('rln' + flagFile, 'r')
+console.log("fd",fd);
           if (fd > -1) {
             await fs.closeAsync (fd)
             files.push (name)
+console.log("files",files);
           }
         }
       }
