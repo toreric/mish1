@@ -1336,6 +1336,15 @@ button.goAlbum:hover {
 #go_back {
   background-image: url(/images/grid.svg);
 }
+input.threshold[type="number"] {
+  width: 1.7em;
+  border: 0;
+  margin-top: -4px;
+  background: #cfeeee;
+}
+input.threshold[type="number"]:hover {
+  background: #fff;
+}
 input.showTime[type="number"] {
   width: 1.3em;
   height: 1.1em;

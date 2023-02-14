@@ -75,7 +75,7 @@ function copyToClipboard (str) {    // Copies a filename (below mini-pic) to the
       <!--div style="display:inline-block;margin-left:0.4em" totip="Direktlänk till aktuell bild">
         <span class="picLinker" {{action "webLinker"}}>WEBBLÄNK</span>
       </div-->
-      <div style="display:inline-block;margin-left:0.4em" title-2="Lista med alla bildtexter">
+      <div style="display:inline-block;margin-left:0.4em" title-2="Lista med bildtexter">
         <span class="picLinker" {{action "textList"}}>TEXTLISTA</span>
       </div>
       <!-- Show web statistics -->
@@ -185,8 +185,8 @@ Planerad hur-gör-man-beskrivning">&nbsp;HJÄLP&nbsp;</button>
     </div>
     <select id="altFind" class="selectOption" style="line-height:1em;background:#e4e4ef" onchange={{action 'altFind' value='target.value'}} tabindex="-1">
       <option value="find">Sök i texter: Skriv sökbegrepp överst och använd sedan Sök-i-knappen nedan</option>
-      <option value="dupName">Sök dublettnamn i hela albumsamlingen</option>
-      <option value="dupImage">Sök dublettbilder i hela albumsamlingen</option>
+      <option value="dupName">Finn dublettnamn i hela albumsamlingen</option>
+      <option value="dupImage">Finn dublettbilder i hela albumsamlingen (likhetströskel 98%)</option>
     </select>
     <span class="srchMsg"></span>
   </div>
@@ -218,6 +218,7 @@ Planerad hur-gör-man-beskrivning">&nbsp;HJÄLP&nbsp;</button>
 <div id="picNames" style="display:none"></div>
 <div id="picOrder" title="picNames without random extension for?move" style="display:none"></div>
 <div id="picOrig" style="display:none"></div>
+<div id="picThres" title="initial image similarity threshold" style="display:none">98</div>
 <div id="showFactor" title="initial seconds/picture" style="display:none">2</div>
 <div id="sortOrder" title="for imdDir's file order information table" style="display:none"></div>
 <div id="temporary" style="display:none"></div>
