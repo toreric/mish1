@@ -507,7 +507,7 @@ console.log("p2",p);
         res.send (err.message)
       })
     } else if (dupType === "dupImage") {
-      getDupImage ().then (dupnames => {
+      getDupImage (IMDB).then (dupnames => {
         res.location ('/')
         res.send (dupnames)
       })
@@ -524,6 +524,17 @@ console.log("p2",p);
       })
       .catch ( (err) => {
         console.error ("actualDups", err.message)
+        res.location ('/')
+        res.send (err.message)
+      })
+    } else if (dupType === "subAlbDups") {
+      if (param.length > 1) searchPath = param [1]; else searchPath = IMDB
+        getSubAlbDups (searchPath).then (dupnames => {
+        res.location ('/')
+        res.send (dupnames)
+      })
+      .catch ( (err) => {
+        console.error ("subAlbDups", err.message)
         res.location ('/')
         res.send (err.message)
       })
@@ -738,6 +749,7 @@ console.log("p2",p);
         setTimeout ( () => {
           var foundpaths = ""
           rows.forEach( (row) => {
+console.log("row.filepath",row.filepath.trim ());
             foundpaths += row.filepath.trim () + "\n"
           })
           res.send (foundpaths.trim ())
@@ -849,7 +861,7 @@ console.log("p2",p);
 
   // ===== Find any duplicates (similar) among images in the image collection
 
-  function getDupImage () {
+  function getDupImage (IMDB) {
     return new Promise (async function (resolve, reject) {
       try { // Start try ----------
         var pathlist = await cmdasync ('finddupimages 1 ' + IMDB)
@@ -872,7 +884,7 @@ console.log("p2",p);
   function getActualDups (picName, threshold) {
     return new Promise (async function (resolve, reject) {
       try { // Start try ----------
-        if (!threshold) threshold = '3'
+        if (!threshold) threshold = '3' // implies default threshold
         let cmd = 'finddupimages ' + threshold +' ' + IMDB + ' ' + picName
         var pathlist = await cmdasync (cmd)
         pathlist = pathlist.toString ().split (' ')
@@ -883,6 +895,26 @@ console.log("p2",p);
         resolve (result.join (" "))
       } catch (err) {
         console.error ("getActualDups", err.message)
+      } // End try ----------
+    }) //--Promise
+  }
+
+  // ===== Find duplicate (similar) images to one image in the image collection
+
+  function getSubAlbDups (searchPath) {
+    return new Promise (async function (resolve, reject) {
+      try { // Start try ----------
+        if (!searchPath) searchPath = IMDB
+        let cmd = 'finddupimages 4 ' + searchPath
+        var pathlist = await cmdasync (cmd)
+        pathlist = pathlist.toString ().split (' ')
+        var result = []
+        for (let i=0; i<pathlist.length; i++) { // Extract clean image name:
+          result.push (pathlist [i].replace (/^\/([^/]*\/)*/, "").replace (/\.[^.]+$/, ""))
+        }
+        resolve (result.join (" "))
+      } catch (err) {
+        console.error ("getSubAlbDups", err.message)
       } // End try ----------
     }) //--Promise
   }
