@@ -2219,7 +2219,7 @@ console.log("REGEN 1");
       }), 4000); // Time needed!
     },
     //============================================================================================
-    altFind (value) { // cf. sortlist/ NOTE: $.actualDups
+    altFind (value) { // cf. sortlist/ NOTE: $.actualDups and $.subAlbDups
       if (value !== "find") {
         console.log ("Find duplicates:", value);
         // Now value is "dupName" or "dupImage"
@@ -5778,7 +5778,9 @@ console.log("doFindText: paths",paths);
           //chalbs [i] = chalbs [i].replace (/ /g, "&nbsp;"); // superfluous
           // let tmp = (("     " + counts [i]).slice (-6) + "   i   ").replace (/ /g, "&nbsp;") + "<a onclick='parent.selectJstreeNode(" + i + ");return false'>" + $ ("#imdbRoot").text () + chalbs [i] + "</a>";
 
-          let tmp = (("     " + counts [i]).slice (-6) + "   i   ").replace (/ /g, "&nbsp;") + "<a onclick=\"parent.doFindText('" + inames [i] + "',false,[false,false,false,false,true],-2);return false\">" + $ ("#imdbRoot").text () + chalbs [i] + "</a>";
+          // let tmp = (("     " + counts [i]).slice (-6) + "   i   ").replace (/ /g, "&nbsp;") + "<a onclick=\"parent.doFindText('" + inames [i] + "',false,[false,false,false,false,true],-2);return false\">" + $ ("#imdbRoot").text () + chalbs [i] + "</a>";
+
+          let tmp = (("     " + counts [i]).slice (-6) + "   i   ").replace (/ /g, "&nbsp;") + "<a onclick=\"$.subAlbDups('" + chalbs [i] + "');return false\">" + $ ("#imdbRoot").text () + chalbs [i] + "</a>";
 
           countAlbs.push ([tmp, i]);
         }
@@ -5959,6 +5961,7 @@ function searchText (searchString, and, searchWhere, exact) {
           }
           if (seaArr [0] === "dupImage/") seaArr.splice (0, 1);
           if (seaArr [0] === "actualDups/") seaArr.splice (0, 1);
+          if (seaArr [0] === "subAlbDups/") seaArr.splice (0, 1);
 
 // console.log("lengths",seaArr.length,datArr.length);
 // console.log("lengths",namArr.length,datArr.length);
@@ -6227,6 +6230,7 @@ console.log("$.actualDups:picThres",picThres);
   return new Promise ( (resolve, reject) => {
     var xhr = new XMLHttpRequest ();
     xhr.open ('GET', 'dupnames/' + value + picName +'@'+ picThres, true, null, null);
+    setReqHdr (xhr, 21);
     xhr.onload = function () {
       let duplicates = xhr.response;
       resolve (duplicates); // duplicates has the names of found images
@@ -6256,6 +6260,61 @@ console.log("actualDups: savedAlbumIndex",savedAlbumIndex);
     // Populate the picFound album with "kind of favorites" with exact match
     // in names' sequence (-1 means return to #searcharea if go back is chosen, -2 do nothing).
     // NOTE: Here duplicates[0] is ["dupName/" or "dupImage/" or] "actualDups/" (not removed):
+    doFindText (duplicates, false, [false, false, false, false, true], -2);
+
+    $.spinnerWait (true, 110);
+  }).catch (error => {
+    console.error (error.message);
+  });
+  //document.getElementById ("altFind").value = "find"; // Reset to initial default option
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+$.subAlbDups = function (searchPath) { // Find duplicates of images in this specific album directory
+  // Called from a link in a search result where the to-many-result is sorted into albums
+
+  var picThres = $ ("#picThres").text ();
+console.log("$.subAlbDups:searchPath",searchPath);
+
+  console.log ("Find duplicates of images in:", searchPath);
+  infoDups = "";
+  var value = "subAlbDups";
+  infoDups = "<br><br><i>Kan vara dublettbilder</i> (<i>tröskel</i> " + picThres +"%)";
+  infoDups += "<i> i/till albumet</i> ." + searchPath;
+  $ ("div[aria-describedby='searcharea']").hide ();
+  $ ("div[aria-describedby='dialog']").hide ();
+  return new Promise ( (resolve, reject) => {
+    var xhr = new XMLHttpRequest ();
+    xhr.open ('GET', 'dupnames/' + value +'@'+ searchPath.replace (/\//g, "!"), true, null, null);
+    setReqHdr (xhr, 22);
+    xhr.onload = function () {
+      let duplicates = xhr.response;
+      resolve (duplicates); // duplicates has the names of found images
+    }
+    xhr.onerror = function () {
+      reject ({
+        status: this.status,
+        statusText: xhr.statusText
+      });
+    };
+    // initiate search
+    $.spinnerWait (true);
+    xhr.send ();
+  }).then (duplicates => {
+    // NOTE: Here duplicates[0] is set to ["dupName/" or "dupImage/" or] "subAlbDups/":
+    duplicates = value + "/ " + duplicates; // Space delimited
+    //(removed in searchText but the added slash makes this an illegal filename, if forgotten)
+    // console.log ("value+duplicates\n" + duplicates);
+    // Save the present album as the previous album:
+    if (!imdbDir_is_picFound ()) {
+      savedAlbumIndex = $ ("#imdbDirs").text ().split ("\n").indexOf ($ ("#imdbDir").text ());
+console.log("subAlbDups: savedAlbumIndex",savedAlbumIndex);
+      // Preset imdbDir 'in order to cheat' saveOrderFunc:
+      $ ("#imdbDir").text ("/"+ $ ("#picFound").text ());
+    }
+
+    // Populate the picFound album with "kind of favorites" with exact match
+    // in names' sequence (-1 means return to #searcharea if go back is chosen, -2 do nothing).
+    // NOTE: Here duplicates[0] is ["dupName/" or "dupImage/" or] "subAlbDups/" (not removed):
     doFindText (duplicates, false, [false, false, false, false, true], -2);
 
     $.spinnerWait (true, 110);
