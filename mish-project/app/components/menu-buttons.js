@@ -5778,10 +5778,13 @@ console.log("doFindText: paths",paths);
           //chalbs [i] = chalbs [i].replace (/ /g, "&nbsp;"); // superfluous
           // let tmp = (("     " + counts [i]).slice (-6) + "   i   ").replace (/ /g, "&nbsp;") + "<a onclick='parent.selectJstreeNode(" + i + ");return false'>" + $ ("#imdbRoot").text () + chalbs [i] + "</a>";
 
-          // let tmp = (("     " + counts [i]).slice (-6) + "   i   ").replace (/ /g, "&nbsp;") + "<a onclick=\"parent.doFindText('" + inames [i] + "',false,[false,false,false,false,true],-2);return false\">" + $ ("#imdbRoot").text () + chalbs [i] + "</a>";
-
-          let tmp = (("     " + counts [i]).slice (-6) + "   i   ").replace (/ /g, "&nbsp;") + "<a onclick=\"$.subAlbDups('" + chalbs [i] + "');return false\">" + $ ("#imdbRoot").text () + chalbs [i] + "</a>";
-
+          let tmp;
+console.log("EXACT?",exact);
+          if (exact === 0 || exact === 1) { // VÄLJ HÄR HUR?
+            tmp = (("     " + counts [i]).slice (-6) + "   i   ").replace (/ /g, "&nbsp;") + "<a onclick=\"parent.doFindText('" + inames [i] + "',false,[false,false,false,false,true],-2);return false\">" + $ ("#imdbRoot").text () + chalbs [i] + "</a>";
+          } else {
+            tmp = (("     " + counts [i]).slice (-6) + "   i   ").replace (/ /g, "&nbsp;") + "<a onclick=\"$.subAlbDups('" + chalbs [i] + "');return false\">" + $ ("#imdbRoot").text () + chalbs [i] + "</a>";
+          }
           countAlbs.push ([tmp, i]);
         }
       }
@@ -5850,9 +5853,9 @@ console.log("doFindText: paths",paths);
           let btFind = "<div style=\"text-align:left\"> Fann:<br>" + countAlbs.join ("<br>") + "</div><br><button style=\"border:solid 2px white;background:#b0c4deaa;\" onclick='$(\"#dialog\").dialog(\"close\");$(\"a.search\").click();'>TILLBAKA</button>";
           document.getElementById ("dialog").innerHTML = btFind;
           $ ("#dialog button") [0].focus ();
-for (let i=0; i<countAlbs.length; i++) {
-  console.log(inames [countIdx [i]]);
-}
+// for (let i=0; i<countAlbs.length; i++) {
+//   console.log(inames [countIdx [i]]);
+// }
         }
         if (!document.getElementById ("yesBut").disabled) {
           document.getElementById ("yesBut").focus ();
@@ -6276,6 +6279,7 @@ $.subAlbDups = function (searchPath) { // Find duplicates of images in this spec
 console.log("$.subAlbDups:searchPath",searchPath);
 
   console.log ("Find duplicates of images in:", searchPath);
+  // ELLER: console.log ("Find results in:", searchPath);
   infoDups = "";
   var value = "subAlbDups";
   infoDups = "<br><br><i>Kan vara dublettbilder</i> (<i>tröskel</i> " + picThres +"%)";
