@@ -2127,7 +2127,7 @@ console.log("REGEN 1");
       return new Promise ( (resolve) => {
         var xhr = new XMLHttpRequest ();
         xhr.open ('GET', 'imdbroot/@', true, null, null);
-        setReqHdr (xhr, 44); // important
+        setReqHdr (xhr, 4); // important
         xhr.onload = function () {
           var result = xhr.response;
           $ ("#imdbPath").text (result);
@@ -2190,7 +2190,7 @@ console.log("REGEN 1");
         return new Promise ( (resolve) => {
           var xhr = new XMLHttpRequest ();
           xhr.open ('GET', 'imdbroot/' + value + "@" + picFound, true, null, null);
-          setReqHdr (xhr, 4);
+          setReqHdr (xhr, 44);
           xhr.onload = function () {
             var result = xhr.response;
             $ ("#imdbPath").text (result);
@@ -2234,6 +2234,7 @@ console.log("REGEN 1");
         return new Promise ( (resolve, reject) => {
           var xhr = new XMLHttpRequest ();
           xhr.open ('GET', 'dupnames/' + value, true, null, null);
+          setReqHdr (xhr, 444);
           xhr.onload = function () {
             let duplicates = xhr.response;
             resolve (duplicates); // duplicates has the names of found images
@@ -5120,7 +5121,7 @@ function statusValues () {
 }
 !statusValues (); // Make it always appear used!
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function setReqHdr (xhr, id) { !id;
+function setReqHdr (xhr, id) { !id; // id was used only as a debug identity
   xhr.setRequestHeader ("imdbroot", encodeURIComponent ($ ("#imdbRoot").text ()));
   xhr.setRequestHeader ("imdbdir", encodeURIComponent ($ ("#imdbDir").text ()));
   xhr.setRequestHeader ("picfound", picFound); // All 'wihtin 255' characters
@@ -5688,7 +5689,7 @@ let prepSearchDialog = () => {
 function doFindText (sTxt, and, sWhr, exact) {
   let nameOrder = [];
   searchText (sTxt, and, sWhr, exact).then (async result => {
-    // Reset centerMarkSave which may be used as (a special) album header
+    // Reset centerMarkSave which else may be used as (a favorites) album header
     if (exact === 0) centerMarkSave = "×";
     // replace '<' and '>' for presentation in the header below
     sTxt = sTxt.replace (/</g, "&lt;").replace (/>/g, "&gt;");
@@ -5708,7 +5709,8 @@ console.log("doFindText: paths\n" + result);
       // this is the final re-search by image names in sequence. The result is presented
       // in the same given order where similar images are grouped together.
 
-      // NOTE: Eventually, 'paths' is the basis of the innerHTML content in the result dislog
+      paths = paths.filter (a => {if (a.trim ()) return true; else return false});
+      // NOTE: Eventually, 'paths' is the basis of the innerHTML content in the result dialog
 
 console.log("doFindText: paths",paths);
       let chalbs = $ ("#imdbDirs").text ().split ("\n");
@@ -5746,6 +5748,7 @@ console.log("doFindText: paths",paths);
         if (okay0 && okay1) { // ▻🢒
           paths [i] = "🢒 " + n0 + n1 + n2; // 🢒 Long broken entries will be easier to read
         } else {
+//console.log("i paths [i]",i,paths [i],okay0,okay1);
           paths [i] = "<span style='color:#d00'>🢒 </span>" + n0 + n1 + n2;
         }
 
@@ -5773,17 +5776,18 @@ console.log("doFindText: paths",paths);
 //console.log("doFindText:result",result);
 //console.log("doFindText:paths",paths);
 //console.log("doFindText:albs",albs);
+      // Prepare the alternative album list 'countAlbs' for the 'filesFound > nLimit' case:
       for (let i=0; i<chalbs.length; i++) {
         if (counts [i]) {
-          //chalbs [i] = chalbs [i].replace (/ /g, "&nbsp;"); // superfluous
-          // let tmp = (("     " + counts [i]).slice (-6) + "   i   ").replace (/ /g, "&nbsp;") + "<a onclick='parent.selectJstreeNode(" + i + ");return false'>" + $ ("#imdbRoot").text () + chalbs [i] + "</a>";
-
-          let tmp;
-console.log("EXACT?",exact);
-          if (exact === 0 || exact === 1) { // VÄLJ HÄR HUR?
-            tmp = (("     " + counts [i]).slice (-6) + "   i   ").replace (/ /g, "&nbsp;") + "<a onclick=\"parent.doFindText('" + inames [i] + "',false,[false,false,false,false,true],-2);return false\">" + $ ("#imdbRoot").text () + chalbs [i] + "</a>";
-          } else {
-            tmp = (("     " + counts [i]).slice (-6) + "   i   ").replace (/ /g, "&nbsp;") + "<a onclick=\"$.subAlbDups('" + chalbs [i] + "');return false\">" + $ ("#imdbRoot").text () + chalbs [i] + "</a>";
+          let tmp = (("     " + counts [i]).slice (-6) + "   i   ").replace (/ /g, "&nbsp;");
+          console.log("EXACT?",exact);
+          if (exact === 0 || exact === 1) { // search result
+              // NOTE. 'exact' IS '1' since here we always search for exact image name match:
+              tmp += "<a onclick=\"parent.doFindText('" + inames [i] + "',false,[false,false,false,false,true], 1);return false\">" + $ ("#imdbRoot").text () + chalbs [i] + "</a>";
+              tmp += " &nbsp;&nbsp;&nbsp;&nbsp;<a onclick='parent.selectJstreeNode(" + i + ");return false' style='font-family:Arial,Helvetica,sans-serif;font-size:70%;font-weight:bold'>ALLA</a>";
+            // }
+          } else { // find duplicates result
+            tmp += "<a onclick=\"$.subAlbDups('" + chalbs [i] + "');return false\">" + $ ("#imdbRoot").text () + chalbs [i] + "</a>";
           }
           countAlbs.push ([tmp, i]);
         }
@@ -5811,20 +5815,15 @@ console.log("EXACT?",exact);
     let modal = false;
     let tmp = n;
     if (n > filesFound) tmp = filesFound + " (<span style='color:#d00'>+"+ (n-filesFound) +"</span>)";
-    let p3 =  "<p style='margin:-0.3em 1.6em 0.2em 0;background:transparent'>" + sTxt + "</p>Funna i <span style='font-weight:bold'>" + $ ("#imdbRoot").text () + "</span>:&nbsp; " + tmp + (filesFound > nLimit?" (fler än " + nLimit + ", de finns i sina respektive album)":"");
+    let p3 =  "<p style='margin:-0.3em 1.6em 0.2em 0;background:transparent'>" + sTxt + "</p>Funna i <span style='font-weight:bold'>" + $ ("#imdbRoot").text () + "</span>:&nbsp; " + tmp + (filesFound > nLimit?", fler än " + nLimit + ", välj visning":"");
 
     // Show the resulting file list dialog to be confirmed (or closed)
     // DO NOT run `serverShell ("temporary_1")` -> symlink creation, via `infoDia (null, "", ...)
-    // but rather ........
     await infoDia (null, null, p3, "<div style='text-align:left;margin:0.3em 0 0 2em'>" + paths.join ("<br>") + "</div>", yes, modal);
 
     later ( ( () => {
       if ($ ("#temporary_1").text ().length > 0) {
         $ ("#sortOrder").text (nameOrder);
-          //   $ ("div[aria-describedby='dialog'] button#yesBut").attr ("onclick", fn1 ());
-      // if ($ ("#temporary_1").text ().length > 0) {
-      //   // Renew the 'picFound' (in 'lpath') temporary album:
-      //   $ ("div[aria-describedby='dialog'] button#yesBut").attr ("onclick", 'console.log("REGEN 4");execute ("rm -rf " +lpath+ "&&mkdir -m0775 " +lpath+ "&&touch " +lpath+ "/.imdb&&chmod 664 " +lpath+ "/.imdb");saveOrderFunc (nameOrder, "saveOrderFunc from doFindText").then ( () => {serverShell ("temporary_1");})});');
       }
 
       later ( ( () => {
@@ -5850,12 +5849,10 @@ console.log("EXACT?",exact);
         } else if (filesFound > nLimit) {
           // Here the innerHTML 'paths' list will be replaced by the 'countAlbs' list:
           document.getElementById ("yesBut").disabled = true;
-          let btFind = "<div style=\"text-align:left\"> Fann:<br>" + countAlbs.join ("<br>") + "</div><br><button style=\"border:solid 2px white;background:#b0c4deaa;\" onclick='$(\"#dialog\").dialog(\"close\");$(\"a.search\").click();'>TILLBAKA</button>";
+          let btFind = "<div style=\"text-align:left;color:#000\">" + " Fann:     För visning i ".replace (/ /g, "&nbsp;") + $ ("#imdbRoot").text () + "/" + picFound + " (till albumet direkt: <b style='font-family:Arial,Helvetica,sans-serif;font-size:70%'>ALLA</b>)<br>" + countAlbs.join ("<br>") + "</div><br><button style=\"border:solid 2px white;background:#b0c4deaa;\" onclick='$(\"#dialog\").dialog(\"close\");$(\"a.search\").click();'>TILLBAKA</button>";
           document.getElementById ("dialog").innerHTML = btFind;
           $ ("#dialog button") [0].focus ();
-// for (let i=0; i<countAlbs.length; i++) {
-//   console.log(inames [countIdx [i]]);
-// }
+          $ ("div#dialog div").scrollTop (0);
         }
         if (!document.getElementById ("yesBut").disabled) {
           document.getElementById ("yesBut").focus ();
@@ -5869,7 +5866,7 @@ console.log("EXACT?",exact);
         // noDialog means don't display the result dialog (but display the result directly!)
         let noDialog = n && filesFound <= nLimit && loginStatus === "guest";
 
-noDialog = false;
+        if (filesFound < n) noDialog = false; // Show dialog if there is non-showable content
 
         if (noDialog) $ ("div[aria-describedby='dialog']").hide ();
 
@@ -5917,7 +5914,7 @@ function searchText (searchString, and, searchWhere, exact) {
       // First replace % (thus, NBSP):
       arr[i] = arr [i].replace (/%/g, " "); // % in Mish means 'sticking space'
       // Then use % the SQL way if applicable and add `ESCAPE '\'` to each:
-      if (exact !== 0) { // Exact match for file (base) names favorites search
+      if (exact !== 0) { // Exact match for file (base) names, e.g. favorites search
         arr [i] = "'" + arr [i] + "' ESCAPE '\\'";
       } else {
         arr [i] = "'%" + arr [i] + "%' ESCAPE '\\'";
@@ -5942,11 +5939,12 @@ function searchText (searchString, and, searchWhere, exact) {
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {
         var data = xhr.response.trim ();
-// console.log("@@@ searchString \n" + searchString);
-// console.log("@@@ searchString \n" + searchString.split (" ").join ("\n"));
-// console.log("@@@ data\n" + data);
+console.log("@@@ searchString \n" + searchString);
+console.log("@@@ searchString \n" + searchString.split (" ").join ("\n"));
+console.log("@@@ data\n" + data);
         if (exact !== 0) { // reorder like searchString
           var datArr = data.split ("\n");
+console.log("datArr.length",datArr.length);
           var namArr = [];
           var seaArr = [];
           var tmpArr = [];
@@ -5954,8 +5952,10 @@ function searchText (searchString, and, searchWhere, exact) {
             namArr [i] = datArr [i].replace (/^(.*\/)*(.*)(\.[^.]*)$/,"$2");
             tmpArr [i] = datArr [i].replace (/^(.*\/)*(.*)(\.[^.]*)$/,"$2"); // Just in case
           }
+          searchString = searchString.replace (/[ ]+/g, " ");
           if (arr) seaArr = searchString.split (" ");
-// console.log("@@@ seaArr\n" + seaArr.join ("\n"));
+console.log("seaArr.length",seaArr.length);
+console.log("@@@ seaArr\n" + seaArr.join ("\n"));
 // console.log("@@@ namArr\n" + namArr.join ("\n"));
 
           // The 'reordering template' (seaArr) depends on this special switch set in altFind:
@@ -6233,7 +6233,7 @@ console.log("$.actualDups:picThres",picThres);
   return new Promise ( (resolve, reject) => {
     var xhr = new XMLHttpRequest ();
     xhr.open ('GET', 'dupnames/' + value + picName +'@'+ picThres, true, null, null);
-    setReqHdr (xhr, 21);
+    setReqHdr (xhr, 23);
     xhr.onload = function () {
       let duplicates = xhr.response;
       resolve (duplicates); // duplicates has the names of found images
@@ -6289,7 +6289,7 @@ console.log("$.subAlbDups:searchPath",searchPath);
   return new Promise ( (resolve, reject) => {
     var xhr = new XMLHttpRequest ();
     xhr.open ('GET', 'dupnames/' + value +'@'+ searchPath.replace (/\//g, "!"), true, null, null);
-    setReqHdr (xhr, 22);
+    setReqHdr (xhr, 24);
     xhr.onload = function () {
       let duplicates = xhr.response;
       resolve (duplicates); // duplicates has the names of found images

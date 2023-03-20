@@ -1885,9 +1885,12 @@ img.dotted {
       transition: opacity 0.2s linear;*/ }
     a {
       cursor: pointer;
-      text-decoration: none; }
+      text-decoration: none;
+    }
     a:hover {
-      text-decoration: none; }
+      text-decoration: none;
+      color: #000;
+    }
     .dropzone .dz-preview .dz-remove {
       background-color: white;
       font-size: 90%;

@@ -72,6 +72,7 @@ module.exports = function (app) {
     // 30 svart, 31 röd, 32 grön, 33 gul, 34 blå, 35 magenta, 36 cyan, 37 vit, 0 default
     console.log('\033[36m' + decodeURIComponent (req.originalUrl) + '\033[0m');
     // console.log ("  WWW_ROOT:", WWW_ROOT)
+    console.log (" IMDB_HOME:", IMDB_HOME)
     console.log ("      IMDB:", IMDB)
     // console.log (" IMDB_ROOT:", IMDB_ROOT)
     // console.log ("  IMDB_DIR:", IMDB_DIR)
@@ -750,7 +751,7 @@ console.log("p2",p);
         setTimeout ( () => {
           var foundpaths = ""
           rows.forEach( (row) => {
-console.log("row.filepath",row.filepath.trim ());
+//console.log("row.filepath",row.filepath.trim ());
             foundpaths += row.filepath.trim () + "\n"
           })
           res.send (foundpaths.trim ())
@@ -1140,9 +1141,15 @@ console.log("row.filepath",row.filepath.trim ());
       try {
         fd = await fs.openAsync ('rln' + IMDB + album + '/.imdb', 'r')
         await fs.closeAsync (fd)
-        if (album.slice (0, 2) !== "/.") albums.push (album) // Ignore 'dotted' directory paths
+        if (album.includes ("/.")) {
+          // Ignore 'dotted' directory paths
+          //console.log ("NOT album:", album)
+        } else {
+          albums.push (album)
+        }
       } catch (err) {
-        // Ignore
+        // Ignore directories without '.imdb' file
+        //console.log ("NOT album:", album)
       }
     }).then ( () => {
       return albums // (*)
@@ -1287,6 +1294,8 @@ console.log("row.filepath",row.filepath.trim ());
     // Extract Xmp data with exiv2 scripts to \n-separated lines
     cmd [0] = 'xmp_description ' + origfile // for txt1
     cmd [1] = 'xmp_creator ' + origfile     // for txt2
+    // START HERE if you want to add, for example, xmp.dc.source = "notes text", and so on.
+    // BUT REMEMBER, if so, to extend for this everywhere, after "res.send *" in "get * imagelist"
     let txt12 = ''
     for (let _i = 0; _i< cmd.length; _i++) {
       tmp = "?" // Should never show up
