@@ -494,6 +494,7 @@ button.mainMenuClose.ui-dialog-titlebar-close:hover {
   to {background-color: transparent;}
 }
 #title .proid:hover, #title .proid:focus {
+  text-decoration: none;
   animation-name: bluefade;
   animation-duration: 4s; /* for touchs */
 }
@@ -759,6 +760,7 @@ div[aria-describedby='textareas'] {
   padding: 0;
 }
 #smallButtons a.smBu:hover {
+  text-decoration: none;
   color: lightgray;
   animation-name: bluefade;
   animation-duration: 4s; /* for touchs */
@@ -1278,6 +1280,9 @@ button.goAlbum:hover {
   background-color: #333;
   border-radius: 4px;
   font-family: initial;
+}
+.nav_links .nav_:hover {
+  text-decoration: none;
 }
 .nav_links .qnav_ {
   padding: 0.1em 0.45em 0em 0.4em;
@@ -1888,8 +1893,7 @@ img.dotted {
       text-decoration: none;
     }
     a:hover {
-      text-decoration: none;
-      color: #000;
+      text-decoration: underline;
     }
     .dropzone .dz-preview .dz-remove {
       background-color: white;

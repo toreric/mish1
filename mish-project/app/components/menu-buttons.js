@@ -3812,7 +3812,7 @@ if (phonedevice ()) {
 }
 let bkgTip = "\nByt bakgrund";
 let centerMarkSave = "×"; // sometimes used for a header text line
-let cmsg = "Får inte laddas ned/förstoras utan särskilt medgivande: Vänligen kontakta copyrightinnehavare eller Hembygdsföreningen";
+let cmsg = "Får inte laddas ned/förstoras utan särskilt medgivande: Vänligen kontakta albumägare eller copyrightinnehavare";
 let eraseOriginals = false;
 let homeTip = "\nI N T R O D U K T I O N";
 let infoDups = "";
@@ -5709,10 +5709,10 @@ console.log("doFindText: paths\n" + result);
       // this is the final re-search by image names in sequence. The result is presented
       // in the same given order where similar images are grouped together.
 
+console.log("doFindText: paths",paths);
       paths = paths.filter (a => {if (a.trim ()) return true; else return false});
       // NOTE: Eventually, 'paths' is the basis of the innerHTML content in the result dialog
 
-console.log("doFindText: paths",paths);
       let chalbs = $ ("#imdbDirs").text ().split ("\n");
       // -- Prepare counters and imgnames for all albums
       let counts = "0".repeat (chalbs.length).split ("").map (Number);
@@ -5851,8 +5851,10 @@ console.log("doFindText: paths",paths);
           document.getElementById ("yesBut").disabled = true;
           let btFind = "<div style=\"text-align:left;color:#000\">" + " Fann:     För visning i ".replace (/ /g, "&nbsp;") + $ ("#imdbRoot").text () + "/" + picFound + " (till albumet direkt: <b style='font-family:Arial,Helvetica,sans-serif;font-size:70%'>ALLA</b>)<br>" + countAlbs.join ("<br>") + "</div><br><button style=\"border:solid 2px white;background:#b0c4deaa;\" onclick='$(\"#dialog\").dialog(\"close\");$(\"a.search\").click();'>TILLBAKA</button>";
           document.getElementById ("dialog").innerHTML = btFind;
-          $ ("#dialog button") [0].focus ();
-          $ ("div#dialog div").scrollTop (0);
+          // $ ("#dialog button") [0].focus ();
+          // //$ ("div#dialog div").scrollTop (0);
+          // var posArray = $('div#dialog div').positionedOffset();
+          // $('div#dialog').scrollTop = posArray[1];
         }
         if (!document.getElementById ("yesBut").disabled) {
           document.getElementById ("yesBut").focus ();
@@ -5921,6 +5923,7 @@ function searchText (searchString, and, searchWhere, exact) {
       }
       if (i > 0) {ao = AO}
       str += ao + "txtstr LIKE " + arr[i].trim ();
+      if (arr [i].includes ("048118388") ) console.log("048118388 >>> ", arr [i]);//debugtext
     }
   }
   // if (!$ ("#imdbDir").text ()) {
@@ -5939,24 +5942,28 @@ function searchText (searchString, and, searchWhere, exact) {
     xhr.onload = function () {
       if (this.status >= 200 && this.status < 300) {
         var data = xhr.response.trim ();
-console.log("@@@ searchString \n" + searchString);
-console.log("@@@ searchString \n" + searchString.split (" ").join ("\n"));
-console.log("@@@ data\n" + data);
+// console.log("@@@ searchString \n" + searchString);
+// console.log("@@@ searchString \n" + searchString.split (" ").join ("\n"));
+// console.log("@@@ data\n" + data);
         if (exact !== 0) { // reorder like searchString
           var datArr = data.split ("\n");
 console.log("datArr.length",datArr.length);
           var namArr = [];
           var seaArr = [];
           var tmpArr = [];
+          var albArr = [];
           for (let i=0; i<datArr.length; i++) {
             namArr [i] = datArr [i].replace (/^(.*\/)*(.*)(\.[^.]*)$/,"$2");
-            tmpArr [i] = datArr [i].replace (/^(.*\/)*(.*)(\.[^.]*)$/,"$2"); // Just in case
+            tmpArr [i] = namArr [i]; // Just in case
+            albArr [i] = datArr [i].replace (/^(.*\/)*(.*)(\.[^.]*)$/,"$1").slice (1, -1);
           }
           searchString = searchString.replace (/[ ]+/g, " ");
           if (arr) seaArr = searchString.split (" ");
-console.log("seaArr.length",seaArr.length);
-console.log("@@@ seaArr\n" + seaArr.join ("\n"));
+// console.log("seaArr.length",seaArr.length);
+// console.log("@@@ seaArr\n" + seaArr.join ("\n"));
 // console.log("@@@ namArr\n" + namArr.join ("\n"));
+console.log("@@@ albArr\n" + albArr.join ("\n"));
+console.log($ ("#imdbDirs").text ());
 
           // The 'reordering template' (seaArr) depends on this special switch set in altFind:
           if (seaArr [0] === "dupName/") {
@@ -5966,6 +5973,10 @@ console.log("@@@ seaArr\n" + seaArr.join ("\n"));
           if (seaArr [0] === "actualDups/") seaArr.splice (0, 1);
           if (seaArr [0] === "subAlbDups/") seaArr.splice (0, 1);
 
+
+// HÄR måste man också kolla att det blir rätt album (kan finnas samma bild i flera)
+// INTE bara nöja sig med den första man hittar!
+
 // console.log("lengths",seaArr.length,datArr.length);
 // console.log("lengths",namArr.length,datArr.length);
 // console.log("@@@ seaArr\n" + seaArr.join ("\n"));
@@ -5973,7 +5984,7 @@ console.log("@@@ seaArr\n" + seaArr.join ("\n"));
           data = [];
           for (let i=0; i<seaArr.length; i++) {
             for (let j=0; j<namArr.length; j++) {
-              if (seaArr [i] === namArr [j]) {
+              if (seaArr [i] === namArr [j] && $ ("#imdbDirs").text ().includes (albArr [j])) {
                 data [i] = datArr [j];
                 //datArr.splice (j,1);
                 namArr [j] = "###";
