@@ -183,12 +183,12 @@ Planerad hur-gör-man-beskrivning">&nbsp;HJÄLP&nbsp;</button>
         <label for="r2">&nbsp;minst&nbsp;ett&nbsp;av&nbsp;dem&nbsp;ska&nbsp;hittas&nbsp;i&nbsp;en&nbsp;bild</label>
       </span>
     </div>
-    <select id="altFind" class="selectOption" style="line-height:1em;background:#e4e4ef" onchange={{action 'altFind' value='target.value'}} tabindex="-1">
+    <!-- select id="altFind" class="selectOption" style="line-height:1em;background:#e4e4ef" onchange={{action 'altFind' value='target.value'}} tabindex="-1">
       <option value="find">Sök i texter: Skriv sökbegrepp överst och använd sedan Sök-i-knappen nedan</option>
       <option value="dupName">Finn dublettnamn i hela albumsamlingen</option>
       <option value="dupImage">Finn dublettbilder i hela albumsamlingen (likhetströskel 98%)</option>
     </select>
-    <span class="srchMsg"></span>
+    <span class="srchMsg"></span -->
   </div>
 </div>
 
@@ -530,11 +530,9 @@ Ingen annan inbjudan
   <br>
  <!-- Extra minimal subalbum list at bottom -->
   {{#each this.subaList as |suba|}}
-  <a class="imDir BLUET" {{action 'subalbumSelect' suba.album}}>
-    <span> {{{suba.name}}} &nbsp;</span>
+    <a class="imDir BLUET" {{action 'subalbumSelect' suba.album}}><span>{{{suba.name}}}</span></a> &nbsp;
     {{#if (eq suba this.subaList.lastObject)}}
     {{/if}}
-  </a>
   {{else}}
   {{/each}}
 </p>

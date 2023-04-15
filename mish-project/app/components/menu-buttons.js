@@ -18,6 +18,7 @@ import { task } from 'ember-concurrency';
 import contextMenuMixin from 'ember-context-menu';
 
 import Dropzone from "dropzone";
+// import { log } from 'qunit';
 
 export default Component.extend (contextMenuMixin, {
 
@@ -483,7 +484,7 @@ export default Component.extend (contextMenuMixin, {
       },
       {
         text: "", // Set later, in order to include html tags (illegal here)
-        "id": "noButt", // Process only one
+        "id": "noButt",
         click: function () {
           $ (this).dialog ('close');
         }
@@ -939,6 +940,7 @@ export default Component.extend (contextMenuMixin, {
     // their metadata in the <imdbDir> dir (name is DOM saved) on the server disk.
     // This will trigger the template to restore the DOM elements. Prepare the didRender hook
     // to further restore all details!
+console.log ("async refreshAll () CALLED");
     let n = 0;
     // eslint-disable-next-line no-async-promise-executor
     return new Promise (async resolve => {
@@ -1815,10 +1817,10 @@ console.log("REGEN 1");
       // Extract the album name and replace &nbsp; with space:
       var album = $ (this.get ("albumName")).text ().replace (/\s/g, " ");
       //console.log("|"+album+"|");
-      if ( (!(allow.albumEdit || allow.adminAll)) && imdbDir.indexOf (picFound) < 0) {
-        userLog ("OTILLÅTET", true, 800);
-        return;
-      }
+      // if ( (!(allow.albumEdit || allow.adminAll)) && imdbDir.indexOf (picFound) < 0) {
+      //   userLog ("OTILLÅTET", true, 800);
+      //   return;
+      // }
       mainMenuHide ();
       $ ("iframe.intro").hide ();
       $ (".img_show").hide ();
@@ -1835,23 +1837,27 @@ console.log("REGEN 1");
       $ ("#temporary_1").text ("");
       // The code in this dialog will indirectly call albumEditOption () onchange:
       var code0 = '<span>' + imdbDir + '</span><br>';
-      // #temorary will be set for the opt value in albumEditOption:
+      // #temporary will be set for the opt value in albumEditOption:
       code0 += '<select class="selectOption" onchange=';
       code0 += "'$ (\"#temporary\").text (this.value);$ (\"#albumEditOption\").trigger (\"click\");return false'>";
-      var code = code0 + '\n<option value="">&nbsp;Välj åtgärd för albumet&nbsp;</option>';
-      if (imdbDir.indexOf (picFound) < 0) {
-        code += '\n<option value="new">&nbsp;Gör ett nytt underalbum  &nbsp;</option>';
+      var code = code0 + '\n<option value="">&nbsp;Välj åtgärd för albumet</option>';
+      let permission  = allow.albumEdit || allow.adminAll;
+      if (imdbDir.indexOf (picFound) < 0 && permission) {
+        code += '\n<option value="new">&nbsp;Gör ett nytt underalbum&nbsp;</option>';
       }
-      if (imdbDir !== imdbRoot && imdbDir.indexOf (picFound) < 0) {
+      if (imdbDir !== imdbRoot && imdbDir.indexOf (picFound) < 0 && permission) {
         code += '\n<option value="erase">&nbsp;Radera albumet&nbsp;</option>';
       }
-      if ($ (".img_mini").length > 1) {
+      if ($ (".img_mini").length > 1 && (imdbDir.indexOf (picFound) > -1 || permission)) {
         code += '\n<option value="order">&nbsp;Sortera bilderna efter namn&nbsp;</option>';
         code += '\n<option value="reverse">&nbsp;Sortera bilderna baklänges&nbsp;</option>';
-        code += '\n<option value="dupName">&nbsp;Finn dublettnamn&nbsp;</option>';
-        code += '\n<option value="dupImage">&nbsp;Finn dublettbilder (likhetströskel 98%)&nbsp;</option>';
-      } else if (imdbDir.indexOf (picFound) > -1) {
-        code = code0 + '\n<option value="">&nbsp;Albumet kan inte åtgärdas!&nbsp;</option>';
+      }
+      //if (imdbDir.indexOf (picFound) < 0) {
+        code += '\n<option value="dupName">&nbsp;Finn dublettnamn i hela albumsamlingen&nbsp;</option>';
+        code += '\n<option value="dupImage">&nbsp;Finn dublettbilder här och i underalbum (likhetströskel 98%)&nbsp;</option>';
+      //}
+      if (code.slice (-10) === "t</option>") {
+        code = code0 + '\n<option value="">&nbsp;Albumet kan inte åtgärdas&nbsp;</option>';
       }
       code += '\n</select>';
       infoDia (null, null, album, code, 'Avbryt', true);
@@ -1898,16 +1904,17 @@ console.log("REGEN 1");
         }
         if (opt === "dupName") {
           header = ""; // i18n
-          optionText = "<b>Vänligen bekräfta:</b><br>Finn dublettnamn i <b>" + nameText + "?</b><br>(också i underalbum då sådana finns)"; // i18n
+          optionText = "<b>Vänligen bekräfta:</b><br>Finn dublettnamn i <b>hela albumsamlingen</b>?"; // i18n
+          optionText += "<br>Visas sedan i ”" + picFound + "”";
           okay = "Ja";
-          okay = "Avbryt (ej färdigställt)";
+          //okay = "Avbryt (ej färdigställt)";
           cancel = "Nej";
         }
-        if (opt === "dupImage") {
+        if (opt === "dupImage") { // => subAlbDups
           header = ""; // i18n
-          optionText = "<b>Vänligen bekräfta:</b><br>Finn dublettbilder i <b>" + nameText + "?</b><br>(också i underalbum då sådana finns)"; // i18n
+          optionText = "<b>Vänligen bekräfta:</b><br>Finn dublettbilder i <b>”" + nameText + "”</b>?<br>(också i underalbum då sådana finns)"; // i18n
+          optionText += "<br>Visas sedan i ”" + picFound + "”";
           okay = "Ja";
-          okay = "Avbryt (ej färdigställt)";
           cancel = "Nej";
         }
         $ ("#dialog").html (optionText);
@@ -1972,25 +1979,29 @@ console.log("REGEN 1");
                 if (result) {
                   var album = $ (that.get ("albumName")).text ();
                   later ( ( () => {
-                    //NEW  `result` should be removed from the dialog for security reasons
-                    infoDia (null, null, album, "Misslyckades: <b>" + nameNew + "</b> finns redan!<br>" + result, "Ok", true);
+                    infoDia (null, null, album, "Misslyckades: <b>" + nameNew + "</b> finns redan!", "Ok", true); // Need not show result
                   }), 100);
                 } else {
                   console.log ("Album created: " + nameNew);
-                  userLog ("CREATED " + nameNew + ", RELOADING", false, 10000);
+                  userLog ("CREATED " + nameNew + ", RELOAD", false, 10000);
+                  let msg = "<br>Efter omstart måste du själv gå till önskat album";
+                  infoDia (null, null, "INSTRUKTION", msg, "Starta om");
                   later ( ( () => {
-                    that.actions.selectRoot ($ ("#imdbRoot").text (), that);
-                  }), 2000);
+                    $ ("#yesBut").attr ("onclick", "window.location.reload()");
+                  }), 44);
                 }
               });
 
             } else if (opt === "erase") {
               cmd = "rm -rf " + $ ("#imdbPath").text () + $ ("#imdbDir").text ();
               execute (cmd).then ( () => {
-                userLog ("DELETED " + nameText + ", RELOADING");
+                console.log ("Album deleted: " + nameText);
+                userLog ("DELETED " + nameText + ", RELOAD", false, 10000);
+                let msg = "<br>Efter omstart måste du själv gå till önskat album";
+                infoDia (null, null, "INSTRUKTION", msg, "Starta om", true);
                 later ( ( () => {
-                  that.actions.selectRoot ($ ("#imdbRoot").text (), that);
-                }), 1000);
+                  $ ("#yesBut").attr ("onclick", "window.location.reload()");
+                }), 44);
               });
               //   }
               // });
@@ -2007,11 +2018,12 @@ console.log("REGEN 1");
                 });
               }), 2000);
             } else if (opt === "dupName") {
-              console.log ("dupName", $ ("#imdbDir").text ());
-              console.log ("  Not yet, perhaps insert a command?");
+              console.log ("dupName .");
+              allNameDups (); // dupnames
+              //console.log ("  Not yet, perhaps insert a command?");
             } else if (opt === "dupImage") {
               console.log ("dupImage", $ ("#imdbDir").text ());
-              console.log ("  Not yet, probably insert an XMLHttpRequest?");
+              $.subAlbDups ($ ("#imdbDir").text ()); // dupnames
             }
             $ (this).dialog ("close");
           }
@@ -2869,6 +2881,7 @@ console.log("=C=");
     //============================================================================================
     async refresh () { // ##### Reload the imageList and update the sort order
                        // NOTE that the button #reFr was hidden Jan 2022, see #reLd
+console.log ("async refresh () CALLED");
       if ($ (".toggleAuto").text () === "STOP") return; // Auto slide show is running
       document.getElementById ("imageList").className = "hide-all";
 
@@ -3066,8 +3079,8 @@ console.log("=C=");
         if (allow.albumEdit || allow.adminAll) {
           $ ("button.updText").show ();
           $ ("button.updText").css ("float", "right");
-          $ ("button.updText").html ("Uppdatera söktexter");
-          $ ("button.updText").attr ("title", "Förnya sökregistrets bildtexter");
+          $ ("button.updText").html ("Förnya...");
+          $ ("button.updText").attr ("title-1", "Förnya text- och bilddatabaserna");
         }
       }
     },
@@ -4057,12 +4070,12 @@ function acceptedDirName (name) { // Note that &ndash; is accepted:
   return acceptedName && name.slice (0, 1) !== "." && !name.includes (picFound);
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// Get the age of _imdb_images databases
+// Get the age of _imdb_images database
 function age_imdb_images () {
   if (allow.albumEdit || allow.adminAll) {
     let imdbx = $ ("#imdbPath").text ();
-    execute ('echo $(($(date "+%s")-$(date -r ' + imdbx + '/_imdb_images.sqlite "+%s")))').then (s => { s=0; if(s) s=2;
-    /*  let d = 0, h = 0, m = 0, text = "&nbsp;";
+    execute ('echo $(($(date "+%s")-$(date -r ' + imdbx + '/_imdb_images.sqlite "+%s")))').then (s => {
+      let d = 0, h = 0, m = 0, text = "&nbsp;";
       if (s*1) {
         d = (s - s%86400);
         s = s - d;
@@ -4073,14 +4086,16 @@ function age_imdb_images () {
         m = (s - s%60);
         s = s - m;
         m = m/60;
-        // Show approximate txt database age
-        text = "Söktextålder: ";
+        // Show approximate database age
+        //text = "Söktextålder: ";
         if (d) {text += d + " d "; s = 0; m = 0;}
         if (h) {text += h + " h "; s = 0;}
         if (m) {text += m + " m ";}
         if (s) {text += s + " s ";}
       }
-      $ ("#searcharea div.diaMess div.edWarn").html (text); */
+      //$ ("#searcharea div.diaMess div.edWarn").html (text);
+      $ ("button.updText").html ("Förnya... (senast" + text + " sedan)");
+      $ ("button.updText").attr ("title-1", "Förnya text- och bilddatabaserna");
     })
   }
 }
@@ -4460,7 +4475,7 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) {
     // Define button array
     $ (id).dialog ('option', 'buttons', [
     {
-      text: yes, // Okay. See below
+      text: "Visa...", // See below
         id: "yesBut",
       click: function () {
         return new Promise (resolve => {
@@ -4492,9 +4507,9 @@ function infoDia (dialogId, picName, title, text, yes, modal, flag) {
               //console.log("infoDia:files for sqlUpdate (autodetecting and skipping symlinks)" + "\n" + files);
             if (files.length > 0) {
               document.getElementById("reLd").disabled = false;
-              // later ( ( () => {
-              //   $ ("#reFr").trigger ("click"); // refresh
-              // }), 800);
+              later ( ( () => {
+                $ ("#reLd").trigger ("click"); // reload
+              }), 800);
               later ( (async () => {
                 await sqlUpdate (files);
               }), 5000);
@@ -4534,7 +4549,7 @@ console.log("infoDia=: #imdbDir",$ ("#imdbDir").text ());
 console.log("infoDia=: imdbDir_is_picFound",imdbDir_is_picFound ());
             }
             later ( ( () => {
-              $ ("#reLd").trigger ("click");
+              $ ("#reLd").trigger ("click"); // reload
             }), 1999);
           }
 
@@ -4547,7 +4562,7 @@ console.log("infoDia=: imdbDir_is_picFound",imdbDir_is_picFound ());
     }]);
     $ ("div[aria-describedby='" + dialogId + "'] span.ui-dialog-title").html (title); //#
     niceDialogOpen (dialogId);
-    $ ("#yesBut").html (yes);
+    $ ("div[aria-describedby='" + dialogId + "'] #yesBut").html (yes);
     $ ("#yesBut").trigger ("focus");
     $ ("div[aria-describedby='" + dialogId + "']").show ();
   }), 33);
@@ -5419,7 +5434,7 @@ function escapeDots (txt) { // Escape dots, for CSS names
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function cosp (textArr, system) { // Convert an array of text strings
   // into a comma+space[and]-separated text string
-  var andSep = " och"; // i18n
+  var andSep = " och"; // i18n, eng.", and"
   if (system) {andSep = ", and"}
   if (textArr.length === 1) {return textArr [0]} else {
     return textArr.toString ().replace (/,/g, ", ").replace (/,\s([^,]+)$/, andSep + " $1")
@@ -5583,16 +5598,20 @@ function ediTextSelWidth () { // Selects a useful edit dialog width within avail
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Prepare dialogs
 var prepDialog = () => {
-    $ ("#helpText").dialog ({autoOpen: false, resizable: true, title: "Användarhandledning"}); // Initiate a dialog...
-    $ (".ui-dialog .ui-dialog-titlebar-close").text ("×");
-    // Initiate a dialog, ready to be used:
-    $ ("#dialog").dialog ({resizable: true}); // Initiate a dialog...
-    $ (".ui-dialog .ui-dialog-titlebar-close").text ("×");
-    $ ("#dialog").dialog ("close"); // and close it
-    // Close on click off a modal dialog with overlay:
-    $ ("body").on ("click", ".ui-widget-overlay", function () {
-      $ ("#dialog").dialog ( "close" );
-    });
+  // Initiate a dialog...
+  $ ("#helpText").dialog ({autoOpen: false, resizable: true, title: "Användarhandledning"});
+  $ (".ui-dialog .ui-dialog-titlebar-close").text ("×");
+  $ ('#helpText').dialog ("close"); // and close it
+
+  // Initiate a dialog, ready to be used:
+  $ ("#dialog").dialog ({resizable: true}); // Initiate a dialog...
+  $ (".ui-dialog .ui-dialog-titlebar-close").text ("×");
+  $ ("#dialog").dialog ("close"); // and close it
+
+  // Close on click off a modal "dialog" with overlay:
+  $ ("body").on ("click", ".ui-widget-overlay", function () {
+    $ ("#dialog").dialog ( "close" );
+  });
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Prepare the dialog for text search */
@@ -5655,13 +5674,23 @@ let prepSearchDialog = () => {
         title: "",
         class: "updText",
         click: function () {
-          $ ("div[aria-describedby='searcharea']").hide ();
-          load_imdb_images ().then ( () => {
-            later ( ( () => {
-              age_imdb_images ();
-              $ ("div[aria-describedby='searcharea']").show ();
-            }), 2000);
-          });
+          let txt = "<b>Det här är kanske onödigt</b> att göra, eftersom textdatabasen uppdateras ";
+          txt += "automatiskt vid varje bildtextändring, men för bildjämförelser efter andra ";
+          txt += "förändringar med mera kan det behövas (om det inte görs varje natt automatiskt, ";
+          txt += "se noteringen om den senaste på förnyelseknappen). ";
+          txt += "<br><b>Vill du vänta</b> på att både text- och ";
+          txt += "bilddatabaserna (för snabbsökning av dubletter) ska förnyas (uppdateras)? ";
+          txt += "Tidsåtgången beror på antalet bilder i albumsamlingen, några tusen ";
+          txt += "kan behöva av storleksordningen en <b>halvtimme</b>. <br><b>Om&nbsp;inte</b>: ";
+          txt += "Stäng det här fönstret. <b>Annars</b>: Tryck på OK och ";
+          txt += "<b>vänta</b> till dess att sökdialogfönstret kommer tillbaka!";
+          infoDia (null, null, null, txt, "OK", true)
+          later ( ( () => {
+            $ ("div[aria-describedby='dialog'] #yesBut").attr ("onclick", "$.reload()");
+            let btn = "<button onclick='$(\"#dialog\").dialog(\"close\")'>Stäng</button>";
+            $ ("div[aria-describedby='searcharea'] #yesBut").after (" " + btn);
+            $ ("div[aria-describedby='searcharea'] #yesBut").next ().trigger ("focus");
+            }), 170);
         }
       },
     ]);
@@ -5806,20 +5835,21 @@ console.log("doFindText: paths",paths);
     $ ("#temporary_1").text (cmd.join ("\n"));
 
     if (n > 0 && filesFound <= nLimit) {
-      // $ ("#imdbDir").text ("/" + $ ("#picFound").text ()); done within 'infoDia' instead
       $ ("#sortOrder").text (nameOrder);
     }
     userLog (n + " FOUND");
     let txt = removeUnderscore ($ ("#picFound").text ().replace (/\.[^.]{4}$/, ""), true);
-    let yes = "Visa i <strong>" + txt + "</strong>";
+    let yes = "Visa i <b>" + txt + "</b>";
     let modal = false;
     let tmp = n;
+    // Remove <sTxt[0]> if a <code>/ key (not a picture name):
+    sTxt = sTxt.replace (/^[^/ ]+\/ /, "");
     if (n > filesFound) tmp = filesFound + " (<span style='color:#d00'>+"+ (n-filesFound) +"</span>)";
     let p3 =  "<p style='margin:-0.3em 1.6em 0.2em 0;background:transparent'>" + sTxt + "</p>Funna i <span style='font-weight:bold'>" + $ ("#imdbRoot").text () + "</span>:&nbsp; " + tmp + (filesFound > nLimit?", fler än " + nLimit + ", välj visning":"");
 
     // Show the resulting file list dialog to be confirmed (or closed)
     // DO NOT run `serverShell ("temporary_1")` -> symlink creation, via `infoDia (null, "", ...)
-    await infoDia (null, null, p3, "<div style='text-align:left;margin:0.3em 0 0 2em'>" + paths.join ("<br>") + "</div>", yes, modal);
+    await infoDia (null, "dialog", p3, "<div style='text-align:left;margin:0.3em 0 0 2em'>" + paths.join ("<br>") + "</div>", yes, modal);
 
     later ( ( () => {
       if ($ ("#temporary_1").text ().length > 0) {
@@ -5830,34 +5860,35 @@ console.log("doFindText: paths",paths);
         // In this section the hidden ´go back to previous album´ button is located and
         // optionally clicked, indirectly. A key global varaible is 'returnTitles' (search it!).
         if (n === 0) {
-          document.getElementById ("yesBut").disabled = true;
+          document.querySelector ("div[aria-describedby='dialog'] #yesBut").disabled = true;
           if (exact === 1) {
-            let btFind ="<br><button style=\"border:solid 2px white;background:#b0c4deaa;\" onclick='$(\"#dialog\").dialog(\"close\");$(\"#favorites\").click();'>TILLBAKA</button>";
-            document.getElementById ("dialog").innerHTML = btFind;
-            //$ ("#dialog button") [0].focus ();
+            let btFind ="<button onclick='$(\"#dialog\").dialog(\"close\");$(\"#favorites\").click();'>Tillbaka</button>";
+            //document.getElementById ("dialog").innerHTML = btFind;
+            $ ("div[aria-describedby='dialog'] #yesBut").after (" " + btFind);
           } else if (exact === -1) {
-            let btFind ="<br><button style=\"border:solid 2px white;background:#b0c4deaa;\" onclick='$(\"#dialog\").dialog(\"close\");$(\"a.search\").click();'>TILLBAKA</button>";
-            document.getElementById ("dialog").innerHTML = btFind;
-            //$ ("#dialog button") [0].focus ();
+            let btFind ="<button onclick='$(\"#dialog\").dialog(\"close\");$(\"a.search\").click();'>Tillbaka</button>";
+            //document.getElementById ("dialog").innerHTML = btFind;
+            $ ("div[aria-describedby='dialog'] #yesBut").after (" " + btFind);
           } else {
-            let btFind ="<br><button style=\"border:solid 2px white;background:#b0c4deaa;\" onclick='$(\"#dialog\").dialog(\"close\")'>OK</button>";
-            document.getElementById ("dialog").innerHTML = btFind;
-            //$ ("#dialog button") [0].focus ();
+            let btFind ="<button onclick='$(\"#dialog\").dialog(\"close\")'>Stäng</button>";
+            document.getElementById ("dialog").innerHTML = "<br>Inget att visa";
+            $ ("div[aria-describedby='dialog'] #yesBut").after (" " + btFind);
           }
-          $ ("#dialog button") [0].focus ();
-
+          $ ("#yesBut").next ().trigger ("focus");
         } else if (filesFound > nLimit) {
           // Here the innerHTML 'paths' list will be replaced by the 'countAlbs' list:
-          document.getElementById ("yesBut").disabled = true;
-          let btFind = "<div style=\"text-align:left;color:#000\">" + " Fann:     För visning i ".replace (/ /g, "&nbsp;") + $ ("#imdbRoot").text () + "/" + picFound + " (till albumet direkt: <b style='font-family:Arial,Helvetica,sans-serif;font-size:70%'>ALLA</b>)<br>" + countAlbs.join ("<br>") + "</div><br><button style=\"border:solid 2px white;background:#b0c4deaa;\" onclick='$(\"#dialog\").dialog(\"close\");$(\"a.search\").click();'>TILLBAKA</button>";
+          document.querySelector ("div[aria-describedby='dialog'] #yesBut").disabled = true;
+          let btFind = "<div style=\"text-align:left;color:#000\">" + " Fann:     För visning i ".replace (/ /g, "&nbsp;") + $ ("#imdbRoot").text () + "/" + picFound;
+          if (countAlbs [0].includes (">ALLA<")) btFind += " (till albumet direkt: <b style='font-family:Arial,Helvetica,sans-serif;font-size:70%'>ALLA</b>)";
+          btFind += "<br>" + countAlbs.join ("<br>") + "</div>";
           document.getElementById ("dialog").innerHTML = btFind;
-          // $ ("#dialog button") [0].focus ();
-          // //$ ("div#dialog div").scrollTop (0);
-          // var posArray = $('div#dialog div').positionedOffset();
-          // $('div#dialog').scrollTop = posArray[1];
+          btFind = "<button onclick='$(\"#dialog\").dialog(\"close\");$(\"a.search\").click();'>Tillbaka</button>";
+          $ ("div[aria-describedby='dialog'] #yesBut").after (" " + btFind);
         }
-        if (!document.getElementById ("yesBut").disabled) {
-          document.getElementById ("yesBut").focus ();
+        if (!document.querySelector ("div[aria-describedby='dialog'] #yesBut").disabled) {
+          document.querySelector ("div[aria-describedby='dialog'] #yesBut").focus ();
+        } else {
+          $ ("#yesBut").next ().trigger ("focus");
         }
 
         $ ("button.findText").show ();
@@ -5876,15 +5907,15 @@ console.log("doFindText: paths",paths);
             if (noDialog) { // then show the search result at once
               $ ("div[aria-describedby='dialog']").hide ();
               later ( ( () => {
-                $ ("div[aria-describedby='dialog'] button#yesBut").trigger ("click");
+                $ ("div[aria-describedby='dialog'] #yesBut").trigger ("click");
               }), 200);
             } // ...else inspect and decide whether to click the show button
         }), 600);
       }), 199);
 
-    }), 999);
+    }), 399); //was 999
 
-  }); // End searchText.then
+  }); // End searchText.then ()
 } // End doFindText
 window.doFindText = function (sTxt, and, sWhr, exact) { // for child window
   doFindText (sTxt, and, sWhr, exact);
@@ -5923,7 +5954,6 @@ function searchText (searchString, and, searchWhere, exact) {
       }
       if (i > 0) {ao = AO}
       str += ao + "txtstr LIKE " + arr[i].trim ();
-      if (arr [i].includes ("048118388") ) console.log("048118388 >>> ", arr [i]);//debugtext
     }
   }
   // if (!$ ("#imdbDir").text ()) {
@@ -5947,7 +5977,7 @@ function searchText (searchString, and, searchWhere, exact) {
 // console.log("@@@ data\n" + data);
         if (exact !== 0) { // reorder like searchString
           var datArr = data.split ("\n");
-console.log("datArr.length",datArr.length);
+console.log("searchText datArr.length",datArr.length);
           var namArr = [];
           var seaArr = [];
           var tmpArr = [];
@@ -5961,9 +5991,9 @@ console.log("datArr.length",datArr.length);
           if (arr) seaArr = searchString.split (" ");
 // console.log("seaArr.length",seaArr.length);
 // console.log("@@@ seaArr\n" + seaArr.join ("\n"));
-// console.log("@@@ namArr\n" + namArr.join ("\n"));
-console.log("@@@ albArr\n" + albArr.join ("\n"));
-console.log($ ("#imdbDirs").text ());
+console.log("searchText @@@ namArr\n" + namArr.join ("\n"));
+console.log("searchText @@@ albArr\n" + albArr.join ("\n"));
+console.log($ ("searchText #imdbDirs").text ());
 
           // The 'reordering template' (seaArr) depends on this special switch set in altFind:
           if (seaArr [0] === "dupName/") {
@@ -5973,20 +6003,11 @@ console.log($ ("#imdbDirs").text ());
           if (seaArr [0] === "actualDups/") seaArr.splice (0, 1);
           if (seaArr [0] === "subAlbDups/") seaArr.splice (0, 1);
 
-
-// HÄR måste man också kolla att det blir rätt album (kan finnas samma bild i flera)
-// INTE bara nöja sig med den första man hittar!
-
-// console.log("lengths",seaArr.length,datArr.length);
-// console.log("lengths",namArr.length,datArr.length);
-// console.log("@@@ seaArr\n" + seaArr.join ("\n"));
-// console.log("@@@ namArr\n" + namArr.join ("\n"));
           data = [];
           for (let i=0; i<seaArr.length; i++) {
             for (let j=0; j<namArr.length; j++) {
-              if (seaArr [i] === namArr [j] && $ ("#imdbDirs").text ().includes (albArr [j])) {
+              if (seaArr [i] === namArr [j]) {
                 data [i] = datArr [j];
-                //datArr.splice (j,1);
                 namArr [j] = "###";
                 break;
               }
@@ -6215,7 +6236,7 @@ function refreshEditor (namepic, origpic) {
   "&nbsp;<b class='insertChar' style='cursor:pointer' onmousedown='copyToClipboard(this.innerHTML)'>”</b></span>" +  warnText;
 
   if (warnText) {$ ("#textareas .edWarn").html (warnText);}
-  // Load the texts to be edited after positioning to top
+  // Load the texts to be edited after positioning to top:
   $ ('textarea[name="description"]').html ("");
   $ ('textarea[name="creator"]').html ("");
   $ ("#textareas").dialog ("open"); // Reopen
@@ -6266,7 +6287,7 @@ console.log("$.actualDups:picThres",picThres);
     // Save the present album as the previous album:
     if (!imdbDir_is_picFound ()) {
       savedAlbumIndex = $ ("#imdbDirs").text ().split ("\n").indexOf ($ ("#imdbDir").text ());
-console.log("actualDups: savedAlbumIndex",savedAlbumIndex);
+console.log("$.actualDups: savedAlbumIndex",savedAlbumIndex);
       // Preset imdbDir 'in order to cheat' saveOrderFunc:
       $ ("#imdbDir").text ("/"+ $ ("#picFound").text ());
     }
@@ -6286,21 +6307,71 @@ console.log("actualDups: savedAlbumIndex",savedAlbumIndex);
 $.subAlbDups = function (searchPath) { // Find duplicates of images in this specific album directory
   // Called from a link in a search result where the to-many-result is sorted into albums
 
-  var picThres = $ ("#picThres").text ();
+  picThres = 98; // A fixed value in script finddupimages and menu-buttons.hbs
+  $ ("#picThres").text (picThres);
 console.log("$.subAlbDups:searchPath",searchPath);
 
-  console.log ("Find duplicates of images in:", searchPath);
+  console.log ("Find duplicates of images in:", "." + searchPath);
   // ELLER: console.log ("Find results in:", searchPath);
   infoDups = "";
   var value = "subAlbDups";
   infoDups = "<br><br><i>Kan vara dublettbilder</i> (<i>tröskel</i> " + picThres +"%)";
-  infoDups += "<i> i/till albumet</i> ." + searchPath;
+  infoDups += "<i> i/till albumet</i> ”" + $ ("#imdbRoot").text () + searchPath + "” med underalbum";
   $ ("div[aria-describedby='searcharea']").hide ();
   $ ("div[aria-describedby='dialog']").hide ();
   return new Promise ( (resolve, reject) => {
     var xhr = new XMLHttpRequest ();
     xhr.open ('GET', 'dupnames/' + value +'@'+ searchPath.replace (/\//g, "!"), true, null, null);
     setReqHdr (xhr, 24);
+    xhr.onload = function () {
+      let duplicates = xhr.response;
+      resolve (duplicates); // duplicates has the names of found images
+    }
+    xhr.onerror = function () {
+      reject ({
+        status: this.status,
+        statusText: xhr.statusText
+      });
+    };
+    // initiate search
+    $.spinnerWait (true);
+    xhr.send ();
+  }).then (duplicates => {
+    // NOTE: Here duplicates[0] is set to ["dupName/" or "dupImage/" or] "subAlbDups/":
+    duplicates = value + "/ " + duplicates; // Space delimited
+    //(removed in searchText but the added slash makes this an illegal filename, if forgotten)
+    // console.log ("value+duplicates\n" + duplicates);
+    // Save the present album as the previous album:
+    if (!imdbDir_is_picFound ()) {
+      savedAlbumIndex = $ ("#imdbDirs").text ().split ("\n").indexOf ($ ("#imdbDir").text ());
+console.log("$.subAlbDups: savedAlbumIndex",savedAlbumIndex);
+      // Preset imdbDir 'in order to cheat' saveOrderFunc:
+      $ ("#imdbDir").text ("/"+ $ ("#picFound").text ());
+    }
+
+    // Populate the picFound album with "kind of favorites" with exact match
+    // in names' sequence (-1 means return to #searcharea if go back is chosen, -2 do nothing).
+    // NOTE: Here duplicates[0] is ["dupName/" or "dupImage/" or] "subAlbDups/" (not removed):
+    doFindText (duplicates, false, [false, false, false, false, true], -2);
+
+    $.spinnerWait (true, 110);
+  }).catch (error => {
+    console.error (error.message);
+  });
+  //document.getElementById ("altFind").value = "find"; // Reset to initial default option
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const allNameDups = function () {
+  console.log ("Find duplicates of images in the album collection", $ ("#imdbRoot").text ());
+  infoDups = "";
+  var value = "dupName"; // NOTE!
+  infoDups = "<br><br><i>Dublettnamn i </i>”" + $ ("#imdbRoot").text () + "” (använd <b>N</b>-knappen)";
+  $ ("div[aria-describedby='searcharea']").hide ();
+  $ ("div[aria-describedby='dialog']").hide ();
+  return new Promise ( (resolve, reject) => {
+    var xhr = new XMLHttpRequest ();
+    xhr.open ('GET', 'dupnames/' + value +'@'+ "", true, null, null);
+    setReqHdr (xhr, 25);
     xhr.onload = function () {
       let duplicates = xhr.response;
       resolve (duplicates); // duplicates has the names of found images
@@ -6336,7 +6407,7 @@ console.log("subAlbDups: savedAlbumIndex",savedAlbumIndex);
   }).catch (error => {
     console.error (error.message);
   });
-  //document.getElementById ("altFind").value = "find"; // Reset to initial default option
+
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 var allowance = [ // 'allow' order
@@ -6573,6 +6644,20 @@ $.maMeHi = function () {
   $ ("#menuButton").removeAttr ("title");
   $ ("#menuButton").html ("☰");
   $ (".mainMenu").hide ();
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+$.reload = function () {
+  $ ("div[aria-describedby='searcharea']").hide ();
+  // Regenerate the image texts database 
+  load_imdb_images ().then ( () => {
+    later ( (async () => {
+      // Calculate its approximate age
+      age_imdb_images ();
+      // Also regenerate the image similarity database 
+      await execute ("/usr/local/bin/finddupimages 2 " + $ ("#imdbPath").text ());
+      $ ("div[aria-describedby='searcharea']").show ();
+    }), 2000);
+  });
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*

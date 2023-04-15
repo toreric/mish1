@@ -494,6 +494,8 @@ console.log("p2",p);
   })
 
   // ##### #6.1 Find duplicate image names or duplicate/similar images in the album collection
+  // NOTE: Independent of what type of duplicates are searced for, the returned server answer
+  // is always given as a (kind of) array of PICTURE NAMES, independent of picture format.
   app.get ('/dupnames/:value', function (req, res) {
     let param = req.params.value.split ('@')
     console.log("dupnames:param", param);
@@ -862,7 +864,7 @@ console.log("p2",p);
   }
 
   // ===== Find any duplicates (similar) among images in the image collection
-
+  // OBSOLETE since getSubAlbDups() may be used from root instead, but SAFETY KEPT
   function getDupImage (IMDB) {
     return new Promise (async function (resolve, reject) {
       try { // Start try ----------
@@ -901,12 +903,12 @@ console.log("p2",p);
     }) //--Promise
   }
 
-  // ===== Find duplicate (similar) images to one image in the image collection
+  // ===== Find duplicate (similar) images to images in an album with subalbums
 
   function getSubAlbDups (searchPath) {
     return new Promise (async function (resolve, reject) {
       try { // Start try ----------
-        let cmd = 'finddupimages 4 ' + IMDB +" "+ searchPath
+        let cmd = 'finddupimages 5 ' + IMDB +" "+ searchPath
         var pathlist = await cmdasync (cmd)
         pathlist = pathlist.toString ().split (' ')
         var result = []
