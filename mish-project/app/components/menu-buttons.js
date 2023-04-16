@@ -1108,7 +1108,7 @@ console.log ("async refreshAll () CALLED");
                 let nlink = $ (".img_mini.symlink" ).length;
                 //console.log(ntot,nlink);
                 let ntext = $ ("div.BUT_2").text ().replace (/(^[^,]*),.*$/, "$1");
-                let nown = ntot - nlink;
+                nown = ntot - nlink; // global
                 if (nown === 1) {
                   ntext += ", 1 bild";
                 } else {
@@ -1852,10 +1852,10 @@ console.log("REGEN 1");
         code += '\n<option value="order">&nbsp;Sortera bilderna efter namn&nbsp;</option>';
         code += '\n<option value="reverse">&nbsp;Sortera bilderna baklänges&nbsp;</option>';
       }
-      //if (imdbDir.indexOf (picFound) < 0) {
-        code += '\n<option value="dupName">&nbsp;Finn dublettnamn i hela albumsamlingen&nbsp;</option>';
+      code += '\n<option value="dupName">&nbsp;Finn dublettnamn i hela albumsamlingen&nbsp;</option>';
+      if (!(imdbDir.indexOf (picFound) > -1 && nown === 0)) {
         code += '\n<option value="dupImage">&nbsp;Finn dublettbilder här och i underalbum (likhetströskel 98%)&nbsp;</option>';
-      //}
+      }
       if (code.slice (-10) === "t</option>") {
         code = code0 + '\n<option value="">&nbsp;Albumet kan inte åtgärdas&nbsp;</option>';
       }
@@ -2079,10 +2079,10 @@ console.log("REGEN 1");
 
         later ( ( () => {
           niceDialogOpen ();
-          $ ("#noBut").trigger ("focus");
+          $ ("#yesBut").trigger ("focus");
           $ ("input.nameNew").trigger ("focus"); // if exists
           hideKeyboard ();
-          if (opt === "checked") {$ ("#yesBut").trigger ("focus");}
+          if (opt === "erase") {$ ("#noBut").trigger ("focus");}
         }), 400);
       }
     }, // End albumEditOption
@@ -2292,6 +2292,7 @@ console.log("altFind: savedAlbumIndex",savedAlbumIndex);
     },
     selectAlbum (that) { // ##### triggered by a click within the JStree
 
+      nown = 0;
       // eslint-disable-next-line no-async-promise-executor
       return new Promise ( async () => {
 
@@ -3836,6 +3837,7 @@ let mailAdmin = "tore.ericsson@tores.se";
 let nosObs = "Du får skriva men kan ej spara text utan annan inloggning"; // i18n
 let notLoggedOutEver = true;
 let nopsGif = "GIF-fil kan bara ha tillfällig text"; // i18n
+let nown = 0; // The number of all non-syslink pictures in the #imdbDir album (at display-time)
 let openRoot = ""; // If "demo" then SETS THE ADMIN FLAG TO ALLOW ANYTHING!
 // Paths for pictures to be soon updated in _imdb_images.sqlite (using sqlUpdate; then clear pathsUpdate!):
 let pathsUpdate = [];
@@ -6585,6 +6587,7 @@ function selectJstreeNode (idx) {
   $ (".ember-view.jstree").jstree ("open_node", $ ("#j1_1"));
   $ (".ember-view.jstree").jstree ("_open_to", "#j1_" + (1 + idx));
   $ (".ember-view.jstree").jstree ("select_node", $ ("#j1_" + (1 + idx))); // calls selectAlbum
+  nown = 0;
 }
 window.selectJstreeNode = function (idx) { // for child window (iframe)
   selectJstreeNode (idx);
