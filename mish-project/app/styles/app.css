@@ -685,7 +685,8 @@ div.settings a:hover {
   font-size: 114%;
 }
 /* In helpText: */
-.helpIcon, #questionMark0, #albSel, #toggleName0, #toggleHide0, #upLoad0, #goTop0 {
+/* .helpIcon, #questionMark0, #albSel, #toggleName0, #toggleHide0, #upLoad0, #goTop0 { */
+.helpIcon {
   display: inline-block;
   width: 0.9em;
   height: 0.9em;
@@ -707,8 +708,12 @@ div.settings a:hover {
   -moz-user-select: none;
   -webkit-user-select: none;
   user-select: none;
+  cursor: default;
 }
-#albSel {
+.helpIcon:hover {
+  text-decoration: none;
+}
+  #albSel {
   height: 0.7em!important;
   width: 1em!important;
   background: #0085ff!important;
