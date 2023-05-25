@@ -753,8 +753,11 @@ console.log("p2",p);
         setTimeout ( () => {
           var foundpaths = ""
           rows.forEach( (row) => {
-//console.log("row.filepath",row.filepath.trim ());
-            foundpaths += row.filepath.trim () + "\n"
+            // console.log("row.filepath",row.filepath.trim ());
+
+            // In certain situations, dotted directories may
+            // appear here and urgently need to be left out!
+            if (!row.filepath.includes ('/.')) foundpaths += row.filepath.trim () + "\n"
           })
           res.send (foundpaths.trim ())
         }, 1000)

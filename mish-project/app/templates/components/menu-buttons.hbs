@@ -241,37 +241,29 @@ Planerad hur-gör-man-beskrivning">&nbsp;HJÄLP&nbsp;</button>
 <!-- ///// RIGHT BUTTONS (NOTE: without href attributes) /////  -->
 <div class="nav_links" draggable="false" ondragstart="return false">
   <!-- NEXT-ARROW-BUTTONS -->
-  <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' true }} title="
-Nästa
+  <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' true }} title="Nästa
 bild [>]">&gt;</a> &nbsp;<br>
-  <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' false}} title="
-Föregående
+  <a class="nav_" draggable="false" ondragstart="return false" {{action 'showNext' false}} title="Föregående
 bild [<]">&lt;</a> &nbsp;<br>
   <!-- CLOSE AND GO BACK TO MINIPICS -->
-  <a class="nav_" id="go_back" title="
-Återgå
+  <a class="nav_" id="go_back" title="Återgå
 [Esc]"{{action 'hideShow'}} src="/images/grid.svg"> </a> &nbsp;<br>
   <!-- AUTO-SLIDE-SHOW SELECT -->
-  <a class="nav_ toggleAuto" draggable="false" ondragstart="return false" {{action 'toggleAuto'}} style="font-size:1.2em;font-family:monospace" title="
-Automatiskt
+  <a class="nav_ toggleAuto" draggable="false" ondragstart="return false" {{action 'toggleAuto'}} style="font-size:1.2em;font-family:monospace" title="Automatiskt
 bildbyte [A]">AUTO</a><br>
   <!-- AUTO-SLIDE-SHOW SPEED SELECT -->
   <span class="nav_" id="showSpeed" draggable="false" ondragstart="return false">
-    <input class="showTime" type="number" min="1" max="99" value="2" title="
-Välj tid > 0 s">s&nbsp;&nbsp;<br>
+    <input class="showTime" type="number" min="1" max="99" value="2" title="Välj tid > 0 s">s&nbsp;&nbsp;<br>
     <!-- CHOOSE AUTO-SHOW s/texline OR s/slide -->
-    <a class="speedBase nav_" {{action 'speedBase'}} title="
-Välj per bild
+    <a class="speedBase nav_" {{action 'speedBase'}} title="Välj per bild
 eller bildtextrad">&nbsp;per<br>&nbsp;text-&nbsp;<br>&nbsp;rad</a>
   </span><br>
   <!-- HELP -->
   <a class="nav_ qnav_" draggable="false" {{action 'toggleNav'}}>?</a> &nbsp;<br>
   <!-- FULL SIZE -->
-  <a class="nav_" id="full_size" draggable="false" {{action 'fullSize'}} title="
-Full storlek
+  <a class="nav_" id="full_size" draggable="false" {{action 'fullSize'}} title="Full storlek
 i nytt fönster" style="font-size:200%;line-height:80%;padding:0.3em 0.33em 0.25em 0.3em">&#9974;</a> &nbsp; <br>
-<a class="nav_ pnav_" id="do_print" title="
-Skriv ut" {{action 'doPrint'}} src="/images/printer.svg"></a> &nbsp;
+<a class="nav_ pnav_" id="do_print" title="Skriv ut" {{action 'doPrint'}} src="/images/printer.svg"></a> &nbsp;
 </div>
 
 <!-- ///// DISPLAY THE 'SLIDE SHOW' IMAGE ///// -->
@@ -321,20 +313,17 @@ Skriv ut" {{action 'doPrint'}} src="/images/printer.svg"></a> &nbsp;
   <!-- ///// MAIN MENU, SELECT IMAGE ROOT DIRECTORIY, jstree ///// -->
   <div class="mainMenu BACKG" onclick="return false" draggable="false" ondragstart="return false" style="display:none">
 
-    <p onclick="return false" draggable="false" ondragstart="return false" title="
-Sökning">
+    <p onclick="return false" draggable="false" ondragstart="return false" title="Sökning">
       <a class="search" {{action 'findText'}}>Finn bilder <span style="font:normal 1em monospace!important">[F]</span></a>
     </p><br>
 
-    <p onclick="return false" draggable="false" ondragstart="return false" title="
-Favoritskötsel">
+    <p onclick="return false" draggable="false" ondragstart="return false" title="Favoritskötsel">
       <a id ="favorites" {{action 'seeFavorites'}}>Favoritbilder</a>
     </p><br>
 
     <p onclick="return false" draggable="false" ondragstart="return false">
       <a class="" style="color: white;cursor: default">
-        <select id="rootSel" title="
-Albumsamling (eller albumrot)" onchange={{action 'selectRoot' value='target.value'}}>
+        <select id="rootSel" title="Albumsamling (eller albumrot)" onchange={{action 'selectRoot' value='target.value'}}>
           {{#each this.imdbRoots as |rootChoice|}}
             <option value={{rootChoice}} selected={{eq this.imdbRoot rootChoice}}>{{rootChoice}}</option>
           {{/each}}
@@ -343,13 +332,11 @@ Albumsamling (eller albumrot)" onchange={{action 'selectRoot' value='target.valu
       </a>
     </p><br>
 
-    <p onclick="return false" draggable="false" ondragstart="return false" style="z-index:0" title="
-Ta bort, gör nytt, bildsortera, dublettsökning, med mera">
+    <p onclick="return false" draggable="false" ondragstart="return false" style="z-index:0" title="Ta bort, gör nytt, bildsortera, dublettsökning, med mera">
       <a {{action 'albumEdit'}} > {{{this.albumText}}} {{{this.albumName}}} </a>
     </p><br>
 
-    <p onclick="return false" draggable="false" ondragstart="return false" title="
-Visa alla album = hela albumträdet" style="z-index:0">
+    <p onclick="return false" draggable="false" ondragstart="return false" title="Visa alla album = hela albumträdet" style="z-index:0">
       <a id ="jstreeHdr" {{action 'toggleJstreeAlbumSelect'}} > {{{this.jstreeHdr}}} </a>
     </p>
 
@@ -365,34 +352,26 @@ Visa alla album = hela albumträdet" style="z-index:0">
   <iframe class="intro" src="start.html" style="display:none"></iframe>
 
   <!-- SMALLBUTTONS -->
-  <a id="questionMark" class="smBu" title="
-Användarhand-
+  <a id="questionMark" class="smBu" title="Användarhand-
 ledning [F1]" draggable="false" ondragstart="return false" {{action 'toggleHelp'}}>?</a>
   <a id="reFr" {{action 'refresh'}} title="NOTE: refresh was original reLd" style="display:none"></a>
-  <a id="reLd" class="smBu" title="
-Ladda om albumet
+  <a id="reLd" class="smBu" title="Ladda om albumet
 (återställ osparade ändringar)" draggable="false" ondragstart="return false" {{action 'reload'}} src="/images/reload.png"></a>
 
-  <a id="toggleName" class="smBu" title="
-Visa/dölj
+  <a id="toggleName" class="smBu" title="Visa/dölj
 bildnamnen" draggable="false" ondragstart="return false" style="display:none" {{action 'toggleNameView'}}>N</a>
-  <a id="toggleHide" class="smBu" title="
-Visa/dölj
+  <a id="toggleHide" class="smBu" title="Visa/dölj
 gömda bilder" draggable="false" ondragstart="return false" style="display:none" {{action 'toggleHideFlagged'}}></a>
-  <a id="saveOrder" class="smBu" title="
-Spara ändringar" draggable="false" ondragstart="return false" {{action 'saveOrder' true}}>S</a>
-  <a id="do_mail" class="smBu" title="
-Fråga om något
+  <a id="saveOrder" class="smBu" title="Spara ändringar" draggable="false" ondragstart="return false" {{action 'saveOrder' true}}>S</a>
+  <a id="do_mail" class="smBu" title="Fråga om något
 eller skicka ett
 meddelande med
 rättelser eller
 andra upplysningar" {{action 'doMail'}} src="/images/mail.svg" style="display:none"></a>
-  <a class="smBu" draggable="false" ondragstart="return false" title="
-Gå upp (visa
+  <a class="smBu" draggable="false" ondragstart="return false" title="Gå upp (visa
 översta raden)
  [pgUp]" style="font:bold 190% sans-serif;line-height:90%" onclick="window.scrollTo(0,0)">↑</a>
-  <a id="netMeeting" class="smBu" title="
-Möte: Här ses
+  <a id="netMeeting" class="smBu" title="Möte: Här ses
 vi på Internet
 (i nytt fönster).
 Kom överens med

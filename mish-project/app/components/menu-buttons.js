@@ -18,7 +18,6 @@ import { task } from 'ember-concurrency';
 import contextMenuMixin from 'ember-context-menu';
 
 import Dropzone from "dropzone";
-import { log } from 'qunit';
 // import { log } from 'qunit';
 
 export default Component.extend (contextMenuMixin, {
@@ -3451,12 +3450,12 @@ console.log("REGEN 3");
         text += "3. Se bilder i större förstoring (förbehåll för vissa bilder där ";
         text += "vi inte har tillstånd av copyright-innehavaren)<br><br>";
 
-        text += "Logga in som *<b style='font-family:monospace'>gäst</b> genom att ";
+        text += "* Logga in som <b style='font-family:monospace'>gäst</b> genom att ";
         text += "(1) klicka på <b style='font-family:monospace'>Logga in</b>, (2) skriva <b style='font-family:monospace'>gäst</b> (eller <b style='font-family:monospace'>guest</b>) i <b style='font-family:monospace'>User name</b>-fältet ";
         text += "(ta bort om där står något annat) och (3) klicka på <b style='font-family:monospace'>Bekräfta</b> (inget Password!). ";
         text += "Du är nu användaren <b style='font-family:monospace'>gäst</b> med <b style='font-family:monospace'>guest</b>-rättigheter – andra användare ";
         text += "måste logga in med lösenord (password) och kan ha andra rättigheter ";
-        text += "utöver 1. 2. 3. ovan.<br><br>";
+        text += "utöver 1. 2. och 3. ovan.<br><br>";
         text += "</div>"
 
         text += "Om du misslyckas med inloggningen (alltså gör fel, visas ej här!) blir ";
@@ -3464,7 +3463,7 @@ console.log("REGEN 3");
         text += "Börja om med att logga ut och så vidare.";
         $ ("iframe.intro").hide ();
         mainMenuHide ();
-        if (notLoggedOutEver) infoDia ("", "", '<b style="background:transparent">ÄR DU UTLOGGAD?</b>', text, "Jag förstår!", false, false);
+        if (notLoggedOutEver) infoDia ("", "", '<b style="background:transparent">ÄR DU UTLOGGAD?</b>', text, "Ok", false, false);
         notLoggedOutEver = false;
         later ( ( () => { // Do not hide the top logon line:
           $ ("#dialog").parent ().css ("top", "4em");
@@ -4219,15 +4218,18 @@ async function startInfoPage () { // Compose the information display page
     console.log("Introbilder: " + intro.length);
   }
 
+  var iText = iWindow.document.querySelectorAll ("span.imtx");
+  iWindow.document.querySelectorAll ("span.exapic") [0].style.display = "none";
+  // Remove all images except the first
+  for (let i=1; i<nIm; i++) {
+    iImages [i].style.width = "0";
+    iImages [i].style.border = "0";
+    iImages [i].setAttribute ("src", "favicon.ico");
+    iText [i - 1].innerHTML = "";
+  }
+    
   if (intro.length > 0) {
-    let iText = iWindow.document.querySelectorAll ("span.imtx");
-    // Remove all images except the first
-    for (let i=1; i<nIm; i++) {
-      iImages [i].style.width = "0";
-      iImages [i].style.border = "0";
-      iImages [i].setAttribute ("src", "favicon.ico");
-      iText [i - 1].innerHTML = "";
-    }
+    iWindow.document.querySelector ("span.exapic").style.display = "";
     // Adjust to load only available images
     $ (".proid.introbutt").hide ();
     $ (".proid.introbutt").show ();
@@ -4259,22 +4261,29 @@ async function startInfoPage () { // Compose the information display page
         iImages [i].setAttribute ("src", imgSrc);
     }
   }
-  // Show any info message:
+  // Show info message lines from _imdb_news.txt as far as they have content:
   var news = await execute ("cat " + $ ("#imdbPath").text () + "/_imdb_news.txt 2>/dev/null");
   if (news.indexOf ("Command failed") > -1) news = "";
-  later ( ( () => {
-    //$(document).ready(function() {
-      if ($ ('#messtext').length < 1) $ ('body').append('<div id="messtext"></div>');
+  var nwsv = news.split ("\n");
+  if (nwsv [0]) {
+    nwsv = nwsv.slice (1);
+    later ( ( () => {
+      if ($ ('#messtext').length < 1) $ ('body').append('<div id="messtext"></div>'); //storage
+      news = "";
+      for (let i=0; i<nwsv.length; i++) {
+        if (nwsv [i]) news += nwsv [i] + "\n";
+        else break;
+      }
       if (news.trim ()) { //news = await execute ('echo "Mish "$(date "+%k:%M %A %e %B %Y")');
         //userLog (news, true, 10000);
-        infoDia ("messtext", null, null, "<br>" + news, "Stäng");
+        infoDia ("messtext", null, null, "<br>" + news + "<br><br>", "Stäng");
         news = "";
       }
       later ( ( () => {
         $ ("#yesBut").trigger ("focus");
       }), 2000);
-    //});
-  }), 2000);
+    }), 2000);
+  }
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Show a symlink's 'parent' album; tgt is a mini-IMG, hopefully a linked one...
@@ -4332,7 +4341,9 @@ window.gotoMinipic = function (namepic) {
     gotoMinipic (namepic);
   }), 4000);
   later ( ( () => {
-    userLog ("KLICKA FÖR STÖRRE BILD!", true, 6000)
+    // userLog ("KLICKA FÖR STÖRRE BILD!", true, 6000)
+    let txt = "Klicka på bilden för att se den större! Pröva sedan att peka/klicka på olika knappar för att förstå hur de fungerar. Läs också förklaringar i textrutorna som kommer upp när man pekar."
+    infoDia (null, null, "Information", '<span  style="color:black">' + txt + '</span>', "Stäng"); // i18n
   }), 6000);
 }
 // Position to a minipic and highlight its border, 'main' function
@@ -5804,10 +5815,10 @@ console.log("doFindText: paths",paths);
         let n2 = fname.replace (/(.+)(\.[^.]*$)/, "$2");
         //paths [i] = "&#10148; " + n0 + n1 + n2;
         if (okay0 && okay1) { // ▻🢒
-          paths [i] = "🢒 " + n0 + n1 + n2; // 🢒 Long broken entries will be easier to read
+          paths [i] = "🢒&nbsp;" + n0 + n1 + n2; // 🢒 Long broken entries will be easier to read
         } else {
 //console.log("i paths [i]",i,paths [i],okay0,okay1);
-          paths [i] = "<span style='color:#d00'>🢒 </span>" + n0 + n1 + n2;
+          paths [i] = "<span style='color:#d00'>🢒&nbsp;</span>" + n0 + n1 + n2;
         }
 
         // -- In order to make possible show duplicates: Make the link names unique
@@ -6566,7 +6577,7 @@ function showFileInfo () {
   markBorders (picName); // Mark this one
   var picture = $ ("#imdbPath").text () + $ ("#picOrig").text ();
   var title = "Information om originalbildfilen";
-  var yes = "Stäng/avbryt";
+  var yes = "Stäng";
   getFilestat (picture).then (result => {
     $ ("#temporary").text (result);
   }).then ( () => {
