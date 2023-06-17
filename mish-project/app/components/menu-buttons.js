@@ -18,6 +18,7 @@ import { task } from 'ember-concurrency';
 import contextMenuMixin from 'ember-context-menu';
 
 import Dropzone from "dropzone";
+import { log } from 'qunit';
 // import { log } from 'qunit';
 
 export default Component.extend (contextMenuMixin, {
@@ -776,29 +777,23 @@ export default Component.extend (contextMenuMixin, {
     Dropzone.autoDiscover = false; // Avoids "Dropzone already attached" error
     $ (document).ready ( () => {
 
-      // Here is the base IMDB_LINK setting, to use also in ld_imdb.js:
-      // THIS IS OUTDATED
-      $ ("#imdbLink").text ("."); // <<< == IMDB_LINK in routes.js OBSOLETE
-
       execute ("if [ -f /etc/postfix/main.cf ]; then echo postfix; fi").then (res => {
         if (res) $ ("#do_mail").show (); // Guess if the server can send mail
       });
-      // $ ("#menuButton").attr ("title", htmlSafe ("Meny")); // i18n OBSOLETE
-      // Remember update *.hbs
       $ ("#bkgrColor").text ("rgb(59, 59, 59)");
       // Set the hidden-picture text background color:
       $ ("#hideColor").text ("rgb(0, 50, 100)");
       // Set body class BACKG:
       $ ("body").addClass ("BACKG TEXTC");
-      $ ("body").css ("background", BACKG);
-      $ ("body").css ("color", TEXTC);
-      $ ("#viSt").hide ();
+      $ ("#viSt").hide (); // visit statistics button
+
       later ( ( () => {
-        if (!getCookie("bgtheme")) {
-          setCookie("bgtheme", "dark", 0);
-        } else {
-          this.actions.toggleBackg (); this.actions.toggleBackg ();
-        }
+        let bgth = getCookie ("bgtheme");
+        // set default background if it isn't set
+        this.actions.toggleBackg ();
+        // or toggle it back if it was already set
+        if (bgth) this.actions.toggleBackg ();
+
         console.log ("jQuery v" + $ ().jquery);
         // The time stamp is produced with the Bash 'ember-b-script'
         // Introduktion advice:
@@ -809,13 +804,14 @@ export default Component.extend (contextMenuMixin, {
         // $ ("#title button.cred").attr ("totip", logAdv);
 
         // Initialize settings:
-        // Search result album names will have unique random extensions.
-        // This #picFound search result album will, harmlessly, have identical
-        // name within a session for any #imdbRoot (if you switch between them)
+        // Search result album names will have unique random extensions in order not to intermix
+        // simultaneous Internet users. This '#picFound search result album' will, harmlessly, have
+        // an unchanged name within a session for any #imdbRoot (if the user switches between them).
+        // Additionaly, automatic cleaning of such superfluous used old albums will take place.
         let rnd = "." + Math.random().toString(36).substr(2,4);
-        $ ("#picFound").text (picFound + rnd); // picFound is a global; directory created by the server
+        $ ("#picFound").text (picFound + rnd); // picFound is global; directory created by the server
         //console.log ("picFound:", $ ("#picFound").text ());
-        zeroSet ();
+        zeroSet (); // #allowValue = '000... etc.
         this.actions.setAllow ();
         this.actions.setAllow (true);
         later ( (async () => {
@@ -830,7 +826,7 @@ export default Component.extend (contextMenuMixin, {
             rootList = rootList.split ("\n");
             let seltxt = rootList [0];
             rootList.splice (0, 1, "");
-            rootList [0] = "Välj albumsamling "; // i18n, must have a space
+            rootList [0] = "Välj albumsamling "; // i18n, this text must have a space
             let selix = rootList.indexOf (seltxt);
             if (selix > 0) {
               this.set ("imdbRoot", seltxt);
@@ -3049,20 +3045,17 @@ console.log ("async refresh () CALLED");
     //============================================================================================
     toggleBackg () { // ##### Change theme light/dark
 
+      if ($ ("#imdbRoot").text ()) mainMenuHide ();
+
       let bgtheme = getCookie ("bgtheme");
-      if (bgtheme === "light") {
-        BACKG = "#cbcbcb";
-      } else {
-        BACKG = "#000";
-      }
-      if ($ ("#imdbRoot").text ()) {mainMenuHide ();}
-      if (BACKG === "#000") {
+      if (bgtheme === "dark") {
         BACKG = "#cbcbcb";
         TEXTC = "#000";
         BLUET = "#146";
         setCookie ("bgtheme", "light", 0);
       } else {
-        BACKG ="#000"; // background
+        // if no cookie yet choose dark background
+        BACKG = "#000"; // background
         TEXTC = "#fff"; // text color
         BLUET = "#aef"; // blue text
         setCookie ("bgtheme", "dark", 0);
@@ -3839,14 +3832,15 @@ var blink_text = function () {
   $(BLINK_TAG).fadeOut(350);
   $(BLINK_TAG).fadeIn(150);
 }
-let BACKG = "#cbcbcb"; // background light
-let TEXTC = "#000";    // text color
-let BLUET = "#146";    // blue text
-if (phonedevice ()) {
-  BACKG = "#000";  // background dark
-  TEXTC = "#fff"; // text color
-  BLUET = "#aef"; // blue text
-}
+// NOTE: The default background is actually set by toggleBackg() called by init()
+// let BACKG = "#cbcbcb"; // background light
+// let TEXTC = "#000";    // text color
+// let BLUET = "#146";    // blue text
+
+let BACKG = "#000";  // background dark
+let TEXTC = "#fff"; // text color
+let BLUET = "#aef"; // blue text
+
 let bkgTip = "\nByt bakgrund";
 let centerMarkSave = "×"; // sometimes used for a header text line
 let cmsg = "Får inte laddas ned/förstoras utan särskilt medgivande: Vänligen kontakta albumägare eller copyrightinnehavare";
