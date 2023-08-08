@@ -4,7 +4,7 @@
 
 ///* global Dropzone*/
 
-import Component from '@ember/component'
+import Component from '@ember/component';
 import EmberObject from '@ember/object';
 import $ from 'jquery';
 // import { dialog } from 'jquery-ui';

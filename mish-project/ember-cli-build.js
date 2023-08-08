@@ -1,7 +1,7 @@
 /* eslint-env node */
 'use strict';
 
-// DET HÄR VAR FÖRUT (2015) Brocfile.js
+// This was earlier (2015) Brocfile.js
 const EmberApp = require('ember-cli/lib/broccoli/ember-app');
 
 module.exports = function(defaults) {
@@ -11,9 +11,14 @@ module.exports = function(defaults) {
       includeDropzoneCss: false
     },
     //minifyJS: {
-    'ember-cli-uglify': {
-      enabled: false
+    'ember-cli-terser': {
+      terser: {
+        enabled: false
+      }
     },
+    /*'ember-resolver':  {
+      enabled: false
+    },*/
     minifyCSS: {
       enabled: false
     },
@@ -44,15 +49,6 @@ module.exports = function(defaults) {
   // along with the exports of each module as its value.
 
   app.import('app/styles/app.css'); // Needed from 2029july, why?
-
-  app.import('bower_components/jquery-ui/jquery-ui.js');
-  //app.import('bower_components/jquery-ui/ui/core.js');
-  //app.import('bower_components/jquery-ui/ui/widget.js');
-  //app.import('bower_components/jquery-ui/ui/widgets/dialog.js');
-  //app.import('bower_components/jquery-ui/themes/base/all.css');
-  //app.import('bower_components/jquery-ui/themes/smoothness/jquery-ui.css');
-  //app.import('bower_components/jquery-ui/themes/smoothness/theme.css');
-  //app.import('bower_components/jquery-ui/themes/smoothness/images/'); Put in public/assets/images/
 
   return app.toTree();
 };

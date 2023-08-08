@@ -1,7 +1,11 @@
 #!/bin/bash
 
+#" Remember to set the project durectory: "
+#project=/home/tore/Abeten/mish
+project=/home/tore/ArbetenGithub/mish
+
 # Remove code lines causing (drag-)drop minipic error
-sed -i~ '/sortEndAction/,+2d' ~/Arbeten/mish/mish-project/node_modules/ember-drag-drop/addon/components/sortable-objects.js
+sed -i~ '/sortEndAction/,+2d' ${project}/mish-project/node_modules/ember-drag-drop/addon/components/sortable-objects.js
 
 port=3000
 # Kill the process (if any) already listening to this port
@@ -12,7 +16,7 @@ if [ $prid ]; then
 fi
 
 # Make the script usable from any directory
-cd /home/tore/Arbeten/mish
+cd $project
 
 #IMDB_HOME=/mnt/sda2
 IMDB_HOME=/mnt/koofrwebdav
