@@ -2,7 +2,7 @@
 
 #" Remember to set the project durectory: "
 #project=/home/tore/Abeten/mish
-project=/home/tore/ArbetenGithub/mish
+project=/home/tore/ArbetenGithub/mish1
 
 # Remove code lines causing (drag-)drop minipic error
 sed -i~ '/sortEndAction/,+2d' ${project}/mish-project/node_modules/ember-drag-drop/addon/components/sortable-objects.js
