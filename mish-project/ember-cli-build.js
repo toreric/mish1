@@ -11,11 +11,11 @@ module.exports = function(defaults) {
       includeDropzoneCss: false
     },
     //minifyJS: {
-    'ember-cli-terser': {
+    /*'ember-cli-terser': {
       terser: {
         enabled: false
       }
-    },
+    },*/
     /*'ember-resolver':  {
       enabled: false
     },*/

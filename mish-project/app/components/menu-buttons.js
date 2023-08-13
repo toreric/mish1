@@ -18,7 +18,6 @@ import { task } from 'ember-concurrency';
 import contextMenuMixin from 'ember-context-menu';
 
 import Dropzone from "dropzone";
-import { log } from 'qunit';
 // import { log } from 'qunit';
 
 export default Component.extend (contextMenuMixin, {
@@ -854,7 +853,7 @@ export default Component.extend (contextMenuMixin, {
             }), 2000);
           }), 1000);
         }), 200);
-      }), 200);
+      }), 2000);//was200
     });
     // Trigger the jQuery tooltip on 'totip="..."' (custom attribute)
     //$ (document).tooltip ("enable");
@@ -887,7 +886,7 @@ export default Component.extend (contextMenuMixin, {
           });
           $ (document).tooltip ("disable");
         });
-    }), 1000);
+    }), 4000);//was2000
   },
   //----------------------------------------------------------------------------------------------
   didInsertElement () { // ##### Runs at page ready state
