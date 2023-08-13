@@ -51,7 +51,6 @@
     "minimatch": "^3.1.2"
   },
   "devDependencies": {
-    "@ember/jquery": "^2.0.0",
     "@ember/optional-features": "^2.0.0",
     "@ember/test-helpers": "^3.2.0",
     "@glimmer/component": "^1.1.2",
@@ -72,12 +71,12 @@
     "ember-drag-drop": "^0.8.2",
     "ember-export-application-global": "^2.0.1",
     "ember-load-initializers": "^2.1.2",
-    "ember-print-this": "^2.0.0",
     "ember-qunit": "^7.0.0",
     "ember-source": "^4.12.3",
     "eslint": "^8.46.0",
     "eslint-plugin-ember": "^7.13.0",
     "eslint-plugin-node": "^10.0.0",
+    "jquery": "^3.7.0",
     "loader.js": "^4.7.0",
     "patch-package": "^8.0.0",
     "qunit": "^2.19.4",

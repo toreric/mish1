@@ -17,14 +17,14 @@ module.exports = function(environment) {
       }
     },
     contentSecurityPolicy: {
-  	  'style-src': "'self' 'unsafe-inline' http://localhost:4200/",
+      'style-src': "'self' 'unsafe-inline' http://localhost:4200/",
       'default-src': "http://localhost:4200/",
       'default-src': "'none'",
       'script-src': "'self' 'unsafe-inline' 'unsafe-eval' ",
       'img-src': "'self' ",
       'frame-src': " "
 
-  	},
+    },
 
     APP: {
       // Here you can pass flags/options to your application instance
