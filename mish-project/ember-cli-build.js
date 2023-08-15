@@ -10,12 +10,10 @@ module.exports = function(defaults) {
     emberCliDropzonejs: {
       includeDropzoneCss: false
     },
-    //minifyJS: {
-    /*'ember-cli-terser': {
-      terser: {
-        enabled: false
-      }
-    },*/
+    //minifyJS:
+    'ember-cli-terser': {
+      enabled: false
+    },
     /*'ember-resolver':  {
       enabled: false
     },*/

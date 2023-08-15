@@ -19,6 +19,7 @@
     "test": "tests"
   },
   "scripts": {
+    "preinstall": "npx only-allow pnpm",
     "build": "ember build",
     "lint:hbs": "ember-template-lint .",
     "lint:js": "eslint .",
