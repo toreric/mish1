@@ -1,10 +1,8 @@
 <div class="ember-view">
-
-  {{context-menu}}
-  <!--ContextMenu /-->
-
-  {{menu-buttons}}
+  <ContextMenu />
+  <MenuButtons />
 
   <p class="lastRow" style="margin-bottom:256em">Mish powered by NodeJS &bull; Express &bull; EmberJS<br><span class="copyright"></span></p>
-  {{yield}}
+
+  {{outlet}}
 </div>

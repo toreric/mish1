@@ -1,22 +1,19 @@
 'use strict';
 
 module.exports = function(environment) {
-  let ENV = {
+  const ENV = {
     modulePrefix: 'mish-project',
     environment,
     rootURL: '/',
-    locationType: 'hash', // 'auto',
+    locationType: 'history', // 'auto', 'hash'
     EmberENV: {
+      EXTEND_PROTOTYPES: false,
       FEATURES: {
         // Here you can enable experimental features on an ember canary build
         // e.g. EMBER_NATIVE_DECORATOR_SUPPORT: true
       },
-      EXTEND_PROTOTYPES: {
-        // Prevent Ember Data from overriding Date.parse.
-        Date: false
-      }
     },
-    contentSecurityPolicy: {
+    /*contentSecurityPolicy: {
       'style-src': "'self' 'unsafe-inline' http://localhost:4200/",
       'default-src': "http://localhost:4200/",
       'default-src': "'none'",
@@ -24,7 +21,7 @@ module.exports = function(environment) {
       'img-src': "'self' ",
       'frame-src': " "
 
-    },
+    },*/
 
     APP: {
       // Here you can pass flags/options to your application instance

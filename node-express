@@ -2,10 +2,10 @@
 
 #" Remember to set the project durectory: "
 #project=/home/tore/Arbeten/mish
-project=/home/tore/Arbeten/mish1
-
+project=/home/tore/Arbeten/mish2
+echo $project
 # Remove code lines causing (drag-)drop minipic error
-sed -i~ '/sortEndAction/,+2d' ${project}/mish-project/node_modules/ember-drag-drop/addon/components/sortable-objects.js
+#sed -i~ '/sortEndAction/,+2d' ${project}/mish-project/node_modules/ember-drag-drop/addon/components/sortable-objects.js
 
 port=3000
 # Kill the process (if any) already listening to this port

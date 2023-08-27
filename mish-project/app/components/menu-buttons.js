@@ -1,15 +1,12 @@
-/* eslint-disable no-console */
-// eslint ember/avoid-leaking-state-in-ember-objects: "off" */
-// (cannot use ember-context-menu with the 'leaking-state' rule)
-
-///* global Dropzone*/
+// Can't use ember-context-menu with avoid-leaking-state rule!
+/* eslint-disable ember/avoid-leaking-state-in-ember-objects, ember/no-actions-hash, ember/no-classic-classes, ember/no-classic-components, ember/no-component-lifecycle-hooks, ember/no-get, ember/no-jquery, ember/require-tagless-components, no-console, prettier/prettier */
 
 import Component from '@ember/component';
 import EmberObject from '@ember/object';
 import $ from 'jquery';
 // import { dialog } from 'jquery-ui';
 // import { tooltip } from 'jquery-ui';
-import { inject as service } from '@ember/service';
+// import { inject as service } from '@ember/service';
 import { later } from '@ember/runloop';
 // import { Promise, resolve } from 'rsvp';
 import { Promise } from 'rsvp';
@@ -835,11 +832,11 @@ export default Component.extend (contextMenuMixin, {
             rootList = rootList.join ("\n");
             $ ("#imdbRoots").text (rootList);
           }
-        }), 25);
+        }), 1000); //was25
         later ( ( () => {
           scrollTo (0, 0); // To top of screen:
-          //$ ("#title a.proid") [0].focus () cannot be replaced by $ ("#title a.proid") [0].trigger ("focus"):
-          $ ("#title a.proid") [0].focus ();
+              //$ ("#title a.proid") [0].focus () cannot be replaced by $ ("#title a.proid") [0].trigger ("focus"):
+              $ ("#title a.proid").trigger ("focus");
           later ( ( () => { // Auto log in the default guest user:
             $ (".cred.user").attr ("value", "gäst"); // i18n
             $ (".cred.login").trigger ("click");
@@ -847,7 +844,7 @@ export default Component.extend (contextMenuMixin, {
               $ (".cred.login").trigger ("click"); // Confirm logIn
               $ (".cred.user").trigger ("click"); // Prevents FF showing link to saved passwords
               //$ ("#title a.proid") [0].focus () cannot be replaced by $ ("#title a.proid") [0].trigger ("focus"):
-              $ ("#title a.proid") [0].focus ();
+              $ ("#title a.proid").trigger ("focus");
               //this.actions.selectRoot ("");
               $ (".mainMenu p a.rootQuest").attr ("title-2", rootAdv);
             }), 2000);
@@ -916,7 +913,7 @@ export default Component.extend (contextMenuMixin, {
 
       later ( ( () => {
         // Update the slide show speed factor when it is changed
-        document.querySelector ('input.showTime[type="number"]').addEventListener ('change', function () {$ ("#showFactor").text (parseInt (this.value));});
+        //upgrade document.querySelector ('input.showTime[type="number"]').addEventListener ('change', function () {$ ("#showFactor").text (parseInt (this.value));});
 
         $ ("span#showSpeed").hide ();
         $ ("div.ember-view.jstree").attr ("onclick", "return false");
@@ -1544,7 +1541,7 @@ console.log("REGEN 1");
     });
   },
   //----------------------------------------------------------------------------------------------
-  printThis: service (), // ===== For the 'doPrint' function
+  //printThis: service (), // ===== For the 'doPrint' function
 
   // TEMPLATE ACTIONS, functions reachable from the HTML page
   /////////////////////////////////////////////////////////////////////////////////////////
@@ -3417,7 +3414,7 @@ console.log ("async refresh () CALLED");
         $ ("div.settings, div.settings div.check").hide ();
         userLog ("LOGOUT");
         //$ ("#title a.proid") [0].focus () cannot be replaced by $ ("#title a.proid") [0].trigger ("focus"):
-         $ ("#title a.proid") [0].focus ();
+        $ ("#title a.proid").trigger ("focus");
         zeroSet (); // #allowValue = '000... etc.
         this.actions.setAllow ();
         $ (".mainMenu p:eq(3) a").attr ("disabled", true); // Disable album-edit button in mainMenu
@@ -3481,7 +3478,7 @@ console.log("REGEN 3");
       //¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
       if (btnTxt === "Bekräfta") { // Confirm
         //$ ("#title a.proid") [0].focus () cannot be replaced by $ ("#title a.proid") [0].trigger ("focus"):
-        $ ("#title a.proid") [0].focus ();
+        $ ("#title a.proid").trigger ("focus");
         usr = $ ("#title input.cred.user").val ();
         var pwd = $ ("#title input.cred.password").val ().trim (); // Important
         $ ("#title input.cred.password").val ("");
@@ -3552,8 +3549,8 @@ console.log("REGEN 3");
               }), 3000); // Was 6000
             }
           //$ ("#title a.proid") [0].focus () cannot be replaced by $ ("#title a.proid") [0].trigger ("focus"):
-          $ ("#title a.proid") [0].focus ();
-          }
+          $ ("#title a.proid").trigger ("focus");
+        }
         });
         $ (document).tooltip ("enable");
 
@@ -4183,7 +4180,7 @@ $.spinnerWait = async function (runWait, delay) { // Delay is used only to end w
         document.getElementById ("imageList").className = "show-inline"; // Important! But...
       }
       //$ ("#title a.proid") [0].focus () cannot be replaced by $ ("#title a.proid") [0].trigger ("focus"):
-      $ ("#title a.proid") [0].focus ();
+      $ ("#title a.proid").trigger ("focus");
     }), 100);
   }
 }

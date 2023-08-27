@@ -1,0 +1,10 @@
+diff --git a/addon/templates/components/context-menu.hbs b/addon/templates/components/context-menu.hbs
+index e840b67c20f61cd6eaad23aa5c10fbdba060e50f..e553825d7fe43061878db67e82cff52dc8ff6906 100644
+--- a/addon/templates/components/context-menu.hbs
++++ b/addon/templates/components/context-menu.hbs
+@@ -1,4 +1,4 @@
+-{{#if isActive}}
++{{#if this.isActive}}
+   {{#ember-wormhole to="wormhole-context-menu"}}
+     <div class="context-menu-container" style={{position}}>
+       <ul class="context-menu {{if renderLeft "context-menu--left"}}">

@@ -6,26 +6,24 @@
   "repository": "",
   "license": "MIT",
   "author": "toreric <tore.ericsson@tores.se>",
-  "babel": {
-    "plugins": [
-      "@babel/plugin-proposal-private-methods",
-      {
-        "loose": true
-      }
-    ]
-  },
   "directories": {
     "doc": "doc",
     "test": "tests"
   },
   "scripts": {
     "preinstall": "npx only-allow pnpm",
-    "build": "ember build",
+    "build": "ember build --environment=production",
+    "lint": "concurrently \"npm:lint:*(!fix)\" --names \"lint:\"",
+    "lint:css": "stylelint \"**/*.css\"",
+    "lint:css:fix": "concurrently \"npm:lint:css -- --fix\"",
+    "lint:fix": "concurrently \"npm:lint:*:fix\" --names \"fix:\"",
     "lint:hbs": "ember-template-lint .",
-    "lint:js": "eslint .",
-    "postinstall": "patch-package",
+    "lint:hbs:fix": "ember-template-lint . --fix",
+    "lint:js": "eslint . --cache",
+    "lint:js:fix": "eslint . --fix",
     "start": "ember serve",
-    "test": "ember test"
+    "test": "concurrently \"npm:lint\" \"npm:test:*\" --names \"lint,test:\"",
+    "test:ember": "ember test"
   },
   "pnpm": {
     "overrides": {
@@ -35,7 +33,7 @@
       "ember-cli-htmlbars": "^6.3.0"
     },
     "patchedDependencies": {
-      "ember-cli-jstree@1.1.0": "patches/ember-cli-jstree@1.1.0.patch"
+      "ember-context-menu@0.5.2": "patches/ember-context-menu@0.5.2.patch"
     }
   },
   "dependencies": {
@@ -48,55 +46,67 @@
     "ember-resolver": "^11.0.0",
     "ember-truth-helpers": "^3.1.1",
     "ember-wormhole": "^0.6.0",
+    "jquery": "^3.7.0",
     "jquery-plugin-printthis": "^1.0.1",
-    "minimatch": "^3.1.2"
+    "jquery-ui": "^1.13.2",
+    "lint-to-the-future": "^2.0.0",
+    "lint-to-the-future-ember-template": "^1.2.0",
+    "lint-to-the-future-eslint": "^2.0.1",
+    "minimatch": "^9.0.3"
   },
   "devDependencies": {
+    "@babel/eslint-parser": "^7.22.6",
+    "@babel/plugin-proposal-decorators": "^7.22.10",
     "@ember/optional-features": "^2.0.0",
+    "@ember/string": "^3.1.1",
     "@ember/test-helpers": "^3.2.0",
     "@glimmer/component": "^1.1.2",
     "@glimmer/tracking": "^1.1.2",
-    "babel-plugin-remove-imports": "0.0.2",
     "broccoli-asset-rev": "^3.0.0",
-    "clean-css": "^5.3.2",
-    "core-js": "^3.32.0",
+    "concurrently": "^8.2.0",
+    "ember-auto-import": "^2.6.3",
+    "ember-cli": "~5.2.0-beta.0",
     "ember-cli-app-version": "^6.0.1",
     "ember-cli-babel": "^7.26.11",
-    "ember-cli-htmlbars": "^6.3.0",
+    "ember-cli-clean-css": "^2.0.0",
+    "ember-cli-dependency-checker": "^3.3.2",
+    "ember-cli-htmlbars": "^6.2.0",
     "ember-cli-inject-live-reload": "^2.1.0",
-    "ember-cli-jstree": "^1.1.0",
     "ember-cli-sri": "^2.1.1",
     "ember-cli-terser": "^4.0.2",
-    "ember-concurrency": "^2.3.7",
+    "ember-concurrency": "^3.1.0",
     "ember-context-menu": "^0.5.2",
-    "ember-drag-drop": "^0.8.2",
-    "ember-export-application-global": "^2.0.1",
+    "ember-data": "~5.2.0-beta.0",
+    "ember-fetch": "^8.1.2",
     "ember-load-initializers": "^2.1.2",
+    "ember-modifier": "^4.1.0",
+    "ember-page-title": "^8.0.0",
     "ember-qunit": "^7.0.0",
+    "ember-resolver": "^10.1.1",
     "ember-source": "^4.12.3",
-    "eslint": "^8.46.0",
-    "eslint-plugin-ember": "^7.13.0",
-    "eslint-plugin-node": "^10.0.0",
-    "jquery": "^3.7.0",
+    "ember-template-lint": "^5.11.2",
+    "ember-welcome-page": "^7.0.2",
+    "eslint": "^8.47.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-ember": "^11.10.0",
+    "eslint-plugin-n": "^16.0.1",
+    "eslint-plugin-prettier": "^5.0.0",
+    "eslint-plugin-qunit": "^8.0.0",
     "loader.js": "^4.7.0",
-    "patch-package": "^8.0.0",
+    "prettier": "^3.0.2",
     "qunit": "^2.19.4",
     "qunit-dom": "^2.0.0",
-    "sass": "^1.64.2",
+    "sass": "^1.66.1",
+    "stylelint": "^15.10.2",
+    "stylelint-config-standard": "^34.0.0",
+    "stylelint-prettier": "^4.0.2",
+    "tracked-built-ins": "^3.1.1",
     "webpack": "^5.88.2"
   },
   "engines": {
-    "node": "8.* || >= 10.*"
+    "node": "16.* || >= 18"
   },
   "ember": {
     "edition": "octane"
-  },
-  "//": [
-    "Comments:",
-    "Upgrade into: Kubuntu 20.04 TLS, Ember Octane/ember-cli 3.27, Node 14.17, NPM 7.19",
-    "etc., in June-July 2021 / Tore Ericsson"
-  ],
-  "volta": {
-    "node": "18.17.0"
   }
 }
